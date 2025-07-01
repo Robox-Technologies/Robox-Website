@@ -3,8 +3,9 @@ import fs from 'fs'
 import webpack from 'webpack';
 import HtmlBundlerPlugin from "html-bundler-webpack-plugin"
 import CopyPlugin from "copy-webpack-plugin"
+import dotenv from 'dotenv';
 
-
+dotenv.config();
 const __dirname = path.resolve();
 
 //Getting all the pages in src/pages and keeping the structure
@@ -39,6 +40,10 @@ const config = {
         extensions: ['.tsx', '.ts', '.js', ".json"],
     },
     plugins: [
+        new webpack.DefinePlugin({
+            'process.env.PUBLIC_SUPABASE_URL': JSON.stringify(process.env.PUBLIC_SUPABASE_URL),
+            'process.env.PUBLIC_SUPABASE_ANON_KEY': JSON.stringify(process.env.PUBLIC_SUPABASE_ANON_KEY),
+        }),
         new HtmlBundlerPlugin({
             entry: htmlPages,
             js: {

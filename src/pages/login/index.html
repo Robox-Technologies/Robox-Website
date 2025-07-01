@@ -2,9 +2,8 @@
 <html>
 <head>
     <%~ include('src/partials/metadata.html') %>
-    <script src="./index.ts"></script>
-    <link href="./index.scss" rel="stylesheet">
     <link href="@root/root.scss" rel="stylesheet">
+    <link href="./index.scss" rel="stylesheet">
 </head>
 <body>
     <%~ include('src/partials/header.html') %>
@@ -12,17 +11,35 @@
         <div class="login-bg">
             <img src="loginBackground.png" class="login-bg media">
             <div class="login-dialog">
+
+                <button id="back-button" class="pill-button back-button" style="margin-bottom: 12px; display: block; align-self: flex-start;">
+                    <i class="fa-solid fa-arrow-left" style="padding-right: 4px;"></i> Back
+                </button>
+
                 <h1 class="title">
                     Welcome Back!
                 </h1>
-                <div class="input-container">
-                    <label for="email" class="input-label">Email</label>
-                    <input type="email" id="email" name="email" placeholder="me@myemail.com" class="text-input">
-                    <p id="error-msg" class="error" style="display: none;"></p>
+                <!-- Email Input -->
+                <div class="email-container">
+                    <div class="input-container">
+                        <label for="email" class="input-label">Email</label>
+                        <input type="email" id="email" name="email" placeholder="me@myemail.com" class="text-input" autocomplete="email">
+                        <p id="email-error-msg" class="error" style="display: none;"></p>
+                    </div>
                 </div>
-                <button id="login-button" class="ctaButton" style="font-size: 24px; display: flex; align-items: center; justify-content: center; margin: 25px auto 0 auto;">
-                    Login
-                    <i class="fa-solid fa-arrow-right" style="margin-left: 20px;"></i>
+
+                <!-- Password Input -->
+                <div class="password-container" style="display: none;">
+                    <div class="input-container">
+                        <label for="password" class="input-label">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password" class="text-input" autocomplete="current-password">
+                        <p id="password-error-msg" class="error" style="display: none;"></p>
+                    </div>
+                </div>
+
+                <button id="login-button" class="ctaButton primaryButton" style="display: block; margin: 25px auto 0 auto;">
+                    Continue
+                    <i class="fa-solid fa-arrow-right" style="margin-left: 5px !important;"></i>
                 </button>
                 <hr class="divider">
                 <div class="signup-prompt">
@@ -31,5 +48,6 @@
             </div>
         </div>
     </div>
+    <script src="./index.ts"></script>
 </body>
 </html>

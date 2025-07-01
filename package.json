@@ -12,6 +12,7 @@
     "@blockly/continuous-toolbox": "^7.0.0",
     "@blockly/field-colour": "^6.0.0",
     "@blockly/theme-modern": "^7.0.0",
+    "@supabase/supabase-js": "^2.50.2",
     "blockly": "^12.1.0",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",

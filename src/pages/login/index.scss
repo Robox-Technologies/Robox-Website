@@ -38,11 +38,14 @@ body {
     background-color: variables.$tone1;
     border-radius: 8px;
     padding: 35px;
-    text-align: center;
+    text-align: justify;
+    flex-direction: column;
+    align-items: flex-start;
 
     .title {
         font-size: 40px;
         color: variables.$themeBlack;
+        text-align: center;
     }
 
     #login {
@@ -59,6 +62,7 @@ body {
     flex-direction: column;
     align-items: left;
     margin-bottom: 10px;
+    position: relative;
 }
 
 .error {
@@ -67,8 +71,12 @@ body {
     font-family: 'Nunito', sans-serif;
     text-align: left;
     align-self: left;
-    margin-top: 1px;
-    padding: 0px;
+    padding: 0;
+    margin: 1px 0 0 0;
+    z-index: 9999;
+    position: absolute;
+    top: 100%;
+    left: 0;
 }
 
 .divider {
@@ -87,6 +95,8 @@ body {
     font-size: 16px;
     font-family: 'Nunito', sans-serif;
     color: variables.$themeBlack;
+    text-align: center;
+    width: 100%;
 
     a {
         color: variables.$themeBlue;
@@ -99,4 +109,15 @@ body {
         text-decoration: underline;
         transition: text-decoration 1s ease-in-out;
     }
+}
+
+.primaryButton {
+    font-size: 24px;
+    display: block;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    text-align: center;
+    width: 100%;
+    max-width: 250px;
 }

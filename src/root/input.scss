@@ -16,11 +16,27 @@
     border: 1.4px solid variables.$themeBlue;
     width: 100%;
     height: fit-content;
-    align-self: left;
-    align-items: left;
-    align-content: left;
+    align-self: flex-start;
+    align-items: flex-start;
+    text-align: left;
     display: flex;
     min-height: 40px;
     box-sizing: border-box;
     font-family: 'Nunito', sans-serif;
+}
+
+.pill-button {
+    background-color: variables.$secondary;
+    color: variables.$themeBlack;
+    padding: 8px 16px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: calc(infinity * 1px);
+    border: none;
+    cursor: pointer;
+    align-items: center;
+    text-align: left;
+    justify-self: start;
+    justify-content: flex-start;
 }
