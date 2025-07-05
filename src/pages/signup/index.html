@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <%~ include('src/partials/metadata.html') %>
+    <link href="@root/root.scss" rel="stylesheet">
+    <link href="./index.scss" rel="stylesheet">
+</head>
+<body>
+    <%~ include('src/partials/header.html') %>
+    <div class="background">
+        <div class="signup-bg">
+            <img src="signupBackground.png" class="signup-bg">
+            <div class="signup-dialog">
+
+                <button id="back-button" class="pill-button back-button" style="margin-bottom: 12px; display: none; align-self: flex-start;">
+                    <i class="fa-solid fa-arrow-left" style="padding-right: 4px;"></i> Back
+                </button>
+
+                <h1 class="title">
+                    Sign Up
+                </h1>
+
+                <!-- User Type Step -->
+                <div class="user-type-container">
+                    <div class="user-type-options">
+                        <button id="student-button" class="user-type-button">
+                            <i class="fa-solid fa-user-graduate" style="margin-right: 10px;"></i>
+                            I'm a Student
+                        </button>
+                        <button id="teacher-button" class="user-type-button">
+                            <i class="fa-solid fa-chalkboard-teacher" style="margin-right: 10px;"></i>
+                            I'm a Teacher
+                        </button>
+                    </div>
+                    <p id="user-type-error-msg" class="error" style="display: none;"></p>
+                </div>
+
+                <!-- Personal Info Step -->
+                <div class="personal-info-container" style="display: none;">
+                    <div class="input-container">
+                        <label for="full-name" class="input-label">Full Name</label>
+                        <input type="text" id="full-name" name="full-name" placeholder="John Doe" class="text-input" autocomplete="name">
+                        <p id="full-name-error-msg" class="error" style="display: none;"></p>
+                    </div>
+                    <div class="input-container">
+                        <label for="email" class="input-label">Email</label>
+                        <input type="email" id="email" name="email" placeholder="me@myemail.com" class="text-input" autocomplete="email">
+                        <p id="email-error-msg" class="error" style="display: none;"></p>
+                    </div>
+                </div>
+
+                <!-- Password Step -->
+                <div class="password-container" style="display: none;">
+                    <div class="input-container">
+                        <label for="password" class="input-label">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Create a password" class="text-input" autocomplete="new-password">
+                        <p id="password-error-msg" class="error" style="display: none;"></p>
+                    </div>
+                    <div class="input-container">
+                        <label for="confirm-password" class="input-label">Confirm Password</label>
+                        <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" class="text-input" autocomplete="new-password">
+                        <p id="confirm-password-error-msg" class="error" style="display: none;"></p>
+                    </div>
+                </div>
+
+                <button id="signup-button" class="ctaButton primaryButton" style="display: block; margin: 25px auto 0 auto;">
+                    Continue
+                    <i class="fa-solid fa-arrow-right" style="margin-left: 5px"></i>
+                </button>
+
+                <hr class="divider">
+
+                <div class="login-prompt">
+                    Already have an account? <a href="/login" target="_self">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <script src="./index.ts"></script> -->
+</body>
+</html>

@@ -40,3 +40,17 @@
     justify-self: start;
     justify-content: flex-start;
 }
+
+.error {
+    color: variables.$themeRed;
+    font-size: 12px;
+    font-family: 'Nunito', sans-serif;
+    text-align: left;
+    align-self: left;
+    padding: 0;
+    margin: 1px 0 0 0;
+    z-index: 9999;
+    position: absolute;
+    top: 100%;
+    left: 0;
+}
