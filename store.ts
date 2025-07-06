@@ -1,7 +1,7 @@
 import cache from 'memory-cache'
 
 // Idk how else to fix this (issue is that stripe.js is not recognised as a module)
-
+import {Stripe} from 'stripe';
 import { getProduct, getProductList, stripeAPI } from './stripe-helper.js';
 
 
@@ -15,14 +15,45 @@ const paymentRouter = express.Router()
 const PRODUCT_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 const verifiedProducts = await getProductList()
 
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+paymentRouter.post('/webhook', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
+    const signature = req.headers['stripe-signature'];
 
+    let event: Stripe.Event;
 
+    try {
+        event = stripeAPI.webhooks.constructEvent(req.body, signature!, endpointSecret);
+    } catch (err) {
+        console.error('⚠️  Webhook signature verification failed.', (err as Error).message);
+        res.status(400).send('Webhook Error');
+        return;
+    }
+
+    // ✅ Webhook verified — handle the event
+    switch (event.type) {
+        case 'payment_intent.succeeded':
+            const paymentIntent = event.data.object as Stripe.PaymentIntent;
+            console.log(`✅ Payment succeeded: ${paymentIntent.id}`);
+            break;
+        case 'payment_intent.payment_failed':
+            const failedIntent = event.data.object as Stripe.PaymentIntent;
+            console.log(`❌ Payment failed: ${failedIntent.id}`);
+            break;
+    }
+    res.json({ received: true });
+});
+
+paymentRouter.use(express.json());
 
 paymentRouter.post("/create", async (req: Request<{}, {}, PaymentIntentCreationBody>, res: Response): Promise<void> => {
     let products = req.body.products
     let expected_price = req.body.expected_price
     if (!products) {
         res.status(400).send({ error: "Products is not defined" });
+        return 
+    }
+    if (!expected_price || typeof expected_price !== "number" || expected_price <= 0) {
+        res.status(400).send({ error: "Expected price is not defined" });
         return 
     }
     let verifiedServerCost = calculateTotalCost(products, verifiedProducts).total;
@@ -81,7 +112,5 @@ paymentRouter.get("/products", async (req: Request<{}, {}, {}, ProductsRequestQu
         return 
     }
 })
-
-
 
 export default paymentRouter

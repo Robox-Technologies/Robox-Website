@@ -64,7 +64,6 @@ async function recursiveItemGrab(API: Stripe.PricesResource | Stripe.ProductsRes
     return itemObject;
 }
 
-
 export function isValidStatus(status: ProductStatus | string): status is ProductStatus {
     if (typeof status !== "string") return false;
     // Check if the status is one of the valid statuses

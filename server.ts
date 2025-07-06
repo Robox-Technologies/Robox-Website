@@ -11,8 +11,8 @@ const __dirname = path.dirname(__filename);
 const websiteDir = path.resolve(__dirname, '../website');
 const path404 = path.join(websiteDir, '404.html');
 
-app.use(express.json());
 app.use("/api/store", paymentRouter);
+app.use(express.json());
 app.use("/", express.static(websiteDir));
 
 // 404 for all other routes
