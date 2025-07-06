@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Robox Receipt</title>
+  <style>
+    :root {
+        --theme-blue: #2588C7;
+        --theme-green: #91CC31;
+        --theme-yellow: #FFCD44;
+        --theme-red: #FF6166;
+        --theme-black: #405C64;
+        --drop-shadow: #26363B;
+        --tone1: #F8F8F8;
+        --tone2: #EFEFEF;
+        --tone3: #717171;
+        --tone4: #000000;
+        --primary: #F8F8F8;
+        --secondary: #C6C6C6;
+        --stroke-size: 3px;
+        --header-height: 56px;
+        --border-radius: 24px;
+        --button-radius: 10px;
+        --font-heading: 'Nunito', 'Arial', sans-serif;
+        --font-body: 'Nunito Sans', 'Arial', sans-serif;
+    }
+    html, body {
+        background: #222;
+        min-height: 100vh;
+    }
+    body {
+        font-family: var(--font-body);
+        color: var(--theme-black);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+    }
+    .container {
+        background: var(--tone1);
+        border-radius: var(--border-radius);
+        margin: 32px auto;
+        box-shadow: 0 2px 24px #26363B22;
+        padding: 24px;
+        overflow: hidden;
+        border: none;
+    }
+    .logo-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        margin-top: 38px;
+        margin-bottom: 0;;
+    }
+    .logo-img {
+        padding: 0 20px;
+        display: block;
+    }
+    .logo-text {
+        font-family: var(--font-heading);
+        font-size: 2.5em;
+        font-weight: 800;
+        color: var(--theme-black);
+        letter-spacing: -2px;
+        display: flex;
+        align-items: center;
+    }
+    .logo-text .slash {
+        color: var(--theme-red);
+        font-size: 1.1em;
+        margin: 0 2px 0 2px;
+        font-weight: 900;
+    }
+    .receipt-header h1 {
+        font-family: var(--font-heading);
+        color: var(--theme-black);
+        font-size: 2em;
+        font-weight: 800;
+        margin: 18px 0 0 0;
+        text-align: center;
+    }
+    .receipt-header .subtitle {
+        color: var(--theme-black);
+        font-family: var(--font-heading);
+        font-size: 1.13em;
+        font-weight: 700;
+        margin: 18px 0 0 0;
+        text-align: center;
+    }
+    .receipt-box {
+        background: var(--tone2);
+        border-radius: 16px;
+        margin: 24px 16px 18px 16px;
+        padding: 16px 18px 10px 18px;
+        box-shadow: 0 2px 8px #26363B22;
+    }
+    .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 1.05em;
+        border-bottom: 1px dotted var(--tone3);
+        padding-bottom: 6px;
+    }
+    .receipt-row:last-child {
+        border-bottom: none;
+    }
+    .label {
+        color: var(--theme-black);
+        font-weight: 700;
+    }
+    .value {
+        color: var(--theme-blue);
+        font-weight: 700;
+    }
+    .order-id {
+        background: var(--theme-red);
+        color: #fff;
+        border-radius: 7px;
+        padding: 2px 14px;
+        font-weight: 800;
+        font-size: 1.05em;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 8px #ff616633;
+        margin-left: 8px;
+    }
+    .receipt-row .value.email {
+        color: var(--theme-blue);
+        font-weight: 700;
+        text-decoration: underline;
+    }
+    .receipt-row .value.date {
+        color: var(--theme-blue);
+        font-weight: 700;
+    }
+    .order-table {
+        width: 95%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 0 auto 18px auto;
+        font-size: 1em;
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px #26363B22;
+        border: 2px solid var(--theme-black);
+        overflow: hidden;
+    }
+    .order-table th, .order-table td {
+        padding: 10px 8px;
+        text-align: left;
+    }
+    .order-table th {
+        color: var(--theme-blue);
+        font-weight: 700;
+        background: #fff;
+        font-size: 1.05em;
+    }
+    .order-table th, .order-table td {
+        border-top: 0.5px solid var(--tone3);
+        border-bottom: 0.5px solid var(--tone3);
+    }
+    .order-table td {
+        font-size: 1.05em;
+    }
+    .order-table tr:last-child td {
+        border-bottom: none;
+        background: #DFDFDF;
+        font-weight: 700;
+        color: var(--theme-black);
+    }
+    .order-table tbody td {
+        background-color: var(--tone2);
+    }
+    .order-table tr:last-child td:first-child {
+        border-radius: 0 0 0 12px;
+    }
+    .order-table tr:last-child td:last-child {
+        border-radius: 0 0 12px 0;
+    }
+    .thankyou-msg {
+        text-align: center;
+        margin: 22px 0 0 0;
+        font-family: var(--font-heading);
+        color: var(--theme-red);
+        font-size: 1.13em;
+        font-weight: 800;
+    }
+    .footer {
+        margin-top: 18px;
+        font-size: 1em;
+        color: var(--theme-black);
+        text-align: center;
+    }
+    .footer a {
+        color: var(--theme-red);
+        text-decoration: none;
+        font-weight: 700;
+        margin: 0 4px;
+        transition: color 0.2s;
+    }
+    .footer a:hover {
+        color: var(--theme-blue);
+    }
+    .socials {
+        margin-top: 10px;
+        display: flex;
+        justify-content: center;
+        gap: 18px;
+    }
+    .socials a svg {
+        vertical-align: middle;
+        display: inline-block;
+        stroke: var(--theme-blue);
+        fill: none;
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-row">
+            <img class="logo-img" src="./src/images/logo-full.svg">
+        </div>
+        <div class="receipt-header">
+            <h1>Thank you!</h1>
+            <div class="subtitle">Your payment was successful</div>
+        </div>
+        <div class="receipt-box">
+            <div class="receipt-row">
+                <span class="label">Order #</span>
+                <span class="value order-id">RBX-2025-1234</span>
+            </div>
+            <div class="receipt-row">
+                <span class="label">Date</span>
+                <span class="value date">5 July 2025</span>
+            </div>
+            <div class="receipt-row">
+                <span class="label">Billed to</span>
+                <span class="value email">alex.robot@example.com</span>
+            </div>
+        </div>
+        <table class="order-table">
+            <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Price</th>
+            </tr>
+            <tr>
+                <td>Ro/Box Starter Kit</td>
+                <td>1</td>
+                <td>$99.00</td>
+            </tr>
+            <tr>
+                <td>Ro/Box Starter Kit</td>
+                <td>1</td>
+                <td>$99.00</td>
+            </tr>
+            <tr>
+                <td>Ro/Box Starter Kit</td>
+                <td>1</td>
+                <td>$99.00</td>
+            </tr>
+            <tr>
+                <td>Extra Sensors Pack</td>
+                <td>2</td>
+                <td>$18.00</td>
+            </tr>
+            <tr>
+                <td>Total</td>
+                <td></td>
+                <td>$135.00</td>
+            </tr>
+        </table>
+        <div class="thankyou-msg">
+            Your Ro/Box adventure begins now!
+        </div>
+        <div class="footer">
+            <div>Questions? <a href="mailto:support@robox.com">Contact us</a></div>
+            <div class="socials">
+                <a href="#" title="Instagram" aria-label="Instagram"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke-width="2"/><circle cx="18" cy="6" r="1.5" stroke-width="2"/></svg></a>
+                <a href="#" title="Instagram" aria-label="Instagram"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" stroke-width="2"/><circle cx="12" cy="12" r="5" stroke-width="2"/><circle cx="18" cy="6" r="1.5" stroke-width="2"/></svg></a>
+                <a href="#" title="LinkedIn" aria-label="LinkedIn"><svg width="24" height="24" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" stroke-width="2"/><rect x="7" y="10" width="2" height="7" stroke-width="0" fill="#2588C7"/><rect x="11" y="13" width="2" height="4" stroke-width="0" fill="#2588C7"/><rect x="15" y="11" width="2" height="6" stroke-width="0" fill="#2588C7"/><circle cx="8" cy="8" r="1.2" stroke-width="0" fill="#2588C7"/></svg></a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

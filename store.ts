@@ -28,8 +28,6 @@ paymentRouter.post('/webhook', express.raw({ type: 'application/json' }), async 
         res.status(400).send('Webhook Error');
         return;
     }
-
-    // ✅ Webhook verified — handle the event
     switch (event.type) {
         case 'payment_intent.succeeded':
             const paymentIntent = event.data.object as Stripe.PaymentIntent;
