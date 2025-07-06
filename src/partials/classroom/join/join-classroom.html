@@ -1,0 +1,62 @@
+<link href="@partials/classroom/join/join-classroom.scss" rel="stylesheet">
+<link href="@root/input.scss" rel="stylesheet">
+<script src="@partials/classroom/join/join-classroom.ts"></script>
+
+<div class="join-classroom-dialog">
+        <h1 class="title">
+            Join Classroom
+        </h1>
+        
+        <div class="join-classroom-container">
+            <div class="pill-slider">
+            <button id="class-code-button" class="pill-button">
+                <i class="fa-solid fa-hashtag" style="padding-right: 4px;"></i> Join via Class Code
+            </button>
+            <button id="my-invites-button" class="pill-button">
+                <i class="fa-solid fa-envelope" style="padding-right: 4px;"></i> My Classroom Invites
+            </button>
+            </div>
+
+        <div class="input-container">
+            <div class="classcode-input">
+                <input type="text" class="digit-input" maxlength="1" data-index="0">
+                <input type="text" class="digit-input" maxlength="1" data-index="1">
+                <input type="text" class="digit-input" maxlength="1" data-index="2">
+                <input type="text" class="digit-input" maxlength="1" data-index="3">
+                <input type="text" class="digit-input" maxlength="1" data-index="4">
+                <input type="text" class="digit-input" maxlength="1" data-index="5">
+                <input type="text" class="digit-input" maxlength="1" data-index="6">
+                <input type="text" class="digit-input" maxlength="1" data-index="7">
+            </div>
+            <input type="hidden" id="classroom-code-value" name="classroom-code" value="">
+            <p id="classroom-code-error-msg" class="error" style="display: none;"></p>
+        </div>
+
+        <button id="join-classroom-button" class="action-button">
+            Scan QR Code <i class="fa-solid fa-qrcode"></i>
+        </button>
+
+        <button id="join-classroom-button" class="action-button" style="background-color: #91CC31;">
+            Join Classroom <i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </div>
+    <div class="my-classrooms-container">
+        <h2>
+            My Classrooms
+        </h2>
+        <div class="my-classrooms-list">
+            <div class="classroom-item">
+                <div class="classroom-avatar">
+                    <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Felix" alt="Classroom Avatar">
+                </div>
+                <div class="classroom-name">
+                    <h3>Year 8 DT</h3>
+                    <h4>06DT-CRTECH01</h4>
+                </div>
+                <div class="classroom-info pending">
+                    Pending Request
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
