@@ -1,21 +1,15 @@
 
 import * as Blockly from 'blockly';
 
-import { ContinuousToolbox, ContinuousMetrics, registerContinuousToolbox } from '@blockly/continuous-toolbox';
-
+import { ContinuousToolbox, ContinuousMetrics } from '@blockly/continuous-toolbox';
 
 import theme from "./blockly/theme"
 
 import {toolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
-
-
-
 import { CustomUndoControls } from './blockly/customUI';
 import { MyWorkspace } from 'types/blockly';
-
-
 
 import { Project } from 'types/projects';
 import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject } from '../../root/serialization';
@@ -23,20 +17,15 @@ import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyPro
 import {registerFieldColour} from '@blockly/field-colour';
 import { postBlocklyWSInjection } from './usb';
 import { registerControls } from './controls';
+
 registerFieldColour();
+
 import "./instructions/UF2Flash"
 import "./instructions/colourCalibration"
-const blocks = require.context("./blockly/blocks", false, /\.ts$/);
-const generators = require.context("./blockly/generators", false, /\.ts$/);
 
-blocks.keys().forEach(modulePath => {
-    const block = blocks(modulePath);
-});
-
-generators.keys().forEach(modulePath => {
-    const generator = generators(modulePath);
-    // use generator
-});
+interface IToolboxItem extends Blockly.IToolboxItem {
+    name_: string
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     const workspace = Blockly.inject('blocklyDiv', {
@@ -74,9 +63,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     else return
     if (!project) return
-// Control + scroll for zoom,
-// Scroll for vertical movement,
-// Shift + scroll for horizontal movement
+    
+    // Control + scroll for zoom,
+    // Scroll for vertical movement,
+    // Shift + scroll for horizontal movement
     registerControls(workspace)
     if ("serial" in navigator) {
         postBlocklyWSInjection()
@@ -110,16 +100,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!nameInput) return
     if (!nameForm) return
     nameInput.value = project["name"]
-    nameInput.addEventListener("blur", (event) => {
+    nameInput.addEventListener("blur", () => {
         if (nameInput.value !== project["name"]) {
-            let newName = nameInput.value
+            const newName = nameInput.value
             renameProject(workspaceId, newName)
         }
     })
     nameForm.addEventListener("submit", (event) => {
         event.preventDefault()
         if (nameInput.value !== project["name"]) {
-            let newName = nameInput.value
+            const newName = nameInput.value
             renameProject(workspaceId, newName)
         }
     })
@@ -150,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!toolboxEvent.newItem && toolboxEvent.oldItem) {
                 const toolbox = workspace.getToolbox() as Blockly.Toolbox;
                 const allItems = toolbox.getToolboxItems();
-                const item = allItems.find(i => (i as any).name_ === toolboxEvent.oldItem);
+                const item = allItems.find(i => (i as IToolboxItem).name_ === toolboxEvent.oldItem);
                 if (item) {
                     toolbox.setSelectedItem(item);
                 }

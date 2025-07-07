@@ -20,7 +20,7 @@ function setConsent(approved: boolean) {
     
     gaConsentPopup.style.display = "none";
     
-    let approvedTag: "granted" | "denied" = approved ? 'granted' : 'denied';
+    const approvedTag = approved ? 'granted' : 'denied';
 
     localStorage.setItem("consentMode", JSON.stringify({
         // "Necessary" (only if we are analysing)

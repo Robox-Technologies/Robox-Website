@@ -15,7 +15,7 @@ function transform(tree: Root): void {
         const start = children[i];
         const isHeading = start.type === 'heading';
 
-        if (!isHeading || (start as any).depth < 2) {
+        if (!isHeading || start.depth < 2) {
             newChildren.push(start);
             i += 1;
             continue;

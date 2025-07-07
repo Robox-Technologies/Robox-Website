@@ -2,9 +2,9 @@ import * as Blockly from 'blockly';
 
 import archSVG from './Arch.svg?raw';
 
-import { ContinuousFlyout, ContinuousMetrics, ContinuousToolbox, RecyclableBlockFlyoutInflater } from '@blockly/continuous-toolbox';
+import { ContinuousFlyout, RecyclableBlockFlyoutInflater } from '@blockly/continuous-toolbox';
 
-type HexColor = `#${string}`;
+// type HexColor = `#${string}`;
 
 class RoboxToolboxCategories extends Blockly.ToolboxCategory {
     /**
@@ -15,7 +15,7 @@ class RoboxToolboxCategories extends Blockly.ToolboxCategory {
         super(categoryDef, toolbox, opt_parent);
     }
     /** @override */
-    addColourBorder_(colour: HexColor){
+    addColourBorder_(/*colour: HexColor*/){
 
     }
     /** @override */

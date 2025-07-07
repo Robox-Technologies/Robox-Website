@@ -21,13 +21,13 @@ export function getCart(): Cart {
     return JSON.parse(cart)
 }
 export function getItem(product: string): { quantity: number; data: Product } | undefined {
-    let cart = getCart()
+    const cart = getCart()
     return cart["products"][product]
 }
 export function refreshCart() {
-    let cart = getCart()
+    const cart = getCart()
     let quantity = 0
-    let products = cart["products"]
+    const products = cart["products"]
     for (const product in products) {
         if (product == "" || !product) delete cart[product]
         else quantity += products[product]["quantity"]
@@ -52,7 +52,7 @@ export function refreshCart() {
 }
 //expects an object of quantity and id
 export function removeCartItem(product: string) {
-    let cart = getCart()
+    const cart = getCart()
     cart["quantity"] -= cart["products"][product]["quantity"]
     delete cart["products"][product]
     localStorage.setItem("cart", JSON.stringify(cart))
@@ -63,8 +63,8 @@ export function wipeCart() {
     refreshCart()
 }
 export function addCartItem(product: string, quantity: number, cache: Product) {
-    let cart = getCart();
-    let item = cart["products"][product]
+    const cart = getCart();
+    const item = cart["products"][product]
     if (item) item["quantity"] += quantity
     else {
         cart["products"][product] = {"quantity": quantity, "data": cache}
@@ -75,7 +75,7 @@ export function addCartItem(product: string, quantity: number, cache: Product) {
     refreshCart()
 }
 export function setCartItem(product: string, quantity: number, cache: Product) {
-    let cart = getCart()
+    const cart = getCart()
     let item = cart["products"][product]
     if (!item) {
         item = {"quantity": quantity, "data": cache}

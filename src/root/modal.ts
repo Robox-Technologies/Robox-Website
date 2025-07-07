@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const modal of modals) {
         
         modal.addEventListener("click", (event: MouseEvent) => {
-            let element = event?.target as HTMLElement | null
+            const element = event?.target as HTMLElement | null
             if (!element) return
-            let rect = modal.getBoundingClientRect();
+            const rect = modal.getBoundingClientRect();
             if (rect.left > event.clientX ||
                 rect.right < event.clientX ||
                 rect.top > event.clientY ||
@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             event.stopPropagation()
         })
-        let cancelButton: HTMLElement | null = modal.querySelector(".close-modal-button")
+        const cancelButton: HTMLElement | null = modal.querySelector(".close-modal-button")
         if (!cancelButton) return
         cancelButton.addEventListener("click", (event) => {
             modal.close()

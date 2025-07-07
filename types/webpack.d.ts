@@ -4,5 +4,5 @@ export type TemplatePage = {
     data?: TemplateData; // Data to be passed to the template
 }
 export type TemplateData = {
-    [key: string]: any; // Key-value pairs for template data
+    [key: string]: unknown; // Key-value pairs for template data
 }

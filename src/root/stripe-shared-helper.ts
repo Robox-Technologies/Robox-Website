@@ -38,7 +38,7 @@ export function calculateTotalCost(cart: Record<string, number>, products: Recor
         shippingCost = feesShipping.maximum;
 
         // Rounds up to the nearest kg and adds to total
-        let weightExcess = Math.ceil(Math.max(totalWeight/1000 - 5, 0));
+        const weightExcess = Math.ceil(Math.max(totalWeight/1000 - 5, 0));
         shippingCost += weightExcess * feesShipping.penaltyFeePerKg;
     }
 

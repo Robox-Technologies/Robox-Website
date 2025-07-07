@@ -5,6 +5,7 @@ import Dotenv from 'dotenv-webpack';
 import { getProductList } from './stripe-server-helper.js';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { TemplateData, TemplatePage } from './types/webpack.js';
+import { RoboxProcessor } from './roboxProcessor.js';
 
 
 interface Product {
@@ -19,20 +20,6 @@ interface Product {
     displayStatus: string;
 }
 
-interface ProductData {
-    product: Product | false;
-    images: string[];
-    description: string | false;
-}
-
-type StoreData = Record<string, ProductData>;
-
-
-
-
-import { RoboxProcessor } from './roboxProcessor.js';
-import { Eta } from 'eta';
-
 const __dirname = path.resolve();
 const eta = new RoboxProcessor({
     defaultExtension: '.html',
@@ -40,17 +27,6 @@ const eta = new RoboxProcessor({
     debug: true,
     useWith: true,
 });
-// const eta = new RoboxProcessor({
-//     defaultExtension: '.html',
-//     views: path.join(__dirname, 'src/'),
-//     debug: true,
-//     useWith: true,
-// })
-
-
-
-
-
 
 const pagesDir = path.resolve(__dirname, 'src/pages');
 const pages = findHtmlPages(pagesDir).map((file) => {
@@ -58,13 +34,13 @@ const pages = findHtmlPages(pagesDir).map((file) => {
     return { import: file, filename: relative, data: fetchPageData(file) };
 });
 
-let dynamicPages: TemplatePage[] = [...pages];
+const dynamicPages: TemplatePage[] = [...pages];
 
 function fetchPageData(file: string): TemplateData {
     // Add markdown to the page data for tos and privacy pages
     if (file.endsWith('/tos/index.html') || file.endsWith('/privacy/index.html')) {
-        let fileComponents = file.split("/");
-        let markdownFilename = fileComponents[fileComponents.length - 2];
+        const fileComponents = file.split("/");
+        const markdownFilename = fileComponents[fileComponents.length - 2];
 
         const bodyPath = `src/templates/views/legal/${markdownFilename}.md`;
         console.log(`Searching for markdown in: ${bodyPath}`);
@@ -87,19 +63,19 @@ function fetchPageData(file: string): TemplateData {
 async function cacheProducts(): Promise<Record<string, Product>> {
     const cache = process.env.FORCE_CACHE === 'true';
     if (cache || !fs.existsSync('products.json')) {
-        let newProducts = await getProductList();
+        const newProducts = await getProductList();
         fs.writeFileSync('products.json', JSON.stringify(newProducts), 'utf8');
     }
     return JSON.parse(fs.readFileSync('products.json', 'utf8'));
 }
 async function processProducts() {
-    let products = await cacheProducts();
+    const products = await cacheProducts();
 
     const storePages = Object.values(products).map(
         (product) => `./src/pages/shop/product/${product.internalName}.html`
     );
 
-    let storeData = {};
+    const storeData = {};
     for (const page of storePages) {
         const productName = path.parse(page).name;
         const product = Object.values(products).find((p) => p.internalName === productName);
@@ -108,7 +84,7 @@ async function processProducts() {
             continue;
         }
 
-        let productData = {
+        const productData = {
             product,
             images: [""],
             description: "",
@@ -168,7 +144,7 @@ export default (async () => {
                 css: {
                     filename: 'public/css/[name].[contenthash:8].css'
                 },
-                filename: ({ filename, chunk }) => {
+                filename: () => {
                     return '[name].html';
                 },
                 data: {
