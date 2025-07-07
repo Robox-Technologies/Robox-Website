@@ -9,7 +9,6 @@
 
     <div class="hero">
         <div class="title">
-            <!-- <img src="@images/logo-darkbg.svg?raw" class="logo"> -->
             <h1>
                 Robotics for<br>
                 Everyone
@@ -22,7 +21,7 @@
     </div>
 
     <article id="scrollTarget">
-        <section class="articleSection LTR">
+        <section class="articleSection LTR section1">
             <div class="text">
                 <h1>Meet Ro/Box</h1>
     
@@ -70,7 +69,8 @@
             <img src="@images/landing/goober-star.svg?raw" class="goober">
             <img src="@images/landing/article2.png" class="media">
         </section>
-
+    </article>
+    <article class="boxToBotSection">
         <section class="boxToBot">
             <div class="intro">
                 <h1>
@@ -95,16 +95,20 @@
                     for (let i = 0; i < steps.length; i++) {
                     %>
                         <div class="step">
-                            <h1 class="stepNumber"><%= i+1 %></h1>
-                            <div>
-                                <h2 class="title"><%= steps[i][0] %></h2>
-                                <p class="description"><%= steps[i][1] %></p>
+                            <div class="stepText">
+                                <h1 class="stepNumber"><%= i+1 %></h1>
+                                <div>
+                                    <h2 class="title"><%= steps[i][0] %></h2>
+                                    <p class="description"><%= steps[i][1] %></p>
+                                </div>
                             </div>
+
+                            <img class="boxToBotImgMobile" src="@images/landing/boxToBot/step<%= i+1 %>.svg">
                         </div>
                     <%}%>
                 </div>
                 
-                <img class="boxToBotImg" src="@images/landing/boxToBot/step1.png">
+                <img class="boxToBotImg" src="@images/landing/boxToBot/step1.svg">
             </div>
         </section>
     </article>

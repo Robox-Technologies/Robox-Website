@@ -2,7 +2,7 @@
 
 .articleSection {
     display: flex;
-    // justify-content: space-between;
+    justify-content: space-between;
     align-items: start;
     gap: 50px;
 
@@ -36,10 +36,10 @@ section.centred {
 }
 
 article {
-    padding: var(--articleMargin);
+    padding: variables.$articleMargin;
 
     & > section {
-        margin-top: var(--articleMargin);
+        margin-top: variables.$articleMargin;
     }
 }
 

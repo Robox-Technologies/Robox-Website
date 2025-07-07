@@ -46,43 +46,71 @@
     }
 }
 
+.section1 {
+    .text {
+        max-width: 700px;
+    }
+
+    @media screen and (min-width: 1000px) {
+        .media {
+            width: 30%;
+        }
+    }
+}
+
 .section2 {
     position: relative;
 
     .goober {
         position: absolute;
+        max-width: 300px;
+        max-height: 300px;
         left: 15%;
-        top: -35%;
+        top: max(-35%, -150px);
         z-index: -9;
     }
 }
 
+.boxToBotSection {
+    background-color: #23344b;
+    padding: variables.$standardGap variables.$articleMargin;
+}
+
 .boxToBot {
-    $imgWidth: max(30vw, 250px);
-    $bottomSpace: calc($imgWidth / 2);
-    margin-top: calc(var(--articleMargin) * 2);
+    position: relative;
+    $imgWidth: 300px;
+    $bottomSpace: calc($imgWidth / 2 - 95px);
+    margin-bottom: variables.$articleMargin;
+
+    h1, h2, p {
+        color: variables.$primary;
+    }
 
     .intro {
+        position: absolute;
         text-align: center;
+        width: 100%;
     }
 
     .columns {
         display: flex;
         justify-content: space-between;
         align-items: start;
-        padding-bottom: calc(30vh - $bottomSpace);
-        gap: variables.$standardGap;
+        gap: calc(variables.$standardGap * 2);
+        max-width: 800px;
+        margin: auto;
     }
     
     .steps {
-        margin-bottom: $bottomSpace;
-
         .step {
             margin-top: 30vh;
-            display: flex;
-            align-items: center;
 
-            gap: variables.$standardGap;
+            .stepText {
+                display: flex;
+                align-items: center;
+    
+                gap: variables.$standardGap;
+            }
 
             .stepNumber {
                 $size: 64px;
@@ -102,21 +130,25 @@
             &:nth-child(1) {
                 margin-top: 45vh;
 
-                & > .stepNumber {
+                & > .stepText > .stepNumber {
                     background: variables.$themeBlue;
                 }
             }
 
-            &:nth-child(2) > .stepNumber {
+            &:nth-child(2) > .stepText > .stepNumber {
                 background: variables.$themeRed;
             }
 
-            &:nth-child(3) > .stepNumber {
+            &:nth-child(3) > .stepText > .stepNumber {
                 background: variables.$themeGreen;
             }
 
-            &:nth-child(4) > .stepNumber {
-                background: #e47b25;
+            &:nth-child(4) {
+                margin-bottom: $bottomSpace;
+
+                & > .stepText > .stepNumber {
+                    background: #e47b25;
+                }
             }
 
             .title {
@@ -129,15 +161,22 @@
         }
     }
 
+    .boxToBotImgMobile {
+        display: none;
+        margin: auto;
+        width: 70%;
+        margin-top: variables.$standardGap;
+    }
+
     .boxToBotImg {
-        padding-top: calc(50vh - $bottomSpace);
+        padding-top: calc(45vh - $bottomSpace);
         width: $imgWidth;
         object-fit: contain;
         position: sticky;
         position: -webkit-sticky;
         top: 0;
     }
-
+    
     @keyframes pop {
         0% {
             transform: scale(1);
@@ -161,7 +200,7 @@ article.hubs {
 
 .roboxHub {
     .ctaButton {
-        margin-top: var(--articleMargin);
+        margin-top: variables.$articleMargin;
     }
 
     .cards {
@@ -170,7 +209,7 @@ article.hubs {
         justify-content: space-evenly;
         gap: variables.$standardGap;
         flex-wrap: wrap;
-        margin-top: var(--articleMargin);
+        margin-top: variables.$articleMargin;
         z-index: 10;
     
         .roboxHubCard {
@@ -246,8 +285,8 @@ article.hubs {
 
     .goober {
         position: absolute;
-        width: 15%;
-        min-width: 100px;
+        width: 150px;
+        height: 150px;
         bottom: calc(-1 * variables.$standardGap);
         right: calc(-1 * variables.$standardGap);
         
@@ -262,7 +301,7 @@ article.hubs {
 
         .eyes {
             position: absolute;
-            width: 50%;
+            width: 103px;
             top: 20%;
             left: 20%;
         }
@@ -336,12 +375,36 @@ article.hubs {
 } 
 
 @media screen and (max-width: 600px) {
-    .boxToBotImg {
-        display: none;
-    }
+    .boxToBot {
+        .intro {
+            position: inherit;
+        }
 
-    .boxToBot .steps > .step {
-        margin-top: 20vh;
+        .boxToBotImg {
+            display: none;
+        }
+    
+        .boxToBotImgMobile {
+            display: block;
+        }
+
+        .columns {
+            padding: 0;
+        }
+
+        .steps > .step {
+            $stepGap: calc(variables.$standardGap * 2);
+
+            margin-top: $stepGap;
+
+            &:nth-child(1) {
+                margin-top: $stepGap;
+            }
+
+            &:nth-child(4) {
+                margin-bottom: 0;
+            }
+        }
     }
 }
 
@@ -368,5 +431,17 @@ article.hubs {
         .scroll-prompt {
             background-color: transparent;
         }
+    }
+
+    .articleSection.LTR.section1 {
+        flex-direction: column-reverse;
+
+        .media {
+            width: 50%;
+        }
+    }
+
+    .teacherHub {
+        text-align: center;
     }
 }
