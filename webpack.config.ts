@@ -75,7 +75,6 @@ function fetchPageData(file: string): TemplateData {
 }
 
 async function cacheProducts(): Promise<Record<string, Product>> {
-    const cache = process.env.CACHE_MODE === 'true';
     if (!fs.existsSync('products.json')) {
         let newProducts = await getProductList();
         let cache = JSON.stringify({ timestamp: Date.now(), products: newProducts });
