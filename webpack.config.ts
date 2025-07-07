@@ -93,7 +93,7 @@ async function cacheProducts(): Promise<Record<string, Product>> {
         return newProducts;
     }
 
-    return data['products'] || {};
+    return cacheData.products || {};
 }
 async function processProducts() {
     let products = await cacheProducts();
