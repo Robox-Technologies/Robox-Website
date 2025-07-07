@@ -1,8 +1,9 @@
 import { Product } from "types/api";
+import { Fees } from "types/fees";
 import fees from "../fees.json" with { type: "json" };
 
-const feesObject = typeof fees == "string" ? JSON.parse(fees) : fees;
-const feesShipping: Shipping = feesObject.shipping;
+const feesObject: Fees = typeof fees == "string" ? JSON.parse(fees) : fees;
+const feesShipping = feesObject.shipping;
 
 export function calculateTotalCost(cart: Record<string, number>, products: Record<string, Product>): { products: number; shipping: number; total: number } {
     let totalCost = 0;
