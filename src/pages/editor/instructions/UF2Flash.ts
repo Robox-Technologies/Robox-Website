@@ -85,7 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
             flashFailure("file-failure");
             return stage2Modal.close();
         }
-        if (!dirHandle.name.includes("RPI-RP2")) {
+        
+        if (!await detectPicoFolder(dirHandle)) {
             flashFailure("file-failure");
             return stage2Modal.close();
         }
@@ -206,4 +207,13 @@ document.addEventListener("DOMContentLoaded", () => {
 async function detectBOOTSEL() {
     let devices = await navigator.usb.getDevices()
     return devices.some(device => device.productName === "RP2 Boot");
+}
+async function detectPicoFolder(dirHandle: FileSystemDirectoryHandle): Promise<boolean> {
+    for await (const [name] of dirHandle.entries()) {
+        if (name === "INFO_UF2.TXT") {
+            // This file is always present on RPI-RP2
+            return true;
+        }
+    }
+    return false
 }

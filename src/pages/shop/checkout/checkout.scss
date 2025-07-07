@@ -1,0 +1,119 @@
+@use '@root/variables';
+@use '@root/shop';
+
+#checkout-error {
+    display: none;
+    text-align: center;
+}
+
+#stripe-content {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+body {
+    background-image: none !important;
+}
+
+label {
+    @include variables.bodyFont;
+}
+
+#email-label {
+    @include variables.bodyFont;
+
+    color: rgb(48, 49, 61);
+    font-size: 0.93rem;
+}
+#email {
+    background-color: #f1f1f1;
+    border: #f1f1f1;
+    margin-bottom: 12px;
+    padding: 16px;
+    font-weight: 400;
+    color: #30313d;;
+    border-radius: 12px;
+    font-size: 16px;
+}
+#payment-card {
+    background-color: var(--primary-card-color);
+    width: 80vw;
+    flex-grow: 1;
+    flex-direction: column;
+    min-height: 675px;
+    display: flex;
+    flex-shrink: 1;
+    border-radius: 10px;
+}
+#payment-form {
+    height: auto;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}   
+#submit {
+    margin-top: variables.$standardGap;
+}
+#spinner {
+    font-size: 40px;
+    align-self: center;
+}
+
+.lds-dual-ring,
+.lds-dual-ring:after {
+    box-sizing: border-box;
+}
+.lds-dual-ring {
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+}
+
+.lds-dual-ring:after {
+    content: " ";
+    display: block;
+    width: 64px;
+    height: 64px;
+    margin: 8px;
+    border-radius: 50%;
+    border: 6.4px solid currentColor;
+    border-color: currentColor transparent currentColor transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+}
+@keyframes lds-dual-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+
+#order-body {
+    display: flex;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: column;
+}
+
+#error-message {
+    color: #df1b41;
+}
+
+#termsConsent {
+    $checkboxSize: 18px;
+    width: $checkboxSize;
+    height: $checkboxSize;
+}
+
+@media only screen and (max-width: 900px) {
+    #main-content {
+        flex-direction: column-reverse;
+    }
+
+    #payment-card {
+        width: 100%;
+    }
+}

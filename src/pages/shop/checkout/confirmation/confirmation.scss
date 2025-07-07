@@ -1,0 +1,84 @@
+@use '@root/variables';
+
+.container {
+    display: flex;
+    min-height: 80vh;
+    background-color: variables.$themeBlue;
+    padding: variables.$articleMargin;
+    justify-content: center;
+    align-items: center;
+    background-image: url("@images/shop/confirmation/background.svg");
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.resultCard {
+    @include variables.dropShadowLarge;
+
+    max-width: 800px;
+    text-align: center;
+    background-color: variables.$primary;
+    padding: variables.$standardGap;
+    border-radius: variables.$borderRadius;
+
+    .statusIcon {
+        font-size: 48px;
+        color: variables.$themeBlack;
+        margin-bottom: 16px;
+    }
+
+    .socials {
+        $socialColor: #717171;
+
+        & > p {
+            color: $socialColor;
+            margin: 0;
+        }
+
+        hr {
+            background-color: $socialColor;
+            height: 2px;
+            border: 0;
+        }
+
+        .socialButtons {
+            display: flex;
+            justify-content: center;
+            gap: calc(variables.$standardGap);
+            margin-top: 16px;
+
+            a > * {
+                color: $socialColor;
+                font-size: 24px;
+            }
+        }
+    }
+}
+
+#failure {
+    display: none;
+}
+
+#success {
+    display: none;
+}
+
+#loading {
+    .loader {
+        $loaderSize: 60px;
+        $loaderBorderSize: 8px;
+
+        border: $loaderBorderSize solid #405c6430;
+        border-top: $loaderBorderSize solid variables.$themeBlack;
+        border-radius: 50%;
+        width: $loaderSize;
+        height: $loaderSize;
+        animation: spin 2s linear infinite;
+        margin: auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+}

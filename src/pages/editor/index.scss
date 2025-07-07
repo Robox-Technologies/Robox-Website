@@ -313,9 +313,6 @@ $blocklyUIButtonsDropShadowMult: 2;
     }
 }
 
-.fa-spinner {
-    display: none;
-}
 #calibrate-outcome-button[calibrating], #calibrate-button[calibrating] {
     font-size: 0;
     width: 76px;
@@ -458,6 +455,7 @@ $settingsToolbarWidth: 200px;
     #loading {
         display: block;
         width: 100%;
+        font-size: 20px;
         border-right: unset;
     }
 
@@ -469,6 +467,9 @@ $settingsToolbarWidth: 200px;
     }
 
 
+}
+#robox-settings-button {
+    font-size: 20px;
 }
 .bootsel[loading] {
     button.calibrate-button {

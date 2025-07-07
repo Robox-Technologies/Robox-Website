@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <%~ include('src/templates/partials/metadata.html') %>
+        <script src="./checkout.ts" defer></script>
+        <link href="./checkout.scss" rel="stylesheet" />
+        <title>Robox - Robotics for Everyone</title>
+    </head>
+    <body>
+        <%~ include('src/templates/partials/header.html') %>
+        
+        <article class="content">
+            <a class="navigation" href="/shop/cart"><i class="fa-solid fa-chevron-left"></i> Cart</a>
+            <h1>Checkout</h1>
+            <div id="main-content">
+                <div id="payment-card">
+                    <div id="checkout-error">
+                        <h2>Checkout Error</h2>
+                        <p>
+                            An error occured while preparing your checkout.<br>
+                            Please review your cart items and try again.
+                        </p>
+                        <a class="ctaButton" href="/shop/cart">Back to Cart</a>
+                    </div>
+
+                    <form id="payment-form">
+                        <h2 class="section-title">
+                            Payment
+                        </h2>
+
+                        <div id="stripe-content">
+                            <label style="display: none;"for="email" id="email-label">Email</label>
+                            <input style="display: none;"type="email" id="email" name="email" required />
+                            <div id="spinner" class="lds-dual-ring"></div>
+                            <div id="address-element"></div>
+
+                            <br>
+    
+                            <div id="payment-element"></div>
+                            <p id="error-message"></p>
+                        </div>
+
+                        <div>
+                            <input type="checkbox" id="termsConsent" required />
+                            <label for="termsConsent">I agree to the <a href="/tos" target="_blank">Consumer Terms of Sale</a> for this purchase.</label>
+                        </div>
+                        
+                        <button id="submit" class="ctaButton pill" disabled>Pay</button>
+                    </form>
+                </div>
+                
+                <%~ include('src/templates/partials/shopSummary.html', { checkoutButton: false }) %>
+            </div>
+        </article>
+        
+        <%~ include('src/templates/partials/footer.html') %>
+    </body>
+</html>

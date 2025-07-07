@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <script src="./cart.ts" defer></script>
+    <link href="./cart.scss" rel="stylesheet" />
+    <title>Robox Store</title>
+</head>
+
+<body>
+    <%~ include('src/templates/partials/header.html') %>
+
+    <article class="content">
+        <a class="navigation" href="/shop"><i class="fa-solid fa-chevron-left"></i> Shop</a>
+        <h1>My Cart</h1>
+
+        <div id="empty-cart">
+            <h2>Your cart is empty</h2>
+            <p>You need more Ro/Box kits in your life ;)</p>
+            <a class="ctaButton" href="/shop">Continue Shopping</a>
+        </div>
+
+        <div id="main-content">
+            <div id="cart-items">
+                <section id="available-section">
+                    <h2 class="cart-section-title">Available Now</h2>
+                    <div class="cart-item-holder"></div>
+                </section>
+                <section id="preorder-section">
+                    <h2 class="cart-section-title">Preorder Now</h2>
+                    <div class="cart-item-holder"></div>
+                </section>
+            </div>
+            <%~ include('src/templates/partials/shopSummary.html', { checkoutButton: true }) %>
+        </div>
+    </article>
+    
+    <%~ include('src/templates/partials/footer.html') %>
+</body>
+<template id="cart-item">
+    <div class="cart-item">
+        <img class="cart-item-photo">
+        <div class="cart-item-info">
+            <div class="cart-item-text-info">
+                <p class="cart-item-text-title"></p>
+                <p class="cart-item-text-subtotal"></p>
+                <p class="cart-item-text-price"></p>
+            </div>
+            
+            <div class="cart-item-actions">
+                <button class="cart-item-delete button">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+
+                <div class="cart-quantity-button">
+                    <button class="button decrease-cart-button">
+                        <i class="fa-solid fa-minus"></i>
+                    </button>
+                    <input type="number" min="0" value="0" placeholder="0" oninput="this.value = Math.abs(this.value)" class="cart-quantity">
+                        
+                    </input>
+                    <button class="button increase-cart-button">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    <hr class="cart-item-break">
+
+</template>
+</html>

@@ -11,7 +11,9 @@ $bottomRowHeight: 54px;
     padding: 0 var(--articleMargin);
     
     hr {
-        border-color: variables.$themeBlack;
+        background-color: variables.$themeBlack;
+        height: 2px;
+        border: 0;
         z-index: -99;
     }
 }
@@ -97,7 +99,9 @@ $bottomRowHeight: 54px;
         width: 100%;
         bottom: $bottomRowHeight;
         right: var(--articleMargin);
-        border-color: variables.$primary;
+        background-color: variables.$primary;
+        height: 2px;
+        border: 0;
         z-index: 9;
     }
 }
@@ -109,7 +113,9 @@ $bottomRowHeight: 54px;
     }
 
     .footerContent > hr {
-        border-color: variables.$primary;
+        background-color: variables.$primary;
+        height: 2px;
+        border: 0;
     }
 
     .footerBottom {

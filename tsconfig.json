@@ -1,24 +1,7 @@
 {
-    "compilerOptions": {
-        "module": "ESNext",        // ✅ must be ESNext, ES2022, or ES6 — NOT "CommonJS"
-        "target": "ES2022",        // ✅ or ESNext
-        "moduleResolution": "bundler", // optional but preferred for ESM in bundlers
-        "outDir": "build",
-        "sourceMap": true,
-        "inlineSources": true,
-        "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
-        "strict": true,
-        "forceConsistentCasingInFileNames": true,
-        "skipLibCheck": true
-    },
-    "exclude": [
-        "node_modules",
-        "dist",
-        "webpack.config.js",
-        "src",
-        "build",
-        "store.ts",
-        "stripe.ts"
-    ]
+    "files": [],
+    "references": [
+        { "path": "./tsconfig.server.json" },
+        { "path": "./tsconfig.client.json" }
+    ],
 }

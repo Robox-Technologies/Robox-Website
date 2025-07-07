@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
-import { Projects, Project } from '../@types/projects';
+import { Projects, Project } from "types/projects";
 
 import { workspaceToSvg_ } from './screenshot';
 
@@ -54,6 +54,7 @@ export function downloadBlocklyProject(uuid: string) {
     document.body.removeChild(downloadEl);
 }
 export async function saveBlockly(uuid: string, workspace: WorkspaceSvg, callback: ((project: string) => void) | null = null) {
+    
     const blockly = await import('blockly/core');
     workspaceToSvg_(workspace, (thumburi: string) => {
         const data = blockly.serialization.workspaces.save(workspace)

@@ -110,10 +110,42 @@ header {
 }
 
 .btn.store {
-    background: #ff6666;
+    background: variables.$themeRed;
+    color: variables.$primary;
     border: none;
     border-radius: 6px;
-    padding: 8px 24px;
+    padding: 4px 24px;
+}
+
+
+#cart {
+    position: relative;
+    text-decoration: none;
+    transform: translateY(6px);
+
+    i, svg {
+        color: variables.$primary;
+    }
+
+    p {
+        color: variables.$primary;
+        font-size: 10px;
+        text-align: center;
+        line-height: 20px;
+        margin: 0;
+        padding: 0 5px;
+    }
+
+    div {
+        position: absolute;
+        background-color: variables.$themeRed;
+        min-width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        right: -10px;
+        top: -8px;
+        margin: 0;
+    }
 }
 
 @media (max-width: $hamburgerThreshold) {
@@ -129,6 +161,15 @@ header {
         .ctaButtons > a {
             display: none;
         }
+
+        #cart {
+            display: block;
+        }
+    }
+
+    .btn.store {
+        padding: 8px;
+        text-align: center;
     }
 }
 

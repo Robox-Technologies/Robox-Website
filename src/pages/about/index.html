@@ -1,20 +1,20 @@
 <head>
-    <%~ include('src/partials/metadata.html') %>
+    <%~ include('src/templates/partials/metadata.html') %>
     <link href="./index.scss" rel="stylesheet" />
 </head>
 
 <body>
-    <%~ include('src/partials/header.html') %>
+    <%~ include('src/templates/partials/header.html') %>
     
     <section class="hero">
-        <img src="images/hero.jpg">
+        <img src="@images/about/hero.jpg">
 
         <div class="content">
             <div class="title">
                 <h1>About Us</h1>
 
                 <div class="images">
-                    <img src="images/bowtie.svg?raw" class="bowtie">
+                    <img src="@images/about/bowtie.svg?raw" class="bowtie">
                     <img src="@images/eyes.svg?raw" class="eyes">
                 </div>
             </div>
@@ -44,7 +44,7 @@
                 </p>
             </div>
     
-            <img src="images/article1.png" class="media">
+            <img src="@images/about/article1.png" class="media">
         </section>
 
         <h1 class="storyHeadline">Our Story</h1>
@@ -60,7 +60,7 @@
                 </p>
             </div>
     
-            <img src="images/article2.png" class="media">
+            <img src="@images/about/article2.png" class="media">
         </section>
 
         <section class="articleSection LTR equalWidth">
@@ -81,11 +81,11 @@
                 </p>
             </div>
     
-            <img src="images/article2-b.png" class="media">
+            <img src="@images/about/article2-b.png" class="media">
         </section>
 
         <section class="fullWidthImg">
-            <img src="images/article3.png" class="media">
+            <img src="@images/about/article3.png" class="media">
 
             <div class="articleSection LTR equalWidth">
                 <h1>
@@ -106,5 +106,5 @@
         </section>
     </article>
 
-    <%~ include('src/partials/footer.html') %>
+    <%~ include('src/templates/partials/footer.html') %>
 </body>

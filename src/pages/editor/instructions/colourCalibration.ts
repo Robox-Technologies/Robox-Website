@@ -18,7 +18,27 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!outcomeButton) return
     let outcomeTitle = calibrateOutcomeModal.querySelector(".modal-title") as HTMLHeadingElement | null
     if (!outcomeTitle) return
-    
+    const settingsButton = document.getElementById("robox-settings-calibrate") as HTMLButtonElement | null
+    if (!settingsButton) return
+    const connectionManagment = document.getElementById("connection-managment")
+    if (!connectionManagment) return
+    //The actual opening of the modal
+    settingsButton.addEventListener("click", () => {
+        if (connectionManagment.getAttribute("status") === "disconnected") {
+            outcomeText.textContent = "The Ro/Box does not seem to be connected, please try to connect to it before starting the calibration process"
+            outcomeButton.textContent = "Close!"
+            outcomeTitle.textContent = "Ro/Box not connected!"
+            calibrateOutcomeModal.showModal()
+        }
+        else {
+            calibrateModal.showModal()
+        }
+    })
+    calibrateModal.addEventListener("close", () => {
+        if (calibrateModal.querySelector("#calibrate-button[calibrating]")) {
+            calibrateModal.querySelector("#calibrate-button")?.removeAttribute("calibrating")
+        }
+    })
     // When the pico tells it is calibrated
     pico.addEventListener("calibrated", () => {
         calibrated = true //Successful calibration!

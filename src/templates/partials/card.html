@@ -1,0 +1,53 @@
+<div class="card <%= it.class %>" id="<%= it.id ?? "" %>">
+    <% if (it.goober) { %>
+        <div class="goober <%= it.gooberClass %>">
+            <img src="<%= it.goober %>" class="shape">
+            <img src="@images/eyes.svg?raw" class="eyes">
+        </div>
+    <% } %>
+    
+    <% if (it.absoluteContent) { %>
+        <%~ it.absoluteContent %>
+    <% } %>
+
+    <img class="card-image" src="<%= it.imageSource %>">
+    <div class="card-info">
+        <div class="card-top-row">
+            <h1 class="card-title">
+                <%~ it.title ? it.title : ""%>
+            </h1>
+            <% if (it.topRowButton) { %>
+                <button class="button options">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+            <% } %>
+            
+        </div>
+        
+        <% if (it.descriptions) { %>
+            <div class="card-descriptions">
+                <% it.descriptions.forEach(function(description){ %>
+                    <p class="card-description">
+                        <%~ description %>
+                    </p>
+                <% }) %>
+            </div>
+        <% } %>
+        <% if (it.buttons) { %>
+            <div class="card-buttons">
+                <% it.buttons.forEach(function(button){ %>
+                    <% if (button.link) { %>
+                        <a id="<%= button.id || '' %>" href="<%= button.link%>" class="card-link <%= button.classes || "" %>">
+                            <%~ button.content %>
+                        </a>
+                    <% } else { %>
+                        <button id="<%= button.id || '' %>" class="button card-button <%= button.classes || "" %>">
+                            <%~ button.content %>
+                        </button>
+                    <% } %>
+                <% }) %>
+            </div>
+        <% } %>
+        
+    </div>
+</div>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+    <head>
+        <%~ include('src/templates/partials/metadata.html') %>
+        <script src="./product.ts" defer></script>
+        <link href="./product.scss" rel="stylesheet" />
+        <link href="@root/shop.scss" rel="stylesheet" />
+        <title>Robox Store</title>
+
+        <script>
+            const images = <%~ JSON.stringify(images) %>;
+            const currentProduct = <%~ JSON.stringify(product) %>;
+        </script>
+    </head>
+
+    <body>
+        <%~ include('src/templates/partials/header.html') %>
+
+        <article>
+            <p class="navigation productNav"><a href="/shop">Shop all</a> / <%= product.name %></p>
+
+            <div id="starter-info">
+                <div class="carousel-container">
+                    <div id="image-carousel">
+                        <!-- TODO: Should be using lowres thumbnail images -->
+                        <% images.forEach(function(image, index){ %>
+                            <div class="carousel-image" >
+                                <img class="<%= index === 0 ? 'selected-carousel' : ''  %>" loading="<%= index > 6 ? 'lazy' : 'eager'  %>" src="<%= `@images/product/${product.internalName}/${image}` %>">
+                            </div>
+                        <% }) %>
+                    </div>
+
+                    <div id="hero-image-container">
+                        <% images.forEach(function(image, index){ %>
+                            <img class="<%= index === 0 ? 'active' : ''  %> hero-image"src="<%= `@images/product/${product.internalName}/${image}` %>">
+                        <% }) %>
+                        
+                        <button id="carousel-left-button" class="button carousel-button-disabled">
+                            <i class="fa-solid fa-angle-left"></i>
+                        </button>
+                        <button id="carousel-right-button" class="button <%= images.length === 1 ? 'carousel-button-disabled' : ''  %>">
+                            <i class="fa-solid fa-angle-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="important-info">
+                    <h1 id="product-name"><%= product.name %></h1>
+                    <h1 id="price">$<%= product.price %> AUD</h1>
+                    <p><%= product.description %></p>
+                    <p id="status"><%= product.displayStatus %></p>
+
+                    <div class="cart-quantity-button">
+                        <button class="decrease-cart-button">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <input type="number" min="1" value="1" placeholder="1" oninput="this.value = Math.abs(this.value)" class="cart-quantity"></input>
+                        <button class="increase-cart-button">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <button class="button" id="add-to-cart">Add to Cart</button>
+                </div>
+            </div>
+        </article>
+
+        <article class="productDescription">
+            <%~ include(description) %>
+        </article>
+
+        <%~ include('src/templates/partials/footer.html') %>
+
+        <%~ include('src/templates/partials/modal.html', {
+            id: "cart-modal",
+            title: '<i class="fa-solid fa-cart-plus"></i> Added to Cart',
+            content: [
+                `<div class="cart-item">
+                    <img class="cart-item-photo" src="@images/product/${product.internalName}/${images[0]}">
+                    <div class="cart-item-info">
+                        <div class="cart-item-text-info">
+                            <p class="cart-item-text-title">${product.name} (Qty: <span id="modal-quantity"></span>)</p>
+                            <p class="cart-item-text-subtotal">$${product.price}/each</p>
+                            <p class="cart-item-text-price">Total: $<span id="modal-total-price"></span></p>
+                        </div>
+                    </div>
+                </div>`
+            ],
+            buttons: [
+                "<a class='ctaButton' id='dismiss-modal'>Continue Shopping</a>",
+                "<a href='/shop/cart' class='ctaButton' id='view-cart'>View Cart</a>"
+            ],
+        }) %>
+    </body>
+</html>

@@ -1,0 +1,49 @@
+
+<head>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <script src="index.ts"></script>
+    <link href="index.scss" rel="stylesheet" />
+    <link href="@root/root.scss" rel="stylesheet" />
+</head>
+
+<body>
+    <%~ include('src/templates/partials/header.html') %>
+
+    <!-- Hero title -->
+    <%~ include('src/templates/partials/title-hero.html', {
+        text: "Shop",
+        subtitle: "Check out our Ro/Box product range!",
+        image: "@images/shop/hero.jpg",
+        useAlt: true
+    }) %>
+    
+    <article>
+        <section>
+            <h1>Products</h1>
+
+            <div class="productContainer">
+                <% Object.values(products).forEach(function(product, index) { %>
+                    <a href="./product/<%= product.internalName %>.html">
+                        <%~ include('src/templates/partials/card.html', {
+                            class: "productCard",
+                            title: product.name,
+                            imageSource: `@images/product/${product.internalName}/thumbnail.jpg`,
+                            descriptions: [
+                                `<span class="${product.status}">${product.displayStatus}</span>`,
+                                `$${product.price}`
+                            ],
+                            buttons: [
+                                {
+                                    content: "<button class='ctaButton pill'>View Product</button>",
+                                },
+                            ],
+                            topRowButton: false,
+                        }) %>
+                    </a>
+                <% }) %>
+            </div>
+        </section>
+    </article>
+    
+    <%~ include('src/templates/partials/footer.html') %>
+</body>

@@ -1,0 +1,26 @@
+{
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "build/server",
+        "baseUrl": ".",
+        "moduleResolution": "node",
+        "module": "esnext",
+        "target": "ES2022"
+    },
+    "include": [
+        "server.ts",
+        "store.ts",
+        "stripe-helper.ts",
+        "roboxSectionize.ts",
+        "webpack.config.ts",
+    ],
+    "typeRoots": [
+        "./node_modules/@types",
+        "./types"
+    ],
+    "exclude": [
+        
+        "node_modules",
+        "src",
+    ]
+}

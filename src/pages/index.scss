@@ -2,7 +2,7 @@
 
 .hero {
     position: relative;
-    background-image: url("./images/hero.jpg");
+    background-image: url("@images/landing/hero.jpg");
     background-repeat: no-repeat;
     background-size: cover;
     background-position: left 30% center;
@@ -277,6 +277,63 @@ article.hubs {
     width: 80%;
     aspect-ratio: 1.7777777778;
 }
+
+.shop {
+    text-align: center;
+    margin: 0;
+
+    .cards {
+        margin: variables.$standardGap 0;
+        margin-top: calc(variables.$standardGap * 2);
+        display: flex;
+        justify-content: center;
+        gap: calc(variables.$standardGap * 2);
+        flex-wrap: wrap;
+
+        .productCard {
+            @include variables.dropShadowSmall;
+
+            max-width: 350px;
+            width: 100%;
+
+            &#robox-10-pack {
+                border: 8px solid variables.$themeGreen;
+                position: relative;
+
+                .valuePack {
+                    position: absolute;
+                    top: -1px;
+                    right: -1px;
+                    margin: 0;
+                    padding: 8px 12px 8px 14px;
+                    border-radius: 0 0 0 10px;
+                    background-color: variables.$themeGreen;
+                    color: variables.$primary;
+                }
+            }
+        }
+
+        .card-info {
+            padding: variables.$standardGap;
+
+            .card-buttons {
+                margin-top: variables.$standardGap;
+
+                flex-direction: column;
+                align-items: center;
+                justify-content: end;
+
+                .productButton {
+                    background-color: variables.$themeBlue;
+                    font-size: 18px;
+                    border-radius: 8px;
+                    padding: 8px 16px;
+                    margin: 0;
+                }
+            }
+        }
+    }
+} 
 
 @media screen and (max-width: 600px) {
     .boxToBotImg {

@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <%~ include('src/partials/metadata.html') %>
+    <%~ include('src/templates/partials/metadata.html') %>
     <meta charset="utf-8" />
     <title>Toolbox Customization Codelab</title>
     <script src="index.ts"></script>
@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     </head>
-    <%~ include('src/partials/modal.html', {
+    <%~ include('src/templates/partials/modal.html', {
         id: "bootsel-boot",
         class: "bootsel",
         title: '1. Boot the RO/BOX into BOOTSEL mode', 
@@ -20,7 +20,7 @@
             '<button id="boot-try" class="button calibrate-button standard-button">Yes<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/partials/modal.html', {
+    <%~ include('src/templates/partials/modal.html', {
         id: "bootsel-outcome",
         class: "bootsel",
         title: '', 
@@ -31,7 +31,7 @@
             '<button id="outcome-button" class="button calibrate-button standard-button"><i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/partials/modal.html', {
+    <%~ include('src/templates/partials/modal.html', {
         id: "bootsel-flash",
         title: '2. Flash the Ro\\Box', 
         class: "bootsel",
@@ -42,7 +42,7 @@
             '<button id="open-file" class="button calibrate-button standard-button">Open<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/partials/modal.html', {
+    <%~ include('src/templates/partials/modal.html', {
         id: "color-calibration-modal",
         title: 'Color Calibration', 
         content: [
@@ -53,7 +53,7 @@
             '<button id="calibrate-button" class="button calibrate-button standard-button">Calibrate<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/partials/modal.html', {
+    <%~ include('src/templates/partials/modal.html', {
         id: "color-calibration-outcome-modal",
         title: '', 
         content: [
@@ -65,7 +65,7 @@
     }) %>
     
     <body>
-        <%~ include('src/partials/header-workshop.html') %>
+        <%~ include('src/templates/partials/header-workshop.html') %>
 
         <div id="workspaceTabs">
             <a id="back-button" href="/student">
@@ -85,7 +85,7 @@
                 <button id="robox-settings-button" class="button standard-button">
                     <i class="fa-solid fa-gear"></i>
                 </button>
-                <%~ include('src/partials/toolbar.html', {
+                <%~ include('src/templates/partials/toolbar.html', {
                     id: "settings-toolbar",
                     content: [
                         "<button class='button' id='robox-settings-calibrate'><i class='fa-solid fa-eye-dropper'></i>Calibrate Colour</button>",

@@ -1,11 +1,11 @@
 <head>
-    <%~ include('src/partials/metadata.html') %>
+    <%~ include('src/templates/partials/metadata.html') %>
     <script src="./index.ts" defer></script>
     <link href="./index.scss" rel="stylesheet" />
 </head>
 
 <body>
-    <%~ include('src/partials/header.html') %>
+    <%~ include('src/templates/partials/header.html') %>
 
     <div class="hero">
         <div class="title">
@@ -35,7 +35,7 @@
                 <a class="ctaButton" href="/about">About us</a>
             </div>
     
-            <img src="images/article1.png" class="media">
+            <img src="@images/landing/article1.png" class="media">
         </section>
     
         <section class="articleSection RTL equalWidth section2">
@@ -67,8 +67,8 @@
                 </p>
             </div>
 
-            <img src="images/goober-star.svg?raw" class="goober">
-            <img src="images/article2.png" class="media">
+            <img src="@images/landing/goober-star.svg?raw" class="goober">
+            <img src="@images/landing/article2.png" class="media">
         </section>
 
         <section class="boxToBot">
@@ -104,7 +104,7 @@
                     <%}%>
                 </div>
                 
-                <img class="boxToBotImg" src="images/boxToBot/step1.png">
+                <img class="boxToBotImg" src="@images/landing/boxToBot/step1.png">
             </div>
         </section>
     </article>
@@ -120,34 +120,34 @@
             </p>
 
             <div class="cards">
-                <%~ include('src/partials/card.html', {
+                <%~ include('src/templates/partials/card.html', {
                     class: "roboxHubCard",
                     title: 'Assembly', 
-                    imageSource: "images/roboxHubCard1.png", 
+                    imageSource: "@images/landing/roboxHubCard1.png", 
                     descriptions: [
                         "Use easy-to-follow guides to build Ro/Box from scratch.", 
                     ],
-                    goober: "./images/goober-pentagon.svg?raw",
+                    goober: "@images/landing/goober-pentagon.svg?raw",
                     gooberClass: "gooberPentagon"
                 }) %>
 
-                <%~ include('src/partials/card.html', {
+                <%~ include('src/templates/partials/card.html', {
                     class: "roboxHubCard",
                     title: 'Workshop', 
-                    imageSource: "images/roboxHubCard2.png", 
+                    imageSource: "@images/landing/roboxHubCard2.png", 
                     descriptions: [
                         "Explore block coding through interactive exercises that teach how to control your Ro/Box’s movements, sensors, and actions.", 
                     ]
                 }) %>
 
-                <%~ include('src/partials/card.html', {
+                <%~ include('src/templates/partials/card.html', {
                     class: "roboxHubCard",
                     title: 'Lessons', 
-                    imageSource: "images/roboxHubCard3.png", 
+                    imageSource: "@images/landing/roboxHubCard3.png", 
                     descriptions: [
                         "Build real coding skills with our structured lessons that introduce programming in a simple, visual way using our block code editor.", 
                     ],
-                    goober: "./images/goober-spiky.svg?raw",
+                    goober: "@images/landing/goober-spiky.svg?raw",
                     gooberClass: "gooberSpiky"
                 }) %>
             </div>
@@ -168,53 +168,59 @@
                 <a class="ctaButton" href="/teacher">Visit Teacher Hub</a>
             </div>
 
-            <img src="images/article3.png" class="media">
+            <img src="@images/landing/article3.png" class="media">
 
             <div class="goober">
-                <img src="./images/goober-square.svg?raw" class="shape">
+                <img src="@images/landing/goober-square.svg?raw" class="shape">
                 <img src="@images/eyes.svg?raw" class="eyes">
             </div>
         </section>
     </article>
-    <!-- <article>
-        <section class="centred videoSection">
+    <article>
+        <!-- <section class="centred videoSection">
             <h1>See the Kit in Action</h1>
 
             <iframe src="https://www.youtube-nocookie.com/embed/lCaun_EiJZQ?autoplay=0&mute=1" frameborder="0" allow="autoplay; encrypted-media;" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-        </section>
+        </section> -->
 
-        <section>
+        <section class="shop">
             <h1>Check out our Kits</h1>
             
-            <p>Lorem ipsum dolor sit amet</p>
+            <p>Begin your journey with Ro/Box.</p>
 
             <div class="cards">
-                <%~ include('src/partials/card.html', {
-                    class: "productCard",
-                    imageSource: "images/roboxHubCard3.png", 
-                    descriptions: [
-                        "Lorem ipsum",
-                        "Lorem ipsum",
-                        "Lorem ipsum",
-                        "Lorem ipsum",
-                    ]
-                }) %>
-
-                <%~ include('src/partials/card.html', {
-                    class: "productCard",
-                    imageSource: "images/roboxHubCard3.png", 
-                    descriptions: [
-                        "Lorem ipsum",
-                        "Lorem ipsum",
-                        "Lorem ipsum",
-                        "Lorem ipsum", 
-                    ]
-                }) %>
+                <%
+                const featuredProducts = Object.values(products)
+                                                .filter((e) => e.internalName === "robox-10-pack" || e.internalName === "robox")
+                                                .sort((a, b) => a.name.length - b.name.length)
+                %>
+                <% featuredProducts.forEach(function(product, index) { %>
+                    <% let isBulkPack = product.internalName === "robox-10-pack"; %>
+                    <%~ include('src/templates/partials/card.html', {
+                        id: product.internalName,
+                        class: "productCard",
+                        title: product.name,
+                        imageSource: `@images/product/${product.internalName}/thumbnail.jpg`,
+                        descriptions: [
+                            `<span class="${product.status}">${product.displayStatus}</span>`,
+                            `$${product.price}`
+                        ],
+                        buttons: [
+                            {
+                                classes: "ctaButton productButton",
+                                link: `/shop/product/${product.internalName}.html`,
+                                content: "View Product"
+                            }
+                        ],
+                        topRowButton: false,
+                        absoluteContent: isBulkPack ? "<h2 class='valuePack'>Value Pack</h2>" : undefined
+                    }) %>
+                <% }) %>
             </div>
 
-            <a class="ctaButton" href="/store">Visit our store</a>
+            <a class="ctaButton" href="/shop">Visit our shop</a>
         </section>
-    </article> -->
+    </article>
     
-    <%~ include('src/partials/footer.html') %>
+    <%~ include('src/templates/partials/footer.html') %>
 </body>

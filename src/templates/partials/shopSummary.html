@@ -1,0 +1,33 @@
+<div id="order-summary">
+    <h2 class="cart-section-title order-title">
+        Order Summary
+    </h2>
+    <div id="order-body">
+        <div id="cost-breakdown">
+            <div class="breakdown-row">
+                <p class="label">Subtotal:</p>
+                <p class="value" id="order-value"></p>
+            </div>
+
+            <div class="breakdown-row">
+                <p class="label">Shipping:</p>
+                <p class="value" id="shipping-cost"></p>
+            </div>
+
+            <hr class="cart-item-break">
+
+            <div class="breakdown-row">
+                <p class="label total-row">Order Total:</p>
+                <p class="value total-row" id="total-value"></p>
+            </div>
+
+            <p class="bulkCallout">Large or international order? Email us at <a href="mailto:hello@robox.com.au">hello@robox.com.au</a> for invoicing.</p>
+        </div>
+
+        <% if (it.checkoutButton) { %>
+            <a class="ctaButton pill continue" href="/shop/">Continue Shopping</a>
+
+            <a id="checkout" class="ctaButton pill" href="/shop/checkout">Checkout</a>
+        <% } %>
+    </div>
+</div>

@@ -1,6 +1,6 @@
 import * as Blockly from 'blockly';
 
-import archSVG from "./Arch.svg?raw"
+import archSVG from './Arch.svg?raw';
 
 import { ContinuousFlyout, ContinuousMetrics, ContinuousToolbox, RecyclableBlockFlyoutInflater } from '@blockly/continuous-toolbox';
 
@@ -81,6 +81,18 @@ class RoboxFlyout extends ContinuousFlyout {
     protected reflowInternal_(): void {
         this.width_ = 300;
         this.targetWorkspace.recordDragTargets()
+    }
+    override scrollTo(position: number) {
+        const OFFSET = 5; // pixels
+        const adjustedPosition = position + OFFSET;
+
+        const metrics = this.getWorkspace().getMetrics();
+        const scrollTarget = Math.min(
+            adjustedPosition,
+            metrics.scrollHeight - metrics.viewHeight,
+        );
+
+        this.getWorkspace().scrollbar?.setY(scrollTarget);
     }
 }
 
