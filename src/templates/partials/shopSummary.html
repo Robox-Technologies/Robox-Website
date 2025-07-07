@@ -20,14 +20,17 @@
                 <p class="label total-row">Order Total:</p>
                 <p class="value total-row" id="total-value"></p>
             </div>
-
-            <p class="bulkCallout">Large or international order? Email us at <a href="mailto:hello@robox.com.au">hello@robox.com.au</a> for invoicing.</p>
         </div>
 
         <% if (it.checkoutButton) { %>
-            <a class="ctaButton pill continue" href="/shop/">Continue Shopping</a>
+            <a class="continue" href="/shop/">Continue Shopping</a>
 
             <a id="checkout" class="ctaButton pill" href="/shop/checkout">Checkout</a>
         <% } %>
+
+        <p class="bulkCallout">
+            Large or international order?
+            Email us at <a href="mailto:hello@robox.com.au">hello@robox.com.au</a> for invoicing.
+        </p>
     </div>
 </div>
