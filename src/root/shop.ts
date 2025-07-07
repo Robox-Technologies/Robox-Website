@@ -1,6 +1,6 @@
 import { Product } from "types/api";
 import { addCartItem, getCart } from "./cart";
-import { calculateTotalCost, cartToDictionary, shippingCost } from "./stripe-helper";
+import { calculateTotalCost, cartToDictionary } from "./stripe-shared-helper";
 
 const orderValue = document.getElementById("order-value") as HTMLParagraphElement
 const totalValue = document.getElementById("total-value") as HTMLParagraphElement
@@ -29,9 +29,9 @@ export function renderCart() {
         }
     }
     if (totalValue && orderValue && shippingValue) {
-        orderValue.textContent = `$${cost.products}`;
-        totalValue.textContent = `$${cost.total}`;
-        shippingValue.textContent = `$${cost.total > 0 ? shippingCost : 0}`;
+        orderValue.textContent = `$${cost.products.toFixed(2)}`;
+        totalValue.textContent = `$${cost.total.toFixed(2)}`;
+        shippingValue.textContent = `$${cost.shipping.toFixed(2)}`;
     }
 }
 

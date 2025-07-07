@@ -3,7 +3,7 @@ import stripe, { Stripe } from 'stripe'
 import 'dotenv/config'
 import { Product, ProductStatus } from 'types/api';
 
-
+const defaultWeight = 500;
 export const stripeAPI = new stripe(process.env.STRIPE_SECRET_KEY)
 export const displayStatusMap: { [K in ProductStatus]: string } = {
     "available": "Available for Purchase",
@@ -100,6 +100,7 @@ export async function getProduct(id: string): Promise<Product | false> {
             price: price.unit_amount / 100,
             item_id: product.id,
             status: status,
+            weight: Number(product.metadata.weight ?? defaultWeight)
         }
     }
     catch (err) {
@@ -119,6 +120,7 @@ export async function getProductList(): Promise<Record<string, Product>> {
             console.error(`Product ${product.id} does not have a valid status`);
             continue;
         }
+        
         let displayStatus = displayStatusMap[status] ?? "Unknown Status";
         combined[productId] = {
             name: product.name,
@@ -130,6 +132,7 @@ export async function getProductList(): Promise<Record<string, Product>> {
             item_id: product.id,
             status: status,
             displayStatus: displayStatus,
+            weight: Number(product.metadata.weight ?? defaultWeight)
         };
     }
     return combined

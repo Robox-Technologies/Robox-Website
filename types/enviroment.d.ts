@@ -3,7 +3,7 @@ declare global {
         interface ProcessEnv {
             STRIPE_PUBLISHABLE_KEY: string;
             STRIPE_SECRET_KEY: string;
-            CACHE_MODE: boolean;
+            FORCE_CACHE: boolean;
         }
     }
 }

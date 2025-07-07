@@ -2,13 +2,13 @@ import cache from 'memory-cache'
 
 // Idk how else to fix this (issue is that stripe.js is not recognised as a module)
 
-import { getProduct, getProductList, stripeAPI } from './stripe-helper.js';
+import { getProduct, getProductList, stripeAPI } from './stripe-server-helper.js';
 
 
 import express from 'express'
 import { Request, Response } from 'express';
 import { Product, PaymentIntentCreationBody, ProductsRequestQuery } from 'types/api';
-import { calculateTotalCost } from './src/root/stripe-helper.js';
+import { calculateTotalCost } from './src/root/stripe-shared-helper.js';
 
 const paymentRouter = express.Router()
 
@@ -26,6 +26,7 @@ paymentRouter.post("/create", async (req: Request<{}, {}, PaymentIntentCreationB
         return 
     }
     let verifiedServerCost = calculateTotalCost(products, verifiedProducts).total;
+    console.log(expected_price, verifiedServerCost)
     if (expected_price !== verifiedServerCost) {
         res.status(400).send({error: "Server prices do not match the client prices"})
         return 

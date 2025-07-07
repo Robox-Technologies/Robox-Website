@@ -2,7 +2,7 @@ import { getCart, stripePublishableKey } from "@root/cart";
 import { Appearance, loadStripe } from '@stripe/stripe-js';
 import { Product } from "types/api";
 import "@root/shop";
-import { calculateTotalCost, cartToDictionary } from "@root/stripe-helper";
+import { calculateTotalCost, cartToDictionary } from "@root/stripe-shared-helper";
 
 
 
