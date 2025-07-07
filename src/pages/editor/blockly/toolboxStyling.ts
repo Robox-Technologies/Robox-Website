@@ -1,6 +1,6 @@
 import * as Blockly from 'blockly';
 
-import archSVG from "./Arch.svg?raw"
+import archSVG from './Arch.svg?raw';
 
 import { ContinuousFlyout, ContinuousMetrics, ContinuousToolbox, RecyclableBlockFlyoutInflater } from '@blockly/continuous-toolbox';
 

@@ -6,17 +6,35 @@ on:
   push:
     branches:
       - develop
-env:
-  STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
-  STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
-  CACHE_MODE: false
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: npm install && npx webpack --mode=production --config webpack.config.js
-      - uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install sass-embedded-linux-x64
+          npm install --os=linux --cpu=x64 sharp
+
+      - name: Create .env file
+        run: |
+          touch .env
+          echo STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }} >> .env
+          echo STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }} >> .env
+          echo CACHE_MODE: false >> .env
+          cat .env
+      
+      - name: Build website
+        run: |
+          tsc -p tsconfig.server.json
+          webpack --config build/server/webpack.config.js
+      
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROBOX_WEBSITE_DEV }}

@@ -230,21 +230,25 @@ export default (async () => {
                     test: /\.s?css$/,
                     use: ['css-loader', 'sass-loader']
                 },
-                {
-                    test: /\.svg$/i,
-                    resourceQuery: /raw/,
-                    type: 'asset/source'
-                },
+
                 {
                     test: /\.json$/i,
                     type: 'asset/source'
                 },
                 {
                     test: /\.svg$/i,
-                    type: 'asset/resource',
-                    generator: {
-                        filename: 'public/images/[name]-[contenthash:8].[ext]', 
-                    },
+                    oneOf: [
+                        {
+                            resourceQuery: /raw/, // use ?raw to import as string
+                            type: 'asset/source',
+                        },
+                        {
+                            type: 'asset/resource', // default: emit file and return URL
+                            generator: {
+                                filename: 'public/images/[name]-[contenthash:8].[ext]',
+                            },
+                        },
+                    ],
                 },
                {
                 test: /\.(png|jpe?g|gif|webp|ico)$/i,
