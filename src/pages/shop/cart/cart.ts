@@ -1,6 +1,5 @@
-import { getCart, refreshCart, setCartItem, getItem, removeCartItem} from "@root/cart"
+import { getCart, removeCartItem, setCartItem } from "@root/cart"
 import { renderCart } from "@root/shop"
-import { register } from "module"
 
 const availableHolder = document.querySelector("#available-section")
 const preorderHolder = document.querySelector("#preorder-section")
