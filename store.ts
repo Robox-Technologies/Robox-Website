@@ -26,7 +26,6 @@ paymentRouter.post("/create", async (req: Request<{}, {}, PaymentIntentCreationB
         return 
     }
     let verifiedServerCost = calculateTotalCost(products, verifiedProducts).total;
-    console.log(expected_price, verifiedServerCost)
     if (expected_price !== verifiedServerCost) {
         res.status(400).send({error: "Server prices do not match the client prices"})
         return 

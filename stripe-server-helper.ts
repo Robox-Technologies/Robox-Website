@@ -51,15 +51,14 @@ async function recursiveItemGrab(API: Stripe.PricesResource | Stripe.ProductsRes
         itemArray.push(...moreItems.data);
         item = moreItems;
     }
+
+    // Convert the array to an object with item IDs as keys
     let itemObject: Record<string, Stripe.Price | Stripe.Product> = {};
-
-
-    itemObject = itemArray.reduce((acc, item) => {
+    itemObject = itemArray.filter((item) => item.active).reduce((acc, item) => {
             let id: string = "product" in item && typeof item.product === "string" ? item.product : item.id;
             acc[id] = item;
             return acc;
         }, {} as Record<string, Stripe.Price | Stripe.Product>);
-    // Convert the array to an object with item IDs as keys
     
     return itemObject;
 }
@@ -71,7 +70,11 @@ export function isValidStatus(status: ProductStatus | string): status is Product
     return ["available", "not-available", "preorder"].includes(status);
 }
 function isPricesResource(api: Stripe.PricesResource | Stripe.ProductsResource): api is Stripe.PricesResource {
-    return 'list' in api && 'retrieve' in api && 'create' in api && 'update' in api && 'search' in api; // crude but works
+    return !('del' in api ||
+        'createFeature' in api ||
+        'deleteFeature' in api ||
+        'listFeatures' in api ||
+        'retrieveFeature' in api); // crude but works
 }
 
 export async function getProduct(id: string): Promise<Product | false> {
@@ -112,6 +115,7 @@ export async function getProductList(): Promise<Record<string, Product>> {
     let products = await getAllStripe("product");
     let prices = await getAllStripe("price");
     let combined: Record<string, Product> = {};
+    
     for (const productId in products) {
         const product = products[productId];
         const price = prices[productId];
@@ -120,7 +124,7 @@ export async function getProductList(): Promise<Record<string, Product>> {
             console.error(`Product ${product.id} does not have a valid status`);
             continue;
         }
-        
+
         let displayStatus = displayStatusMap[status] ?? "Unknown Status";
         combined[productId] = {
             name: product.name,
