@@ -7,6 +7,9 @@ const preorderHolder = document.querySelector("#preorder-section")
 
 const cartItemElement: HTMLTemplateElement = document.querySelector("#cart-item")
 
+// @ts-ignore
+const localProducts = products;
+
 function renderItemSubtotal(itemId: string) {
     let products = getCart()["products"];
     let subtotalElement = document.getElementById(itemId).querySelector(".cart-item-text-subtotal");
@@ -48,7 +51,8 @@ function renderPreview() {
         let quantityInput = clone.querySelector(".cart-quantity") as HTMLInputElement
         let imageElement = clone.querySelector(".cart-item-photo") as HTMLImageElement
         
-        imageElement.src = image
+        let cachedProduct = localProducts[productId];
+        imageElement.src = (document.getElementById(`hidden-${cachedProduct.internalName}`) as HTMLImageElement).src;
         
         titleElement.textContent = name
         priceElement.textContent = `$${price}/each`

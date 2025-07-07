@@ -1,6 +1,10 @@
 @use '@root/variables';
 @use '@root/shop';
 
+.hiddenImages {
+    display: none;
+}
+
 #empty-cart {
     display: none;
     min-height: 50vh;

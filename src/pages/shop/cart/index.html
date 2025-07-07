@@ -9,12 +9,19 @@
     <title>Robox Store</title>
 
     <script>
-        const products = <% Object.values(products) %>
+        const products = <%~ JSON.stringify(products) %>;
     </script>
 </head>
 
 <body>
     <%~ include('src/templates/partials/header.html') %>
+
+    <!-- We use this to fetch the image urls -->
+    <div class="hiddenImages">
+        <% Object.values(products).forEach(function(product, index) { %>
+            <img id="hidden-<%~ product.internalName %>" src="@images/product/<%~ product.internalName %>/thumbnail.jpg">
+        <% }) %>
+    </div>
 
     <article class="content">
         <a class="navigation" href="/shop"><i class="fa-solid fa-chevron-left"></i> Shop</a>
