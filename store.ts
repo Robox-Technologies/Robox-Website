@@ -2,13 +2,13 @@ import cache from 'memory-cache'
 
 // Idk how else to fix this (issue is that stripe.js is not recognised as a module)
 
-import { getProduct, getProductList, stripeAPI } from './stripe-helper.js';
+import { getProduct, getProductList, stripeAPI } from './stripe-server-helper.js';
 
 
 import express from 'express'
 import { Request, Response } from 'express';
 import { Product, PaymentIntentCreationBody, ProductsRequestQuery } from 'types/api';
-import { calculateTotalCost } from './src/root/stripe-helper.js';
+import { calculateTotalCost } from './src/root/stripe-shared-helper.js';
 
 const paymentRouter = express.Router()
 

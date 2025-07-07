@@ -1,4 +1,4 @@
-import { calculateTotalCost, cartToDictionary } from "@root/stripe-helper";
+import { calculateTotalCost, cartToDictionary } from "@root/stripe-shared-helper";
 import { addCartItem, refreshCart } from "@root/cart";
 
 // TODO: Find a non-hacky way fetching currentProduct without @ts-ignore

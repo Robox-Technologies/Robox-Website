@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import HtmlBundlerPlugin from 'html-bundler-webpack-plugin';
 import Dotenv from 'dotenv-webpack';
-import { getProductList } from './stripe-helper.js';
+import { getProductList } from './stripe-server-helper.js';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { TemplateData, TemplatePage } from './types/webpack.js';
 
@@ -85,7 +85,7 @@ function fetchPageData(file: string): TemplateData {
 }
 
 async function cacheProducts(): Promise<Record<string, Product>> {
-    const cache = process.env.CACHE_MODE === 'true';
+    const cache = process.env.FORCE_CACHE === 'true';
     if (cache || !fs.existsSync('products.json')) {
         let newProducts = await getProductList();
         fs.writeFileSync('products.json', JSON.stringify(newProducts), 'utf8');

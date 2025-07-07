@@ -1,3 +1,5 @@
+import { Metadata } from "@stripe/stripe-js";
+
 export type ProductList = Product[]
 export type Product = {
     name: string,
@@ -8,7 +10,8 @@ export type Product = {
     price_id: string,
     price: number,
     item_id: string,
-    status: ProductStatus
+    status: ProductStatus,
+    weight: number
 }
 export type ProductStatus = "available" | "not-available" | "preorder"
 
