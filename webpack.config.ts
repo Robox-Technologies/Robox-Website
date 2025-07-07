@@ -3,7 +3,7 @@ import fs from 'fs';
 import HtmlBundlerPlugin from 'html-bundler-webpack-plugin';
 import Dotenv from 'dotenv-webpack';
 import { getProductList } from './stripe-helper.js';
-
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { TemplateData, TemplatePage } from './types/webpack.js';
 
 
@@ -199,7 +199,16 @@ export default (async () => {
                     ]
                 },
             }),
-            new Dotenv()
+            new Dotenv(),
+            new CopyWebpackPlugin({
+                patterns: [
+                    {
+                        from: path.resolve(__dirname, 'src/pages/public'), // source folder
+                        to: path.resolve(__dirname, 'build/website/public'),   // destination folder
+                        noErrorOnMissing: true, // optional
+                    },
+                ],
+            }),
         ],
         
         module: {

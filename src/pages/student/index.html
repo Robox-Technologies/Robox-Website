@@ -80,14 +80,26 @@
     <div id="main" class="item-sections">
         
 
-        <!-- <section id="assembly-guides">
+        <section id="assembly-guides">
             <h1>
                 Assembly Guides
             </h1> 
             <div class="card-holder" id="assembly-guides">
-                
+                <%~ include('src/templates/partials/card.html', {
+                    class: "assembly-card",
+                    title: '<span>Assembly Guide</span>', 
+                    imageSource: "@images/student-hub/assembly-guide.png", 
+                    buttons: [
+                        {
+                            content: "<span class='underline-grow'>PDF Build Instructions</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
+                            link: "/public/latest.pdf"
+                        },
+
+                    ],
+                    topRowButton: false,
+                }) %>
             </div>
-        </section> -->
+        </section>
         <section id="projects">
             <div>
 
