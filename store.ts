@@ -3,7 +3,7 @@ import cache from 'memory-cache'
 // Idk how else to fix this (issue is that stripe.js is not recognised as a module)
 import {Stripe} from 'stripe';
 import { getProduct, getProductList, stripeAPI } from './stripe-helper.js';
-
+import {ProductEmail, sendSuccessEmail} from './email.js';
 
 import express from 'express'
 import { Request, Response } from 'express';
@@ -31,7 +31,22 @@ paymentRouter.post('/webhook', express.raw({ type: 'application/json' }), async 
     switch (event.type) {
         case 'payment_intent.succeeded':
             const paymentIntent = event.data.object as Stripe.PaymentIntent;
-            console.log(`✅ Payment succeeded: ${paymentIntent.id}`);
+            const metadata = paymentIntent.metadata;
+            const products: Record<string, number> = JSON.parse(metadata.products || '{}');
+            const emailProducts: ProductEmail = {};
+            for (const [productId, quantity] of Object.entries(products)) {
+                const product = verifiedProducts[productId];
+                emailProducts[product.name] = {
+                    quantity: quantity,
+                    price: product.price,
+                };
+            }
+            if (!paymentIntent.receipt_email) {
+                console.error('No receipt email provided for payment intent:', paymentIntent.id);
+                res.status(400).send('No receipt email provided');
+                return;
+            }
+            sendSuccessEmail(paymentIntent.receipt_email, 'Your Order Receipt', emailProducts, paymentIntent) 
             break;
         case 'payment_intent.payment_failed':
             const failedIntent = event.data.object as Stripe.PaymentIntent;
