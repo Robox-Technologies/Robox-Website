@@ -27,6 +27,17 @@ interface IToolboxItem extends Blockly.IToolboxItem {
     name_: string
 }
 
+const blocks = require.context("./blockly/blocks", false, /\.ts$/);
+const generators = require.context("./blockly/generators", false, /\.ts$/);
+
+blocks.keys().forEach(modulePath => {
+    blocks(modulePath);
+});
+
+generators.keys().forEach(modulePath => {
+    generators(modulePath);
+});
+
 document.addEventListener("DOMContentLoaded", () => {
     const workspace = Blockly.inject('blocklyDiv', {
         toolbox: toolbox,
@@ -63,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     else return
     if (!project) return
-    
+
     // Control + scroll for zoom,
     // Scroll for vertical movement,
     // Shift + scroll for horizontal movement

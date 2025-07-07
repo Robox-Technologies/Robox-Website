@@ -19,8 +19,7 @@ const events = [
         "helpUrl": "",
         "hat": "cap",
         "inputsInline": false
-      }
-      
+    }
 ]
 
 
