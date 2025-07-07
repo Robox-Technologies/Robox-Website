@@ -107,10 +107,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const nameForm = document.getElementById("project-name-form") as HTMLFormElement | null
     const nameInput = document.getElementById("project-name-input") as HTMLInputElement | null
     const downloadButton = document.getElementById("download-button") as HTMLButtonElement | null
-    if (!downloadButton) return
-    if (!nameInput) return
-    if (!nameForm) return
+    if (!downloadButton) return;
+    if (!nameInput) return;
+    if (!nameForm) return;
+
     nameInput.value = project["name"]
+    document.title = `${nameInput.value} - Ro/Box`;
+
+    nameInput.addEventListener("input", () => {
+        document.title = `${nameInput.value} - Ro/Box`
+    })
     nameInput.addEventListener("blur", () => {
         if (nameInput.value !== project["name"]) {
             const newName = nameInput.value
