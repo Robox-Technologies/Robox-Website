@@ -1,21 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <%~ include('src/templates/partials/metadata.html') %>
     <title>About Us - Ro/Box</title>
-    <link href="./index.scss" rel="stylesheet" />
+    <link href="./index.scss" rel="stylesheet">
 </head>
 
 <body>
     <%~ include('src/templates/partials/header.html') %>
     
     <section class="hero">
-        <img src="@images/about/hero.jpg">
+        <img src="@images/about/hero.jpg" alt="Outdoor photo of a Ro/Box outside, resting atop a square wooden pole">
 
         <div class="title">
             <h1>About Us</h1>
 
             <div class="images">
-                <img src="@images/about/bowtie.svg?raw" class="bowtie">
-                <img src="@images/eyes.svg?raw" class="eyes">
+                <img src="@images/about/bowtie.svg?raw" class="bowtie" alt="Decorative bowtie">
+                <img src="@images/eyes.svg?raw" class="eyes" alt="Eyes">
             </div>
         </div>
     </section>
@@ -42,7 +44,7 @@
                 </p>
             </div>
     
-            <img src="@images/about/article1.png" class="media">
+            <img src="@images/about/article1.png" class="media" alt="Indoor photo of Ro/Box rested on a table in front of books and a vase">
         </section>
 
         <h1 class="storyHeadline">Our Story</h1>
@@ -58,7 +60,7 @@
                 </p>
             </div>
     
-            <img src="@images/about/article2.png" class="media">
+            <img src="@images/about/article2.png" class="media" alt="An early prototype of Ro/Box following a line">
         </section>
 
         <section class="articleSection LTR equalWidth">
@@ -79,11 +81,11 @@
                 </p>
             </div>
     
-            <img src="@images/about/article3.png" class="media">
+            <img src="@images/about/article3.png" class="media" alt="Photo of a young Ashton and Yuma">
         </section>
 
         <section class="fullWidthImg">
-            <img src="@images/about/article4.png" class="media">
+            <img src="@images/about/article4.png" class="media" alt="Ro/Box on a line-following course">
 
             <div class="articleSection LTR equalWidth">
                 <h1>
@@ -108,3 +110,4 @@
 
     <%~ include('src/templates/partials/footer.html') %>
 </body>
+</html>
