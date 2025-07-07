@@ -1,7 +1,9 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <%~ include('src/templates/partials/metadata.html') %>
     <script src="./index.ts" defer></script>
-    <link href="./index.scss" rel="stylesheet" />
+    <link href="./index.scss" rel="stylesheet">
     <title>Ro/Box - Robotics for Everyone</title>
 </head>
 
@@ -35,7 +37,7 @@
                 <a class="ctaButton" href="/about">About us</a>
             </div>
     
-            <img src="@images/landing/article1.png" class="media">
+            <img src="@images/landing/article1.png" class="media" alt="Ro/Box in front of a star shape">
         </section>
     
         <section class="articleSection RTL equalWidth section2">
@@ -67,8 +69,8 @@
                 </p>
             </div>
 
-            <img src="@images/landing/goober-star.svg?raw" class="goober">
-            <img src="@images/landing/article2.png" class="media">
+            <img src="@images/landing/goober-star.svg?raw" class="goober" alt="Star shape">
+            <img src="@images/landing/article2.png" class="media" alt="Outdoor photo of Ro/Box">
         </section>
     </article>
     <article class="boxToBotSection">
@@ -104,12 +106,12 @@
                                 </div>
                             </div>
 
-                            <img class="boxToBotImgMobile" src="@images/landing/boxToBot/step<%= i+1 %>.svg">
+                            <img class="boxToBotImgMobile" src="@images/landing/boxToBot/step<%= i+1 %>.svg" alt="Image depicting step <%= i+1 %> of the Ro/Box process">
                         </div>
                     <%}%>
                 </div>
                 
-                <img class="boxToBotImg" src="@images/landing/boxToBot/step1.svg">
+                <img class="boxToBotImg" src="@images/landing/boxToBot/step1.svg" alt="Image depicting the steps of the Ro/Box process">
             </div>
         </section>
     </article>
@@ -129,6 +131,7 @@
                     class: "roboxHubCard",
                     title: 'Assembly', 
                     imageSource: "@images/landing/roboxHubCard1.png", 
+                    imageAlt: "Assembly steps from the Ro/Box assembly guide",
                     descriptions: [
                         "Use easy-to-follow guides to build Ro/Box from scratch.", 
                     ],
@@ -139,7 +142,8 @@
                 <%~ include('src/templates/partials/card.html', {
                     class: "roboxHubCard",
                     title: 'Workshop', 
-                    imageSource: "@images/landing/roboxHubCard2.png", 
+                    imageSource: "@images/landing/roboxHubCard2.png",
+                    imageAlt: "Screenshot of the Ro/Box block code editor",
                     descriptions: [
                         "Explore block coding through interactive exercises that teach how to control your Ro/Box’s movements, sensors, and actions.", 
                     ]
@@ -149,6 +153,7 @@
                     class: "roboxHubCard",
                     title: 'Lessons', 
                     imageSource: "@images/landing/roboxHubCard3.png", 
+                    imageAlt: "A group of students focused on a laptop with the Ro/Box block code editor open",
                     descriptions: [
                         "Build real coding skills with our structured lessons that introduce programming in a simple, visual way using our block code editor.", 
                     ],
@@ -173,11 +178,11 @@
                 <a class="ctaButton" href="/teacher">Visit Teacher Hub</a>
             </div>
 
-            <img src="@images/landing/article3.png" class="media">
+            <img src="@images/landing/article3.png" class="media" alt="A nearly assembled Ro/Box kit with its lid open">
 
             <div class="goober">
-                <img src="@images/landing/goober-square.svg?raw" class="shape">
-                <img src="@images/eyes.svg?raw" class="eyes">
+                <img src="@images/landing/goober-square.svg?raw" class="shape" alt="Square decorative shape">
+                <img src="@images/eyes.svg?raw" class="eyes" alt="Eyes">
             </div>
         </section>
     </article>
@@ -206,6 +211,7 @@
                         class: "productCard",
                         title: product.name,
                         imageSource: `@images/product/${product.internalName}/thumbnail.jpg`,
+                        imageAlt: `Product image of ${product.name}`,
                         descriptions: [
                             `<span class="${product.status}">${product.displayStatus}</span>`,
                             `$${product.price}`
@@ -229,3 +235,4 @@
     
     <%~ include('src/templates/partials/footer.html') %>
 </body>
+</html>

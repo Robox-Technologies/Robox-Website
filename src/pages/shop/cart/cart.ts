@@ -52,7 +52,9 @@ function renderPreview() {
         const imageElement = clone.querySelector(".cart-item-photo") as HTMLImageElement
         
         const cachedProduct = localProducts[productId];
-        imageElement.src = (document.getElementById(`hidden-${cachedProduct.internalName}`) as HTMLImageElement).src;
+        const productImage = document.getElementById(`hidden-${cachedProduct.internalName}`) as HTMLImageElement;
+        imageElement.src = productImage.src;
+        imageElement.alt = productImage.alt;
         
         titleElement.textContent = name
         priceElement.textContent = `$${price}/each`
