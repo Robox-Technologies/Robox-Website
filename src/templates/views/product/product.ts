@@ -1,8 +1,7 @@
-import { calculateTotalCost, cartToDictionary } from "@root/stripe-shared-helper";
 import { addCartItem, refreshCart } from "@root/cart";
 
 // TODO: Find a non-hacky way fetching currentProduct without @ts-ignore
-// @ts-ignore
+// @ts-expect-error Fetched from HTML
 const product = currentProduct;
 
 const productId = product["item_id"]
@@ -42,7 +41,7 @@ decreaseQuantityButton.addEventListener("click", () => {
 });
 cartQuantityInput.addEventListener("input", () => {
     cartQuantityInput.value = cartQuantityInput.value.slice(0, 2);
-    let numberValue = Number(cartQuantityInput.value) ?? 0;
+    const numberValue = Number(cartQuantityInput.value ?? 0);
     quantity = numberValue;
 });
 
@@ -67,7 +66,7 @@ document.getElementById("dismiss-modal").addEventListener("click", () => {
 
 for (const carouselImage of carouselImages) {
     carouselImage.addEventListener("click", (e) => {
-        let divElement = (e.target as HTMLElement).closest("div");
+        const divElement = (e.target as HTMLElement).closest("div");
         changeHeroImage(Array.prototype.indexOf.call(divElement.parentNode.children, divElement));
     });
 }
@@ -85,7 +84,7 @@ function changeHeroImage(number: number, autoscroll: boolean = false) {
         rightCarouselButton.classList.remove("carousel-button-disabled");
     }
 
-    let carouselThumb = carouselImages[currentImageIndex];
+    const carouselThumb = carouselImages[currentImageIndex];
     carouselThumb.querySelector("img").classList.remove("selected-carousel");
 
     document.querySelector(".active")?.classList.remove("active");
@@ -97,8 +96,8 @@ function changeHeroImage(number: number, autoscroll: boolean = false) {
     // Scroll if out of bounds
     if (!autoscroll) return;
 
-    let thumbTop = carouselThumb.offsetTop - carouselThumb.clientHeight*3 - 15;
-    let thumbBottom = carouselThumb.offsetTop + carouselThumb.clientHeight;
+    const thumbTop = carouselThumb.offsetTop - carouselThumb.clientHeight*3 - 15;
+    const thumbBottom = carouselThumb.offsetTop + carouselThumb.clientHeight;
 
     if (thumbTop < carouselImageContainer.scrollTop) {
         carouselImageContainer.scrollTo({

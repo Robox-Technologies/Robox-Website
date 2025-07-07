@@ -26,13 +26,13 @@ Ro/Box measures **110mm (wide) x 125mm (long) x 68mm (tall)**, or 88mm tall with
 - Wire Lever Connector (x1)
 - Jumper Wire (x2)
 
-<img src="@images/product/components.png">
+<img alt="The components of the Ro/Box kit displayed on a white background" src="@images/product/components.png">
 
 ## Easy Assembly & Secure Mounting
 
 The kit includes zip ties, screws, and bolts to securely mount components. No soldering required—simply connect, fasten, and start coding!
 
-<img src="@images/product/assembly.png">
+<img alt="A nearly-complete Ro/Box kit being assembled" src="@images/product/assembly.png">
 
 ## *“We recently had the Ro/Box Robotics Kit demonstrated to us in a Year 8 Digital Technologies classroom and it was an instant hit with the students. It's designed for beginners and offers a perfect hands-on introduction to robotics and coding. The students loved watching their robot draw lines on paper around the classroom. The block-based coding interface made it easy for everyone to get involved. What stood out most was that the kit sparked curiosity and problem solving. It's affordable, easy to use and a great way to bring robotics to life in the classroom.”*
 
@@ -40,4 +40,4 @@ The kit includes zip ties, screws, and bolts to securely mount components. No so
 
 [Read Story »](https://www.stmichaels.vic.edu.au/community/news/tech-for-everyone-yuma-soeriantos-story-of-purpose-accessibility-and-entrepreneurial-drive/)
 
-<img src="@images/product/testimonial.png">
+<img alt="Two students coding the Ro/Box kit" src="@images/product/testimonial.png">

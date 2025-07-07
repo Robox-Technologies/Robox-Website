@@ -18,7 +18,6 @@ motors = Motors()
 motor_speed = 60
 `
 
-let alreadyDownloaded = false
 let downloadingToPico = false
 
 
@@ -44,11 +43,11 @@ export function postBlocklyWSInjection() {
             connectionManagment.setAttribute("loading",  "false")
         }
     })
-    pico.addEventListener("connect", (event) => {
+    pico.addEventListener("connect", () => {
         connectionManagment.setAttribute("status",  "downloaded")
         connectionManagment.setAttribute("loading",  "false")
     })
-    pico.addEventListener("download", (event) => {
+    pico.addEventListener("download", () => {
         connectionManagment.setAttribute("loading",  "false")
 
         if (downloadingToPico) {
@@ -57,12 +56,11 @@ export function postBlocklyWSInjection() {
         
 
     })
-    pico.addEventListener("error", (event) => {
+    pico.addEventListener("error", () => {
         connectionManagment.setAttribute("loading",  "false")
     })
     ws.addChangeListener((event) => {
         if (event.isUiEvent ) return; //Checking if this update changed the blocks
-        alreadyDownloaded = false //Saying that this workspace has changed
     });
     connectButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
@@ -72,7 +70,6 @@ export function postBlocklyWSInjection() {
     downloadButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
         sendCode(ws)
-        alreadyDownloaded = true
         connectionManagment.setAttribute("loading",  "true")
 
     })
@@ -100,7 +97,7 @@ export function postBlocklyWSInjection() {
         const cog = document.querySelector('#robox-settings-button svg') as HTMLElement | null;
         if (!cog) return
         rotateOneTooth(cog);
-        let dialog = document.getElementById("settings-toolbar") as HTMLDialogElement | null
+        const dialog = document.getElementById("settings-toolbar") as HTMLDialogElement | null
         if (!dialog || dialog.open ) return
         dialog.show()
         event.stopPropagation()
@@ -109,8 +106,8 @@ export function postBlocklyWSInjection() {
 
 }
 function sendCode(ws: Blockly.Workspace) {
-    let code = pythonGenerator.workspaceToCode(ws);
-    let finalCode = `${scriptDependency}\n${code}\nevent_begin()`
+    const code = pythonGenerator.workspaceToCode(ws);
+    const finalCode = `${scriptDependency}\n${code}\nevent_begin()`
     pico.sendCode(finalCode)
 }
 let rotation = 0;

@@ -6,12 +6,12 @@ const preorderHolder = document.querySelector("#preorder-section")
 
 const cartItemElement: HTMLTemplateElement = document.querySelector("#cart-item")
 
-// @ts-ignore
+// @ts-expect-error Fetch from HTML
 const localProducts = products;
 
 function renderItemSubtotal(itemId: string) {
-    let products = getCart()["products"];
-    let subtotalElement = document.getElementById(itemId).querySelector(".cart-item-text-subtotal");
+    const products = getCart()["products"];
+    const subtotalElement = document.getElementById(itemId).querySelector(".cart-item-text-subtotal");
 
     if (!subtotalElement) return;
 
@@ -20,37 +20,38 @@ function renderItemSubtotal(itemId: string) {
         return;
     }
 
-    let updatedProduct = products[itemId];
-    let updatedProductData = updatedProduct["data"];
-    let updatedQuantity = updatedProduct["quantity"]
+    const updatedProduct = products[itemId];
+    const updatedProductData = updatedProduct["data"];
+    const updatedQuantity = updatedProduct["quantity"]
 
     subtotalElement.textContent = `$${updatedProductData.price * updatedQuantity}`;
 }
 
 function renderPreview() {
     document.querySelectorAll(".cart-item-holder").forEach((e) => e.replaceChildren());
-    let products = getCart()["products"]
+    const products = getCart()["products"]
     let cartEmpty = true;
     for (const productId in products) {
         const product = products[productId]["data"]
         if (!product || productId == "") continue
     
-        let price = product["price"]
-        let name = product["name"]
-        let image = product["images"][0]
-        let status = product["status"]
-        let quantity = products[productId]["quantity"]
+        const price = product["price"]
+        const name = product["name"]
+        const status = product["status"]
+        const quantity = products[productId]["quantity"]
+
         if (Number(quantity) === 0) {
             removeCartItem(productId)
             continue
         }
-        let clone = cartItemElement.content.cloneNode(true) as HTMLElement;
-        let titleElement = clone.querySelector(".cart-item-text-title") as HTMLSpanElement
-        let priceElement = clone.querySelector(".cart-item-text-price") as HTMLSpanElement
-        let quantityInput = clone.querySelector(".cart-quantity") as HTMLInputElement
-        let imageElement = clone.querySelector(".cart-item-photo") as HTMLImageElement
+
+        const clone = cartItemElement.content.cloneNode(true) as HTMLElement;
+        const titleElement = clone.querySelector(".cart-item-text-title") as HTMLSpanElement
+        const priceElement = clone.querySelector(".cart-item-text-price") as HTMLSpanElement
+        const quantityInput = clone.querySelector(".cart-quantity") as HTMLInputElement
+        const imageElement = clone.querySelector(".cart-item-photo") as HTMLImageElement
         
-        let cachedProduct = localProducts[productId];
+        const cachedProduct = localProducts[productId];
         imageElement.src = (document.getElementById(`hidden-${cachedProduct.internalName}`) as HTMLImageElement).src;
         
         titleElement.textContent = name
@@ -58,7 +59,7 @@ function renderPreview() {
         
         quantityInput.value = quantity.toString()
     
-        let productElement = clone.querySelector(".cart-item")
+        const productElement = clone.querySelector(".cart-item")
         productElement.id = product["item_id"]
         productElement.setAttribute("price-id", product["price_id"])
 
@@ -84,19 +85,22 @@ renderPreview()
 function registerQtyButtons() {
     const quantityButtons = document.querySelectorAll(".cart-quantity-button")
     for (const quantityButton of quantityButtons) {
-        let increaseButton = quantityButton.querySelector(".increase-cart-button") as HTMLButtonElement
-        let decreaseButton = quantityButton.querySelector(".decrease-cart-button") as HTMLButtonElement
-        let productId = quantityButton.closest(".cart-item").id
-        let quantityElement = quantityButton.querySelector(".cart-quantity") as HTMLInputElement
-        quantityElement.addEventListener("input", (e) => {
+        const increaseButton = quantityButton.querySelector(".increase-cart-button") as HTMLButtonElement
+        const decreaseButton = quantityButton.querySelector(".decrease-cart-button") as HTMLButtonElement
+        const productId = quantityButton.closest(".cart-item").id
+        const quantityElement = quantityButton.querySelector(".cart-quantity") as HTMLInputElement
+
+        quantityElement.addEventListener("input", () => {
             quantityElement.value = quantityElement.value.slice(0, 2);
-            let numberValue = Number(quantityElement.value) ?? 0;
+            const numberValue = Number(quantityElement.value ?? 0);
             updateCart(productId, numberValue);
         })
-        increaseButton.addEventListener("click", (e) => {
+
+        increaseButton.addEventListener("click", () => {
             updateCart(productId, Number(quantityElement.value)+1)
         })
-        decreaseButton.addEventListener("click", (e) => {
+
+        decreaseButton.addEventListener("click", () => {
             if (Number(quantityElement.value)-1 < 0) return
             updateCart(productId, Number(quantityElement.value)-1)
         })
@@ -104,7 +108,7 @@ function registerQtyButtons() {
     
     const deleteButtons = document.querySelectorAll(".cart-item-delete")
     for (const deleteButton of deleteButtons) {
-        let productId = deleteButton.closest(".cart-item").id
+        const productId = deleteButton.closest(".cart-item").id
         deleteButton.addEventListener("click", () => {
             removeCartItem(productId)
             renderCart()
@@ -115,9 +119,9 @@ function registerQtyButtons() {
 
 function updateCart(productId: string, quantity: number) {
     quantity = Math.min(Math.max(quantity, 0), 99);
-    let productElement = document.getElementById(productId)
-    let quantityInput = productElement.querySelector(".cart-quantity") as HTMLInputElement
-    let products = getCart()["products"]
+    const productElement = document.getElementById(productId)
+    const quantityInput = productElement.querySelector(".cart-quantity") as HTMLInputElement
+    const products = getCart()["products"]
     quantityInput.value = quantity.toString()
     setCartItem(productId, Number(quantity), products[productId]["data"])
     renderCart()

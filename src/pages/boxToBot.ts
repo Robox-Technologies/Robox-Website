@@ -13,10 +13,10 @@ function updateBoxToBot() {
     let imgIndex = 0;
 
     for (let i = 0; i < steps.length-1;i++) {
-        let step = steps[i];
-        let nextStep = steps[i+1];
-        let viewportOffset = step.getBoundingClientRect();
-        let viewportOffsetNext = nextStep.getBoundingClientRect();
+        const step = steps[i];
+        const nextStep = steps[i+1];
+        const viewportOffset = step.getBoundingClientRect();
+        const viewportOffsetNext = nextStep.getBoundingClientRect();
         
         if ((viewportOffset.bottom + viewportOffsetNext.top)/2 > window.innerHeight / 2) break;
 

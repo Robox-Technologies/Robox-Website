@@ -55,7 +55,7 @@ async function recursiveItemGrab(API: Stripe.PricesResource | Stripe.ProductsRes
     // Convert the array to an object with item IDs as keys
     let itemObject: Record<string, Stripe.Price | Stripe.Product> = {};
     itemObject = itemArray.filter((item) => item.active).reduce((acc, item) => {
-            let id: string = "product" in item && typeof item.product === "string" ? item.product : item.id;
+            const id: string = "product" in item && typeof item.product === "string" ? item.product : item.id;
             acc[id] = item;
             return acc;
         }, {} as Record<string, Stripe.Price | Stripe.Product>);
@@ -80,7 +80,7 @@ function isPricesResource(api: Stripe.PricesResource | Stripe.ProductsResource):
 export async function getProduct(id: string): Promise<Product | false> {
     try {
         if (id === "quantity") return false
-        let product = await stripeAPI.products.retrieve(id);
+        const product = await stripeAPI.products.retrieve(id);
         if (!product.default_price || typeof product.default_price !== "string") {
             console.error("Product does not have a price")
             return false;
@@ -90,7 +90,7 @@ export async function getProduct(id: string): Promise<Product | false> {
             console.error("Product does not have a proper status")
             return false;
         }
-        let price = await stripeAPI.prices.retrieve(product.default_price)
+        const price = await stripeAPI.prices.retrieve(product.default_price)
         if (!price || !price.unit_amount) {
             console.error("Product does not have a valid price")
             return false;
@@ -105,16 +105,15 @@ export async function getProduct(id: string): Promise<Product | false> {
             status: status,
             weight: Number(product.metadata.weight ?? defaultWeight)
         }
-    }
-    catch (err) {
+    } catch {
         return false
     }
 }
 
 export async function getProductList(): Promise<Record<string, Product>> {
-    let products = await getAllStripe("product");
-    let prices = await getAllStripe("price");
-    let combined: Record<string, Product> = {};
+    const products = await getAllStripe("product");
+    const prices = await getAllStripe("price");
+    const combined: Record<string, Product> = {};
     
     for (const productId in products) {
         const product = products[productId];
@@ -125,7 +124,7 @@ export async function getProductList(): Promise<Record<string, Product>> {
             continue;
         }
 
-        let displayStatus = displayStatusMap[status] ?? "Unknown Status";
+        const displayStatus = displayStatusMap[status] ?? "Unknown Status";
         combined[productId] = {
             name: product.name,
             internalName: product.name.replaceAll(" ", "-").replaceAll("/", "").toLowerCase(), // Use this for filenames
@@ -139,5 +138,6 @@ export async function getProductList(): Promise<Record<string, Product>> {
             weight: Number(product.metadata.weight ?? defaultWeight)
         };
     }
-    return combined
+
+    return combined;
 }

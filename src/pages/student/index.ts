@@ -1,5 +1,5 @@
 import { createProject, getProject, getProjects, renameProject } from "../../root/serialization";
-import { Project, Projects } from "types/projects";
+import { Project } from "types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { toggleToolbar, moveToolbar } from "../../root/toolbar";
@@ -20,19 +20,19 @@ async function applyProjects() {
 
     const projects = getProjects();
     const projectIds = Object.keys(projects);
-    let sortedByTime = projectIds.sort((a, b) =>
+    const sortedByTime = projectIds.sort((a, b) =>
         dayjs(projects[b].time).diff(dayjs(projects[a].time))
     );
     for (const uuid of sortedByTime) {
-        let project = projects[uuid];
-        let card = createProjectCard(uuid, project);
+        const project = projects[uuid];
+        const card = createProjectCard(uuid, project);
         card.addEventListener("click", (event: MouseEvent) => {
-            let item = event.target as HTMLElement | null;
+            const item = event.target as HTMLElement | null;
             if (!item) return;
             window.location.href = `/editor?id=${uuid}`;
             event.stopPropagation();
         });
-        let options = card.querySelector(".options") as HTMLButtonElement | null;
+        const options = card.querySelector(".options") as HTMLButtonElement | null;
         if (!options) continue;
         options.addEventListener("click", (event: MouseEvent) => {
             event.stopImmediatePropagation();
@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!projectCard) return;
         const projectId = projectCard.id;
         if (!projectId) return;
-        let project = getProject(projectId);
+        const project = getProject(projectId);
         if (!project) return;
         renameProject(projectId, projectNameInput.value);
         applyProjects();
@@ -95,11 +95,11 @@ document.addEventListener("DOMContentLoaded", () => {
         editModal.close();
     });
     deleteConfirmButton.addEventListener("click", () => {
-        let projectCard = document.querySelector(".toolbar-target")?.closest(".project-card") as HTMLElement | null;
+        const projectCard = document.querySelector(".toolbar-target")?.closest(".project-card") as HTMLElement | null;
         if (!projectCard) return;
         const projectId = projectCard.id;
         if (!projectId) return;
-        let projects = getProjects();
+        const projects = getProjects();
         if (projects[projectId]) {
             delete projects[projectId];
             localStorage.setItem("roboxProjects", JSON.stringify(projects));
@@ -126,7 +126,7 @@ function createProjectCard(uuid: string, project: Project): HTMLElement {
     const options = clone.querySelector(".options") as HTMLButtonElement | null;
     if (!title || !time || !image || !options) return document.createElement("div");
 
-    let projectTime = dayjs(project.time);
+    const projectTime = dayjs(project.time);
 
     image.src = project.thumbnail;
     title.textContent = project.name;

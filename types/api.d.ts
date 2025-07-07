@@ -1,5 +1,3 @@
-import { Metadata } from "@stripe/stripe-js";
-
 export type ProductList = Product[]
 export type Product = {
     name: string,
