@@ -1,14 +1,10 @@
-interface Fees {
-    shipping: Shipping
-}
-
-interface Shipping {
+type Shipping = {
     maximum: number,
     penaltyFeePerKg: number,
     weightBrackets: Array<ShippingWeightBracket>
 }
 
-interface ShippingWeightBracket {
+type ShippingWeightBracket = {
     maxWeight: number,
     price: number
 }
