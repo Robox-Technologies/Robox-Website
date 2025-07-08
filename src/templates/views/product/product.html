@@ -46,7 +46,7 @@
 
             <div id="important-info">
                 <h1 id="product-name"><%= product.name %></h1>
-                <h1 id="price">$<%= (product.price / 100).toFixed(2) %> AUD</h1>
+                <h1 id="price">AU$<%= product.displayPrice %></h1>
                 <p><%= product.description %></p>
                 <p id="status"><%= product.displayStatus %></p>
 
@@ -79,7 +79,7 @@
                 <div class="cart-item-info">
                     <div class="cart-item-text-info">
                         <p class="cart-item-text-title">${product.name} (Qty: <span id="modal-quantity"></span>)</p>
-                        <p class="cart-item-text-subtotal">$${(product.price / 100).toFixed(2)}/each</p>
+                        <p class="cart-item-text-subtotal">AU$${product.displayPrice}/each</p>
                         <p class="cart-item-text-price">Total: <span id="modal-total-price"></span></p>
                     </div>
                 </div>

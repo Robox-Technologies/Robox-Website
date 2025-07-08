@@ -1,13 +1,13 @@
 {
     "shipping": {
         "maximum": 23.3,
-        "penaltyFeePerKg": 5,
+        "penaltyFeePerKg": 500,
         "weightBrackets": [
-            { "maxWeight": 250, "price": 9.7 },
-            { "maxWeight": 500, "price": 11.15 },
-            { "maxWeight": 1000, "price": 15.25 },
-            { "maxWeight": 3000, "price": 19.3 },
-            { "maxWeight": 5000, "price": 23.3 }
+            { "maxWeight": 250, "price": 970 },
+            { "maxWeight": 500, "price": 1115 },
+            { "maxWeight": 1000, "price": 1525 },
+            { "maxWeight": 3000, "price": 1930 },
+            { "maxWeight": 5000, "price": 2330 }
         ]
     }
 }

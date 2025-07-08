@@ -77,6 +77,33 @@ function isPricesResource(api: Stripe.PricesResource | Stripe.ProductsResource):
         'retrieveFeature' in api); // crude but works
 }
 
+function makeProductObject(product: stripe.Product, price: stripe.Price): Product | null {
+    const unitPrice = price.unit_amount ?? 0;
+    const priceDollars = unitPrice / 100;
+    const displayPrice = priceDollars.toFixed(priceDollars % 1 === 0 ? 0 : 2);
+
+    const status = product.metadata.status ?? undefined;
+    if (!isValidStatus(status)) {
+        console.error(`Product ${product.id} does not have a valid status`);
+        return null;
+    }
+    const displayStatus = displayStatusMap[status] ?? "Unknown Status";
+
+    return {
+        name: product.name,
+        internalName: product.name.replaceAll(" ", "-").replaceAll("/", "").toLowerCase(), // Use this for filenames
+        description: product.description ?? "",
+        images: product.images,
+        price_id: price.id,
+        price: unitPrice,
+        displayPrice: displayPrice, // Convert cents to dollars
+        item_id: product.id,
+        status: status,
+        displayStatus: displayStatus,
+        weight: Number(product.metadata.weight ?? defaultWeight)
+    };
+}
+
 export async function getProduct(id: string): Promise<Product | false> {
     try {
         if (id === "quantity") return false
@@ -85,26 +112,14 @@ export async function getProduct(id: string): Promise<Product | false> {
             console.error("Product does not have a price")
             return false;
         }
-        const status = isValidStatus(product.metadata.status) ? product.metadata.status : undefined;
-        if (!status) {
-            console.error("Product does not have a proper status")
-            return false;
-        }
+
         const price = await stripeAPI.prices.retrieve(product.default_price)
         if (!price || !price.unit_amount) {
             console.error("Product does not have a valid price")
             return false;
         }
-        return {
-            name: product.name,
-            description: product.description ?? "",
-            images: product.images,
-            price_id: price.id,
-            price: price.unit_amount,
-            item_id: product.id,
-            status: status,
-            weight: Number(product.metadata.weight ?? defaultWeight)
-        }
+        
+        return makeProductObject(product, price);
     } catch {
         return false
     }
@@ -118,25 +133,8 @@ export async function getProductList(): Promise<Record<string, Product>> {
     for (const productId in products) {
         const product = products[productId];
         const price = prices[productId];
-        const status = product.metadata.status ?? undefined;
-        if (!isValidStatus(status)) {
-            console.error(`Product ${product.id} does not have a valid status`);
-            continue;
-        }
-
-        const displayStatus = displayStatusMap[status] ?? "Unknown Status";
-        combined[productId] = {
-            name: product.name,
-            internalName: product.name.replaceAll(" ", "-").replaceAll("/", "").toLowerCase(), // Use this for filenames
-            description: product.description ?? "",
-            images: product.images,
-            price_id: price.id,
-            price: price.unit_amount ? price.unit_amount : 0, // Convert cents to dollars
-            item_id: product.id,
-            status: status,
-            displayStatus: displayStatus,
-            weight: Number(product.metadata.weight ?? defaultWeight)
-        };
+        
+        combined[productId] = makeProductObject(product, price);
     }
 
     return combined;

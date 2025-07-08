@@ -7,6 +7,7 @@ export type Product = {
     images: string[],
     price_id: string,
     price: number,
+    displayPrice: string, // Used for display purposes
     item_id: string,
     status: ProductStatus,
     weight: number
