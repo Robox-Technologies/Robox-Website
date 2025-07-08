@@ -100,7 +100,7 @@ export async function getProduct(id: string): Promise<Product | false> {
             description: product.description ?? "",
             images: product.images,
             price_id: price.id,
-            price: price.unit_amount / 100,
+            price: price.unit_amount,
             item_id: product.id,
             status: status,
             weight: Number(product.metadata.weight ?? defaultWeight)
@@ -131,7 +131,7 @@ export async function getProductList(): Promise<Record<string, Product>> {
             description: product.description ?? "",
             images: product.images,
             price_id: price.id,
-            price: price.unit_amount ? price.unit_amount / 100 : 0, // Convert cents to dollars
+            price: price.unit_amount ? price.unit_amount : 0, // Convert cents to dollars
             item_id: product.id,
             status: status,
             displayStatus: displayStatus,
