@@ -24,6 +24,7 @@
     "express": "^4.21.2",
     "html-bundler-webpack-plugin": "^4.19.1",
     "jsdom": "^26.1.0",
+    "juice": "^11.0.1",
     "memory-cache": "^0.2.0",
     "nodemailer": "^7.0.4",
     "parse5": "^7.2.1",

@@ -108,7 +108,20 @@ export async function getProduct(id: string): Promise<Product | false> {
         return false
     }
 }
-
+export async function getCustomer(id: string): Promise<Stripe.Customer | false> {
+    try {
+        let customer = await stripeAPI.customers.retrieve(id);
+        if (!customer || !customer.id) {
+            console.error("Customer not found or invalid");
+            return false;
+        }
+        return customer as Stripe.Customer;
+    } catch (err) {
+        console.error("Error retrieving customer:", err);
+        return false;
+    }
+    
+}
 export async function getProductList(): Promise<Record<string, Product>> {
     const products = await getAllStripe("product");
     const prices = await getAllStripe("price");

@@ -2,8 +2,8 @@ import { createTransport } from "nodemailer";
 import fs from "fs";
 import {JSDOM } from "jsdom";
 import { Stripe } from "stripe";
-const SUCCESS_EMAIL_TEMPLATE = new JSDOM(fs.readFileSync("./src/templates/email/success.html"))
-
+import juice from "juice";
+import { getCustomer } from "./stripe-server-helper.js";
 const transporter = createTransport({
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT || "587"),
@@ -17,15 +17,24 @@ export type ProductEmail = Record<string, {
     quantity: number;
     price: number;
 }>
-export function sendSuccessEmail(to: string, subject: string, products: ProductEmail, paymentIntent: Stripe.PaymentIntent): Promise<void> {
+type attachments = {
+    filename: string;
+    path: string;
+    cid: string;
+}[];
+export async function sendSuccessEmail(to: string, subject: string, products: ProductEmail, paymentIntent: Stripe.PaymentIntent): Promise<void> {
+    const SUCCESS_EMAIL_TEMPLATE = new JSDOM(fs.readFileSync("./src/templates/email/success.html"))
     let document = SUCCESS_EMAIL_TEMPLATE.window.document;
 
+    const nameElement = document.querySelector("#name");
+    const idElement = document.querySelector("#id");
     const dateElement = document.querySelector("#date");
-    const emailElement = document.querySelector("#email");
-    const orderIdElement = document.querySelector("#order-id");
-
-    if (!orderIdElement || !dateElement || !emailElement) {
-        throw new Error("Required elements not found in the email template");
+    const headerDateElement = document.querySelector("#p-date");
+    const productsElement = document.querySelector("#product-header");
+    const totalElement = document.querySelector("#total");
+    if (!nameElement || !idElement || !dateElement || !headerDateElement || !productsElement || !totalElement) {
+        console.error("One or more required elements are missing in the email template.");
+        return;
     }
     const date = new Date().toLocaleDateString("en-AU", {
         year: "numeric",
@@ -34,41 +43,69 @@ export function sendSuccessEmail(to: string, subject: string, products: ProductE
     });
     const orderId = paymentIntent.id;
     const total = paymentIntent.amount_received / 100;
+    const customerName: string = paymentIntent.shipping?.name || "Customer";
 
-    dateElement.textContent = date;
-    emailElement.textContent = to;
-    orderIdElement.textContent = orderId;
+    nameElement.textContent = `Hi ${customerName},`;
+    idElement.textContent = `Order ID: ${orderId}`;
+    dateElement.textContent = `Date: ${date}`;
+    headerDateElement.textContent = `Date: ${date}`;
+
+    const productTable = document.querySelector("#products"); // this is the <table>
+    const totalRow = totalElement.closest("tr");
+
+    if (!productTable || !totalRow) {
+        console.error("Could not find products table or total row");
+        return;
+    }
 
     for (const [productId, { quantity, price }] of Object.entries(products)) {
         let productLine = document.createElement("tr");
-        let productName = document.createElement("td");
-        let productQuantity = document.createElement("td");
-        let productPrice = document.createElement("td");
 
-        productName.textContent = productId;
-        productQuantity.textContent = quantity.toString();
-        productPrice.textContent = `$${(price)}`
+        const productName = createCell(document, productId, "60%", "purchase_item purchase_i");
+        const productQuantity = createCell(document, quantity.toString(), "20%", "align-center purchase_i");
+        const productPrice = createCell(document, `$${(price/100).toFixed(2)}`, "20%", "align-right purchase_i");
 
         productLine.appendChild(productName);
         productLine.appendChild(productQuantity);
         productLine.appendChild(productPrice);
-        document.querySelector(".order-table")?.insertAdjacentElement("beforeend", productLine);
+
+        // Insert *above* the total row
+        totalRow.parentElement!.insertBefore(productLine, totalRow);
     }
-    const totalElement = document.querySelector("#total");
+    
     if (totalElement) {
         totalElement.textContent = `$${total.toFixed(2)}`;
     }
     const htmlContent = document.documentElement.outerHTML;
-    return sendEmail(to, subject, htmlContent);
+    // Inline CSS styles using juice
+    const juicedContent = juice(htmlContent)
+    return sendEmail(to, subject, juicedContent, [
+        {
+            filename: "logo.svg",
+            path: "./src/images/logo-full.svg",
+            cid: "logo@robox",
+        }
+    ]);
+}
+function createCell(document: Document, text: string, width: string, className: string): HTMLTableCellElement {
+    const td = document.createElement("td");
+    td.setAttribute("width", width);
+    td.setAttribute("class", className);
+    const span = document.createElement("span");
+    span.setAttribute("class", "f-fallback");
+    span.textContent = text;
+    td.appendChild(span);
+    return td;
 }
 
-async function sendEmail(to: string, subject: string, content: string): Promise<void> {
+async function sendEmail(to: string, subject: string, content: string, attachments: attachments): Promise<void> {
     try {
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: to,
             subject: subject,
             html: content,
+            attachments: attachments || [],
         };
 
         await transporter.sendMail(mailOptions);
@@ -86,4 +123,5 @@ async function loadTemplate(templatePath: string): Promise<string> {
         throw new Error("Failed to load email template");
     }
 }
+
 export default transporter;
