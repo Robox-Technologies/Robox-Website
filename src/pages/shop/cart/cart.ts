@@ -1,6 +1,6 @@
 import { getCart, removeCartItem, setCartItem } from "@root/cart"
 import { renderCart } from "@root/shop"
-
+import { formatPrice } from "@root/stripe-shared-helper"
 const availableHolder = document.querySelector("#available-section")
 const preorderHolder = document.querySelector("#preorder-section")
 
@@ -24,7 +24,7 @@ function renderItemSubtotal(itemId: string) {
     const updatedProductData = updatedProduct["data"];
     const updatedQuantity = updatedProduct["quantity"]
 
-    subtotalElement.textContent = `$${updatedProductData.price * updatedQuantity}`;
+    subtotalElement.textContent = formatPrice(updatedProductData.price * updatedQuantity, true);
 }
 
 function renderPreview() {
@@ -32,13 +32,13 @@ function renderPreview() {
     const products = getCart()["products"]
     let cartEmpty = true;
     for (const productId in products) {
-        const product = products[productId]["data"]
+        const product = products[productId].data
         if (!product || productId == "") continue
     
-        const price = product["price"]
-        const name = product["name"]
-        const status = product["status"]
-        const quantity = products[productId]["quantity"]
+        const price = formatPrice(product.price)
+        const name = product.name
+        const status = product.status
+        const quantity = products[productId].quantity
 
         if (Number(quantity) === 0) {
             removeCartItem(productId)
@@ -57,7 +57,7 @@ function renderPreview() {
         imageElement.alt = productImage.alt;
         
         titleElement.textContent = name
-        priceElement.textContent = `$${price}/each`
+        priceElement.textContent = `${price}/each`
         
         quantityInput.value = quantity.toString()
     

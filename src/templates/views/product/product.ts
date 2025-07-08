@@ -1,4 +1,5 @@
 import { addCartItem, refreshCart } from "@root/cart";
+import { formatPrice } from "@root/stripe-shared-helper";
 
 // TODO: Find a non-hacky way fetching currentProduct without @ts-ignore
 // @ts-expect-error Fetched from HTML
@@ -56,7 +57,7 @@ addToCartButton.addEventListener("click", () => {
     refreshCart();
 
     document.getElementById("modal-quantity").textContent = quantity.toString();
-    document.getElementById("modal-total-price").innerText = (Number(product.price) * quantity).toString();
+    document.getElementById("modal-total-price").innerText = formatPrice(product.price * quantity, true);
     cartModal.showModal();
 });
 

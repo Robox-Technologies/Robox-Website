@@ -29,9 +29,9 @@ export function renderCart() {
         }
     }
     if (totalValue && orderValue && shippingValue) {
-        orderValue.textContent = `$${cost.products.toFixed(2)}`;
-        totalValue.textContent = `$${cost.total.toFixed(2)}`;
-        shippingValue.textContent = `$${cost.shipping.toFixed(2)}`;
+        orderValue.textContent = cost.displayProducts;
+        totalValue.textContent = cost.displayTotal;
+        shippingValue.textContent = cost.displayShipping;
     }
 }
 
@@ -50,7 +50,6 @@ async function getItemData(): Promise<Record<string, Product>> {
     const data = await Promise.all(promises);
     return Object.fromEntries(data)
 }
-
 
 renderCart();
 

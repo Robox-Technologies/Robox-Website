@@ -2,13 +2,14 @@ import stripe, { Stripe } from 'stripe'
 
 import 'dotenv/config'
 import { Product, ProductStatus } from 'types/api';
+import { formatPrice } from './src/root/stripe-shared-helper.js';
 
 const defaultWeight = 500;
 export const stripeAPI = new stripe(process.env.STRIPE_SECRET_KEY)
 export const displayStatusMap: { [K in ProductStatus]: string } = {
     "available": "Available for Purchase",
     "not-available": "Out of Stock",
-    "preorder": "Pre-order Now",
+    "preorder": "Pre-order Now"
 };
 
 
@@ -77,6 +78,31 @@ function isPricesResource(api: Stripe.PricesResource | Stripe.ProductsResource):
         'retrieveFeature' in api); // crude but works
 }
 
+function makeProductObject(product: stripe.Product, price: stripe.Price): Product | undefined {
+    const unitPrice = price.unit_amount ?? 0;
+
+    const status = product.metadata.status ?? undefined;
+    if (!isValidStatus(status)) {
+        console.error(`Product ${product.id} does not have a valid status`);
+        return undefined;
+    }
+    const displayStatus = displayStatusMap[status] ?? "Unknown Status";
+
+    return {
+        name: product.name,
+        internalName: product.name.replaceAll(" ", "-").replaceAll("/", "").toLowerCase(), // Use this for filenames
+        description: product.description ?? "",
+        images: product.images,
+        price_id: price.id,
+        price: unitPrice,
+        displayPrice: formatPrice(unitPrice), // Convert cents to dollars
+        item_id: product.id,
+        status: status,
+        displayStatus: displayStatus,
+        weight: Number(product.metadata.weight ?? defaultWeight)
+    };
+}
+
 export async function getProduct(id: string): Promise<Product | false> {
     try {
         if (id === "quantity") return false
@@ -85,26 +111,14 @@ export async function getProduct(id: string): Promise<Product | false> {
             console.error("Product does not have a price")
             return false;
         }
-        const status = isValidStatus(product.metadata.status) ? product.metadata.status : undefined;
-        if (!status) {
-            console.error("Product does not have a proper status")
-            return false;
-        }
+
         const price = await stripeAPI.prices.retrieve(product.default_price)
         if (!price || !price.unit_amount) {
             console.error("Product does not have a valid price")
             return false;
         }
-        return {
-            name: product.name,
-            description: product.description ?? "",
-            images: product.images,
-            price_id: price.id,
-            price: price.unit_amount / 100,
-            item_id: product.id,
-            status: status,
-            weight: Number(product.metadata.weight ?? defaultWeight)
-        }
+        
+        return makeProductObject(product, price) ?? false;
     } catch {
         return false
     }
@@ -116,27 +130,11 @@ export async function getProductList(): Promise<Record<string, Product>> {
     const combined: Record<string, Product> = {};
     
     for (const productId in products) {
-        const product = products[productId];
-        const price = prices[productId];
-        const status = product.metadata.status ?? undefined;
-        if (!isValidStatus(status)) {
-            console.error(`Product ${product.id} does not have a valid status`);
-            continue;
+        const product = makeProductObject(products[productId], prices[productId]);
+        
+        if (product) {
+            combined[productId] = product;
         }
-
-        const displayStatus = displayStatusMap[status] ?? "Unknown Status";
-        combined[productId] = {
-            name: product.name,
-            internalName: product.name.replaceAll(" ", "-").replaceAll("/", "").toLowerCase(), // Use this for filenames
-            description: product.description ?? "",
-            images: product.images,
-            price_id: price.id,
-            price: price.unit_amount ? price.unit_amount / 100 : 0, // Convert cents to dollars
-            item_id: product.id,
-            status: status,
-            displayStatus: displayStatus,
-            weight: Number(product.metadata.weight ?? defaultWeight)
-        };
     }
 
     return combined;
