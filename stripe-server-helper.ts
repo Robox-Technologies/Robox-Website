@@ -78,13 +78,13 @@ function isPricesResource(api: Stripe.PricesResource | Stripe.ProductsResource):
         'retrieveFeature' in api); // crude but works
 }
 
-function makeProductObject(product: stripe.Product, price: stripe.Price): Product | null {
+function makeProductObject(product: stripe.Product, price: stripe.Price): Product | undefined {
     const unitPrice = price.unit_amount ?? 0;
 
     const status = product.metadata.status ?? undefined;
     if (!isValidStatus(status)) {
         console.error(`Product ${product.id} does not have a valid status`);
-        return null;
+        return undefined;
     }
     const displayStatus = displayStatusMap[status] ?? "Unknown Status";
 
@@ -118,7 +118,7 @@ export async function getProduct(id: string): Promise<Product | false> {
             return false;
         }
         
-        return makeProductObject(product, price);
+        return makeProductObject(product, price) ?? false;
     } catch {
         return false
     }
@@ -130,10 +130,11 @@ export async function getProductList(): Promise<Record<string, Product>> {
     const combined: Record<string, Product> = {};
     
     for (const productId in products) {
-        const product = products[productId];
-        const price = prices[productId];
+        const product = makeProductObject(products[productId], prices[productId]);
         
-        combined[productId] = makeProductObject(product, price);
+        if (product) {
+            combined[productId] = product;
+        }
     }
 
     return combined;
