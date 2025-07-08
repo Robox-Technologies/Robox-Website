@@ -66,5 +66,5 @@ export function cartToDictionary(): Record<string, number> {
 }
 
 export function formatPrice(price: number, forceCents: boolean = false): string {
-    return `AU$${(price / 100).toFixed(!forceCents && price % 1 === 0 ? 0 : 2)}`;
+    return `AU$${(price / 100).toFixed(!forceCents && Number.isInteger(price) ? 0 : 2)}`;
 }

@@ -1,6 +1,6 @@
 {
     "shipping": {
-        "maximum": 23.3,
+        "maximum": 2330,
         "penaltyFeePerKg": 500,
         "weightBrackets": [
             { "maxWeight": 250, "price": 970 },

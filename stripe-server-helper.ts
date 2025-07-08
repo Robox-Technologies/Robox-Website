@@ -2,13 +2,14 @@ import stripe, { Stripe } from 'stripe'
 
 import 'dotenv/config'
 import { Product, ProductStatus } from 'types/api';
+import { formatPrice } from './src/root/stripe-shared-helper.js';
 
 const defaultWeight = 500;
 export const stripeAPI = new stripe(process.env.STRIPE_SECRET_KEY)
 export const displayStatusMap: { [K in ProductStatus]: string } = {
     "available": "Available for Purchase",
     "not-available": "Out of Stock",
-    "preorder": "Pre-order Now",
+    "preorder": "Pre-order Now"
 };
 
 
@@ -79,8 +80,6 @@ function isPricesResource(api: Stripe.PricesResource | Stripe.ProductsResource):
 
 function makeProductObject(product: stripe.Product, price: stripe.Price): Product | null {
     const unitPrice = price.unit_amount ?? 0;
-    const priceDollars = unitPrice / 100;
-    const displayPrice = priceDollars.toFixed(Number.isInteger(priceDollars) ? 0 : 2);
 
     const status = product.metadata.status ?? undefined;
     if (!isValidStatus(status)) {
@@ -96,7 +95,7 @@ function makeProductObject(product: stripe.Product, price: stripe.Price): Produc
         images: product.images,
         price_id: price.id,
         price: unitPrice,
-        displayPrice: displayPrice, // Convert cents to dollars
+        displayPrice: formatPrice(unitPrice), // Convert cents to dollars
         item_id: product.id,
         status: status,
         displayStatus: displayStatus,

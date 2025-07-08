@@ -32,7 +32,7 @@
                             imageSource: `@images/product/${product.internalName}/thumbnail.jpg`,
                             descriptions: [
                                 `<span class="${product.status}">${product.displayStatus}</span>`,
-                                `AU$${product.displayPrice}`,
+                                product.displayPrice,
                             ],
                             buttons: [
                                 {
