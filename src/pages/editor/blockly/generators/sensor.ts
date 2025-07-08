@@ -3,11 +3,11 @@
 
 import { pythonGenerator, Order } from 'blockly/python'
 
-pythonGenerator.forBlock['ultrasonic_distance'] = function (block, generator) {
-    var code = 'ultrasonic.distance()';
+pythonGenerator.forBlock['ultrasonic_distance'] = function () {
+    const code = 'ultrasonic.distance()';
     return [code, Order.ATOMIC];
 };
-pythonGenerator.forBlock['sensor_bool'] = function (block, generator) {
+pythonGenerator.forBlock['sensor_bool'] = function (block) {
     const dropdown_sensor = block.getFieldValue('sensor');
     const colour_colour = block.getFieldValue('colour');
 
@@ -23,8 +23,4 @@ pythonGenerator.forBlock['distance_bool'] = function(block, generator) {
     const code = `ultrasonic.distance() ${dropdown_equality} ${value_number}`;
     // TODO: Change Order.NONE to the correct operator precedence strength
     return [code, Order.NONE];
-  }
-// pythonGenerator.forBlock['line_position'] = function (block, generator) {
-//     var code = 'ultrasonic.distance()';
-//     return [code, Order.ATOMIC];
-// };
+}

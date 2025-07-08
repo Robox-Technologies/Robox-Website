@@ -3,18 +3,16 @@ $toolbarBorderRadius: 0.5em;
 $toolbarBorderColor: variables.$tone3;
 $toolbarBorderStroke: 3px;
 $toolbarWidth: 130px;
-$toolbarPadding: 5px 20px 5px 5px;
+$toolbarPadding: 5px;
 
 .toolbar[open] {
+    position: absolute;
     z-index: 10000;
     display: flex;
-    position: relative;
     flex-direction: column;
     padding: $toolbarPadding;
     align-items: flex-start;
     justify-content: space-between;
-    left: -30px;
-    top: 15px;
     border-radius: $toolbarBorderRadius;
     margin: 0;
     // border: $toolbarBorderStroke solid $toolbarBorderColor;

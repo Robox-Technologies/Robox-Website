@@ -21,7 +21,7 @@ $secondary: #C6C6C6;
 $tone2: #EFEFEF;
 
 // Numericals
-$articleMargin: 64px;
+$articleMargin: var(--articleMargin);
 $standardGap: 32px;
 $borderRadius: 20px;
 

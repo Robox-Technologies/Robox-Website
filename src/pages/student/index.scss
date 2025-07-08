@@ -26,7 +26,6 @@ $cardBorderRadius: 5%;
 .guide-icon-arrow {
     height: 12px;
     width: 12px;
-    margin-top: 1px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -60,7 +59,9 @@ $toolbarBorderColor: variables.$primary;
 $toolbarBorderStroke: 3px;
 $toolbarWidth: 130px;
 
-
+.item-sections h1 {
+    margin-top: 0.83em;
+}
 
 #toolbar[open] {
     z-index: 4;
@@ -139,6 +140,12 @@ $toolbarWidth: 130px;
 .assembly-card > .card-info > .card-buttons > .card-button:hover {
     --underline-width: 100%;
 }
+.assembly-card > .card-info > .card-buttons > .card-button {
+    font-family: "Nunito", sans-serif;
+    padding: 0 0 0.2em;
+
+}
+
 .card {
     background-color: white !important;
 }
@@ -194,10 +201,22 @@ $renameContentPadding: 5%;
     
 } 
 
-
-.card-wrapper:hover:not([toolbar]) {
-    transform: translateY(-2px);
+.card-wrapper {
+    position:relative;
 }
-.card-wrapper:hover > .project-card, .card-wrapper:hover > .lesson-card:hover {
+.project-card:hover {
+    transform: translateY(-2px);
     border: $hoverCardBorderSize solid variables.$themeBlue;
+}
+.card-link {
+    display: flex;
+    align-items: center;
+}
+.card-link:hover {
+    --underline-width: 100%;
+}
+.project-card:has(.toolbar-target) {
+    border: $hoverCardBorderSize solid variables.$themeGreen;
+    transform: translateY(-2px);
+
 }

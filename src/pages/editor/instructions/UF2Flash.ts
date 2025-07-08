@@ -79,9 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let dirHandle: FileSystemDirectoryHandle | null = null;
         try {
             dirHandle = await window.showDirectoryPicker();
-        }
-        catch (error) {
-
+        } catch {
             flashFailure("file-failure");
             return stage2Modal.close();
         }
@@ -114,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
         //Request the access to the USB device
         try {
             await navigator.usb.requestDevice({ filters: [{ vendorId: 0x2e8a }] });
-        } catch (error) {
+        } catch {
             stage1Modal.removeAttribute("loading");
 
             flashFailure("no-device");
@@ -140,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     outcomeButton.addEventListener("click", async () => {
-        let failure = outcomeModal.getAttribute("failure") as failures | null;
+        const failure = outcomeModal.getAttribute("failure") as failures | null;
         if (!failure) {
             console.error("No failure attribute set on outcome modal.");
             return;
@@ -149,12 +147,12 @@ document.addEventListener("DOMContentLoaded", () => {
             // Try and request the USB device again
             try {
                 await navigator.usb.requestDevice({ filters: [{ vendorId: 0x2e8a }] });
-            } catch (error) {
+            } catch {
                 flashFailure("no-device");
                 return;
             }
             //Recheck if the device is in BOOTSEL mode
-            let checkBOOTSEL = await detectBOOTSEL();
+            const checkBOOTSEL = await detectBOOTSEL();
             if (checkBOOTSEL) {
                 outcomeModal.close();
                 stage2Modal.showModal(); // If it is then we can move to the next stage
@@ -205,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 async function detectBOOTSEL() {
-    let devices = await navigator.usb.getDevices()
+    const devices = await navigator.usb.getDevices()
     return devices.some(device => device.productName === "RP2 Boot");
 }
 async function detectPicoFolder(dirHandle: FileSystemDirectoryHandle): Promise<boolean> {

@@ -15,7 +15,7 @@ header {
     background-color: variables.$primary;
     width: 100%;
     height: variables.$headerHeight;
-    padding-left: var(--articleMargin);
+    padding-left: variables.$articleMargin;
 }
 
 .hamburger {
@@ -50,7 +50,7 @@ header {
     display: none;
     flex-direction: column;
     gap: variables.$standardGap;
-    padding: variables.$standardGap var(--articleMargin);
+    padding: variables.$standardGap variables.$articleMargin;
     transition: top 0.5s ease;
     z-index: -1;
     border-bottom: 1px solid variables.$secondary;
@@ -97,7 +97,7 @@ header {
     gap: variables.$standardGap;
     background-color: variables.$themeBlue;
     height: variables.$headerHeight;
-    padding: 0 var(--articleMargin);
+    padding: 0 variables.$articleMargin;
 }
 
 .btn {

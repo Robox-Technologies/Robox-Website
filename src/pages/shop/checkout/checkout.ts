@@ -2,19 +2,19 @@ import { getCart, stripePublishableKey } from "@root/cart";
 import { Appearance, loadStripe } from '@stripe/stripe-js';
 import { Product } from "types/api";
 import "@root/shop";
-import { calculateTotalCost, cartToDictionary } from "@root/stripe-helper";
+import { calculateTotalCost, cartToDictionary } from "@root/stripe-shared-helper";
 
 
 
 
 const cart = getCart();
-let products = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, product: string) => {
-    let productData = cart["products"][product]["data"];
+const products = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, product: string) => {
+    const productData = cart["products"][product]["data"];
     acc[product] = productData;
     return acc;
 }, {});
 
-let totalCost = calculateTotalCost(cartToDictionary(), products).total;
+const totalCost = calculateTotalCost(cartToDictionary(), products).total;
 
 const appearance: Appearance = {
     theme: "flat",
@@ -50,7 +50,7 @@ paymentPromises.then((values) => {
     addressElement.mount('#address-element');
     const paymentElement = elements.create('payment');
     paymentElement.mount('#payment-element');
-    paymentElement.on("loaderstart", (event) => {
+    paymentElement.on("loaderstart", () => {
         document.getElementById("spinner").style.display = "none"
         document.getElementById("email").style.display = "block" 
         document.getElementById("email-label").style.display = "block"

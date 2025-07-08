@@ -8,7 +8,7 @@ $bottomRowHeight: 54px;
 }
 
 .footerContent {
-    padding: 0 var(--articleMargin);
+    padding: 0 variables.$articleMargin;
     
     hr {
         background-color: variables.$themeBlack;
@@ -89,7 +89,7 @@ $bottomRowHeight: 54px;
 
     .footerBottom {
         position: absolute;
-        padding: 0 var(--articleMargin);
+        padding: 0 variables.$articleMargin;
         width: 100%;
         bottom: 0;
     }
@@ -98,7 +98,7 @@ $bottomRowHeight: 54px;
         position: absolute;
         width: 100%;
         bottom: $bottomRowHeight;
-        right: var(--articleMargin);
+        right: variables.$articleMargin;
         background-color: variables.$primary;
         height: 2px;
         border: 0;
@@ -121,7 +121,7 @@ $bottomRowHeight: 54px;
     .footerBottom {
         height: inherit;
         align-items: start;
-        padding-bottom: var(--articleMargin);
+        padding-bottom: variables.$articleMargin;
 
         & > * {
             text-align: left;

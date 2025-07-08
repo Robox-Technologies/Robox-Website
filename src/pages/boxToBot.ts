@@ -1,7 +1,7 @@
-import img1 from '@images/landing/boxToBot/step1.png';
-import img2 from '@images/landing/boxToBot/step2.png';
-import img3 from '@images/landing/boxToBot/step3.png';
-import img4 from '@images/landing/boxToBot/step4.png';
+import img1 from '@images/landing/boxToBot/step1.svg';
+import img2 from '@images/landing/boxToBot/step2.svg';
+import img3 from '@images/landing/boxToBot/step3.svg';
+import img4 from '@images/landing/boxToBot/step4.svg';
 
 const images = [img1, img2, img3, img4];
 
@@ -13,10 +13,10 @@ function updateBoxToBot() {
     let imgIndex = 0;
 
     for (let i = 0; i < steps.length-1;i++) {
-        let step = steps[i];
-        let nextStep = steps[i+1];
-        let viewportOffset = step.getBoundingClientRect();
-        let viewportOffsetNext = nextStep.getBoundingClientRect();
+        const step = steps[i];
+        const nextStep = steps[i+1];
+        const viewportOffset = step.getBoundingClientRect();
+        const viewportOffsetNext = nextStep.getBoundingClientRect();
         
         if ((viewportOffset.bottom + viewportOffsetNext.top)/2 > window.innerHeight / 2) break;
 
@@ -37,3 +37,4 @@ function updateBoxToBot() {
 }
 
 document.addEventListener("scroll", updateBoxToBot);
+updateBoxToBot();

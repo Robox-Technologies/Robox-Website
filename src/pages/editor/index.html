@@ -1,14 +1,86 @@
-<!doctype html>
-<html>
-  <head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <%~ include('src/templates/partials/metadata.html') %>
-    <meta charset="utf-8" />
-    <title>Toolbox Customization Codelab</title>
+    <meta charset="utf-8">
+    <title>Code Workshop - Ro/Box</title>
     <script src="index.ts"></script>
-    <link href="./index.scss" rel="stylesheet" />
+    <link href="./index.scss" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+    
+<body>
+    <%~ include('src/templates/partials/header-workshop.html') %>
 
-    </head>
+    <div id="workspaceTabs">
+        <a id="back-button" href="/student">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+        <div id="project-name">
+            <form autocomplete="off" id="project-name-form">
+                <input id="project-name-input" type="text">
+                <button id="download-button">
+                    <i class="fa-solid fa-download"></i>
+
+                </button>
+            </form>
+        </div>
+        
+        <div id="buttons">
+            <button id="robox-settings-button" class="button standard-button">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+            <%~ include('src/templates/partials/toolbar.html', {
+                id: "settings-toolbar",
+                content: [
+                    "<button class='button' id='robox-settings-calibrate'><i class='fa-solid fa-eye-dropper'></i>Calibrate Colour</button>",
+                    "<button class='button' id='robox-settings-flash'><i class='fa-solid fa-screwdriver-wrench'></i>Update Firmware</button>",
+                ],
+            }) %>
+        </div>
+    </div>
+    <div id="blocklyDiv">
+        
+    </div>
+    <div id="actionBar">
+        <!-- left side buttons -->
+        <div>
+
+        </div>
+        <div>
+            <div id="connection-managment" status="disconnected">
+                <button class="button mainButton" id="code-download-robox-button">
+                    Download Python
+                </button>
+                <button class="button mainButton" id="connect-robox-button">
+                    Connect to Ro\box
+                </button>
+                <button class="button mainButton" id="stop-robox-button">
+                    Stop Ro\box
+                </button>
+                <button class="button mainButton" id="run-robox-button">
+                    Run Ro\box
+                </button>
+                <button class="button mainButton" id="loading">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                </button>
+                <button class="sideButtons button" id="download">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+                <button class="sideButtons button" id="disconnect">
+                    <i class="fa-solid fa-plug-circle-xmark"></i>
+                </button>
+                <button class="sideButtons button" id="console">
+                    <i class="fa-solid fa-terminal"></i>
+                </button>
+
+            </div>
+            
+        </div>
+        <!-- right hand buttons -->
+        
+    </div>
+
     <%~ include('src/templates/partials/modal.html', {
         id: "bootsel-boot",
         class: "bootsel",
@@ -63,77 +135,5 @@
             '<button id="calibrate-outcome-button" class="button standard-button">Retry<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    
-    <body>
-        <%~ include('src/templates/partials/header-workshop.html') %>
-
-        <div id="workspaceTabs">
-            <a id="back-button" href="/student">
-                <i class="fa-solid fa-chevron-left"></i>
-            </a>
-            <div id="project-name">
-                <form autocomplete="off" id="project-name-form">
-                    <input id="project-name-input" type="text">
-                    <button id="download-button">
-                        <i class="fa-solid fa-download"></i>
-
-                    </button>
-                </form>
-            </div>
-            
-            <div id="buttons">
-                <button id="robox-settings-button" class="button standard-button">
-                    <i class="fa-solid fa-gear"></i>
-                </button>
-                <%~ include('src/templates/partials/toolbar.html', {
-                    id: "settings-toolbar",
-                    content: [
-                        "<button class='button' id='robox-settings-calibrate'><i class='fa-solid fa-eye-dropper'></i>Calibrate Colour</button>",
-                        "<button class='button' id='robox-settings-flash'><i class='fa-solid fa-screwdriver-wrench'></i>Update Firmware</button>",
-                    ],
-                }) %>
-            </div>
-        </div>
-        <div id="blocklyDiv">
-            
-        </div>
-        <div id="actionBar">
-            <!-- left side buttons -->
-            <div>
-
-            </div>
-            <div>
-                <div id="connection-managment" status="disconnected">
-                    <button class="button mainButton" id="code-download-robox-button">
-                        Download Python
-                    </button>
-                    <button class="button mainButton" id="connect-robox-button">
-                        Connect to Ro\box
-                    </button>
-                    <button class="button mainButton" id="stop-robox-button">
-                        Stop Ro\box
-                    </button>
-                    <button class="button mainButton" id="run-robox-button">
-                        Run Ro\box
-                    </button>
-                    <button class="button mainButton" id="loading">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                    </button>
-                    <button class="sideButtons button" id="download">
-                        <i class="fa-solid fa-download"></i>
-                    </button>
-                    <button class="sideButtons button" id="disconnect">
-                        <i class="fa-solid fa-plug-circle-xmark"></i>
-                    </button>
-                    <button class="sideButtons button" id="console">
-                        <i class="fa-solid fa-terminal"></i>
-                    </button>
-
-                </div>
-                
-            </div>
-            <!-- right hand buttons -->
-            
-        </div>
-    </body>
+</body>
 </html>
