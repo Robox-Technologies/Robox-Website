@@ -80,7 +80,7 @@ function isPricesResource(api: Stripe.PricesResource | Stripe.ProductsResource):
 function makeProductObject(product: stripe.Product, price: stripe.Price): Product | null {
     const unitPrice = price.unit_amount ?? 0;
     const priceDollars = unitPrice / 100;
-    const displayPrice = priceDollars.toFixed(priceDollars % 1 === 0 ? 0 : 2);
+    const displayPrice = priceDollars.toFixed(Number.isInteger(priceDollars) ? 0 : 2);
 
     const status = product.metadata.status ?? undefined;
     if (!isValidStatus(status)) {
