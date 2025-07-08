@@ -1,22 +1,21 @@
 import { pico } from "../communication/communicate"
 let calibrated = false
-let waitingForCalibration = false
 //TODO: Probably need to do some cleanup for this
 
 document.addEventListener("DOMContentLoaded", () => {
     // Define the calibration model stage 1
-    let calibrateModal = document.getElementById("color-calibration-modal") as HTMLDialogElement | null
+    const calibrateModal = document.getElementById("color-calibration-modal") as HTMLDialogElement | null
     if (!calibrateModal) return
-    let calibrateOutcomeModal = document.getElementById("color-calibration-outcome-modal") as HTMLDialogElement | null
+    const calibrateOutcomeModal = document.getElementById("color-calibration-outcome-modal") as HTMLDialogElement | null
     if (!calibrateOutcomeModal) return
-    let calibrateButton = document.getElementById("calibrate-button") as HTMLButtonElement | null
+    const calibrateButton = document.getElementById("calibrate-button") as HTMLButtonElement | null
     if (!calibrateButton) return
     // Define the calibration model stage 2
-    let outcomeText = calibrateOutcomeModal.querySelector(".modal-content p") as HTMLParagraphElement | null
+    const outcomeText = calibrateOutcomeModal.querySelector(".modal-content p") as HTMLParagraphElement | null
     if (!outcomeText) return
-    let outcomeButton = calibrateOutcomeModal.querySelector("#calibrate-outcome-button") as HTMLButtonElement | null
+    const outcomeButton = calibrateOutcomeModal.querySelector("#calibrate-outcome-button") as HTMLButtonElement | null
     if (!outcomeButton) return
-    let outcomeTitle = calibrateOutcomeModal.querySelector(".modal-title") as HTMLHeadingElement | null
+    const outcomeTitle = calibrateOutcomeModal.querySelector(".modal-title") as HTMLHeadingElement | null
     if (!outcomeTitle) return
     const settingsButton = document.getElementById("robox-settings-calibrate") as HTMLButtonElement | null
     if (!settingsButton) return

@@ -137,8 +137,9 @@ dist
 
 build
 .vscode
-
+.DS_Store
 **/.DS_Store
-
+*.DS_Store
 TEMPLATE_*.html
 GUIDE_*.html
+src/.DS_Store

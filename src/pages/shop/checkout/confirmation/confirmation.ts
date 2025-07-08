@@ -1,5 +1,5 @@
 import { wipeCart, stripePublishableKey } from "@root/cart";
-import { loadStripe } from '@stripe/stripe-js';
+import { Stripe, loadStripe } from '@stripe/stripe-js';
 
 const urlParams = new URLSearchParams(window.location.search);
 const paymentIntentClientSecret = urlParams.get("payment_intent_client_secret");
@@ -36,8 +36,8 @@ function showFailure() {
 }
 
 async function pollIntent(stripe: Stripe): Promise<string> {
-    let paymentIntentResult = await stripe.retrievePaymentIntent(paymentIntentClientSecret);
-    let paymentIntent = paymentIntentResult.paymentIntent;
+    const paymentIntentResult = await stripe.retrievePaymentIntent(paymentIntentClientSecret);
+    const paymentIntent = paymentIntentResult.paymentIntent;
 
     if (!paymentIntent || paymentIntent.status === "processing") return "retry";
     

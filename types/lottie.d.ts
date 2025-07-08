@@ -5,6 +5,6 @@ declare class LottiePlayer extends HTMLElement {
     setDirection(direction: number);
     setQuality(quality: string | number);
     setLocationHref(href: string);
-    registerAnimation(element: any, animationData?: any);
+    registerAnimation(element: unknown, animationData?: unknown);
     destroy();
 }

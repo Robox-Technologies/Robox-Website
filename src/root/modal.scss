@@ -36,6 +36,9 @@ $modalTitleTextGap: 15px;
     display: inherit;
     gap: $modalTitleTextGap;
 }
+.modal-bottom-bar .close-modal-button{
+    background-color: variables.$themeRed;
+}
 .modal-title > svg{
     margin-top: 0;
 }
@@ -89,4 +92,43 @@ $modalTitleTextGap: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  color: variables.$themeBlack;
+  font-size: 1.05em;
+  text-align: center;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    width: 100%;
+    max-width: 320px;
+    padding: 0.75em 1em;
+    margin: 0.5em 0 1em 0;
+    border: 1.5px solid variables.$tone3;
+    border-radius: variables.$standardButtonRoundedCorners;
+    background: variables.$tone2;
+    font-size: variables.$standardButtonFontSize;
+    font-family: "Nunito", sans-serif;
+    color: variables.$themeBlack;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+        border-color: variables.$themeBlue;
+        box-shadow: 0 0 0 2px rgba(37, 136, 199, 0.12);
+        outline: none;
+        background: white;
+    }
+}
+
+.modal-content {
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
