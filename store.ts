@@ -66,10 +66,6 @@ paymentRouter.post("/create", async (req: Request<object, object, PaymentIntentC
         res.status(400).send({ error: "Products is not defined" });
         return 
     }
-    if (!expected_price || typeof expected_price !== "number" || expected_price <= 0) {
-        res.status(400).send({ error: "Expected price is not defined" });
-        return 
-    }
     const verifiedServerCost = calculateTotalCost(products, verifiedProducts).total;
     if (expected_price !== verifiedServerCost) {
         res.status(400).send({error: "Server prices do not match the client prices"})
