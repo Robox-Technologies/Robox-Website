@@ -5,20 +5,10 @@ import Dotenv from 'dotenv-webpack';
 import { getProductList } from './stripe-server-helper.js';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { TemplateData, TemplatePage } from './types/webpack.js';
+import { Product } from 'types/api.js';
 import { RoboxProcessor } from './roboxProcessor.js';
 
-
-interface Product {
-    internalName: string;
-    name: string;
-    description: string;
-    images: string[];
-    price_id: string;
-    price: number;
-    item_id: string;
-    status: string;
-    displayStatus: string;
-}
+const RECACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
 const __dirname = path.resolve();
 const eta = new RoboxProcessor({
@@ -61,13 +51,26 @@ function fetchPageData(file: string): TemplateData {
 }
 
 async function cacheProducts(): Promise<Record<string, Product>> {
-    const cache = process.env.FORCE_CACHE === 'true';
-    if (cache || !fs.existsSync('products.json')) {
-        const newProducts = await getProductList();
-        fs.writeFileSync('products.json', JSON.stringify(newProducts), 'utf8');
-    }
-    return JSON.parse(fs.readFileSync('products.json', 'utf8'));
+    // Refresh products if no products are stored or if force caching is enabled
+    if (!fs.existsSync('products.json') || process.env.FORCE_CACHE === "true") return refreshProducts();
+    const data = fs.readFileSync('products.json', 'utf8');
+
+    // Check if the cache is older than 10 minutes
+    const cacheData = JSON.parse(data);
+    if (!cacheData.timestamp || Date.now() - cacheData.timestamp > RECACHE_DURATION) return refreshProducts();
+
+    return cacheData.products || {};
 }
+
+async function refreshProducts(): Promise<Record<string, Product>> {
+    console.log("Refreshing products...");
+
+    const newProducts = await getProductList();
+    const cache = JSON.stringify({ timestamp: Date.now(), products: newProducts });
+    fs.writeFileSync('products.json', cache, 'utf8');
+    return newProducts;
+}
+
 async function processProducts() {
     const products = await cacheProducts();
 

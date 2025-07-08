@@ -22,9 +22,9 @@ jobs:
       - name: Create .env file
         run: |
           touch .env
-          echo STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }} >> .env
-          echo STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }} >> .env
-          echo CACHE_MODE: false >> .env
+          echo STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_PUBLISHABLE_KEY }} >> .env
+          echo STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} >> .env
+          echo FORCE_CACHE=true >> .env
           cat .env
       
       - name: Build website

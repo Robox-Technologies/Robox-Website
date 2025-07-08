@@ -32,7 +32,7 @@ Create a new `.env` file in the root folder. The `.env` structure is shown in `e
 ```env
 STRIPE_PUBLISHABLE_KEY=pk_...
 STRIPE_SECRET_KEY=sk_...
-CACHE_MODE=false
+FORCE_CACHE=false
 ```
 
 Compile and run on localhost:
