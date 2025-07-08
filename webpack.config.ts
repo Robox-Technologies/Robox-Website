@@ -57,15 +57,14 @@ async function cacheProducts(): Promise<Record<string, Product>> {
 
     // Check if the cache is older than 10 minutes
     const cacheData = JSON.parse(data);
-    if (cacheData.timestamp && Date.now() - cacheData.timestamp > RECACHE_DURATION) {
-        console.log("Recaching products...");
-        return refreshProducts();
-    }
+    if (!cacheData.timestamp || Date.now() - cacheData.timestamp > RECACHE_DURATION) return refreshProducts();
 
     return cacheData.products || {};
 }
 
 async function refreshProducts(): Promise<Record<string, Product>> {
+    console.log("Refreshing products...");
+
     const newProducts = await getProductList();
     const cache = JSON.stringify({ timestamp: Date.now(), products: newProducts });
     fs.writeFileSync('products.json', cache, 'utf8');
