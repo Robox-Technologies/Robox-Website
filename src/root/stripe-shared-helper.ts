@@ -42,6 +42,7 @@ export function calculateTotalCost(cart: Record<string, number>, products: Recor
         const weightExcess = Math.ceil(Math.max(totalWeight/1000 - 5, 0));
         shippingCost += weightExcess * feesShipping.penaltyFeePerKg;
     }
+    shippingCost = Math.round(shippingCost * 100)
 
     return {
         products: totalCost,
