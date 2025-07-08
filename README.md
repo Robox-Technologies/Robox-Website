@@ -28,10 +28,25 @@ Install dependencies:
 npm install
 ```
 
-Compile and run on local server:
+Create a new `.env` file in the root folder. The `.env` structure is shown in `example.env`:
+```env
+STRIPE_PUBLISHABLE_KEY=pk_...
+STRIPE_SECRET_KEY=sk_...
+CACHE_MODE=false
+```
+
+Compile and run on localhost:
 ```bash
 npm run dev
 ```
-*The code automatically recompiles upon file changes.*
+This will open a localhost server on port 3000 (`localhost:3000`).
 
-Copyright &copy; Ro/Box Technologies 2025
+The code automatically recompiles upon file changes.
+
+<br>
+
+<br>
+
+<hr>
+
+*Copyright &copy; Ro/Box Technologies 2025*
