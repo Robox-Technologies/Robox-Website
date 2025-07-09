@@ -27,8 +27,8 @@ const pages = findHtmlPages(pagesDir).map((file) => {
 const dynamicPages: TemplatePage[] = [...pages];
 
 function fetchPageData(file: string): TemplateData {
-    // Convert windows paths from backslashes to forward slashes
-    const filename = process.platform === "win32" ? file.replaceAll("\\", "/") : file;
+    // Convert filepaths to POSIX
+    const filename = file.replaceAll(path.sep, path.posix.sep);
 
     // Add markdown to the page data for tos and privacy pages
     if (filename.endsWith('/tos/index.html') || filename.endsWith('/privacy/index.html')) {
