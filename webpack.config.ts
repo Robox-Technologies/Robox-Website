@@ -27,9 +27,12 @@ const pages = findHtmlPages(pagesDir).map((file) => {
 const dynamicPages: TemplatePage[] = [...pages];
 
 function fetchPageData(file: string): TemplateData {
+    // Convert windows paths from backslashes to forward slashes
+    const filename = process.platform === "win32" ? file.replaceAll("\\", "/") : file;
+
     // Add markdown to the page data for tos and privacy pages
-    if (file.endsWith('/tos/index.html') || file.endsWith('/privacy/index.html')) {
-        const fileComponents = file.split("/");
+    if (filename.endsWith('/tos/index.html') || filename.endsWith('/privacy/index.html')) {
+        const fileComponents = filename.split("/");
         const markdownFilename = fileComponents[fileComponents.length - 2];
 
         const bodyPath = `src/templates/views/legal/${markdownFilename}.md`;
