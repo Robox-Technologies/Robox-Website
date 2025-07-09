@@ -189,7 +189,6 @@ body {
 }
 #download-button {
     background-color: unset;
-    border: 0;
 }
 $nameInputDropShadowMult: 2;
 #project-name-form {
@@ -209,7 +208,6 @@ $nameInputDropShadowMult: 2;
 }
 #back-button {
     background-color: unset;
-    border: 0;
     font-size: 20px;
     color: white;
     display: flex;
@@ -225,18 +223,6 @@ $nameInputDropShadowMult: 2;
     margin: auto;
 }
 
-.topButton {
-    width: 30px;
-    height: 30px;
-    background-color: variables.$themeBlue;
-    border-radius: 50%;
-    border: none;
-    filter: drop-shadow(calc($dropshadowBase*$topButtonsDropShadowMult) calc($dropshadowBase*$topButtonsDropShadowMult) $dropShadowColour);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-}
 #actionBar {
     background-color: white;
     border-top: $seperatorStrokeSize solid $navEdges;

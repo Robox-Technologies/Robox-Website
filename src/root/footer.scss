@@ -11,9 +11,6 @@ $bottomRowHeight: 54px;
     padding: 0 variables.$articleMargin;
     
     hr {
-        background-color: variables.$themeBlack;
-        height: 2px;
-        border: 0;
         z-index: -99;
     }
 }
@@ -100,8 +97,6 @@ $bottomRowHeight: 54px;
         bottom: $bottomRowHeight;
         right: variables.$articleMargin;
         background-color: variables.$primary;
-        height: 2px;
-        border: 0;
         z-index: 9;
     }
 }
@@ -114,8 +109,6 @@ $bottomRowHeight: 54px;
 
     .footerContent > hr {
         background-color: variables.$primary;
-        height: 2px;
-        border: 0;
     }
 
     .footerBottom {
