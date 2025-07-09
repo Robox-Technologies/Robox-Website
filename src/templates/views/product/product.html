@@ -16,7 +16,7 @@
 <body>
     <%~ include('src/templates/partials/header.html') %>
 
-    <article>
+    <article class="productArticle">
         <p class="navigation productNav"><a href="/shop">Shop all</a> / <%= product.name %></p>
 
         <div id="starter-info">
@@ -32,21 +32,27 @@
 
                 <div id="hero-image-container">
                     <% images.forEach(function(image, index){ %>
-                        <img alt="Product image of <%= product.name %>" class="<%= index === 0 ? 'active' : ''  %> hero-image"src="<%= `@images/product/${product.internalName}/${image}` %>">
+                        <img alt="Product image of <%= product.name %>" class="<%= index === 0 ? 'active' : ''  %> hero-image" src="<%= `@images/product/${product.internalName}/${image}` %>">
                     <% }) %>
                     
-                    <button id="carousel-left-button" class="button carousel-button-disabled">
+                    <button class="carousel-left-button carousel-button-disabled">
                         <i class="fa-solid fa-angle-left"></i>
                     </button>
-                    <button id="carousel-right-button" class="button <%= images.length === 1 ? 'carousel-button-disabled' : ''  %>">
+                    <button class="carousel-right-button <%= images.length === 1 ? 'carousel-button-disabled' : ''  %>">
                         <i class="fa-solid fa-angle-right"></i>
                     </button>
                 </div>
             </div>
 
             <div id="important-info">
+                <% if (product.banner) { %>
+                <div class="product-banner">
+                    <%~ product.banner %>
+                </div>
+                <% } %>
+
                 <h1 id="product-name"><%= product.name %></h1>
-                <h1 id="price">$<%= (product.price / 100).toFixed(2) %> AUD</h1>
+                <h1 id="price"><%= product.displayPrice %></h1>
                 <p><%= product.description %></p>
                 <p id="status"><%= product.displayStatus %></p>
 
@@ -59,7 +65,7 @@
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 </div>
-                <button class="button" id="add-to-cart">Add to Cart</button>
+                <button id="add-to-cart">Add to Cart</button>
             </div>
         </div>
     </article>
@@ -70,6 +76,22 @@
 
     <%~ include('src/templates/partials/footer.html') %>
 
+    <dialog id="productImageModal" class="simpleModal">
+        <img id="hero-image-large" alt="Product image of <%= product.name %>" src="@images/product/<%= product.internalName %>/<%= images[0] %>">
+        
+        <button class="carousel-left-button carousel-button-disabled">
+            <i class="fa-solid fa-angle-left"></i>
+        </button>
+
+        <button class="carousel-right-button <%= images.length === 1 ? 'carousel-button-disabled' : ''  %>">
+            <i class="fa-solid fa-angle-right"></i>
+        </button>
+
+        <button class="close-modal-button">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </dialog>
+
     <%~ include('src/templates/partials/modal.html', {
         id: "cart-modal",
         title: '<i class="fa-solid fa-cart-plus"></i> Added to Cart',
@@ -79,7 +101,7 @@
                 <div class="cart-item-info">
                     <div class="cart-item-text-info">
                         <p class="cart-item-text-title">${product.name} (Qty: <span id="modal-quantity"></span>)</p>
-                        <p class="cart-item-text-subtotal">$${(product.price / 100).toFixed(2)}/each</p>
+                        <p class="cart-item-text-subtotal">${product.displayPrice}/each</p>
                         <p class="cart-item-text-price">Total: <span id="modal-total-price"></span></p>
                     </div>
                 </div>

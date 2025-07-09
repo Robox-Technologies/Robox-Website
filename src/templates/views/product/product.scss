@@ -11,6 +11,17 @@ $carouselThumbnailSize: 115px;
     margin-bottom: 0;
 }
 
+.product-banner {
+    background-color: variables.$themeGreen;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+
+    & > * {
+        margin: 0;
+    }
+}
+
 .carousel-container {
     display: flex;
     gap: 10px;
@@ -39,16 +50,15 @@ $carouselThumbnailSize: 115px;
 
 #hero-image-container {
     position: relative;
+    cursor: pointer;
 }
 
 .hero-image {
-    background-color: variables.$secondary;
     min-height: 500px;
     height: 60vh;
-    aspect-ratio: 5/4;
+    aspect-ratio: 1.4;
     object-fit: contain;
     display: none;
-    border-radius: 8px;
 }
 
 .active {
@@ -69,21 +79,34 @@ $carouselThumbnailSize: 115px;
     }
 }
 
+.productArticle {
+    padding-bottom: 0;
+}
+
+article.productDescription {
+    padding-top: 0;
+}
+
 #status {
     color: #015f27;
 }
 
-#carousel-left-button {
-    left: 16px;
+.carousel-left-button {
+    left: variables.$standardGap;
 }
 
-#carousel-right-button,
-#carousel-left-button {
+.carousel-right-button {
+    right: variables.$standardGap;
+}
+
+.carousel-right-button,
+.carousel-left-button,
+#productImageModal > .close-modal-button {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     width: 40px;
-    background-color: #f8f8f86e;
+    background-color: #ffffffbc;
     color: variables.$themeBlack;
     display: flex;
     align-items: center;
@@ -92,14 +115,11 @@ $carouselThumbnailSize: 115px;
     height: 40px;
     font-size: 18px;
     cursor: pointer;
-}
-
-#carousel-right-button {
-    right: 16px;
+    backdrop-filter: blur(2px);
 }
 
 .carousel-button-disabled {
-    display: none !important;
+    opacity: 0.3;
 }
 
 #product-name {
@@ -117,11 +137,35 @@ $carouselThumbnailSize: 115px;
     color: variables.$primary;
     text-align: center;
     cursor: pointer;
-    border: 0;
     padding: 6px;
     width: 200px;
     border-radius: 30px;
     margin-top: 16px;
+}
+
+#productImageModal {
+    border: none;
+    padding: 0;
+    border-radius: 8px;
+    background-color: variables.$primary;
+    overflow: hidden;
+    width: inherit;
+    height: inherit;
+    aspect-ratio: 3/2;
+
+    #hero-image-large {
+        width: 100%;
+        height: 100%;
+        margin-bottom: -4px; // Hacky way of making the image extend to the full height
+        object-fit: contain;
+    }
+
+    .close-modal-button {
+        position: absolute;
+        top: variables.$standardGap;
+        right: variables.$standardGap;
+        transform: none;
+    }
 }
 
 #cart-modal > .modal-bottom-bar {
@@ -136,7 +180,7 @@ $carouselThumbnailSize: 115px;
     }
 }
 
-@media only screen and (max-width: 1200px) {
+@media only screen and (max-width: 1250px) {
     #starter-info {
         flex-direction: column;
     }

@@ -5,7 +5,7 @@ import fees from "../fees.json" with { type: "json" };
 const feesObject: Fees = typeof fees == "string" ? JSON.parse(fees) : fees;
 const feesShipping = feesObject.shipping;
 
-export function calculateTotalCost(cart: Record<string, number>, products: Record<string, Product>): { products: number; shipping: number; total: number } {
+export function calculateTotalCost(cart: Record<string, number>, products: Record<string, Product>): { displayProducts: string; displayShipping: string; displayTotal: string; total: number } {
     let totalCost = 0;
     let totalWeight = 0;
     for (const [productId, quantity] of Object.entries(cart)) {
@@ -42,12 +42,13 @@ export function calculateTotalCost(cart: Record<string, number>, products: Recor
         const weightExcess = Math.ceil(Math.max(totalWeight/1000 - 5, 0));
         shippingCost += weightExcess * feesShipping.penaltyFeePerKg;
     }
-    shippingCost = Math.round(shippingCost * 100)
 
+    const finalCost = totalCost + shippingCost; 
     return {
-        products: totalCost,
-        shipping: shippingCost,
-        total: totalCost + shippingCost
+        displayProducts: formatPrice(totalCost, true),
+        displayShipping: formatPrice(shippingCost, true),
+        displayTotal: formatPrice(totalCost + shippingCost, true),
+        total: finalCost
     };
 }
 
@@ -62,4 +63,8 @@ export function cartToDictionary(): Record<string, number> {
         dictionary[productId] = products[productId].quantity;
     }
     return dictionary;
+}
+
+export function formatPrice(price: number, forceCents: boolean = false): string {
+    return `AU$${(price / 100).toFixed(!forceCents && Number.isInteger(price) ? 0 : 2)}`;
 }

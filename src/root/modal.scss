@@ -17,7 +17,8 @@ $modalButtonGap: 20px;
 $modalButtonText: 15px;
 
 $modalTitleTextGap: 15px;
-.modal::backdrop {
+.modal::backdrop,
+.simpleModal::backdrop {
     background-color: rgba(0,0,0,$modalOpacity)
 }
 .modal {
@@ -37,7 +38,7 @@ $modalTitleTextGap: 15px;
     gap: $modalTitleTextGap;
 }
 .modal-bottom-bar .close-modal-button{
-    background-color: variables.$themeRed;
+    background-color: variables.$tone3;
 }
 .modal-title > svg{
     margin-top: 0;

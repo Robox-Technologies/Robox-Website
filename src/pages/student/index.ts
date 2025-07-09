@@ -36,7 +36,7 @@ async function applyProjects() {
         if (!options) continue;
         options.addEventListener("click", (event: MouseEvent) => {
             event.stopImmediatePropagation();
-            moveToolbar(toolbarModal, options);
+            moveToolbar(toolbarModal, options, [10, 20]);
             toggleToolbar(toolbarModal, true);
         });
         projectContainer.appendChild(card);
@@ -47,8 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
     applyProjects();
     const createProjectButton = document.getElementById("create-project");
     createProjectButton?.addEventListener("click", () => {
-        createProject("unnamed project");
-        applyProjects();
+        let uuid = createProject("unnamed project");
+        window.location.href = `/editor?id=${uuid}`;
     });
 
     
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!project) return;
         renameProject(projectId, projectNameInput.value);
         applyProjects();
-        projectCard = document.querySelector(`.project-card#${projectId}`) as HTMLElement | null;
+        projectCard = document.getElementById(projectId) as HTMLElement | null;
         if (projectCard) {
             moveToolbar(toolbarModal, projectCard.querySelector(".options") as HTMLElement);
         }

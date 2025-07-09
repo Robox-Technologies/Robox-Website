@@ -29,9 +29,9 @@ export function renderCart() {
         }
     }
     if (totalValue && orderValue && shippingValue) {
-        orderValue.textContent = formatPrice(cost.products);
-        totalValue.textContent = formatPrice(cost.total);
-        shippingValue.textContent = formatPrice(cost.shipping);
+        orderValue.textContent = cost.displayProducts;
+        totalValue.textContent = cost.displayTotal;
+        shippingValue.textContent = cost.displayShipping;
     }
 }
 
@@ -49,9 +49,6 @@ async function getItemData(): Promise<Record<string, Product>> {
 
     const data = await Promise.all(promises);
     return Object.fromEntries(data)
-}
-export function formatPrice(price: number): string {
-    return `$${(price / 100).toFixed(2)}`;
 }
 
 renderCart();
