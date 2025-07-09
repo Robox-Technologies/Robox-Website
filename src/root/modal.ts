@@ -15,11 +15,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             event.stopPropagation()
         })
-        const cancelButton: HTMLElement | null = modal.querySelector(".close-modal-button")
+        const cancelButton: NodeListOf<HTMLElement> = modal.querySelectorAll(".close-modal-button")
         if (!cancelButton) return
-        cancelButton.addEventListener("click", (event) => {
-            modal.close()
-            event.stopPropagation()
-        })
+        for (const button of cancelButton) {
+            button.addEventListener("click", (event) => {
+                modal.close()
+                event.stopPropagation()
+            })
+        }
     }
 })
