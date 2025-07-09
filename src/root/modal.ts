@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
             event.stopPropagation()
         })
         const cancelButton: NodeListOf<HTMLElement> = modal.querySelectorAll(".close-modal-button")
-        if (!cancelButton) return
+        
         for (const button of cancelButton) {
             button.addEventListener("click", (event) => {
                 modal.close()
