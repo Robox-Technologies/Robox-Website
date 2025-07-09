@@ -3,8 +3,9 @@ import fs from "fs";
 import {JSDOM } from "jsdom";
 import { Stripe } from "stripe";
 import juice from "juice";
-import { getCustomer } from "./stripe-server-helper.js";
-import { Product, ProductStatus } from 'types/api';
+import { Product } from './types/api';
+import { formatPrice } from './src/root/stripe-shared-helper.js';
+
 const transporter = createTransport({
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT || "587"),
@@ -31,7 +32,7 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject:
     } else {
         emailTemplate = new JSDOM(await loadTemplate("./src/templates/email/failure.html"));
     }
-    let document = emailTemplate.window.document;
+    const document = emailTemplate.window.document;
 
     const nameElement = document.querySelector("#name");
     const idElement = document.querySelector("#id");
@@ -49,8 +50,8 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject:
         day: "numeric",
     });
     const orderId = paymentIntent.id;
-    const total = paymentIntent.amount_received / 100;
-    const shipping = paymentIntent.metadata.shipping 
+    const total = formatPrice(paymentIntent.amount_received, true);
+    const shipping = formatPrice(Number(paymentIntent.metadata.shipping), true);
     const customerName: string = paymentIntent.shipping?.name || "Customer";
 
     nameElement.textContent = `Hi ${customerName},`;
@@ -66,11 +67,11 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject:
     }
 
     for (const [productId, { quantity, price }] of Object.entries(products)) {
-        let productLine = document.createElement("tr");
+        const productLine = document.createElement("tr");
 
         const productName = createCell(document, productId, "60%", "purchase_item purchase_i");
         const productQuantity = createCell(document, quantity.toString(), "20%", "align-center purchase_i");
-        const productPrice = createCell(document, `$${(price/100).toFixed(2)}`, "20%", "align-right purchase_i");
+        const productPrice = createCell(document, formatPrice(price, true), "20%", "align-right purchase_i");
 
         productLine.appendChild(productName);
         productLine.appendChild(productQuantity);
@@ -84,7 +85,7 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject:
         const shippingRow = document.createElement("tr");
         const shippingName = createCell(document, "Shipping", "60%", "purchase_item purchase_i");
         const shippingQuantity = createCell(document, "", "20%", "align-center purchase_i");
-        const shippingPrice = createCell(document, `$${(parseInt(shipping)/100).toFixed(2)}`, "20%", "align-right purchase_i");
+        const shippingPrice = createCell(document, shipping, "20%", "align-right purchase_i");
         shippingRow.appendChild(shippingName);
         shippingRow.appendChild(shippingQuantity);
         shippingRow.appendChild(shippingPrice);
@@ -92,7 +93,7 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject:
         totalRow.parentElement!.insertBefore(shippingRow, totalRow);
     }
     if (totalElement) {
-        totalElement.textContent = `$${total.toFixed(2)}`;
+        totalElement.textContent = total;
     }
     const htmlContent = document.documentElement.outerHTML;
     // Inline CSS styles using juice
@@ -116,7 +117,7 @@ function processPaymentIntent (paymentIntent: Stripe.PaymentIntent, verifiedProd
             price: product.price,
         };
     }
-    return [paymentIntent.receipt_email, emailProducts];
+    return [paymentIntent.receipt_email ?? "", emailProducts];
 }
 function createCell(document: Document, text: string, width: string, className: string): HTMLTableCellElement {
     const td = document.createElement("td");

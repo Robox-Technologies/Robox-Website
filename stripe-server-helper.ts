@@ -126,7 +126,7 @@ export async function getProduct(id: string): Promise<Product | false> {
 }
 export async function getCustomer(id: string): Promise<Stripe.Customer | false> {
     try {
-        let customer = await stripeAPI.customers.retrieve(id);
+        const customer = await stripeAPI.customers.retrieve(id);
         if (!customer || !customer.id) {
             console.error("Customer not found or invalid");
             return false;

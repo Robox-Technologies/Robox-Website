@@ -62,6 +62,6 @@ export function moveToolbar(toolbar: HTMLDialogElement, target: HTMLElement, off
     toolbar.style.position = 'absolute';
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    toolbar.style.left = `${rect.left + scrollLeft + offsetX + offset[0]}px`;
-    toolbar.style.top = `${rect.top + scrollTop + offsetY + offset[1]}px`;
+    toolbar.style.left = `${rect.left + scrollLeft + offsetX + offsetX2}px`;
+    toolbar.style.top = `${rect.top + scrollTop + offsetY + offsetY2}px`;
 }

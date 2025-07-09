@@ -3,7 +3,7 @@ import cache from 'memory-cache'
 // Idk how else to fix this (issue is that stripe.js is not recognised as a module)
 import {Stripe} from 'stripe';
 import { getProduct, getProductList, stripeAPI } from './stripe-server-helper.js';
-import {processEmail, ProductEmail} from './email.js';
+import { processEmail } from './email.js';
 
 import express from 'express'
 import { Request, Response } from 'express';
@@ -30,7 +30,7 @@ paymentRouter.post('/webhook', express.raw({ type: 'application/json' }), async 
     }
     switch (event.type) {
         case 'payment_intent.payment_failed':
-        case 'payment_intent.succeeded':
+        case 'payment_intent.succeeded': {
             const paymentIntent = event.data.object as Stripe.PaymentIntent;
             if (!paymentIntent.receipt_email) {
                 console.error('No receipt email provided for payment intent:', paymentIntent.id);
@@ -39,6 +39,7 @@ paymentRouter.post('/webhook', express.raw({ type: 'application/json' }), async 
             }
             processEmail(paymentIntent, 'Your Order Receipt', verifiedProducts, event.type === 'payment_intent.succeeded') 
             break;
+        }
     }
     res.json({ received: true });
 });
@@ -55,7 +56,7 @@ paymentRouter.post("/create", async (req: Request<object, object, PaymentIntentC
     }
     const verifiedServerCost = calculateTotalCost(products, verifiedProducts);
     const verifiedServerTotal = verifiedServerCost.total
-    const verifiedServerShipping = verifiedServerCost.shipping
+    const verifiedServerShipping = verifiedServerCost.shipping;
     if (expected_price !== verifiedServerTotal) {
         res.status(400).send({error: "Server prices do not match the client prices"})
         return 
