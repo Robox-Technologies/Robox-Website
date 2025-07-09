@@ -32,7 +32,7 @@
 
                 <div id="hero-image-container">
                     <% images.forEach(function(image, index){ %>
-                        <img alt="Product image of <%= product.name %>" class="<%= index === 0 ? 'active' : ''  %> hero-image"src="<%= `@images/product/${product.internalName}/${image}` %>">
+                        <img alt="Product image of <%= product.name %>" class="<%= index === 0 ? 'active' : ''  %> hero-image" src="<%= `@images/product/${product.internalName}/${image}` %>">
                     <% }) %>
                     
                     <button id="carousel-left-button" class="button carousel-button-disabled">
@@ -69,6 +69,10 @@
     </article>
 
     <%~ include('src/templates/partials/footer.html') %>
+
+    <dialog id="productImageModal">
+        <img alt="Product image of <%= product.name %>" src="@images/product/robox/thumbnail.jpg">
+    </dialog>
 
     <%~ include('src/templates/partials/modal.html', {
         id: "cart-modal",
