@@ -77,7 +77,7 @@
     <%~ include('src/templates/partials/footer.html') %>
 
     <dialog id="productImageModal" class="simpleModal">
-        <img id="hero-image-large" alt="Product image of <%= product.name %>" src="@images/product/robox/thumbnail.jpg">
+        <img id="hero-image-large" alt="Product image of <%= product.name %>" src="@images/product/<%= product.internalName %>/<%= images[0] %>">
         
         <button class="carousel-left-button carousel-button-disabled">
             <i class="fa-solid fa-angle-left"></i>
