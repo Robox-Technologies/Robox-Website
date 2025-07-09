@@ -4,6 +4,7 @@ import {JSDOM } from "jsdom";
 import { Stripe } from "stripe";
 import juice from "juice";
 import { getCustomer } from "./stripe-server-helper.js";
+import { Product, ProductStatus } from 'types/api';
 const transporter = createTransport({
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT || "587"),
@@ -22,9 +23,15 @@ type attachments = {
     path: string;
     cid: string;
 }[];
-export async function sendSuccessEmail(to: string, subject: string, products: ProductEmail, paymentIntent: Stripe.PaymentIntent): Promise<void> {
-    const SUCCESS_EMAIL_TEMPLATE = new JSDOM(fs.readFileSync("./src/templates/email/success.html"))
-    let document = SUCCESS_EMAIL_TEMPLATE.window.document;
+export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject: string, verifiedProducts: Record<string, Product>, success: boolean): Promise<void> {
+    const [to, products] = processPaymentIntent(paymentIntent, verifiedProducts);
+    let emailTemplate: JSDOM;
+    if (success) {
+        emailTemplate = new JSDOM(await loadTemplate("./src/templates/email/success.html"));
+    } else {
+        emailTemplate = new JSDOM(await loadTemplate("./src/templates/email/failure.html"));
+    }
+    let document = emailTemplate.window.document;
 
     const nameElement = document.querySelector("#name");
     const idElement = document.querySelector("#id");
@@ -86,6 +93,19 @@ export async function sendSuccessEmail(to: string, subject: string, products: Pr
             cid: "logo@robox",
         }
     ]);
+}
+function processPaymentIntent (paymentIntent: Stripe.PaymentIntent, verifiedProducts: Record<string, Product>): [string, ProductEmail] {
+    const metadata = paymentIntent.metadata;
+    const products: Record<string, number> = JSON.parse(metadata.products || '{}');
+    const emailProducts: ProductEmail = {};
+    for (const [productId, quantity] of Object.entries(products)) {
+        const product = verifiedProducts[productId];
+        emailProducts[product.name] = {
+            quantity: quantity,
+            price: product.price,
+        };
+    }
+    return [paymentIntent.receipt_email, emailProducts];
 }
 function createCell(document: Document, text: string, width: string, className: string): HTMLTableCellElement {
     const td = document.createElement("td");
