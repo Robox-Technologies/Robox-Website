@@ -50,6 +50,7 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject:
     });
     const orderId = paymentIntent.id;
     const total = paymentIntent.amount_received / 100;
+    const shipping = paymentIntent.metadata.shipping 
     const customerName: string = paymentIntent.shipping?.name || "Customer";
 
     nameElement.textContent = `Hi ${customerName},`;
@@ -59,7 +60,6 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject:
 
     const productTable = document.querySelector("#products"); // this is the <table>
     const totalRow = totalElement.closest("tr");
-
     if (!productTable || !totalRow) {
         console.error("Could not find products table or total row");
         return;
@@ -79,7 +79,18 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject:
         // Insert *above* the total row
         totalRow.parentElement!.insertBefore(productLine, totalRow);
     }
-    
+    // If shipping is defined, add a shipping row
+    if (shipping) {
+        const shippingRow = document.createElement("tr");
+        const shippingName = createCell(document, "Shipping", "60%", "purchase_item purchase_i");
+        const shippingQuantity = createCell(document, "", "20%", "align-center purchase_i");
+        const shippingPrice = createCell(document, `$${(parseInt(shipping)/100).toFixed(2)}`, "20%", "align-right purchase_i");
+        shippingRow.appendChild(shippingName);
+        shippingRow.appendChild(shippingQuantity);
+        shippingRow.appendChild(shippingPrice);
+        // Insert the shipping row above the total row
+        totalRow.parentElement!.insertBefore(shippingRow, totalRow);
+    }
     if (totalElement) {
         totalElement.textContent = `$${total.toFixed(2)}`;
     }

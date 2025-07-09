@@ -3,7 +3,7 @@ import cache from 'memory-cache'
 // Idk how else to fix this (issue is that stripe.js is not recognised as a module)
 import {Stripe} from 'stripe';
 import { getProduct, getProductList, stripeAPI } from './stripe-server-helper.js';
-import {processEmail, ProductEmail, sendSuccessEmail} from './email.js';
+import {processEmail, ProductEmail} from './email.js';
 
 import express from 'express'
 import { Request, Response } from 'express';
@@ -53,21 +53,24 @@ paymentRouter.post("/create", async (req: Request<object, object, PaymentIntentC
         res.status(400).send({ error: "Products is not defined" });
         return 
     }
-    const verifiedServerCost = calculateTotalCost(products, verifiedProducts).total;
-    if (expected_price !== verifiedServerCost) {
+    const verifiedServerCost = calculateTotalCost(products, verifiedProducts);
+    const verifiedServerTotal = verifiedServerCost.total
+    const verifiedServerShipping = verifiedServerCost.shipping
+    if (expected_price !== verifiedServerTotal) {
         res.status(400).send({error: "Server prices do not match the client prices"})
         return 
     }
 
     try {
         const paymentIntent = await stripeAPI.paymentIntents.create({
-            amount: verifiedServerCost,
+            amount: verifiedServerTotal,
             currency: 'aud',
             automatic_payment_methods: {
                 enabled: true,
             },
             metadata: {
                 products: JSON.stringify(products),
+                shipping: JSON.stringify(verifiedServerShipping || {}),
             }
         });
         res.json({client_secret: paymentIntent.client_secret});

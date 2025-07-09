@@ -471,21 +471,21 @@
                       <div class="f-fallback">
                         <div class="failure-msg">Payment Failed</div>
                         <h1 id="name">Hi {{name}},</h1>
-                        <p>Unfortunately, we were unable to process your payment for your recent order.</p>
+                        <p>Unfortunately, we were unable to process your payment for your recent order on <span id="p-date"></span>.</p>
                         <p>Please check your payment details and try again. If you believe this is a mistake, you can contact our <a href="mailto:hello@robox.com.au">support team</a> for assistance.</p>
                         <table class="purchase" width="100%" cellpadding="0" cellspacing="0" role="presentation">
                           <tr>
                             <td>
-                              <h3>{{receipt_id}}</h3>
+                              <h3 id="id">{{receipt_id}}</h3>
                             </td>
                             <td>
-                              <h3 class="align-right">{{date}}</h3>
+                              <h3 id="date" class="align-right">{{date}}</h3>
                             </td>
                           </tr>
                           <tr>
                             <td colspan="2">
-                              <table class="purchase_content" width="100%" cellpadding="0" cellspacing="0">
-                                <tr>
+                              <table id="products" class="purchase_content" width="100%" cellpadding="0" cellspacing="0">
+                                <tr id="product-header">
                                   <th class="purchase_heading purchase_i" align="left">
                                     <p class="f-fallback">Description</p>
                                   </th>
