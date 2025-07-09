@@ -51,6 +51,7 @@ export function toggleToolbar(toolbar: HTMLDialogElement, open: boolean): void {
 }
 
 export function moveToolbar(toolbar: HTMLDialogElement, target: HTMLElement, offset: [number, number] = [0, 0]): void {
+    const [offsetX2, offsetY2] = offset;
     const oldTarget = document.querySelector(".toolbar-target") as HTMLElement | null;
     if (oldTarget) {
         oldTarget.classList.remove("toolbar-target");
