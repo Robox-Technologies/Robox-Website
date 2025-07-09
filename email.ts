@@ -24,7 +24,7 @@ type attachments = {
     path: string;
     cid: string;
 }[];
-export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject: string, verifiedProducts: Record<string, Product>, success: boolean): Promise<void> {
+export async function processEmail(paymentIntent: Stripe.PaymentIntent, verifiedProducts: Record<string, Product>, success: boolean): Promise<void> {
     const [to, products] = processPaymentIntent(paymentIntent, verifiedProducts);
     let emailTemplate: JSDOM;
     if (success) {
@@ -60,10 +60,10 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject:
     const shipping = formatPrice(Number(paymentIntent.metadata.shipping), true);
     const customerName: string = paymentIntent.shipping?.name || "Customer";
 
-    nameElement.textContent = `Hi ${customerName},`;
+    nameElement.textContent = customerName;
     idElement.textContent = `Order ID: ${orderId}`;
     dateElement.textContent = `Date: ${date}`;
-    headerDateElement.textContent = `Date: ${date}`;
+    headerDateElement.textContent = date;
 
     const productTable = document.querySelector("#products"); // this is the <table>
     const totalRow = totalElement.closest("tr");
@@ -104,7 +104,7 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject:
     const htmlContent = document.documentElement.outerHTML;
     // Inline CSS styles using juice
     const juicedContent = juice(htmlContent)
-    return sendEmail(to, subject, juicedContent, [
+    return sendEmail(to, document.title, juicedContent, [
         {
             filename: "logo.svg",
             path: "./src/images/logo-full.svg",

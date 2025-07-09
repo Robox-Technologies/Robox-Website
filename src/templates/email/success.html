@@ -19,7 +19,8 @@
 </head>
 
 <body>
-    <span class="preheader">This is a receipt for your recent purchase on <span id="p-date"> </span>. No payment is due
+    <span class="preheader">
+        This is a receipt for your recent purchase on <span id="p-date"></span>. No payment is due
         with this receipt.</span>
     <table class="email-wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation">
         <tr>
@@ -41,19 +42,18 @@
                                 <tr>
                                     <td class="content-cell">
                                         <div class="f-fallback">
-                                            <h1 id="name">Hi {{name}},</h1>
+                                            <h1>Dear <span id="name"></span>,</h1>
                                             <p>Thank you for your purchase! This email is the receipt for your purchase.
-                                                No payment is due.
                                             </p>
                                             <!-- Discount -->
                                             <table class="purchase" width="100%" cellpadding="0" cellspacing="0"
                                                 role="presentation">
                                                 <tr>
                                                     <td>
-                                                        <h3 id="id">{{receipt_id}}</h3>
+                                                        <h3>Order ID: <span id="id"></span></h3>
                                                     </td>
                                                     <td>
-                                                        <h3 id="date" class="align-right">{{date}}</h3>
+                                                        <h3 class="align-right">Date: <span id="date"></span></h3>
                                                     </td>
                                                 </tr>
                                                 <tr>
@@ -90,11 +90,13 @@
                                                     </td>
                                                 </tr>
                                             </table>
-                                            <p>If you have any questions about this receipt, simply reply to this email
+                                            <p>
+                                                If you have any questions about this receipt, simply reply to this email
                                                 or reach out to our <a href="mailto:hello@robox.com.au">support team</a>
                                                 for help.</p>
-                                            <p>Cheers,
-                                                <br>The Ro/Box team
+                                            <p>
+                                                Cheers,<br>
+                                                The Ro/Box team
                                             </p>
                                         </div>
                                     </td>
@@ -109,7 +111,7 @@
                                 <tr>
                                     <td class="content-cell" align="center">
                                         <p class="f-fallback sub align-center">
-                                            Robox Technologies
+                                            Ro/Box Technologies
                                         </p>
                                     </td>
                                 </tr>

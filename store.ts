@@ -37,7 +37,7 @@ paymentRouter.post('/webhook', express.raw({ type: 'application/json' }), async 
                 res.status(400).send('No receipt email provided');
                 return;
             }
-            processEmail(paymentIntent, 'Your Order Receipt', verifiedProducts, event.type === 'payment_intent.succeeded') 
+            processEmail(paymentIntent, verifiedProducts, event.type === 'payment_intent.succeeded')
             break;
         }
     }
