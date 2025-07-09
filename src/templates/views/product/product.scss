@@ -11,6 +11,17 @@ $carouselThumbnailSize: 115px;
     margin-bottom: 0;
 }
 
+.product-banner {
+    background-color: variables.$themeGreen;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+
+    & > * {
+        margin: 0;
+    }
+}
+
 .carousel-container {
     display: flex;
     gap: 10px;

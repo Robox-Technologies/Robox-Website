@@ -45,6 +45,12 @@
             </div>
 
             <div id="important-info">
+                <% if (product.banner) { %>
+                <div class="product-banner">
+                    <%~ product.banner %>
+                </div>
+                <% } %>
+
                 <h1 id="product-name"><%= product.name %></h1>
                 <h1 id="price"><%= product.displayPrice %></h1>
                 <p><%= product.description %></p>
