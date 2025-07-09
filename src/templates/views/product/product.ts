@@ -12,8 +12,8 @@ const carouselImages = document.querySelectorAll(".carousel-image") as NodeListO
 const heroImages = document.querySelectorAll(".hero-image")
 const modalImage = document.getElementById("hero-image-large") as HTMLImageElement;
 
-const rightCarouselButtons = document.getElementsByClassName("carousel-right-button")
-const leftCarouselButtons = document.getElementsByClassName("carousel-left-button")
+const rightCarouselButtons = document.querySelectorAll(".carousel-right-button")
+const leftCarouselButtons = document.querySelectorAll(".carousel-left-button")
 
 const cartQuantityInput = document.querySelector(".cart-quantity") as HTMLInputElement;
 const increaseQuantityButton = document.querySelector(".increase-cart-button");
@@ -27,14 +27,16 @@ let quantity = 1;
 let currentImageIndex = 0;
 
 for (const button of leftCarouselButtons) {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+        event.stopPropagation();
         if (button.classList.contains("carousel-button-disabled")) return;
         changeHeroImage(currentImageIndex-1, true);
     });
 }
 
 for (const button of rightCarouselButtons) {
-    button.addEventListener("click", () => {
+    button.addEventListener("click", (event) => {
+        event.stopPropagation();
         if (button.classList.contains("carousel-button-disabled")) return;
         changeHeroImage(currentImageIndex+1, true);
     });
