@@ -9,15 +9,16 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         
       - name: Install dependencies
-        run: |
-          npm install
-          npm install sass-embedded-linux-x64
-          npm install --os=linux --cpu=x64 sharp
+        run: npm ci
 
       - name: Create .env file
         run: |
