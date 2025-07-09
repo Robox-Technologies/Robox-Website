@@ -39,6 +39,7 @@ $carouselThumbnailSize: 115px;
 
 #hero-image-container {
     position: relative;
+    cursor: pointer;
 }
 
 .hero-image {
@@ -47,7 +48,6 @@ $carouselThumbnailSize: 115px;
     aspect-ratio: 1.4;
     object-fit: contain;
     display: none;
-    cursor: pointer;
 }
 
 .active {
@@ -80,12 +80,17 @@ article.productDescription {
     color: #015f27;
 }
 
-#carousel-left-button {
+.carousel-left-button {
     left: variables.$standardGap;
 }
 
-#carousel-right-button,
-#carousel-left-button {
+.carousel-right-button {
+    right: variables.$standardGap;
+}
+
+.carousel-right-button,
+.carousel-left-button,
+#productImageModal > .close-modal-button {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -100,10 +105,6 @@ article.productDescription {
     font-size: 18px;
     cursor: pointer;
     backdrop-filter: blur(2px);
-}
-
-#carousel-right-button {
-    right: variables.$standardGap;
 }
 
 .carousel-button-disabled {
@@ -125,11 +126,35 @@ article.productDescription {
     color: variables.$primary;
     text-align: center;
     cursor: pointer;
-    border: 0;
     padding: 6px;
     width: 200px;
     border-radius: 30px;
     margin-top: 16px;
+}
+
+#productImageModal {
+    border: none;
+    padding: 0;
+    border-radius: 8px;
+    background-color: variables.$primary;
+    overflow: hidden;
+    width: inherit;
+    height: inherit;
+    aspect-ratio: 3/2;
+
+    #hero-image-large {
+        width: 100%;
+        height: 100%;
+        margin-bottom: -4px; // Hacky way of making the image extend to the full height
+        object-fit: contain;
+    }
+
+    .close-modal-button {
+        position: absolute;
+        top: variables.$standardGap;
+        right: variables.$standardGap;
+        transform: none;
+    }
 }
 
 #cart-modal > .modal-bottom-bar {

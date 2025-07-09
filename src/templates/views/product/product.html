@@ -35,10 +35,10 @@
                         <img alt="Product image of <%= product.name %>" class="<%= index === 0 ? 'active' : ''  %> hero-image" src="<%= `@images/product/${product.internalName}/${image}` %>">
                     <% }) %>
                     
-                    <button id="carousel-left-button" class="button carousel-button-disabled">
+                    <button class="carousel-left-button carousel-button-disabled">
                         <i class="fa-solid fa-angle-left"></i>
                     </button>
-                    <button id="carousel-right-button" class="button <%= images.length === 1 ? 'carousel-button-disabled' : ''  %>">
+                    <button class="carousel-right-button <%= images.length === 1 ? 'carousel-button-disabled' : ''  %>">
                         <i class="fa-solid fa-angle-right"></i>
                     </button>
                 </div>
@@ -59,7 +59,7 @@
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 </div>
-                <button class="button" id="add-to-cart">Add to Cart</button>
+                <button id="add-to-cart">Add to Cart</button>
             </div>
         </div>
     </article>
@@ -70,8 +70,20 @@
 
     <%~ include('src/templates/partials/footer.html') %>
 
-    <dialog id="productImageModal">
-        <img alt="Product image of <%= product.name %>" src="@images/product/robox/thumbnail.jpg">
+    <dialog id="productImageModal" class="simpleModal">
+        <img id="hero-image-large" alt="Product image of <%= product.name %>" src="@images/product/robox/thumbnail.jpg">
+        
+        <button class="carousel-left-button carousel-button-disabled">
+            <i class="fa-solid fa-angle-left"></i>
+        </button>
+
+        <button class="carousel-right-button <%= images.length === 1 ? 'carousel-button-disabled' : ''  %>">
+            <i class="fa-solid fa-angle-right"></i>
+        </button>
+
+        <button class="close-modal-button">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
     </dialog>
 
     <%~ include('src/templates/partials/modal.html', {

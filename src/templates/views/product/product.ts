@@ -10,9 +10,10 @@ const productId = product["item_id"]
 const carouselImageContainer = document.getElementById("image-carousel")
 const carouselImages = document.querySelectorAll(".carousel-image") as NodeListOf<HTMLDivElement>;
 const heroImages = document.querySelectorAll(".hero-image")
+const modalImage = document.getElementById("hero-image-large") as HTMLImageElement;
 
-const rightCarouselButton = document.getElementById("carousel-right-button")
-const leftCarouselButton = document.getElementById("carousel-left-button")
+const rightCarouselButtons = document.getElementsByClassName("carousel-right-button")
+const leftCarouselButtons = document.getElementsByClassName("carousel-left-button")
 
 const cartQuantityInput = document.querySelector(".cart-quantity") as HTMLInputElement;
 const increaseQuantityButton = document.querySelector(".increase-cart-button");
@@ -20,17 +21,27 @@ const decreaseQuantityButton = document.querySelector(".decrease-cart-button");
 
 const addToCartButton = document.getElementById("add-to-cart");
 const cartModal = document.getElementById("cart-modal") as HTMLDialogElement;
+const productImageModal = document.getElementById("productImageModal") as HTMLDialogElement;
 
 let quantity = 1;
 let currentImageIndex = 0;
 
-rightCarouselButton.addEventListener("click", () => {
-    if (rightCarouselButton.classList.contains("carousel-button-disabled")) return;
-    changeHeroImage(currentImageIndex+1, true);
-});
-leftCarouselButton.addEventListener("click", () => {
-    if (leftCarouselButton.classList.contains("carousel-button-disabled")) return;
-    changeHeroImage(currentImageIndex-1, true);
+for (const button of leftCarouselButtons) {
+    button.addEventListener("click", () => {
+        if (button.classList.contains("carousel-button-disabled")) return;
+        changeHeroImage(currentImageIndex-1, true);
+    });
+}
+
+for (const button of rightCarouselButtons) {
+    button.addEventListener("click", () => {
+        if (button.classList.contains("carousel-button-disabled")) return;
+        changeHeroImage(currentImageIndex+1, true);
+    });
+}
+
+document.getElementById("hero-image-container").addEventListener("click", () => {
+    productImageModal.showModal();
 });
 
 increaseQuantityButton.addEventListener("click", () =>{
@@ -73,24 +84,30 @@ for (const carouselImage of carouselImages) {
 }
 
 function changeHeroImage(number: number, autoscroll: boolean = false) {
-    if (number === 0) {
-        leftCarouselButton.classList.add("carousel-button-disabled");
-    } else if (leftCarouselButton.classList.contains("carousel-button-disabled")) {
-        leftCarouselButton.classList.remove("carousel-button-disabled");
+    for (const button of leftCarouselButtons) {
+        if (number === 0) {
+            button.classList.add("carousel-button-disabled");
+        } else if (button.classList.contains("carousel-button-disabled")) {
+            button.classList.remove("carousel-button-disabled");
+        }
     }
 
-    if (number === carouselImages.length-1) {
-        rightCarouselButton.classList.add("carousel-button-disabled");
-    } else if (rightCarouselButton.classList.contains("carousel-button-disabled")) {
-        rightCarouselButton.classList.remove("carousel-button-disabled");
+    for (const button of rightCarouselButtons) {
+        if (number === carouselImages.length-1) {
+            button.classList.add("carousel-button-disabled");
+        } else if (button.classList.contains("carousel-button-disabled")) {
+            button.classList.remove("carousel-button-disabled");
+        }
     }
 
     const carouselThumb = carouselImages[currentImageIndex];
     carouselThumb.querySelector("img").classList.remove("selected-carousel");
 
+    const heroImage = heroImages[number] as HTMLImageElement;
     document.querySelector(".active")?.classList.remove("active");
-    const heroImage = heroImages[number];
     heroImage.classList.add("active");
+    modalImage.src = heroImage.src;
+
     carouselImages[number].querySelector("img").classList.add("selected-carousel");
     currentImageIndex = number;
 

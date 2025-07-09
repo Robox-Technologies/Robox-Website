@@ -1,6 +1,6 @@
 @use 'variables';
 
-$hamburgerThreshold: 800px;
+$hamburgerThreshold: 1050px;
 
 header {
     position: sticky;
@@ -25,7 +25,6 @@ header {
     overflow: hidden;
     display: none;
     background: none;
-    border: none;
     cursor: pointer;
     width: $hamburgerSize;
     height: $hamburgerSize;
@@ -112,7 +111,6 @@ header {
 .btn.store {
     background: variables.$themeRed;
     color: variables.$primary;
-    border: none;
     border-radius: 6px;
     padding: 4px 24px;
 }
