@@ -36,7 +36,7 @@ async function applyProjects() {
         if (!options) continue;
         options.addEventListener("click", (event: MouseEvent) => {
             event.stopImmediatePropagation();
-            moveToolbar(toolbarModal, options);
+            moveToolbar(toolbarModal, options, [10, 20]);
             toggleToolbar(toolbarModal, true);
         });
         projectContainer.appendChild(card);
