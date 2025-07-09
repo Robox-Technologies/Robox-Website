@@ -15,7 +15,7 @@ export function getProjects(): Projects {
     else projects = JSON.parse(projectsRaw)
     return projects
 }
-export function createProject(name: string) {
+export function createProject(name: string): string {
     const projects = getProjects()
     const uuid = crypto.randomUUID();
     projects[uuid] = { name: name, time: dayjs(), workspace: {}, thumbnail: "" }
