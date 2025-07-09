@@ -1,7 +1,7 @@
 @use 'variables';
 $toolbarBorderRadius: 0.5em;
 $toolbarBorderColor: variables.$tone3;
-$toolbarBorderStroke: 3px;
+$toolbarBorderStroke: 1px;
 $toolbarWidth: 130px;
 $toolbarPadding: 5px;
 
@@ -15,8 +15,9 @@ $toolbarPadding: 5px;
     justify-content: space-between;
     border-radius: $toolbarBorderRadius;
     margin: 0;
-    // border: $toolbarBorderStroke solid $toolbarBorderColor;
+    border: $toolbarBorderStroke solid $toolbarBorderColor;
     width: $toolbarWidth;
+    filter: drop-shadow(1px 1px 1px variables.$dropShadow);
 }
 .toolbar > .card-button > svg {
     margin-right: 5px;

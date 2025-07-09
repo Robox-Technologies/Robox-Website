@@ -37,7 +37,6 @@ blocks.keys().forEach(modulePath => {
 generators.keys().forEach(modulePath => {
     generators(modulePath);
 });
-
 document.addEventListener("DOMContentLoaded", () => {
     const workspace = Blockly.inject('blocklyDiv', {
         toolbox: toolbox,
@@ -72,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (workspaceId) {
         project = getProject(workspaceId)
     }
-    else return
+    else window.location.href = "/student"
     if (!project) return
 
     // Control + scroll for zoom,

@@ -405,6 +405,7 @@ $settingsToolbarWidth: 200px;
     border-right: unset;
     #code-download-robox-button {
         display: block;
+        border-right: unset;
     }
 }
 
@@ -444,14 +445,6 @@ $settingsToolbarWidth: 200px;
         font-size: 20px;
         border-right: unset;
     }
-
-}
-#connection-managment[status="no-serial"] {
-    background-color: variables.$themeYellow;
-    #code-download-robox-button {
-        display: block;
-    }
-
 
 }
 #robox-settings-button {

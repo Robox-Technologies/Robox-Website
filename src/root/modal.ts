@@ -28,12 +28,13 @@ document.addEventListener("DOMContentLoaded", () => {
             event.stopPropagation()
         })
 
-        const cancelButton: HTMLElement | null = modal.querySelector(".close-modal-button")
-        if (!cancelButton) continue;
+        const cancelButton: NodeListOf<HTMLElement> = modal.querySelectorAll(".close-modal-button")
         
-        cancelButton.addEventListener("click", (event) => {
-            modal.close()
-            event.stopPropagation()
-        })
+        for (const button of cancelButton) {
+            button.addEventListener("click", (event) => {
+                modal.close()
+                event.stopPropagation()
+            })
+        }
     }
 })
