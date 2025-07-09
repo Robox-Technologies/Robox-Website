@@ -84,7 +84,6 @@
   },
   "optionalDependencies": {
     "sass-embedded-linux-x64": "^1.89.2",
-    "sass-embedded-win32-x64": "^1.89.2",
-    "sharp": "^0.34.2"
+    "sass-embedded-win32-x64": "^1.89.2"
   }
 }
