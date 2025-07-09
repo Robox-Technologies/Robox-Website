@@ -34,6 +34,12 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, subject:
     }
     const document = emailTemplate.window.document;
 
+    // Add email css
+    const emailStyle = document.createElement("style");
+    emailStyle.textContent = fs.readFileSync("./src/templates/email/email.css", "utf-8");
+    emailStyle.media = "all"
+    document.head.appendChild(emailStyle);
+
     const nameElement = document.querySelector("#name");
     const idElement = document.querySelector("#id");
     const dateElement = document.querySelector("#date");
