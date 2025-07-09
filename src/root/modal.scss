@@ -17,7 +17,8 @@ $modalButtonGap: 20px;
 $modalButtonText: 15px;
 
 $modalTitleTextGap: 15px;
-.modal::backdrop {
+.modal::backdrop,
+.simpleModal::backdrop {
     background-color: rgba(0,0,0,$modalOpacity)
 }
 .modal {

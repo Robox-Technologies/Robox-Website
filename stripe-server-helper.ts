@@ -3,6 +3,7 @@ import stripe, { Stripe } from 'stripe'
 import 'dotenv/config'
 import { Product, ProductStatus } from 'types/api';
 import { formatPrice } from './src/root/stripe-shared-helper.js';
+import { storeProcessor } from './roboxProcessor.js';
 
 const defaultWeight = 500;
 export const stripeAPI = new stripe(process.env.STRIPE_SECRET_KEY)
@@ -78,7 +79,7 @@ function isPricesResource(api: Stripe.PricesResource | Stripe.ProductsResource):
         'retrieveFeature' in api); // crude but works
 }
 
-function makeProductObject(product: stripe.Product, price: stripe.Price): Product | undefined {
+function makeProductObject(product: stripe.Product, price: stripe.Price, banner?: string): Product | undefined {
     const unitPrice = price.unit_amount ?? 0;
 
     const status = product.metadata.status ?? undefined;
@@ -92,6 +93,7 @@ function makeProductObject(product: stripe.Product, price: stripe.Price): Produc
         name: product.name,
         internalName: product.name.replaceAll(" ", "-").replaceAll("/", "").toLowerCase(), // Use this for filenames
         description: product.description ?? "",
+        banner: banner,
         images: product.images,
         price_id: price.id,
         price: unitPrice,
@@ -130,7 +132,14 @@ export async function getProductList(): Promise<Record<string, Product>> {
     const combined: Record<string, Product> = {};
     
     for (const productId in products) {
-        const product = makeProductObject(products[productId], prices[productId]);
+        const stripeProduct = products[productId];
+        let banner = stripeProduct.metadata.banner;
+
+        if (banner) {
+            banner = storeProcessor.processSync(banner).toString();
+        }
+
+        const product = makeProductObject(stripeProduct, prices[productId], banner);
         
         if (product) {
             combined[productId] = product;
