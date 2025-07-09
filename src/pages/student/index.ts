@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!project) return;
         renameProject(projectId, projectNameInput.value);
         applyProjects();
-        projectCard = document.querySelector(`.project-card#${projectId}`) as HTMLElement | null;
+        projectCard = document.getElementById(projectId) as HTMLElement | null;
         if (projectCard) {
             moveToolbar(toolbarModal, projectCard.querySelector(".options") as HTMLElement);
         }
