@@ -8,7 +8,7 @@ import remarkRehype from 'remark-rehype';
 import roboxSectionize from "./roboxSectionize.js"; // <-- .ts import
 import fs from "fs";
 
-const storeProcessor = unified()
+export const storeProcessor = unified()
     .use(roboxSectionize)
     .use(remarkParse)
     .use(remarkRehype, { allowDangerousHtml: true })

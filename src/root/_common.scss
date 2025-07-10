@@ -48,7 +48,6 @@ article {
     @include variables.subheadingFont;
 
     border-radius: variables.$borderRadius;
-    // border: 3px solid variables.$dropShadow;
     background-color: variables.$themeRed;
     
     padding: 16px 25px;
@@ -82,7 +81,6 @@ article {
     border-radius: calc($btnHeight / 2);
     color: variables.$primary;
     box-shadow: none;
-    border: none;
 }
 
 .available {

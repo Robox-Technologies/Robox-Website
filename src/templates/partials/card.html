@@ -11,7 +11,7 @@
         <%~ it.absoluteContent %>
     <% } %>
 
-    <img class="card-image" src="<%= it.imageSource %>" alt="<%= it.imageAlt %>">
+    <img class="card-image" src="<%= it.imageSource %>" alt="<%= it.imageAlt ?? "" %>">
     <div class="card-info">
         <div class="card-top-row">
             <h1 class="card-title">
