@@ -8,7 +8,7 @@ $cardBorderRadius: 5%;
 
 
 #main {
-    padding: 30px;
+    padding: variables.$articleMargin;
 }
 .fa-square-binary {
     height: $projectIconSize;
