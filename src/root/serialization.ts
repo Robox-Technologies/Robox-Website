@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
 import { Projects, Project } from "types/projects";
 
@@ -92,5 +93,21 @@ export function deleteProject(uuid: string) {
     if (!projects[uuid]) throw new Error("Project does not exist")
     delete projects[uuid]
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
+}
+
+export function sanitizeImageDataUrl(dataUrl: string): string {
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+    // Get MIME type from URL and ensure it is allowed
+    const mimeTypeMatch = dataUrl.match(/^data:([^;]+);/);
+    const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : null;
+
+    if (!mimeType || !allowedMimeTypes.includes(mimeType.toLowerCase())) {
+        console.error(`Image data URL has invalid MIME type: ${mimeType}`);
+        return "";
+    }
+
+    // Return a sanitized URL
+    return DOMPurify.sanitize(dataUrl);
 }
 
