@@ -1,5 +1,4 @@
 import { WorkspaceSvg } from "blockly";
-import { clamp } from "blockly/core/utils/math";
 const scrollSpeed = 1.1; // Adjust for sensitivity
 
 export function registerControls(workspace: WorkspaceSvg) {
