@@ -14,7 +14,11 @@ const __dirname = path.dirname(__filename);
 app.use(RateLimit({
     windowMs: 60 * 1000, // 1 minute
     max: 3000,
-    message: "You've been rate limited! Please try again later."
+    message: "We know you love Ro/Box, but you've sent too many requests. Please try again later.",
+    handler: (req, res, _, options) => {
+        console.log(`${req.ip} was rate limited.`);
+        res.status(options.statusCode).send(options.message);
+    }
 }));
 
 // Absolute path to the website build output
