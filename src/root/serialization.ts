@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
 import { Projects, Project } from "types/projects";
 
-import { workspaceToSvg_ } from './screenshot';
+import { workspaceToPng_ } from './screenshot';
 
 
 export function getProjects(): Projects {
@@ -56,7 +56,7 @@ export function downloadBlocklyProject(uuid: string) {
 export async function saveBlockly(uuid: string, workspace: WorkspaceSvg, callback: ((project: string) => void) | null = null) {
     
     const blockly = await import('blockly/core');
-    workspaceToSvg_(workspace, (thumburi: string) => {
+    workspaceToPng_(workspace, (thumburi: string) => {
         const data = blockly.serialization.workspaces.save(workspace)
         const projects = getProjects()
         projects[uuid]["time"] = dayjs()
