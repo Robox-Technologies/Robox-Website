@@ -34,3 +34,4 @@ const verifiedProducts = await getProductList()
 const successPayment = await stripeAPI.paymentIntents.retrieve(process.env.SUCCESS_PI);
 successPayment.receipt_email = process.env.TEST_EMAIL;
 await processEmail(successPayment, verifiedProducts, true);
+await processEmail(successPayment, verifiedProducts, false);

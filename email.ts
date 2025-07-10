@@ -113,7 +113,7 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
     });
 
     // Address and billing info
-    await populateBilling(document, paymentIntent)
+    const [address, billing] = await populateBilling(document, paymentIntent)
 
     // Fetch table and product row, if it exists
     const shipping = formatPrice(Number(paymentIntent.metadata.shipping), true);
@@ -133,9 +133,42 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
     containerTable.appendChild(containerRow);
     document.body.replaceChildren(containerTable);
 
+    // Create plaintext fallback
+    const plaintext = generateTxtEmail(templateName, orderId, date, total, customerName, shipping, products, address, billing);
+
     // Inline CSS styles using juice
     const juicedContent = juice(document.documentElement.outerHTML);
-    return sendEmail(to, document.title, juicedContent);
+    return sendEmail(to, document.title, juicedContent, plaintext);
+}
+
+function generateTxtEmail(templateName: string, orderId: string, date: string, total: string, customerName: string, shipping: string, products: ProductEmail, address: string, billing: string): string {
+    let plaintext = fs.readFileSync(`./src/templates/email/${templateName}.txt`, "utf-8");
+
+    const summary = fs.readFileSync(`./src/templates/email/partials/summary.txt`, "utf-8");
+    const signature = fs.readFileSync(`./src/templates/email/partials/signature.txt`, "utf-8");
+    plaintext = plaintext.replaceAll("{{summary}}", summary);
+    plaintext = plaintext.replaceAll("{{signature}}", signature);
+
+    plaintext = plaintext.replaceAll("{{name}}", customerName);
+    plaintext = plaintext.replaceAll("{{order_id}}", orderId);
+    plaintext = plaintext.replaceAll("{{date}}", date);
+
+    plaintext = plaintext.replaceAll("{{total}}", total);
+    plaintext = plaintext.replaceAll("{{shipping}}", shipping);
+    plaintext = plaintext.replaceAll("{{address}}", address.replaceAll("<br>", "\n"));
+    plaintext = plaintext.replaceAll("{{billing}}", billing.replaceAll("<br>", "\n"));
+
+    const productEntries = Object.entries(products);
+    const lastProduct = productEntries[productEntries.length-1][0];
+
+    let items = "";
+    for (const [productId, { quantity, price }] of productEntries) {
+        const isLastProduct = productId == lastProduct;
+        items += `${productId} × ${quantity}: ${formatPrice(price, true)}${isLastProduct ? "" : "\n"}`;
+    }
+    plaintext = plaintext.replaceAll("{{items}}", items);
+    
+    return plaintext
 }
 
 function processPaymentIntent (paymentIntent: Stripe.PaymentIntent, verifiedProducts: Record<string, Product>): [string, ProductEmail] {
@@ -204,17 +237,17 @@ function createCell(document: Document, text: string, className: string): HTMLTa
     return td;
 }
 
-async function sendEmail(to: string, subject: string, content: string, attachments?: attachments): Promise<void> {
+async function sendEmail(to: string, subject: string, content: string, plaintext?: string, attachments?: attachments): Promise<void> {
     try {
-        const mailOptions = {
+        await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: to,
             subject: subject,
+            text: plaintext ?? "",
             html: content,
             attachments: attachments ?? [],
-        };
+        });
 
-        await transporter.sendMail(mailOptions);
         console.log(`Email sent successfully to ${to}`);
     } catch (error) {
         console.error(`Failed to send email to ${to}:`, error);
@@ -233,13 +266,13 @@ async function loadTemplate(templatePath: string): Promise<string> {
 
 export default transporter;
 
-async function populateBilling(document: Document, paymentIntent: Stripe.PaymentIntent) {
+async function populateBilling(document: Document, paymentIntent: Stripe.PaymentIntent): Promise<[string, string]> {
     // Billing
     const address = paymentIntent.shipping?.address;
     const addressEl = document.getElementById("address") as HTMLParagraphElement;
 
+    let addressText = "";
     if (address && addressEl) {
-        let addressText = "";
 
         // Unit/Street
         if (address.line1) addressText += `${address.line1}<br>`;
@@ -262,17 +295,17 @@ async function populateBilling(document: Document, paymentIntent: Stripe.Payment
 
     // Address
     const billingEl = document.getElementById("billing") as HTMLParagraphElement;
-    let paymentMethod: Stripe.PaymentMethod
+    let paymentMethod: Stripe.PaymentMethod | undefined = undefined;
     
     if (typeof paymentIntent.payment_method === "string") {
         paymentMethod = await stripeAPI.paymentMethods.retrieve(paymentIntent.payment_method);
-    } else {
+    } else if (paymentIntent.payment_method) {
         paymentMethod = paymentIntent.payment_method;
     }
     
+    let billingText = "";
     if (paymentMethod && billingEl) {
         const paymentType = readPaymentMethod(paymentMethod);
-        let billingText = "";
 
         if (paymentType.name) billingText += `${titleCase(paymentType.name)}<br>`;
         if (paymentType.userID) billingText += `${titleCase(paymentType.userID)}<br>`;
@@ -281,6 +314,8 @@ async function populateBilling(document: Document, paymentIntent: Stripe.Payment
 
         billingEl.innerHTML = billingText;
     }
+
+    return [addressText, billingText];
 }
 
 function titleCase(str: string): string {

@@ -222,6 +222,10 @@ td.small {
     margin-top: 32px;
 }
 
+.footer td {
+    vertical-align: top;
+}
+
 /*Media Queries ------------------------------ */
 
 @media (prefers-color-scheme: dark) {
