@@ -53,7 +53,8 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
 
     // Inject css
     const emailStyle = document.createElement("style");
-    emailStyle.textContent = fs.readFileSync("./src/templates/email/email.css", "utf-8");
+    emailStyle.textContent = fs.readFileSync("./src/templates/email/nunitoFont.css", "utf-8");
+    emailStyle.textContent += fs.readFileSync("./src/templates/email/email.css", "utf-8");
     emailStyle.media = "all"
     document.head.appendChild(emailStyle);
 
@@ -137,7 +138,10 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
     const plaintext = generateTxtEmail(templateName, orderId, date, total, customerName, shipping, products, address, billing);
 
     // Inline CSS styles using juice
-    const juicedContent = juice(document.documentElement.outerHTML);
+    const juicedContent = juice(document.documentElement.outerHTML, {
+        preserveImportant: true
+    });
+    
     return sendEmail(to, document.title, juicedContent, plaintext);
 }
 
