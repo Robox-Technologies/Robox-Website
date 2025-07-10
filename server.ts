@@ -26,11 +26,3 @@ app.use((_, res) => {
 app.listen(3000, function () {
     console.log('Ro/Box website listening on port 3000!\n');
 });
-
-import { getProductList, stripeAPI } from './stripe-server-helper.js';
-import { processEmail } from './email.js';
-
-const verifiedProducts = await getProductList()
-const successPayment = await stripeAPI.paymentIntents.retrieve(process.env.SUCCESS_PI);
-await processEmail(successPayment, verifiedProducts, true);
-await processEmail(successPayment, verifiedProducts, false);
