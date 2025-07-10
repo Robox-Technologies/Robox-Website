@@ -43,6 +43,23 @@ article {
     }
 }
 
+.loadSpinner {
+    $loaderSize: 60px;
+    $loaderBorderSize: 8px;
+
+    border: $loaderBorderSize solid #405c6430;
+    border-top: $loaderBorderSize solid variables.$themeBlack;
+    border-radius: 50%;
+    width: $loaderSize;
+    height: $loaderSize;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 .ctaButton {
     @include variables.dropShadowSmall;
     @include variables.subheadingFont;
