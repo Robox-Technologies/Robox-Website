@@ -29,6 +29,10 @@ const clientSecretPromise = getPaymentIntent()
 const paymentPromises = Promise.all([stripePromise, clientSecretPromise])
 
 const submitButton = document.getElementById("submit") as HTMLButtonElement;
+const paymentLoader = document.getElementById("paymentLoader") as HTMLDivElement;
+const form = document.getElementById('payment-form') as HTMLFormElement;
+const messageContainer = document.getElementById('error-message') as HTMLParagraphElement;
+let paymentProcessing = false;
 
 paymentPromises.then((values) => {
     const [stripe, clientSecret] = values
@@ -57,20 +61,23 @@ paymentPromises.then((values) => {
         document.getElementById("stripe-content").style.justifyContent = "flex-start"
     })
 
-    const form = document.getElementById('payment-form') as HTMLFormElement;
-
     document.getElementById("termsConsent").addEventListener("click", () => {
-        submitButton.disabled = !form.checkValidity();
+        updateSubmitButton();
     });
 
     form.addEventListener("change", () => {
-        submitButton.disabled = !form.checkValidity();
+        messageContainer.textContent = "";
+        updateSubmitButton();
     });
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
+
+        paymentProcessing = true;
+        updateSubmitButton();
+
         const email = (document.getElementById("email") as HTMLInputElement).value;
-        const {error} = await stripe.confirmPayment({
+        const { error } = await stripe.confirmPayment({
             elements,
             confirmParams: {
                 return_url: `${window.location.origin}/shop/checkout/confirmation`,
@@ -78,9 +85,16 @@ paymentPromises.then((values) => {
             },
         });
 
+        paymentProcessing = false;
+        updateSubmitButton();
+
         if (error) {
-            const messageContainer = document.querySelector('#error-message');
-            messageContainer.textContent = error.message;
+            console.warn(`Payment failed with error ${error.code}: ${error.message}`);
+
+            // Don't show message for incomplete fields.
+            if (!error.message.endsWith("incomplete.") && error.message !== "Please provide your full name.") {
+                messageContainer.textContent = error.message;
+            }
         } 
     });
 }).catch((error) => {
@@ -106,4 +120,11 @@ function checkoutErrored() {
     // Error fetching secret. Handle and show appropriate error
     document.getElementById("checkout-error").style.display = "block";
     document.getElementById("payment-form").style.display = "none";
+}
+
+function updateSubmitButton() {
+    const formValid = form.checkValidity();
+    submitButton.disabled = !formValid || paymentProcessing;
+
+    paymentLoader.style.display = paymentProcessing ? "block" : "none";
 }

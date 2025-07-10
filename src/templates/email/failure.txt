@@ -1,0 +1,17 @@
+Dear {{name}},
+
+We were unable to process your payment for your recent order on {{date}}.
+Please see your order details below.
+
+
+{{summary}}
+
+Payment details:
+{{billing}}
+
+
+Please check your payment details and try again.
+If you believe this is a mistake, please contact us at hello@robox.com.au for assistance.
+
+
+{{signature}}

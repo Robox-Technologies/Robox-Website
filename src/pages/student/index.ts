@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     applyProjects();
     const createProjectButton = document.getElementById("create-project");
     createProjectButton?.addEventListener("click", () => {
-        let uuid = createProject("unnamed project");
+        const uuid = createProject("unnamed project");
         window.location.href = `/editor?id=${uuid}`;
     });
 
