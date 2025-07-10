@@ -1,4 +1,3 @@
-import { allUsedVarModels } from "blockly/core/variables"
 
 const piVendorId = 0x2e8a
 
