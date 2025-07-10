@@ -280,7 +280,7 @@ async function populateBilling(document: Document, paymentIntent: Stripe.Payment
 
         // Unit/Street
         if (address.line1) addressText += `${address.line1}<br>`;
-        if (address.line2) addressText += `${address.line1}<br>`;
+        if (address.line2) addressText += `${address.line2}<br>`;
 
         // City/State/Post code
         if (address.city || address.state || address.postal_code) {
