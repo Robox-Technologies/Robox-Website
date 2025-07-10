@@ -37,7 +37,7 @@ export function workspaceToSvg_(workspace: WorkspaceSvg, callback: (url: string)
     // Go through all text areas and set their value.
     const textAreas = document.getElementsByTagName("textarea");
     for (let i = 0; i < textAreas.length; i++) {
-        textAreas[i].innerHTML = textAreas[i].value;
+        textAreas[i].textContent = textAreas[i].value;
     }
 
     const bBox = workspace.getBlocksBoundingBox();
