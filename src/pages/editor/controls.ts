@@ -17,21 +17,12 @@ export function registerControls(workspace: WorkspaceSvg) {
             }
             return
         }
-        //Two seperate variables in case we want to change the formulas later
+        
         const dx = event.deltaX * scrollSpeed;
-        // Shift + scroll for horizontal movement
-        if (event.shiftKey) {
-            workspace.scrollX += dx
-        } else {
-            // Scroll for vertical movement
-            //Check what element is hovered over
-            //If it is a toolbox, dont scroll the workspace
-            if (event.target instanceof HTMLElement && ( event.target.closest('.blocklyToolboxDiv'))) {
-                return;
-            }
-            
-            workspace.scrollY += dy
-        }
+
+        workspace.scrollX -= dx
+        workspace.scrollY -= dy
+        
         workspace.render()
     }, { passive: false });
 }

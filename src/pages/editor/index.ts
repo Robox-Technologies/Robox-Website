@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
         postBlocklyWSInjection()
     }
     else {
-        const connectionManagment = document.getElementById("connection-managment")
+        const connectionManagment = document.getElementById("connection-management")
         const downloadRoboxManagment = document.getElementById("code-download-robox-button")
         if (!connectionManagment) return
         if (!downloadRoboxManagment) return 

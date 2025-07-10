@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!outcomeTitle) return
     const settingsButton = document.getElementById("robox-settings-calibrate") as HTMLButtonElement | null
     if (!settingsButton) return
-    const connectionManagment = document.getElementById("connection-managment")
+    const connectionManagment = document.getElementById("connection-management")
     if (!connectionManagment) return
     //The actual opening of the modal
     settingsButton.addEventListener("click", () => {

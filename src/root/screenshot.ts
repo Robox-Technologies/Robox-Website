@@ -107,7 +107,7 @@ export function workspaceToPng_(workspace: WorkspaceSvg, callback: (url: string)
             return el.innerText;
         }).join('\n');
         const style = document.createElement('style');
-    style.innerText = css + '\n' + customCss;
+    style.textContent = css + '\n' + customCss;
     svg.insertBefore(style, svg.firstChild);
 
     let svgAsXML = (new XMLSerializer).serializeToString(svg);
