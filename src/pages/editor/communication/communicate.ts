@@ -1,3 +1,4 @@
+import { allUsedVarModels } from "blockly/core/variables"
 
 const piVendorId = 0x2e8a
 
@@ -39,11 +40,13 @@ export class Pico extends EventTarget {
     firmwareVersion: number
     restarting: boolean
     firmware: boolean
+    responded: boolean
     constructor(method: "USB" | "Bluetooth", firmwareVersion=1) {
         super()
         if (method === "USB") this.communication = new USBCommunication(this)
         this.restarting = false
         this.firmware = false
+        this.responded = false
         this.firmwareVersion = firmwareVersion
     }
     init() {
@@ -66,6 +69,7 @@ export class Pico extends EventTarget {
                 const port = event.target as SerialPort;
                 const portInfo = port.getInfo()
                 if (portInfo.usbVendorId === piVendorId) {
+                    this.responded = false; // Reset the responded flag
                     await this.disconnect()
                 }
             }
@@ -79,6 +83,10 @@ export class Pico extends EventTarget {
         this.dispatchEvent(new CustomEvent(payload.event, {detail: payload.options}));
     }
     read(payload: picoMessage) {
+        if (!this.responded) {
+            this.responded = true //The Pico has responded to the website
+            this.emit({"event": "connect", "options": {}})
+        }
         const type = payload["type"]
         if (type === "confirmation") {
             this.firmware = true //The firmware check was successful!
@@ -92,7 +100,12 @@ export class Pico extends EventTarget {
         this.write(COMMANDS.FIRMWARECHECK)
         setTimeout(() => {
             this.emit({"event": "firmware", "options": {upToDate: this.firmware}})
-
+            if (!this.firmware && this.responded) {
+                this.emit({"event": "error", "options": {"message": "The firmware on the Pico is out of date! Please update it."}})
+            } 
+            else if (!this.firmware && !this.responded) {
+                this.emit({"event": "error", "options": {"message": "The Pico did not respond to the firmware check! Please try resetting it."}})
+            }
         }, 1000);
     }
     restart() {
@@ -129,9 +142,11 @@ export class Pico extends EventTarget {
     async connect(port: SerialPort) {
         const connected = await this.communication.connect(port)
         if (connected) {
-            this.emit({event: "connect", options: {}})
             if (this.restarting) this.restarting = false
             this.firmwareCheck()
+        }
+        else {
+            this.emit({"event": "error", "options": {"message": "Could not connect to the Pico! Try resetting it?"}})
         }
     }
     startupConnect() { //Check if the Pico is already connected to the website on startup
@@ -191,7 +206,7 @@ class USBCommunication {
                         index += 1
                     }
                     rawErrorMessages.splice(0, index)
-                    error_string = rawErrorMessages.join("\n") 
+                    error_string = rawErrorMessages.join("\n").trim() //Join the rest of the messages togethe
                 }
                 for (const message of consoleMessages) {
                     this.parent.read(message)
@@ -295,7 +310,6 @@ class USBCommunication {
         this.textDecoder = new TextDecoderStream();
         this.currentWriter = this.textEncoder.writable.getWriter();
         this.currentReader = this.textDecoder.readable.getReader();
-    
         return true;
     }
     async request() {
