@@ -3,138 +3,60 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="x-apple-disable-message-reformatting">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="color-scheme" content="light dark">
-    <meta name="supported-color-schemes" content="light dark">
+    <div id="metadata"></div>
     <title>Ro/Box Payment Failed</title>
-    <!--[if mso]>
-    <style type="text/css">
-      .f-fallback  {
-        font-family: Arial, sans-serif;
-      }
-    </style>
-  <![endif]-->
 </head>
 
 <body>
     <span class="preheader">
-        Your payment could not be processed.
-        Please update your payment information to complete your order.
+        Your Ro/Box payment on <span class="date"></span> was not processed successfully.
     </span>
-    <table class="email-wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation">
-        <tr>
-            <td align="center">
-                <table class="email-content" width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                    <tr>
-                        <td class="email-masthead">
-                            <a href="https://robox.com.au" class="f-fallback email-masthead_name">
-                                <img src="cid:logo@robox" alt="Ro/Box Logo" class="email-mast">
-                            </a>
-                        </td>
-                    </tr>
-                    <!-- Email Body -->
-                    <tr>
-                        <td class="email-body" width="570" cellpadding="0" cellspacing="0">
-                            <table class="email-body_inner" align="center" width="570" cellpadding="0" cellspacing="0"
-                                role="presentation">
-                                <tr>
-                                    <td class="content-cell">
-                                        <div class="f-fallback">
-                                            <div class="failure-msg">Payment Failed</div>
-                                            <h1>Dear <span id="name"></span>,</h1>
-                                            <p>
-                                                Unfortunately, we were unable to process your payment
-                                                for your recent order on <span id="p-date"></span>.
-                                                <br><br>
-                                                The details of your order are below.
-                                            </p>
 
-                                            <table class="purchase" width="100%" cellpadding="0" cellspacing="0"
-                                                role="presentation">
-                                                <tr>
-                                                    <td>
-                                                        <h3 id="id">{{receipt_id}}</h3>
-                                                    </td>
-                                                    <td>
-                                                        <h3 id="date" class="align-right">{{date}}</h3>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td colspan="2">
-                                                        <table id="products" class="purchase_content" width="100%"
-                                                            cellpadding="0" cellspacing="0">
-                                                            <tr id="product-header">
-                                                                <th class="purchase_heading purchase_i" align="left">
-                                                                    <p class="f-fallback">Description</p>
-                                                                </th>
-                                                                <th class="purchase_heading purchase_i" align="center">
-                                                                    <p class="f-fallback">Amount</p>
-                                                                </th>
-                                                                <th class="purchase_heading purchase_i" align="right">
-                                                                    <p class="f-fallback">Price</p>
-                                                                </th>
-                                                            </tr>
-                                                            <tr>
-                                                                <td width="60%" class="purchase_footer align-left"
-                                                                    valign="middle">
-                                                                    <p
-                                                                        class="f-fallback purchase_total purchase_total--label">
-                                                                        Total</p>
-                                                                </td>
-                                                                <td width="20%" class="purchase_footer align-center"
-                                                                    valign="middle"></td>
-                                                                <td width="20%" class="purchase_footer align-right"
-                                                                    valign="middle">
-                                                                    <p id="total" class="f-fallback purchase_total">
-                                                                        {{total}}</p>
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                            <div style="text-align:center; margin:32px 0;">
-                                                <a href="https://robox.com.au/shop/cart" class="button button--red">
-                                                    Retry Payment
-                                                </a>
-                                            </div>
+    <div id="masthead"></div>
 
-                                            <p>
-                                                Please check your payment details and try again.
-                                                If you believe this is a mistake, please contact us at
-                                                <a href="mailto:hello@robox.com.au">hello@robox.com.au</a> for assistance.
-                                                
-                                                <br><br>
+    <h1>Dear <span class="name"></span>,</h1>
+    <p>
+        We were unable to process your payment
+        for your recent order on <span class="date"></span>.
+        <br><br>
+        Please see your order details below.
+    </p>
 
-                                                Cheers,<br>
-                                                The Ro/Box team
-                                            </p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <table class="email-footer" align="center" width="570" cellpadding="0" cellspacing="0"
-                                role="presentation">
-                                <tr>
-                                    <td class="content-cell" align="center">
-                                        <p class="f-fallback sub align-center">
-                                            Robox Technologies
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
+    <div id="summary"></div>
+    
+    <div class="billing-details">
+        <table>
+            <tr>
+                <td>
+                    <h3>Payment details:</h3>
+                </td>
+                <td>
+                    <p id="billing"></p>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <table>
+        <td>
+            <th align="center">
+                <a href="https://robox.com.au/shop/cart" class="button">Retry Payment</a>
+            </th>
+        </td>
     </table>
+
+    <p>
+        Please check your payment details and try again.
+        If you believe this is a mistake, please contact us at
+        <a href="mailto:hello@robox.com.au">hello@robox.com.au</a> for assistance.
+
+        <br><br>
+
+        Cheers,<br>
+        The Ro/Box Team
+    </p>
+
+    <div id="footer"></div>
 </body>
 
 </html>

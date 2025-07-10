@@ -1,10 +1,12 @@
 import { createTransport } from "nodemailer";
 import fs from "fs";
-import {JSDOM } from "jsdom";
+import { JSDOM } from "jsdom";
 import { Stripe } from "stripe";
 import juice from "juice";
 import { Product } from './types/api';
 import { formatPrice } from './src/root/stripe-shared-helper.js';
+import iso3311a2 from 'iso-3166-1-alpha-2';
+import { stripeAPI, readPaymentMethod } from './stripe-server-helper.js';
 
 const transporter = createTransport({
     host: process.env.EMAIL_HOST,
@@ -15,103 +17,127 @@ const transporter = createTransport({
         pass: process.env.EMAIL_PASS,
     },
 });
+
 export type ProductEmail = Record<string, {
     quantity: number;
     price: number;
 }>
+
 type attachments = {
     filename: string;
     path: string;
     cid: string;
 }[];
+
+// Filename and ID of partials to use
+const partialNames = [
+    "summary",
+    "metadata",
+    "masthead",
+    "footer"
+]
+
+const partialDOMs = Object.fromEntries(partialNames.map((name) => {
+    const partialXmlString = fs.readFileSync(`./src/templates/email/partials/${name}.html`, "utf-8");
+    const partialDOM = new JSDOM(partialXmlString).window.document.body.childNodes
+    return [name, Array.from(partialDOM) as Node[]];
+}));
+
 export async function processEmail(paymentIntent: Stripe.PaymentIntent, verifiedProducts: Record<string, Product>, success: boolean): Promise<void> {
     const [to, products] = processPaymentIntent(paymentIntent, verifiedProducts);
-    let emailTemplate: JSDOM;
-    if (success) {
-        emailTemplate = new JSDOM(await loadTemplate("./src/templates/email/success.html"));
-    } else {
-        emailTemplate = new JSDOM(await loadTemplate("./src/templates/email/failure.html"));
-    }
+
+    // Fetch email template
+    const templateName = success ? "success" : "failure";
+    const emailTemplate = new JSDOM(await loadTemplate(`./src/templates/email/${templateName}.html`));
     const document = emailTemplate.window.document;
 
-    // Add email css
+    // Inject css
     const emailStyle = document.createElement("style");
     emailStyle.textContent = fs.readFileSync("./src/templates/email/email.css", "utf-8");
     emailStyle.media = "all"
     document.head.appendChild(emailStyle);
 
-    const nameElement = document.querySelector("#name");
-    const idElement = document.querySelector("#id");
-    const dateElement = document.querySelector("#date");
-    const headerDateElement = document.querySelector("#p-date");
-    const productsElement = document.querySelector("#product-header");
-    const totalElement = document.querySelector("#total");
-    if (!nameElement || !idElement || !dateElement || !headerDateElement || !productsElement || !totalElement) {
-        console.error("One or more required elements are missing in the email template.");
-        return;
+    // Inject partials
+    for (const partialName of partialNames) {
+        try {
+            const partialMarker = document.getElementById(partialName);
+            let partialDOM = partialDOMs[partialName];
+            if (!partialMarker || !partialDOM) continue;
+            
+            // Clone elements
+            partialDOM = partialDOM.map((child) => child.cloneNode(true));
+            
+            partialMarker.replaceWith(...partialDOM);
+        } catch (error) {
+            console.error(`Error injecting partial '${partialName}' in email: `, error);
+        }
     }
+
+    // Inject images
+    const images = document.querySelectorAll("img");
+    for (const image of images) {
+        image.src = `https://robox.com.au/public/email/${image.src}`;
+    }
+
+    // Populate templated fields
+    // We use classes instead of IDs to allow for duplicate fields to be populated.
+    const nameElements = document.querySelectorAll(".name");
+    const idElements = document.querySelectorAll(".id");
+    const dateElements = document.querySelectorAll(".date");
+    const totalElements = document.querySelectorAll(".total");
+
     const date = new Date().toLocaleDateString("en-AU", {
         year: "numeric",
         month: "long",
         day: "numeric",
     });
+
     const orderId = paymentIntent.id;
-    const total = formatPrice(paymentIntent.amount_received, true);
-    const shipping = formatPrice(Number(paymentIntent.metadata.shipping), true);
-    const customerName: string = paymentIntent.shipping?.name || "Customer";
+    const total = formatPrice(paymentIntent.amount, true);
+    const customerName = paymentIntent.shipping?.name || "Customer";
 
-    nameElement.textContent = customerName;
-    idElement.textContent = `Order ID: ${orderId}`;
-    dateElement.textContent = `Date: ${date}`;
-    headerDateElement.textContent = date;
+    nameElements.forEach((nameElement) => {
+        nameElement.textContent = customerName;
+    });
 
-    const productTable = document.querySelector("#products"); // this is the <table>
-    const totalRow = totalElement.closest("tr");
-    if (!productTable || !totalRow) {
-        console.error("Could not find products table or total row");
-        return;
-    }
+    idElements.forEach((idElement) => {
+        idElement.textContent = orderId;
+    });
 
-    for (const [productId, { quantity, price }] of Object.entries(products)) {
-        const productLine = document.createElement("tr");
-
-        const productName = createCell(document, productId, "60%", "purchase_item purchase_i");
-        const productQuantity = createCell(document, quantity.toString(), "20%", "align-center purchase_i");
-        const productPrice = createCell(document, formatPrice(price, true), "20%", "align-right purchase_i");
-
-        productLine.appendChild(productName);
-        productLine.appendChild(productQuantity);
-        productLine.appendChild(productPrice);
-
-        // Insert *above* the total row
-        totalRow.parentElement!.insertBefore(productLine, totalRow);
-    }
-    // If shipping is defined, add a shipping row
-    if (shipping) {
-        const shippingRow = document.createElement("tr");
-        const shippingName = createCell(document, "Shipping", "60%", "purchase_item purchase_i");
-        const shippingQuantity = createCell(document, "", "20%", "align-center purchase_i");
-        const shippingPrice = createCell(document, shipping, "20%", "align-right purchase_i");
-        shippingRow.appendChild(shippingName);
-        shippingRow.appendChild(shippingQuantity);
-        shippingRow.appendChild(shippingPrice);
-        // Insert the shipping row above the total row
-        totalRow.parentElement!.insertBefore(shippingRow, totalRow);
-    }
-    if (totalElement) {
+    totalElements.forEach((totalElement) => {
         totalElement.textContent = total;
-    }
-    const htmlContent = document.documentElement.outerHTML;
+    });
+    
+    dateElements.forEach((dateElement) => {
+        dateElement.textContent = date;
+    });
+
+    // Address and billing info
+    await populateBilling(document, paymentIntent)
+
+    // Fetch table and product row, if it exists
+    const shipping = formatPrice(Number(paymentIntent.metadata.shipping), true);
+    populateProductTable(document, shipping, products);
+
+    // Capture body inside table
+    const containerTable = document.createElement("table");
+    const containerRow = document.createElement("tr");
+    const containerCell = document.createElement("td");
+    const container = document.createElement("div");
+    containerCell.setAttribute("align", "center");
+    container.classList.add("email-container");
+
+    container.append(...document.body.children);
+    containerCell.appendChild(container);
+    containerRow.appendChild(containerCell);
+    containerTable.appendChild(containerRow);
+    document.body.replaceChildren(containerTable);
+
     // Inline CSS styles using juice
-    const juicedContent = juice(htmlContent)
-    return sendEmail(to, document.title, juicedContent, [
-        {
-            filename: "logo.svg",
-            path: "./src/images/logo-full.svg",
-            cid: "logo@robox",
-        }
-    ]);
+    const juicedContent = juice(document.documentElement.outerHTML);
+    return sendEmail(to, document.title, juicedContent);
 }
+
 function processPaymentIntent (paymentIntent: Stripe.PaymentIntent, verifiedProducts: Record<string, Product>): [string, ProductEmail] {
     const metadata = paymentIntent.metadata;
     const products: Record<string, number> = JSON.parse(metadata.products || '{}');
@@ -120,30 +146,72 @@ function processPaymentIntent (paymentIntent: Stripe.PaymentIntent, verifiedProd
         const product = verifiedProducts[productId];
         emailProducts[product.name] = {
             quantity: quantity,
-            price: product.price,
+            price: product.price * quantity,
         };
     }
     return [paymentIntent.receipt_email ?? "", emailProducts];
 }
-function createCell(document: Document, text: string, width: string, className: string): HTMLTableCellElement {
+
+function populateProductTable(document: Document, shipping: string, products: ProductEmail) {
+    const productTable = document.getElementById("products");
+    const totalRow = document.getElementById("total-row");
+
+    if (!productTable || !totalRow) {
+        console.error("Could not find products table or total row");
+        return;
+    }
+
+    // Product rows
+    for (const [productId, { quantity, price }] of Object.entries(products)) {
+        const productLine = document.createElement("tr");
+
+        const productName = createCell(document, productId, "purchase_item large");
+        const productQuantity = createCell(document, quantity.toString(), "align-center small");
+        const productPrice = createCell(document, formatPrice(price, true), "align-right small");
+
+        productLine.appendChild(productName);
+        productLine.appendChild(productQuantity);
+        productLine.appendChild(productPrice);
+
+        // Insert above the total row
+        totalRow.parentElement!.insertBefore(productLine, totalRow);
+    }
+
+    // If shipping is defined, add a shipping row
+    if (shipping) {
+        const shippingRow = document.createElement("tr");
+        const shippingName = createCell(document, "Shipping", "shipping purchase_item row-separate large");
+        const shippingQuantity = createCell(document, "", "shipping align-center row-separate small");
+        const shippingPrice = createCell(document, shipping, "shipping align-right row-separate small");
+
+        shippingRow.appendChild(shippingName);
+        shippingRow.appendChild(shippingQuantity);
+        shippingRow.appendChild(shippingPrice);
+
+        // Insert above the total row
+        totalRow.parentElement!.insertBefore(shippingRow, totalRow);
+    }
+}
+
+function createCell(document: Document, text: string, className: string): HTMLTableCellElement {
     const td = document.createElement("td");
-    td.setAttribute("width", width);
     td.setAttribute("class", className);
-    const span = document.createElement("span");
-    span.setAttribute("class", "f-fallback");
-    span.textContent = text;
-    td.appendChild(span);
+
+    const pText = document.createElement("p");
+    pText.textContent = text;
+    td.appendChild(pText);
+
     return td;
 }
 
-async function sendEmail(to: string, subject: string, content: string, attachments: attachments): Promise<void> {
+async function sendEmail(to: string, subject: string, content: string, attachments?: attachments): Promise<void> {
     try {
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: to,
             subject: subject,
             html: content,
-            attachments: attachments || [],
+            attachments: attachments ?? [],
         };
 
         await transporter.sendMail(mailOptions);
@@ -152,6 +220,7 @@ async function sendEmail(to: string, subject: string, content: string, attachmen
         console.error(`Failed to send email to ${to}:`, error);
     }
 }
+
 async function loadTemplate(templatePath: string): Promise<string> {
     try {
         const template = await fs.promises.readFile(templatePath, "utf-8");
@@ -163,3 +232,62 @@ async function loadTemplate(templatePath: string): Promise<string> {
 }
 
 export default transporter;
+
+async function populateBilling(document: Document, paymentIntent: Stripe.PaymentIntent) {
+    // Billing
+    const address = paymentIntent.shipping?.address;
+    const addressEl = document.getElementById("address") as HTMLParagraphElement;
+
+    if (address && addressEl) {
+        let addressText = "";
+
+        // Unit/Street
+        if (address.line1) addressText += `${address.line1}<br>`;
+        if (address.line2) addressText += `${address.line1}<br>`;
+
+        // City/State/Post code
+        if (address.city || address.state || address.postal_code) {
+            if (address.city) addressText += `${address.city} `;
+            if (address.state) addressText += `${address.state} `;
+            if (address.postal_code) addressText += address.postal_code;
+
+            addressText += "<br>";
+        }
+        
+        // Country
+        if (address.country) addressText += iso3311a2.getCountry(address.country);
+
+        addressEl.innerHTML = addressText;
+    }
+
+    // Address
+    const billingEl = document.getElementById("billing") as HTMLParagraphElement;
+    let paymentMethod: Stripe.PaymentMethod
+    
+    if (typeof paymentIntent.payment_method === "string") {
+        paymentMethod = await stripeAPI.paymentMethods.retrieve(paymentIntent.payment_method);
+    } else {
+        paymentMethod = paymentIntent.payment_method;
+    }
+    
+    if (paymentMethod && billingEl) {
+        const paymentType = readPaymentMethod(paymentMethod);
+        let billingText = "";
+
+        if (paymentType.name) billingText += `${titleCase(paymentType.name)}<br>`;
+        if (paymentType.userID) billingText += `${titleCase(paymentType.userID)}<br>`;
+        if (paymentType.last4) billingText += `Ending in ••••${paymentType.last4}<br>`;
+        if (paymentType.exp_month && paymentType.exp_year) billingText += `Expires on ${paymentType.exp_month}/${paymentType.exp_year % 1000}`;
+
+        billingEl.innerHTML = billingText;
+    }
+}
+
+function titleCase(str: string): string {
+    const splitStr = str.toLowerCase().split(' ');
+    for (let i = 0; i < splitStr.length; i++) {
+        splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+    }
+    
+    return splitStr.join(' '); 
+ }
