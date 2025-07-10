@@ -205,7 +205,7 @@ class USBCommunication {
                         index += 1
                     }
                     rawErrorMessages.splice(0, index)
-                    error_string = rawErrorMessages.join("\n").trim() //Join the rest of the messages togethe
+                    error_string = rawErrorMessages.join("\n").trim() //Join the rest of the messages together
                 }
                 for (const message of consoleMessages) {
                     this.parent.read(message)
