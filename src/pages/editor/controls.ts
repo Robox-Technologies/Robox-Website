@@ -1,4 +1,5 @@
 import { WorkspaceSvg } from "blockly";
+import { clamp } from "blockly/core/utils/math";
 const scrollSpeed = 1.1; // Adjust for sensitivity
 
 export function registerControls(workspace: WorkspaceSvg) {
@@ -7,7 +8,9 @@ export function registerControls(workspace: WorkspaceSvg) {
         if (document.querySelector('dialog[open]')) return;
         event.preventDefault();
         
+        const dx = event.deltaX * scrollSpeed;
         const dy = event.deltaY * scrollSpeed;
+
         if (event.target instanceof HTMLElement && event.target.closest(".blocklyToolbox")) {
             // You can handle wheel event inside toolbox here
             // For example, programmatically scroll the toolbox:
@@ -15,14 +18,10 @@ export function registerControls(workspace: WorkspaceSvg) {
                 // Scroll the toolbox vertically by dy pixels
                 toolbox.scrollTop += dy;
             }
-            return
+            return;
         }
-        
-        const dx = event.deltaX * scrollSpeed;
 
-        workspace.scrollX -= dx
-        workspace.scrollY -= dy
-        
-        workspace.render()
+        workspace.scroll(workspace.scrollX - dx, workspace.scrollY - dy);
+        workspace.render();
     }, { passive: false });
 }
