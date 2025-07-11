@@ -1,0 +1,49 @@
+name: Update Lightsail Firewall
+
+on:
+  # Run every Sunday at midnight UTC
+  schedule:
+    - cron: '0 0 * * 0'
+  # Allow running workflow manually
+  workflow_dispatch:
+
+jobs:
+  update-firewall:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update Lightsail Firewall with GitHub Actions IPs
+        run: |
+          echo "Fetching latest GitHub Actions IP ranges..."
+
+          # Get the JSON, extract the 'actions' array, and format it for the AWS CLI
+          GITHUB_CIDRS=$(curl -s https://api.github.com/meta | jq -c '.actions | {cidrs: .}')
+
+          if [ -z "$GITHUB_CIDRS" ]; then
+            echo "Failed to fetch IP addresses from GitHub."
+            exit 1
+          fi
+          
+          ALL_CIDRS=$(echo "${{ secrets.CUSTOM_IP_WHITELIST }} $GITHUB_CIDRS" | jq -R 'split(" ") | . - [""]' | jq -c '.')
+
+          # This command opens port 22 ONLY to the specified IP ranges.
+          # It overwrites any existing rules for port 22.
+          aws lightsail put-instance-public-ports \
+            --instance-name ${{ secrets.INSTANCE_NAME }} \
+            --port-infos '[
+              {
+                "protocol": "TCP",
+                "fromPort": 22,
+                "toPort": 22,
+                "cidrListProtocol": "tcp",
+                "cidrs": '"$(echo $CIDRS | jq '.cidrs')"'
+              }
+            ]'
+
+          echo "Firewall update complete."
