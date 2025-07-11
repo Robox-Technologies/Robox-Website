@@ -86,7 +86,7 @@ paymentRouter.post("/create", async (req: Request<object, object, PaymentIntentC
 })
 
 paymentRouter.get("/products", async (req: Request<object, object, object, ProductsRequestQuery>, res: Response): Promise<void> => {
-    const productId = req.query["id"]
+    const productId = req.query.id
     if (productId) {
         if (productId === "quantity") {
             res.status(200).send(false)

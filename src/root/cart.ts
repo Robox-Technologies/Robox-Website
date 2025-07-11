@@ -80,14 +80,14 @@ export function setCartItem(product: string, quantity: number, cache: Product) {
     let item = cart.products[product]
     if (!item) {
         item = {"quantity": quantity, "data": cache}
-    }
-    else {
+    } else {
         cart.quantity -= item.quantity
         item.quantity = quantity
         item.data = cache
     }
     
-    cart.quantity += quantity
-    localStorage.setItem("cart", JSON.stringify(cart))
-    refreshCart()
+    cart.products[product] = item;
+    cart.quantity += quantity;
+    localStorage.setItem("cart", JSON.stringify(cart));
+    refreshCart();
 }
