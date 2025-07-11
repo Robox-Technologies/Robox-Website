@@ -15,7 +15,7 @@ export function getProjects(): Projects {
     } else {
         projects = JSON.parse(projectsRaw, (key, value) => {
             if (isProtoPollution(key)) {
-                console.warn("Invalid UUID in projects data. Skipping...");
+                console.warn("Skipping forbidden property key in projects data: " + key);
                 return undefined;
             }
 
