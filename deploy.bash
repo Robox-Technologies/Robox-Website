@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+
+set -euxo pipefail
+
 # Install dependencies
 . ~/.nvm/nvm.sh
 nvm use node

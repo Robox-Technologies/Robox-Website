@@ -18,7 +18,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Whitelist Runner IP
+      - name: Add Runner IP to Firewall
         id: add_ip
         run: |
           # Get the public IP of the current runner and add /32 for CIDR notation
@@ -64,7 +64,7 @@ jobs:
             # Run deploy script
             bash deploy.bash
       
-      - name: Remote Runner IP Whitelist
+      - name: Remove Runner IP from Firewall
         # Ensure step runs regardless of if SSH step fails
         if: always()
         run: |
