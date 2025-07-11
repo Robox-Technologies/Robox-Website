@@ -26,7 +26,6 @@ $extensionAmount: 20px;
 //This is the height for the top and bottom divs
 $barHeight: 75px;
 
-$dropshadowBase: 2px;
 $topButtonsDropShadowMult: 1;
 $dropShadowColour: rgb(47, 47, 47);
 
@@ -192,12 +191,12 @@ body {
     padding-right: 12px;
     font-size: 16px;
 }
-$nameInputDropShadowMult: 2;
+
 #project-name-form {
+    @include variables.dropShadowSmaller;    
     background-color: white;
     display: flex;
     justify-content: space-between;
-    filter: drop-shadow(calc($dropshadowBase*$nameInputDropShadowMult) calc($dropshadowBase*$nameInputDropShadowMult) $dropShadowColour);
     border-radius: 7px;
 }
 #bluetooth, #learn {
@@ -236,7 +235,7 @@ $nameInputDropShadowMult: 2;
 
 }
 #connection-management {
-    @include variables.dropShadowSmall;
+    @include variables.dropShadowSmaller;
 
     display: flex;
     position: absolute;
@@ -273,7 +272,6 @@ $zoomButtonsGap: 10px;
     flex-direction: row;
     gap: 0;
 }
-$blocklyUIButtonsDropShadowMult: 2;
 
 #blocklyCustomTimeControls > .uiButtons:first-child {
     border-radius: 7px 0 0 7px;
@@ -310,6 +308,8 @@ button[calibrating]:hover {
     cursor: not-allowed;
 }
 .uiButtons {
+    @include variables.dropShadowSmaller;
+
     background-color: white;
     color: variables.$themeBlue;
     border: $seperatorStrokeSize solid variables.$themeBlue;
@@ -318,7 +318,6 @@ button[calibrating]:hover {
     height: $blocklyUIIconSize;
     display: flex;
     justify-content: center;
-    filter: drop-shadow(calc($dropshadowBase*$blocklyUIButtonsDropShadowMult) calc($dropshadowBase*$blocklyUIButtonsDropShadowMult) $dropShadowColour);
     align-items: center;
     padding: 20px;
     cursor: pointer;
