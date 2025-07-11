@@ -64,7 +64,6 @@ $downloadButtonSize: 60px;
 }
 .blocklyTreeSeparator {
     display: flex;
-    border-top: $seperatorStrokeSize solid #F5F5F5;
     background-color: white;
     justify-content: center;
     align-items: center;
@@ -77,6 +76,7 @@ $downloadButtonSize: 60px;
 /* Adds space between the categories, rounds the corners and adds space around the label. */
 .blocklyToolboxCategory {
     border-top: $seperatorStrokeSize solid #F5F5F5;
+    cursor: pointer;
     
     &:last-child {
         border-bottom: $seperatorStrokeSize solid #F5F5F5;
@@ -241,7 +241,6 @@ body {
     position: absolute;
     z-index: 9;
 
-    cursor: pointer;
     background-color: variables.$themeRed;
     justify-content: space-between;
     padding: 0;
@@ -250,6 +249,10 @@ body {
     border-radius: 25px;
     bottom: variables.$standardGap;
     right: variables.$standardGap;
+
+    & > * {
+        cursor: pointer;
+    }
 }
 .sideButtons {
     font-size: 20px;

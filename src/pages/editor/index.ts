@@ -145,8 +145,25 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event.isUiEvent) return;
         saveBlockly(workspaceId, workspace);
     });
-    
 
+    // Extend first category
+    const firstCategory = document.querySelector(".blocklyToolboxCategory")
+    const icon = firstCategory.querySelector(".categoryIcon") as HTMLElement;
+    const extender = firstCategory.querySelector(".extender") as HTMLElement;
+    if (icon && extender) {
+        // Temp disable transitions
+        const transitionProperties = "width, margin-left";
+        icon.style.transitionProperty = "none";
+        extender.style.transitionProperty = "none";
+
+        icon.style.marginLeft = "20px";
+        extender.classList.add("extended");
+
+        setTimeout(() => {
+            icon.style.transitionProperty = transitionProperties;
+            extender.style.transitionProperty = transitionProperties;
+        }, 1)
+    }
     
     //Prevents the flyout from closing (the category being deselected)
     workspace.addChangeListener(function (event) {
