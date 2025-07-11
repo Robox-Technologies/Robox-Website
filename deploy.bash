@@ -1,4 +1,5 @@
 # Install dependencies
+. ~/.nvm/nvm.sh
 nvm use node
 npm install
 
