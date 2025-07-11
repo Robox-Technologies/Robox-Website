@@ -32,8 +32,13 @@ function renderPreview() {
     const products = getCart()["products"]
     let cartEmpty = true;
     for (const productId in products) {
-        const product = products[productId].data
-        if (!product || productId == "") continue
+        const product = products[productId].data;
+        const cachedProduct = localProducts[productId];
+        
+        if (!product || !cachedProduct || productId == "") {
+            removeCartItem(productId);
+            continue;
+        }
     
         const price = formatPrice(product.price)
         const name = product.name
@@ -51,7 +56,6 @@ function renderPreview() {
         const quantityInput = clone.querySelector(".cart-quantity") as HTMLInputElement
         const imageElement = clone.querySelector(".cart-item-photo") as HTMLImageElement
         
-        const cachedProduct = localProducts[productId];
         const productImage = document.getElementById(`hidden-${cachedProduct.internalName}`) as HTMLImageElement;
         imageElement.src = productImage.src;
         imageElement.alt = productImage.alt;

@@ -277,7 +277,6 @@ async function populateBilling(document: Document, paymentIntent: Stripe.Payment
 
     let addressText = "";
     if (address && addressEl) {
-
         // Unit/Street
         if (address.line1) addressText += `${address.line1}<br>`;
         if (address.line2) addressText += `${address.line2}<br>`;
@@ -298,25 +297,28 @@ async function populateBilling(document: Document, paymentIntent: Stripe.Payment
     }
 
     // Address
-    const billingEl = document.getElementById("billing") as HTMLParagraphElement;
-    let paymentMethod: Stripe.PaymentMethod | undefined = undefined;
-    
-    if (typeof paymentIntent.payment_method === "string") {
-        paymentMethod = await stripeAPI.paymentMethods.retrieve(paymentIntent.payment_method);
-    } else if (paymentIntent.payment_method) {
-        paymentMethod = paymentIntent.payment_method;
-    }
-    
     let billingText = "";
-    if (paymentMethod && billingEl) {
-        const paymentType = readPaymentMethod(paymentMethod);
+    const billingEl = document.getElementById("billing") as HTMLParagraphElement;
 
-        if (paymentType.name) billingText += `${titleCase(paymentType.name)}<br>`;
-        if (paymentType.userID) billingText += `${titleCase(paymentType.userID)}<br>`;
-        if (paymentType.last4) billingText += `Ending in ••••${paymentType.last4}<br>`;
-        if (paymentType.exp_month && paymentType.exp_year) billingText += `Expires on ${paymentType.exp_month}/${paymentType.exp_year % 1000}`;
-
-        billingEl.innerHTML = billingText;
+    if (billingEl) {
+        let paymentMethod: Stripe.PaymentMethod | undefined = undefined;
+        
+        if (typeof paymentIntent.payment_method === "string") {
+            paymentMethod = await stripeAPI.paymentMethods.retrieve(paymentIntent.payment_method);
+        } else if (paymentIntent.payment_method) {
+            paymentMethod = paymentIntent.payment_method;
+        }
+        
+        if (paymentMethod && billingEl) {
+            const paymentType = readPaymentMethod(paymentMethod);
+    
+            if (paymentType.name) billingText += `${titleCase(paymentType.name)}<br>`;
+            if (paymentType.userID) billingText += `${titleCase(paymentType.userID)}<br>`;
+            if (paymentType.last4) billingText += `Ending in ••••${paymentType.last4}<br>`;
+            if (paymentType.exp_month && paymentType.exp_year) billingText += `Expires on ${paymentType.exp_month}/${paymentType.exp_year % 1000}`;
+    
+            billingEl.innerHTML = billingText;
+        }
     }
 
     return [addressText, billingText];
