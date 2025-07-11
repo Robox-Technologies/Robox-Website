@@ -102,6 +102,10 @@ export function postBlocklyWSInjection() {
         dialog.show()
         event.stopPropagation()
     })
+    pico.addEventListener("error", (event) => {
+        console.error("Pico Error: ", event)
+        //TODO: add toasts
+    })
     pico.startupConnect()
 
 }
