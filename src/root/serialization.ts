@@ -13,14 +13,18 @@ export function getProjects(): Projects {
     if (!projectsRaw) {
         localStorage.setItem("roboxProjects", JSON.stringify(projects));
     } else {
-        projects = JSON.parse(projectsRaw, (key, value) => {
-            if (isProtoPollution(key)) {
-                console.warn("Skipping forbidden property key in projects data: " + key);
-                return undefined;
-            }
-
-            return value;
-        });
+        try {
+            projects = JSON.parse(projectsRaw, (key, value) => {
+                if (isProtoPollution(key)) {
+                    console.warn("Skipping forbidden property key in projects data: " + key);
+                    return undefined;
+                }
+    
+                return value;
+            });
+        } catch (error) {
+            console.error("Failed to fetch projects: ", error);
+        }
     }
 
     return projects;
