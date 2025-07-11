@@ -12,7 +12,7 @@ export const stripePublishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
 export async function getProducts(): Promise<Record<string, Product>> {
     return await (await fetch("/api/store/products")).json()
 }
-export function getCart(): Cart {
+export function getCart(serverProducts?: Record<string, Product>): Cart {
     let cart: Cart;
 
     try {
@@ -25,6 +25,27 @@ export function getCart(): Cart {
     if (!cart) {
         cart = { quantity: 0, products: {} };
         saveCart(cart);
+    }
+
+    if (serverProducts) {
+        // Verify against cart
+        for (const productId in cart.products) {
+            const serverProduct = serverProducts[productId];
+
+            if (!serverProduct) {
+                // Unknown product - remove!
+                cart = removeCartItem(productId);
+                continue;
+            }
+
+            // Update cart data
+            cart.products[productId] = {
+                quantity: cart.products[productId].quantity,
+                data: serverProduct
+            }
+
+            saveCart(cart);
+        }
     }
 
     return cart;
@@ -66,12 +87,13 @@ export function refreshCart() {
     }
 }
 //expects an object of quantity and id
-export function removeCartItem(product: string) {
+export function removeCartItem(product: string): Cart {
     const cart = getCart()
     cart.quantity -= cart.products[product].quantity
     delete cart.products[product]
     saveCart(cart);
-    refreshCart()
+    refreshCart();
+    return cart;
 }
 export function wipeCart() {
     saveCart({ quantity: 0, products: {} });

@@ -5,16 +5,17 @@ import "@root/shop";
 import { calculateTotalCost, cartToDictionary } from "@root/stripe-shared-helper";
 
 
+// @ts-expect-error Fetch from HTML
+const localProducts = products;
 
-
-const cart = getCart();
-const products = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, product: string) => {
+const cart = getCart(localProducts);
+const cartProducts = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, product: string) => {
     const productData = cart["products"][product]["data"];
     acc[product] = productData;
     return acc;
 }, {});
 
-const totalCost = calculateTotalCost(cartToDictionary(), products).total;
+const totalCost = calculateTotalCost(cartToDictionary(), cartProducts).total;
 
 const appearance: Appearance = {
     theme: "flat",
