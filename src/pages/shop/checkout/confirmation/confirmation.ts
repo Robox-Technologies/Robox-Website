@@ -24,7 +24,7 @@ if (paymentIntentClientSecret) {
     showFailure();
 }
 
-function sleep(ms) {
+function sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
