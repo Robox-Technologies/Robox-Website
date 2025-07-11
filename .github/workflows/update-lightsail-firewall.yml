@@ -52,7 +52,7 @@ jobs:
                 "fromPort": 22,
                 "toPort": 22,
                 "cidrListProtocol": "tcp",
-                "cidrs": '"$(echo $CIDRS | jq '.cidrs')"'
+                "cidrs": '"$ALL_CIDRS"'
               }
             ]'
 
