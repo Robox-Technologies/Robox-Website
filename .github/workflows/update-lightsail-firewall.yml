@@ -51,7 +51,6 @@ jobs:
                 "protocol": "TCP",
                 "fromPort": 22,
                 "toPort": 22,
-                "cidrListProtocol": "tcp",
                 "cidrs": '"$ALL_CIDRS"'
               }
             ]'
