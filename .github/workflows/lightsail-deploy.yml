@@ -45,6 +45,8 @@ jobs:
             cd ~/Robox-Website-2
             git checkout ${{ github.head_ref || github.ref_name }} 
             git pull
+            
+            nvm use node
             npm install
 
             # Create .env file
