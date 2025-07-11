@@ -31,23 +31,6 @@ export class CustomUndoControls {
         if (parent) {
             parent.appendChild(this.container);
         }
-    
-        this.position();
-        this.workspace.addChangeListener(() => this.position());
-    }
-  
-    position() {
-        if (!this.container) return;
-    
-        const metrics = this.workspace.getMetrics();
-        const MARGIN = 40;
-    
-        const left = metrics.viewWidth + metrics.absoluteLeft - this.container.offsetWidth - MARGIN; 
-    
-        const top = this.container.offsetHeight;
-    
-        this.container.style.left = `${left}px`;
-        this.container.style.top = `${top}px`;
     }
   
     dispose() {

@@ -1,4 +1,4 @@
-import { createProject, getProject, getProjects, renameProject } from "../../root/serialization";
+import { createProject, getProject, getProjects, renameProject, sanitizeImageDataUrl } from "../../root/serialization";
 import { Project } from "types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
@@ -128,7 +128,7 @@ function createProjectCard(uuid: string, project: Project): HTMLElement {
 
     const projectTime = dayjs(project.time);
 
-    image.src = project.thumbnail;
+    image.src = sanitizeImageDataUrl(project.thumbnail);
     title.textContent = project.name;
     time.textContent = projectTime.fromNow();
     clone.id = uuid;

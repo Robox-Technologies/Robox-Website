@@ -12,7 +12,7 @@ const finalWidth = 250*2;
  * @fileoverview Download screenshot.
  * @author samelh@google.com (Sam El-Husseini)
  */
-export function svgToPng_(data: string, width: number, height: number, callback: (url: string) => void) {
+function svgToPng_(data: string, width: number, height: number, callback: (url: string) => void) {
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d");
     const img = new Image();
@@ -33,11 +33,11 @@ export function svgToPng_(data: string, width: number, height: number, callback:
     };
     img.src = data;
 }
-export function workspaceToSvg_(workspace: WorkspaceSvg, callback: (url: string) => void, customCss = "") {
+export function workspaceToPng_(workspace: WorkspaceSvg, callback: (url: string) => void, customCss = "") {
     // Go through all text areas and set their value.
     const textAreas = document.getElementsByTagName("textarea");
     for (let i = 0; i < textAreas.length; i++) {
-        textAreas[i].innerHTML = textAreas[i].value;
+        textAreas[i].textContent = textAreas[i].value;
     }
 
     const bBox = workspace.getBlocksBoundingBox();
@@ -107,7 +107,7 @@ export function workspaceToSvg_(workspace: WorkspaceSvg, callback: (url: string)
             return el.innerText;
         }).join('\n');
         const style = document.createElement('style');
-    style.innerHTML = css + '\n' + customCss;
+    style.textContent = css + '\n' + customCss;
     svg.insertBefore(style, svg.firstChild);
 
     let svgAsXML = (new XMLSerializer).serializeToString(svg);

@@ -1,8 +1,9 @@
 import dayjs from 'dayjs';
+import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
 import { Projects, Project } from "types/projects";
 
-import { workspaceToSvg_ } from './screenshot';
+import { workspaceToPng_ } from './screenshot';
 
 
 export function getProjects(): Projects {
@@ -18,11 +19,16 @@ export function getProjects(): Projects {
 export function createProject(name: string): string {
     const projects = getProjects()
     const uuid = crypto.randomUUID();
+
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
     projects[uuid] = { name: name, time: dayjs(), workspace: {}, thumbnail: "" }
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
     return uuid
 }
 export function getProject(uuid: string, projects: Projects | null = null): Project | null {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
     if (!projects) {
         projects = getProjects()
     }
@@ -31,6 +37,8 @@ export function getProject(uuid: string, projects: Projects | null = null): Proj
     return projects[uuid]
 }
 export async function loadBlockly(uuid: string, workspace: Workspace) {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
     const blockly = await import('blockly/core');
     const project = getProject(uuid)
     if (!project) return;
@@ -41,6 +49,8 @@ export async function loadBlockly(uuid: string, workspace: Workspace) {
     blockly.Events.enable();
 }
 export function downloadBlocklyProject(uuid: string) {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
     const project = getProject(uuid)
     if (!project) return
     const workspaceName = project.name
@@ -54,9 +64,10 @@ export function downloadBlocklyProject(uuid: string) {
     document.body.removeChild(downloadEl);
 }
 export async function saveBlockly(uuid: string, workspace: WorkspaceSvg, callback: ((project: string) => void) | null = null) {
-    
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
     const blockly = await import('blockly/core');
-    workspaceToSvg_(workspace, (thumburi: string) => {
+    workspaceToPng_(workspace, (thumburi: string) => {
         const data = blockly.serialization.workspaces.save(workspace)
         const projects = getProjects()
         projects[uuid]["time"] = dayjs()
@@ -74,6 +85,9 @@ export function saveBlocklyCompressed(projectRaw: string) {
     const projects = getProjects()
     const project = JSON.parse(projectRaw) as Project
     const uuid = crypto.randomUUID();
+    
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
     projects[uuid] = project
     projects[uuid]["time"] = dayjs()
     const projectData = JSON.stringify(projects)
@@ -82,15 +96,42 @@ export function saveBlocklyCompressed(projectRaw: string) {
 }
 
 export function renameProject(uuid: string, newName:string) {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
     const projects = getProjects()
     if (!projects[uuid]) throw new Error("Project does not exist")
     projects[uuid]["name"] = newName
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
 }
 export function deleteProject(uuid: string) {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
     const projects = getProjects()
     if (!projects[uuid]) throw new Error("Project does not exist")
     delete projects[uuid]
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
 }
 
+export function sanitizeImageDataUrl(dataUrl: string): string {
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+    // Get MIME type from URL and ensure it is allowed
+    const mimeTypeMatch = dataUrl.match(/^data:([^;]+);/);
+    const mimeType = mimeTypeMatch ? mimeTypeMatch[1] : null;
+
+    if (!mimeType || !allowedMimeTypes.includes(mimeType.toLowerCase())) {
+        console.error(`Image data URL has invalid MIME type: ${mimeType}`);
+        return "";
+    }
+
+    // Return a sanitized URL
+    return DOMPurify.sanitize(dataUrl);
+}
+
+// Validates project UUID to prevent XSS
+function isValidUUID(uuid: string): boolean {
+    const forbiddenKeys = ["__proto__", "constructor", "prototype"];
+    if (forbiddenKeys.includes(uuid)) return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+}

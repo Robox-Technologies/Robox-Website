@@ -7,7 +7,9 @@ export function registerControls(workspace: WorkspaceSvg) {
         if (document.querySelector('dialog[open]')) return;
         event.preventDefault();
         
+        const dx = event.deltaX * scrollSpeed;
         const dy = event.deltaY * scrollSpeed;
+
         if (event.target instanceof HTMLElement && event.target.closest(".blocklyToolbox")) {
             // You can handle wheel event inside toolbox here
             // For example, programmatically scroll the toolbox:
@@ -15,23 +17,10 @@ export function registerControls(workspace: WorkspaceSvg) {
                 // Scroll the toolbox vertically by dy pixels
                 toolbox.scrollTop += dy;
             }
-            return
+            return;
         }
-        //Two seperate variables in case we want to change the formulas later
-        const dx = event.deltaX * scrollSpeed;
-        // Shift + scroll for horizontal movement
-        if (event.shiftKey) {
-            workspace.scrollX += dx
-        } else {
-            // Scroll for vertical movement
-            //Check what element is hovered over
-            //If it is a toolbox, dont scroll the workspace
-            if (event.target instanceof HTMLElement && ( event.target.closest('.blocklyToolboxDiv'))) {
-                return;
-            }
-            
-            workspace.scrollY += dy
-        }
-        workspace.render()
+
+        workspace.scroll(workspace.scrollX - dx, workspace.scrollY - dy);
+        workspace.render();
     }, { passive: false });
 }
