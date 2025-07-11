@@ -37,7 +37,7 @@ jobs:
           webpack --config build/server/webpack.config.js
       
       - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@d482eb942f549f059116ec36b191860128553142
+        uses: FirebaseExtended/action-hosting-deploy@0cbcac4740c2bfb00d632f0b863b57713124eb5a
 
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}

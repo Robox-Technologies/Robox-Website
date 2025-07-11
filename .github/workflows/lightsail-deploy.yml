@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -54,7 +54,7 @@ jobs:
             echo FORCE_CACHE=${{ vars.FORCE_CACHE }} >> .env
             
             echo STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }} >> .env
-            echo EMAIL_HOST=${{ secrets.EMAIL_HOST }} > .env
+            echo EMAIL_HOST=${{ secrets.EMAIL_HOST }} >> .env
             echo EMAIL_PORT=${{ secrets.EMAIL_PORT }} >> .env
             echo EMAIL_SECURE=${{ vars.EMAIL_SECURE }} >> .env
             echo EMAIL_USER=${{ secrets.EMAIL_USER }} >> .env
@@ -68,10 +68,9 @@ jobs:
             pm2 delete server 2> /dev/null || true
             pm2 start ./build/server/server.js --name "server"
       
-      - name: 3. Clean Up Firewall Rule
+      - name: Remote Runner IP Whitelist
         # Ensure step runs regardless of if SSH step fails
         if: always()
-
         run: |
           echo "Removing runner IP from firewall..."
           aws lightsail close-instance-public-ports \
