@@ -16,6 +16,8 @@ on:
 jobs:
   update-firewall:
     runs-on: ubuntu-latest
+    environment: Lightsail
+
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
