@@ -41,13 +41,9 @@ jobs:
           username: ${{ secrets.LIGHTSAIL_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Pull and update dependencies
+            # Checkout current branch
             cd ~/Robox-Website-2
-            git checkout ${{ github.head_ref || github.ref_name }} 
-            git pull
-            
-            nvm use node
-            npm install
+            git checkout ${{ github.head_ref || github.ref_name }}
 
             # Create .env file
             touch .env
@@ -65,11 +61,8 @@ jobs:
 
             cat .env
 
-            # Compile and deploy
-            npx tsc -p tsconfig.server.json
-            webpack --config build/server/webpack.config.js
-            pm2 delete server 2> /dev/null || true
-            pm2 start ./build/server/server.js --name "server"
+            # Run deploy script
+            bash deploy.bash
       
       - name: Remote Runner IP Whitelist
         # Ensure step runs regardless of if SSH step fails
