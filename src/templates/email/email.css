@@ -188,7 +188,7 @@ td.small {
     margin-bottom: 64px;
 }
 
-.logo > svg {
+.logo > img {
     max-width: 250px;
 }
 
@@ -212,8 +212,9 @@ td.small {
     color: #717171 !important;
 }
 
-.socials th {
-    height: 40px;
+.socials img {
+    width: 24px;
+    height: 24px;
 }
 
 .footer {
