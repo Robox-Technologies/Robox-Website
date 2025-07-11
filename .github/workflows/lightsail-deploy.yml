@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - feature/lightsail-deploy-action
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
