@@ -21,11 +21,22 @@ app.use(rateLimit({
     }
 }));
 
+// API rate limit of 70 requests/min
+const apiRateLimit = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 70,
+    message: "We know you love Ro/Box, but you've sent too many requests. Please try again later.",
+    handler: (req, res, _, options) => {
+        console.log(`${req.ip} was rate limited.`);
+        res.status(options.statusCode).send(options.message);
+    }
+});
+
 // Absolute path to the website build output
 const websiteDir = path.resolve(__dirname, '../website');
 const path404 = path.join(websiteDir, '404.html');
 
-app.use("/api/store", paymentRouter);
+app.use("/api/store", apiRateLimit, paymentRouter);
 app.use(express.json());
 app.use("/", express.static(websiteDir));
 
