@@ -33,14 +33,15 @@ jobs:
           echo "Fetching latest GitHub Actions IP ranges..."
 
           # Get the JSON, extract the 'actions' array, and format it for the AWS CLI
-          GITHUB_CIDRS=$(curl -s https://api.github.com/meta | jq -c '.actions' | jq -r 'join(" ")') 
+          GITHUB_CIDRS=$(curl -s https://api.github.com/meta | jq -r '.actions[]')
 
           if [ -z "$GITHUB_CIDRS" ]; then
             echo "Failed to fetch IP addresses from GitHub."
             exit 1
           fi
           
-          ALL_CIDRS=$(echo "${{ secrets.CUSTOM_IP_WHITELIST }} $GITHUB_CIDRS" | jq -R 'split(" ") | . - [""]' | jq -c '.')
+          ALL_CIDRS=$(echo -e "${{ secrets.CUSTOM_IP_WHITELIST }}\n$GITHUB_CIDRS" | sed '/^$/d')
+          IPV4_CIDRS=$(echo "$ALL_CIDRS" | grep '\.' | jq -R 'split(" ") | . - [""]' | jq -s 'flatten' | jq -c '.')
 
           # This command opens port 22 ONLY to the specified IP ranges.
           # It overwrites any existing rules for port 22.
@@ -51,7 +52,7 @@ jobs:
                 "protocol": "TCP",
                 "fromPort": 22,
                 "toPort": 22,
-                "cidrs": '"$ALL_CIDRS"'
+                "cidrs": '"$IPV4_CIDRS"'
               }
             ]'
 
