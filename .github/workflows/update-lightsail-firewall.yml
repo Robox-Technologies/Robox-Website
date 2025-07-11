@@ -33,7 +33,7 @@ jobs:
           echo "Fetching latest GitHub Actions IP ranges..."
 
           # Get the JSON, extract the 'actions' array, and format it for the AWS CLI
-          GITHUB_CIDRS=$(curl -s https://api.github.com/meta | jq -c '.actions | {cidrs: .}')
+          GITHUB_CIDRS=$(curl -s https://api.github.com/meta | jq -c '.actions' | jq -r 'join(" ")') 
 
           if [ -z "$GITHUB_CIDRS" ]; then
             echo "Failed to fetch IP addresses from GitHub."
