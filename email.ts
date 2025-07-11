@@ -299,14 +299,15 @@ async function populateBilling(document: Document, paymentIntent: Stripe.Payment
     // Address
     let billingText = "";
     const billingEl = document.getElementById("billing") as HTMLParagraphElement;
+    const stripePaymentData = paymentIntent.payment_method ?? paymentIntent.last_payment_error.payment_method;
 
-    if (billingEl) {
+    if (billingEl && stripePaymentData) {
         let paymentMethod: Stripe.PaymentMethod | undefined = undefined;
         
-        if (typeof paymentIntent.payment_method === "string") {
-            paymentMethod = await stripeAPI.paymentMethods.retrieve(paymentIntent.payment_method);
-        } else if (paymentIntent.payment_method) {
-            paymentMethod = paymentIntent.payment_method;
+        if (typeof stripePaymentData === "string") {
+            paymentMethod = await stripeAPI.paymentMethods.retrieve(stripePaymentData);
+        } else {
+            paymentMethod = stripePaymentData;
         }
         
         if (paymentMethod && billingEl) {
