@@ -48,7 +48,6 @@ async function pollIntent(stripe: Stripe): Promise<string> {
 
     if (!paymentIntent || paymentIntent.status === "processing") return "retry";
     
-
     if (paymentIntent.status === "succeeded") {
         showSuccess(paymentIntent.receipt_email);
     } else {
