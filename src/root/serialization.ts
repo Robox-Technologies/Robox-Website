@@ -8,13 +8,26 @@ import { workspaceToPng_ } from './screenshot';
 
 export function getProjects(): Projects {
     const projectsRaw = localStorage.getItem("roboxProjects")
-    let projects = {}
+    let projects = Object.create(null);
+
     if (!projectsRaw) {
-        localStorage.setItem("roboxProjects", "{}")
-        projects = {}
+        localStorage.setItem("roboxProjects", JSON.stringify(projects));
+    } else {
+        try {
+            projects = JSON.parse(projectsRaw, (key, value) => {
+                if (isProtoPollution(key)) {
+                    console.warn("Skipping forbidden property key in projects data: " + key);
+                    return undefined;
+                }
+    
+                return value;
+            });
+        } catch (error) {
+            console.error("Failed to fetch projects: ", error);
+        }
     }
-    else projects = JSON.parse(projectsRaw)
-    return projects
+
+    return projects;
 }
 export function createProject(name: string): string {
     const projects = getProjects()
@@ -64,15 +77,15 @@ export function downloadBlocklyProject(uuid: string) {
     document.body.removeChild(downloadEl);
 }
 export async function saveBlockly(uuid: string, workspace: WorkspaceSvg, callback: ((project: string) => void) | null = null) {
-    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
-
     const blockly = await import('blockly/core');
     workspaceToPng_(workspace, (thumburi: string) => {
+        if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
         const data = blockly.serialization.workspaces.save(workspace)
         const projects = getProjects()
         projects[uuid]["time"] = dayjs()
         projects[uuid]["workspace"] = data
-        projects[uuid]["thumbnail"] = thumburi
+        projects[uuid]["thumbnail"] = sanitizeImageDataUrl(thumburi);
         const projectData = JSON.stringify(projects)
         localStorage.setItem("roboxProjects", projectData)
 
@@ -129,9 +142,13 @@ export function sanitizeImageDataUrl(dataUrl: string): string {
 }
 
 // Validates project UUID to prevent XSS
-function isValidUUID(uuid: string): boolean {
+function isProtoPollution(key: string): boolean {
     const forbiddenKeys = ["__proto__", "constructor", "prototype"];
-    if (forbiddenKeys.includes(uuid)) return false;
+    return forbiddenKeys.includes(key);
+}
+
+function isValidUUID(uuid: string): boolean {
+    if (isProtoPollution(uuid)) return false;
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     return uuidRegex.test(uuid);
 }
