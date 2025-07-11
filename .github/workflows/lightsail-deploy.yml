@@ -41,9 +41,10 @@ jobs:
           username: ${{ secrets.LIGHTSAIL_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # Checkout current branch
+            # Checkout current branch and pull
             cd ~/Robox-Website-2
             git checkout ${{ github.head_ref || github.ref_name }}
+            git pull
 
             # Create .env file
             touch .env
