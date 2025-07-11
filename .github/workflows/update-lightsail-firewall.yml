@@ -4,6 +4,12 @@ on:
   # Run every Sunday at midnight UTC
   schedule:
     - cron: '0 0 * * 0'
+
+  
+  push:
+    branches:
+      - feature/lightsail-deploy-action
+
   # Allow running workflow manually
   workflow_dispatch:
 
