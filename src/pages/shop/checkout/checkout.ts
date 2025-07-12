@@ -9,9 +9,9 @@ import { calculateTotalCost, cartToDictionary } from "@root/stripe-shared-helper
 const localProducts = products;
 
 const cart = getCart(localProducts);
-const cartProducts = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, product: string) => {
-    const productData = cart["products"][product]["data"];
-    acc[product] = productData;
+const cartProducts = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, productId: string) => {
+    const productData = cart["products"][productId]["data"];
+    acc[productId] = productData;
     return acc;
 }, {});
 

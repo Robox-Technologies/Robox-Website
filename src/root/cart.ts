@@ -55,9 +55,9 @@ function saveCart(cart: Cart) {
     localStorage.setItem("cart", JSON.stringify(cart));
 }
 
-export function getItem(product: string): { quantity: number; data: Product } | undefined {
+export function getItem(productId: string): { quantity: number; data: Product } | undefined {
     const cart = getCart()
-    return cart.products[product]
+    return cart.products[productId]
 }
 export function refreshCart() {
     const cart = getCart()
@@ -87,10 +87,10 @@ export function refreshCart() {
     }
 }
 //expects an object of quantity and id
-export function removeCartItem(product: string): Cart {
+export function removeCartItem(productId: string): Cart {
     const cart = getCart()
-    cart.quantity -= cart.products[product].quantity
-    delete cart.products[product]
+    cart.quantity -= cart.products[productId].quantity
+    delete cart.products[productId]
     saveCart(cart);
     refreshCart();
     return cart;
@@ -99,24 +99,24 @@ export function wipeCart() {
     saveCart({ quantity: 0, products: {} });
     refreshCart();
 }
-export function addCartItem(product: string, quantity: number, cache: Product) {
+export function addCartItem(productId: string, quantity: number, cache: Product) {
     const cart = getCart();
-    const item = cart.products[product]
+    const item = cart.products[productId]
 
     if (item) {
         item.quantity += quantity
     } else {
-        cart.products[product] = { "quantity": quantity, "data": cache }
+        cart.products[productId] = { "quantity": quantity, "data": cache }
     }
     
-    cart.products[product].data = cache;
+    cart.products[productId].data = cache;
     cart.quantity += quantity;
     saveCart(cart);
     refreshCart();
 }
-export function setCartItem(product: string, quantity: number, cache: Product) {
+export function setCartItem(productId: string, quantity: number, cache: Product) {
     const cart = getCart()
-    let item = cart.products[product]
+    let item = cart.products[productId]
     if (!item) {
         item = {"quantity": quantity, "data": cache}
     } else {
@@ -125,7 +125,7 @@ export function setCartItem(product: string, quantity: number, cache: Product) {
         item.data = cache
     }
     
-    cart.products[product] = item;
+    cart.products[productId] = item;
     cart.quantity += quantity;
     saveCart(cart);
     refreshCart();

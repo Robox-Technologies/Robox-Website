@@ -11,9 +11,9 @@ const shippingValue = document.getElementById("shipping-cost") as HTMLParagraphE
 export function renderCart() {
     //Get rid of the quantity stuff
     const cart = getCart();
-    const products = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, product: string) => {
-        const productData = cart["products"][product]["data"];
-        acc[product] = productData;
+    const products = Object.keys(cart.products).reduce((acc: Record<string, Product>, productId: string) => {
+        const productData = cart.products[productId].data;
+        acc[productId] = productData;
         return acc;
     }, {});
 
