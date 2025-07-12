@@ -48,6 +48,11 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         zoom: {
             controls: false,
+            maxScale: 2.5,
+            minScale: 0.2,
+            scaleSpeed: 1.5,
+            startScale: 1.0,
+            pinch: true
         },
         move:{
             scrollbars: {
