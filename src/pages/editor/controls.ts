@@ -1,10 +1,30 @@
 import { utils, WorkspaceSvg } from "blockly";
 const scrollSpeed = 1.1; // Adjust for sensitivity
-const zoomFac = 1/50;
+const zoomFac = 0.02;
+const zoomStep = 0.7;
+
+function stepZoom(workspace: WorkspaceSvg, mult: number) {
+    const workspaceCoordinates = workspace.getMetricsManager().getViewMetrics(false);
+    const toolboxCoordinates = workspace.getMetricsManager().getToolboxMetrics();
+    const flyoutCoordinates = workspace.getMetricsManager().getFlyoutMetrics();
+    
+    const centreX = (workspaceCoordinates.width / 2) + toolboxCoordinates.width + flyoutCoordinates.width;
+    const centreY = workspaceCoordinates.height / 2;
+
+    workspace.zoom(centreX, centreY, zoomStep * mult);
+    workspace.refreshToolboxSelection();
+}
 
 export function registerControls(workspace: WorkspaceSvg) {
+    document.getElementById("zoomIn").addEventListener("click", () => {
+        stepZoom(workspace, 1);
+    });
+
+    document.getElementById("zoomOut").addEventListener("click", () => {
+        stepZoom(workspace, -1);
+    });
+
     document.addEventListener('wheel', (event: WheelEvent) => {
-        console.log(event.target);
         if (!(event.target instanceof Element)) return;
         if (document.querySelector('dialog[open]') || !event.target.closest("#blocklyDiv")) return;
         if (event.target.closest(".blocklyFlyout") || event.target.closest(".blocklyToolbox")) return;
