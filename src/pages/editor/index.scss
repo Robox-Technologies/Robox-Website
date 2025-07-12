@@ -41,6 +41,11 @@ $downloadButtonSize: 60px;
     transition-duration: .5s;
 }
 
+body {
+    min-width: 870px;
+    min-height: 500px;
+}
+
 // Makes our label white.
 .blocklyTreeLabel {
     color: white;
