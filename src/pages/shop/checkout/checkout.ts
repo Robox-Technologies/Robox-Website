@@ -4,11 +4,7 @@ import { Product } from "types/api";
 import "@root/shop";
 import { calculateTotalCost, cartToDictionary } from "@root/stripe-shared-helper";
 
-
-// @ts-expect-error Fetch from HTML
-const localProducts = products;
-
-const cart = getCart(localProducts);
+const cart = getCart();
 const cartProducts = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, productId: string) => {
     const productData = cart["products"][productId]["data"];
     acc[productId] = productData;
