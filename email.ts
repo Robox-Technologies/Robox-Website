@@ -299,7 +299,7 @@ async function populateBilling(document: Document, paymentIntent: Stripe.Payment
     // Address
     let billingText = "";
     const billingEl = document.getElementById("billing") as HTMLParagraphElement;
-    const stripePaymentData = paymentIntent.payment_method ?? paymentIntent.last_payment_error.payment_method;
+    const stripePaymentData = paymentIntent.payment_method ?? paymentIntent.last_payment_error?.payment_method;
 
     if (billingEl && stripePaymentData) {
         let paymentMethod: Stripe.PaymentMethod | undefined = undefined;
@@ -314,7 +314,7 @@ async function populateBilling(document: Document, paymentIntent: Stripe.Payment
             const paymentType = readPaymentMethod(paymentMethod);
     
             if (paymentType.name) billingText += `${titleCase(paymentType.name)}<br>`;
-            if (paymentType.userID) billingText += `${titleCase(paymentType.userID)}<br>`;
+            if (paymentType.userID) billingText += `${paymentType.userID}<br>`;
             if (paymentType.last4) billingText += `Ending in ••••${paymentType.last4}<br>`;
             if (paymentType.exp_month && paymentType.exp_year) billingText += `Expires on ${paymentType.exp_month}/${paymentType.exp_year % 1000}`;
     

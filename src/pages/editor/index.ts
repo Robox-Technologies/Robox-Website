@@ -95,13 +95,6 @@ document.addEventListener("DOMContentLoaded", () => {
     workspace.undoControls = new CustomUndoControls(workspace)
     workspace.undoControls.init()
     
-    Blockly.browserEvents.conditionalBind(window, 'resize', null, () => { //On workspace resize, resize our custom UI
-            if (workspace.undoControls) workspace.undoControls.position()
-        }
-    );
-
-
-
     
     const nameForm = document.getElementById("project-name-form") as HTMLFormElement | null
     const nameInput = document.getElementById("project-name-input") as HTMLInputElement | null
