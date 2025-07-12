@@ -16,13 +16,19 @@ function stepZoom(workspace: WorkspaceSvg, mult: number) {
 }
 
 export function registerControls(workspace: WorkspaceSvg) {
-    document.getElementById("zoomIn").addEventListener("click", () => {
-        stepZoom(workspace, 1);
-    });
+    const zoomInButton = document.getElementById("zoomIn");
+    if (zoomInButton) {
+        zoomInButton.addEventListener("click", () => {
+            stepZoom(workspace, 1);
+        });
+    }
 
-    document.getElementById("zoomOut").addEventListener("click", () => {
-        stepZoom(workspace, -1);
-    });
+    const zoomOutButton = document.getElementById("zoomOut");
+    if (zoomOutButton) {
+        zoomOutButton.addEventListener("click", () => {
+            stepZoom(workspace, -1);
+        });
+    }
 
     document.addEventListener('wheel', (event: WheelEvent) => {
         if (!(event.target instanceof Element)) return;
