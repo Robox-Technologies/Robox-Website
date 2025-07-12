@@ -29,6 +29,22 @@ export function getProjects(): Projects {
 
     return projects;
 }
+export function importProject(project: Project): void {
+    if (!project || !project.name || !project.workspace) {
+        console.error("Invalid project data provided for import.");
+        return;
+    }
+    const projects = getProjects();
+    const uuid = crypto.randomUUID();
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+    projects[uuid] = {
+        name: project.name,
+        time: dayjs(),
+        workspace: project.workspace,
+        thumbnail: project.thumbnail || ""
+    };
+    localStorage.setItem("roboxProjects", JSON.stringify(projects));
+}
 export function createProject(name: string): string {
     const projects = getProjects()
     const uuid = crypto.randomUUID();
