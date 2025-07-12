@@ -7,8 +7,14 @@ export function registerControls(workspace: WorkspaceSvg) {
         if (document.querySelector('dialog[open]')) return;
         event.preventDefault();
         
-        const dx = event.deltaX * scrollSpeed;
-        const dy = event.deltaY * scrollSpeed;
+        let dx = event.deltaX * scrollSpeed;
+        let dy = event.deltaY * scrollSpeed;
+        
+        if (dx === 0 && dy !== 0 && event.shiftKey) {
+            // Purely vertical scroll with shift key -> horizontal scroll instead
+            dx = dy;
+            dy = 0;
+        }
 
         if (event.target instanceof HTMLElement && event.target.closest(".blocklyToolbox")) {
             // You can handle wheel event inside toolbox here
