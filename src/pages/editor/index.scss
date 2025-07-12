@@ -243,7 +243,7 @@ body {
     @include variables.dropShadowSmaller;
 
     display: flex;
-    pointer-events: visible;
+    pointer-events: auto;
 
     background-color: variables.$themeRed;
     justify-content: space-between;
@@ -345,7 +345,7 @@ button[calibrating]:hover {
     margin-bottom: variables.$standardGap;
 
     .uiButtons {
-        pointer-events: visible;
+        pointer-events: auto;
         border-radius: 50%;
     }
 }
