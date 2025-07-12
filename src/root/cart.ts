@@ -43,9 +43,9 @@ export function getCart(serverProducts?: Record<string, Product>): Cart {
                 quantity: cart.products[productId].quantity,
                 data: serverProduct
             }
-
-            saveCart(cart);
         }
+
+        saveCart(cart);
     }
 
     return cart;
