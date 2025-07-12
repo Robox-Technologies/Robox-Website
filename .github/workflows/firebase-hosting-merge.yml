@@ -9,6 +9,7 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    environment: Develop
 
     permissions:
       contents: read
@@ -23,9 +24,11 @@ jobs:
       - name: Create .env file
         run: |
           touch .env
-          echo STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_PUBLISHABLE_KEY }} >> .env
+
+          echo STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_PUBLISHABLE_KEY }} > .env
           echo STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} >> .env
-          echo FORCE_CACHE=true >> .env
+          echo FORCE_CACHE=${{ vars.FORCE_CACHE }} >> .env
+          
           cat .env
       
       - name: Build website
@@ -34,7 +37,7 @@ jobs:
           webpack --config build/server/webpack.config.js
       
       - name: Deploy to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@d482eb942f549f059116ec36b191860128553142
+        uses: FirebaseExtended/action-hosting-deploy@0cbcac4740c2bfb00d632f0b863b57713124eb5a
 
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}

@@ -1,5 +1,5 @@
 import { Product } from "types/api";
-import { addCartItem, getCart } from "./cart";
+import { getCart } from "./cart";
 import { calculateTotalCost, cartToDictionary } from "./stripe-shared-helper";
 
 const orderValue = document.getElementById("order-value") as HTMLParagraphElement
@@ -11,9 +11,9 @@ const shippingValue = document.getElementById("shipping-cost") as HTMLParagraphE
 export function renderCart() {
     //Get rid of the quantity stuff
     const cart = getCart();
-    const products = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, product: string) => {
-        const productData = cart["products"][product]["data"];
-        acc[product] = productData;
+    const products = Object.keys(cart.products).reduce((acc: Record<string, Product>, productId: string) => {
+        const productData = cart.products[productId].data;
+        acc[productId] = productData;
         return acc;
     }, {});
 
@@ -38,30 +38,21 @@ export function renderCart() {
 async function getItemData(): Promise<Record<string, Product>> {
     const products = getCart().products;
 
-    const promises = Object.keys(products).map((productId) =>
-        fetch(`/api/store/products?id=${productId}`).then(async (response) => {
-            if (!response.ok) {
-                throw new Error(`Failed to fetch product ${productId}: ${response.statusText}`);
-            }
-            return [productId, await response.json()];
-        })
-    );
+    const promises = Object.keys(products).map(async (productId) => {
+        const response = await fetch(`/api/store/products?id=${productId}`);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch product ${productId}: ${response.statusText}`);
+        }
+
+        return [productId, await response.json()];
+    });
 
     const data = await Promise.all(promises);
     return Object.fromEntries(data)
 }
 
-renderCart();
+const serverProducts = await getItemData();
+getCart(serverProducts);
 
-getItemData().then(serverProducts => {
-    const products = getCart().products;
-    let reload = false
-    for (const serverProductId in serverProducts) {
-        const cartProduct = products[serverProductId];
-        if (cartProduct && JSON.stringify(serverProducts[serverProductId]) !== JSON.stringify(cartProduct["data"])) {
-            reload = true
-            addCartItem(serverProductId, 0, serverProducts[serverProductId])
-        }
-    }
-    if (reload) window.location.reload()
-})
+renderCart();
