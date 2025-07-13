@@ -17,7 +17,7 @@ pythonGenerator.forBlock['motor_move_simple'] = function(block) {
 pythonGenerator.forBlock['motor_turn_simple'] = function(block) {
     const direction = block.getFieldValue('direction');
     const leftDir = (direction === 'right') ? 1 : -1;
-    const rightDir = (direction === 'left') ? -1 : -1;
+    const rightDir = (direction === 'left') ? -1 : 1;
     return `motors.run_motors(${leftDir} * motor_speed * left_motor_polarity, ${rightDir} * motor_speed * right_motor_polarity)\n`;
 };
 
