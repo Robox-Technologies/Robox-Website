@@ -2,7 +2,7 @@ import { createProject, getProject, getProjects, renameProject } from "@root/ser
 import { Project } from "types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
-import { toggleToolbar, moveToolbar } from "../../templates/partials/toolbar/toolbar";
+import { toggleToolbar, moveToolbar } from '@partials/toolbar/toolbar';
 
 
 dayjs.extend(relativeTime);

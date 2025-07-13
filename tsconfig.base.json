@@ -9,7 +9,7 @@
         "baseUrl": ".",
         "paths": {
             "@images/*": ["src/images/*"],
-            "@partials/*": ["@partials/*"],
+            "@partials/*": ["src/templates/partials/*"],
             "@root/*": ["src/root/*"],
             "@types/*": ["types/*"],
 
