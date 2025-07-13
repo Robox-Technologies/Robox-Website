@@ -1,8 +1,8 @@
-import { createProject, getProject, getProjects, renameProject } from "../../root/serialization";
+import { createProject, getProject, getProjects, renameProject } from "@root/serialization";
 import { Project } from "types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
-import { toggleToolbar, moveToolbar } from "../../root/toolbar";
+import { toggleToolbar, moveToolbar } from "../../templates/partials/toolbar/toolbar";
 
 
 dayjs.extend(relativeTime);
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     applyProjects();
     const createProjectButton = document.getElementById("create-project");
     createProjectButton?.addEventListener("click", () => {
-        let uuid = createProject("unnamed project");
+        const uuid = createProject("unnamed project");
         window.location.href = `/editor?id=${uuid}`;
     });
 
