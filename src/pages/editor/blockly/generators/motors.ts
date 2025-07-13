@@ -10,14 +10,14 @@ pythonGenerator.forBlock['motor_reverse'] = function() {
 
 pythonGenerator.forBlock['motor_move_simple'] = function(block) {
     const direction = block.getFieldValue('direction');
-    const multiplier = (direction === 'forward') ? -1 : 1;
+    const multiplier = (direction === 'forward') ? 1 : -1;
     return `motors.run_motors(${multiplier} * motor_speed * left_motor_polarity, ${multiplier} * motor_speed * right_motor_polarity)\n`;
 };
 
 pythonGenerator.forBlock['motor_turn_simple'] = function(block) {
     const direction = block.getFieldValue('direction');
     const leftDir = (direction === 'right') ? 1 : -1;
-    const rightDir = (direction === 'left') ? 1 : -1;
+    const rightDir = (direction === 'left') ? -1 : -1;
     return `motors.run_motors(${leftDir} * motor_speed * left_motor_polarity, ${rightDir} * motor_speed * right_motor_polarity)\n`;
 };
 
