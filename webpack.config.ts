@@ -26,6 +26,10 @@ const pages = findHtmlPages(pagesDir).map((file) => {
 
 const dynamicPages: TemplatePage[] = [...pages];
 
+
+
+
+
 function fetchPageData(file: string): TemplateData {
     // Convert filepaths to POSIX
     const filename = file.replaceAll(path.sep, path.posix.sep);
