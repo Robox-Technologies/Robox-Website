@@ -12,7 +12,7 @@ import { CustomUndoControls } from './blockly/customUI';
 import { MyWorkspace } from 'types/blockly';
 
 import { Project } from 'types/projects';
-import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject } from '../../root/serialization';
+import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject } from '@root/blockly/serialization';
 
 import {registerFieldColour} from '@blockly/field-colour';
 import { postBlocklyWSInjection } from './usb';

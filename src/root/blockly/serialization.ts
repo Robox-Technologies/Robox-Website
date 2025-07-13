@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
 import { Projects, Project } from "types/projects";
 
-import { workspaceToSvg_ } from './screenshot';
+import { workspaceToSvg_ } from '@root/blockly/screenshot';
 
 
 export function getProjects(): Projects {

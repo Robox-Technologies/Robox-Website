@@ -1,4 +1,4 @@
-import { createProject, getProject, getProjects, renameProject } from "@root/serialization";
+import { createProject, getProject, getProjects, renameProject } from "@root/blockly/serialization";
 import { Project } from "types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
