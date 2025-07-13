@@ -44,3 +44,9 @@ function setConsent(approved: boolean) {
 if (localStorage.getItem("consentMode") == null) {
     gaConsentPopup.style.display = "flex";
 }
+// mount the popup
+document.addEventListener("DOMContentLoaded", () => {
+    if (localStorage.getItem("consentMode") == null) {
+        gaConsentPopup.style.display = "flex";
+    }
+});
