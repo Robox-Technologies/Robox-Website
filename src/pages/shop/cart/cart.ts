@@ -1,6 +1,6 @@
-import { getCart, removeCartItem, setCartItem } from "@root/cart"
-import { renderCart } from "@root/shop"
-import { formatPrice } from "@root/stripe-shared-helper"
+import { getCart, removeCartItem, setCartItem } from "@root/payment/cart"
+import { renderCart } from "@root/payment/shop"
+import { formatPrice } from "@root/payment/stripe-shared-helper"
 const availableHolder = document.querySelector("#available-section")
 const preorderHolder = document.querySelector("#preorder-section")
 
