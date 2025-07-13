@@ -135,7 +135,7 @@ export default (async () => {
         resolve: {
             alias: {
                 '@images': path.join(__dirname, 'src/images'),
-                '@partials': path.join(__dirname, 'templates/partials'),
+                '@partials': path.join(__dirname, 'src/templates/partials'),
                 '@root': path.join(__dirname, 'src/root'),
                 '@types': path.join(__dirname, 'types'),
             },

@@ -50,7 +50,7 @@
         }) %>
     </template>
     <%~ include('src/templates/partials/header-workshop.html') %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('src/templates/partials/modal/modal.html', {
         id: "delete-modal",
         title: 'Delete Project <i class="fa-solid fa-trash-can"></i>', 
         content: [
@@ -62,7 +62,7 @@
             '<button id="delete-confirm-button" class="button standard-button">Delete</button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('src/templates/partials/modal/modal.html', {
         id: "edit-modal",
         title: 'Edit Project <i class="fa-solid fa-pen-to-square"></i>', 
         content: [

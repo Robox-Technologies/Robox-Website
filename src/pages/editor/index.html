@@ -81,7 +81,7 @@
         
     </div>
 
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('src/templates/partials/modal/modal.html', {
         id: "bootsel-boot",
         class: "bootsel",
         title: '1. Boot the RO/BOX into BOOTSEL mode', 
@@ -92,7 +92,7 @@
             '<button id="boot-try" class="button calibrate-button standard-button">Yes<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('src/templates/partials/modal/modal.html', {
         id: "bootsel-outcome",
         class: "bootsel",
         title: '', 
@@ -103,7 +103,7 @@
             '<button id="outcome-button" class="button calibrate-button standard-button"><i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('src/templates/partials/modal/modal.html', {
         id: "bootsel-flash",
         title: '2. Flash the Ro\\Box', 
         class: "bootsel",
@@ -114,7 +114,7 @@
             '<button id="open-file" class="button calibrate-button standard-button">Open<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('src/templates/partials/modal/modal.html', {
         id: "color-calibration-modal",
         title: 'Color Calibration', 
         content: [
@@ -125,7 +125,7 @@
             '<button id="calibrate-button" class="button calibrate-button standard-button">Calibrate<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('src/templates/partials/modal/modal.html', {
         id: "color-calibration-outcome-modal",
         title: '', 
         content: [
