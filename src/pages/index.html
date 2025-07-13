@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%~ include('src/templates/partials/metadata.html') %>
+    <%~ include('@partials/metadata.html') %>
     <script src="./index.ts" defer></script>
     <link href="./index.scss" rel="stylesheet">
     <title>Ro/Box - Robotics for Everyone</title>
 </head>
 
 <body>
-    <%~ include('src/templates/partials/header.html') %>
+    <%~ include('@partials/header.html') %>
 
     <div class="hero">
         <div class="title">
@@ -127,7 +127,7 @@
             </p>
 
             <div class="cards">
-                <%~ include('src/templates/partials/card.html', {
+                <%~ include('@partials/card.html', {
                     class: "roboxHubCard",
                     title: 'Assembly', 
                     imageSource: "@images/landing/roboxHubCard1.png", 
@@ -139,7 +139,7 @@
                     gooberClass: "gooberPentagon"
                 }) %>
 
-                <%~ include('src/templates/partials/card.html', {
+                <%~ include('@partials/card.html', {
                     class: "roboxHubCard",
                     title: 'Workshop', 
                     imageSource: "@images/landing/roboxHubCard2.png",
@@ -149,7 +149,7 @@
                     ]
                 }) %>
 
-                <%~ include('src/templates/partials/card.html', {
+                <%~ include('@partials/card.html', {
                     class: "roboxHubCard",
                     title: 'Lessons', 
                     imageSource: "@images/landing/roboxHubCard3.png", 
@@ -206,7 +206,7 @@
                 %>
                 <% featuredProducts.forEach(function(product, index) { %>
                     <% let isBulkPack = product.internalName === "robox-10-pack"; %>
-                    <%~ include('src/templates/partials/card.html', {
+                    <%~ include('@partials/card.html', {
                         id: product.internalName,
                         class: "productCard",
                         title: product.name,
@@ -233,6 +233,6 @@
         </section>
     </article>
     
-    <%~ include('src/templates/partials/footer.html') %>
+    <%~ include('@partials/footer.html') %>
 </body>
 </html>

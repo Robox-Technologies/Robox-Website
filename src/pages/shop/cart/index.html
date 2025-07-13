@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <%~ include('src/templates/partials/metadata.html') %>
+        <%~ include('@partials/metadata.html') %>
         <script src="./cart.ts" defer></script>
         <link href="./cart.scss" rel="stylesheet">
         <title>Cart - Ro/Box</title>
@@ -11,7 +11,7 @@
         </script>
     </head>
     <body>
-        <%~ include('src/templates/partials/header.html') %>
+        <%~ include('@partials/header.html') %>
 
         <!-- We use this to fetch the image urls -->
         <div class="hiddenImages">
@@ -41,11 +41,11 @@
                         <div class="cart-item-holder"></div>
                     </section>
                 </div>
-                <%~ include('src/templates/partials/shopSummary.html', { checkoutButton: true }) %>
+                <%~ include('@partials/shopSummary.html', { checkoutButton: true }) %>
             </div>
         </article>
         
-        <%~ include('src/templates/partials/footer.html') %>
+        <%~ include('@partials/footer.html') %>
     </body>
     <template id="cart-item">
         <div class="cart-item">

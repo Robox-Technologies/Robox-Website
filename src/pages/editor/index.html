@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%~ include('src/templates/partials/metadata.html') %>
+    <%~ include('@partials/metadata.html') %>
     <meta charset="utf-8">
     <title>Code Workshop - Ro/Box</title>
     <script src="index.ts"></script>
@@ -10,7 +10,7 @@
 </head>
     
 <body>
-    <%~ include('src/templates/partials/header-workshop.html') %>
+    <%~ include('@partials/header-workshop.html') %>
 
     <div id="workspaceTabs">
         <a id="back-button" href="/student">
@@ -30,7 +30,7 @@
             <button id="robox-settings-button" class="button standard-button">
                 <i class="fa-solid fa-gear"></i>
             </button>
-            <%~ include('src/templates/partials/toolbar/toolbar.html', {
+            <%~ include('@partials/toolbar/toolbar.html', {
                 id: "settings-toolbar",
                 content: [
                     "<button class='button' id='robox-settings-calibrate'><i class='fa-solid fa-eye-dropper'></i>Calibrate Colour</button>",
@@ -81,7 +81,7 @@
         
     </div>
 
-    <%~ include('src/templates/partials/modal/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "bootsel-boot",
         class: "bootsel",
         title: '1. Boot the RO/BOX into BOOTSEL mode', 
@@ -92,7 +92,7 @@
             '<button id="boot-try" class="button calibrate-button standard-button">Yes<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "bootsel-outcome",
         class: "bootsel",
         title: '', 
@@ -103,7 +103,7 @@
             '<button id="outcome-button" class="button calibrate-button standard-button"><i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "bootsel-flash",
         title: '2. Flash the Ro\\Box', 
         class: "bootsel",
@@ -114,7 +114,7 @@
             '<button id="open-file" class="button calibrate-button standard-button">Open<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "color-calibration-modal",
         title: 'Color Calibration', 
         content: [
@@ -125,7 +125,7 @@
             '<button id="calibrate-button" class="button calibrate-button standard-button">Calibrate<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "color-calibration-outcome-modal",
         title: '', 
         content: [

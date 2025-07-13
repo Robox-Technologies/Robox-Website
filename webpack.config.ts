@@ -26,7 +26,15 @@ const pages = findHtmlPages(pagesDir).map((file) => {
 
 const dynamicPages: TemplatePage[] = [...pages];
 
-
+const alias = {
+    '@images': 'src/images',
+    '@partials': 'src/templates/partials',
+    '@root': 'src/root',
+    '@types': 'types',
+}
+const aliasPaths = Object.fromEntries(
+    Object.entries(alias).map(([key, value]) => [key, path.join(__dirname, value)])
+);
 
 
 
@@ -137,12 +145,7 @@ export default (async () => {
         mode: 'development',
         devtool: 'source-map',
         resolve: {
-            alias: {
-                '@images': path.join(__dirname, 'src/images'),
-                '@partials': path.join(__dirname, 'src/templates/partials'),
-                '@root': path.join(__dirname, 'src/root'),
-                '@types': path.join(__dirname, 'types'),
-            },
+            alias: aliasPaths,
             extensions: ['.tsx', '.ts', '.js', '.json'],
         },
         plugins: [
@@ -160,7 +163,16 @@ export default (async () => {
                 data: {
                     products
                 },
-                preprocessor: (content, { data }) => eta.renderString(content, data),
+                preprocessor: (content, { data }) => {
+                    for (const [key, value] of Object.entries(alias)) {
+                        // Replace only @key inside include('...') or include("...") paths ETA SPECIFIC
+                        content = content.replace(
+                            new RegExp(`(include\\(['"\`])${key}`, 'g'),
+                            `$1${value}`
+                        );
+                    }
+                    return eta.renderString(content, data);
+                },
                 loaderOptions: {
                     sources: [
                         {
