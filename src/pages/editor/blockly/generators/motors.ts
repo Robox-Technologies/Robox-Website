@@ -1,7 +1,7 @@
 import { pythonGenerator, Order } from 'blockly/python';
 
 pythonGenerator.forBlock['motor_stop'] = function() {
-    return 'motors.stop()\n';
+    return 'motors.stop_motors()\n';
 };
 
 pythonGenerator.forBlock['motor_reverse'] = function() {
