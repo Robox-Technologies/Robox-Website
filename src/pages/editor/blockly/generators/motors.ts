@@ -1,7 +1,7 @@
 import { pythonGenerator, Order } from 'blockly/python';
 
 pythonGenerator.forBlock['motor_stop'] = function() {
-    return 'motors.stop()\n';
+    return 'motors.stop_motors()\n';
 };
 
 pythonGenerator.forBlock['motor_reverse'] = function() {
@@ -34,5 +34,5 @@ pythonGenerator.forBlock['motor_dual_speed_duration'] = function(block, generato
   const left = generator.valueToCode(block, 'left_speed', Order.ATOMIC) || '0';
   const right = generator.valueToCode(block, 'right_speed', Order.ATOMIC) || '0';
   const duration = generator.valueToCode(block, 'duration', Order.ATOMIC) || '0';
-  return `motors.run_motors(${left} * left_motor_polarity, ${right} * right_motor_polarity)\ntime.sleep(${duration})\nmotors.stop()\n`;
+  return `motors.run_motors(${left} * left_motor_polarity, ${right} * right_motor_polarity)\ntime.sleep(${duration})\nmotors.stop_motors()\n`;
 };
