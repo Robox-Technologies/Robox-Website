@@ -1,10 +1,14 @@
+<!DOCTYPE html>
+
+<html lang="en">
 <head>
-    <link href="./index.scss" rel="stylesheet" />
-    <%~ include('src/partials/metadata.html') %>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <title>Teacher Hub - Ro/Box</title>
+    <link href="./index.scss" rel="stylesheet">
 </head>
 
 <body>
-    <%~ include('src/partials/header.html') %>
+    <%~ include('src/templates/partials/header.html') %>
 
     <section class="hero">
         <h1 class="title">
@@ -12,8 +16,8 @@
         </h1>
 
         <div class="heroGoober">
-            <img class="shape" src="./images/heroShape.svg">
-            <img class="eyes" src="@images/eyes.svg">
+            <img class="shape" src="@images/teacher-hub/heroShape.svg" alt="Decorative hero image shape">
+            <img class="eyes" src="@images/eyes.svg" alt="Eyes">
         </div>
     </section>
 
@@ -27,5 +31,6 @@
         </section>
     </article>
     
-    <%~ include('src/partials/footer.html') %>
+    <%~ include('src/templates/partials/footer.html') %>
 </body>
+</html>

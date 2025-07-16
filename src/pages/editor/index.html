@@ -1,72 +1,128 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Toolbox Customization Codelab</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <meta charset="utf-8">
+    <title>Code Workshop - Ro/Box</title>
     <script src="index.ts"></script>
-    <%~ include('src/partials/metadata.html') %>
-    <link href="./index.scss" rel="stylesheet" />
+    <link href="./index.scss" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+    
+<body>
+    <%~ include('src/templates/partials/header-workshop.html') %>
 
-    </head>
-    <body>
-        <%~ include('src/partials/header-workshop.html') %>
+    <div id="workspaceTabs">
+        <a id="back-button" href="/student">
+            <i class="fa-solid fa-chevron-left"></i>
+        </a>
+        <div id="project-name">
+            <form autocomplete="off" id="project-name-form">
+                <input id="project-name-input" type="text">
+                <button id="download-button">
+                    <i class="fa-solid fa-download"></i>
 
-        <div id="workspaceTabs">
-            <a id="back-button" href="/student">
-                <i class="fa-solid fa-chevron-left"></i>
-            </a>
-            <div id="project-name">
-                <form id="project-name-form">
-                    <input id="project-name-input" type="text">
-                    <button id="download-button">
-                        <i class="fa-solid fa-download"></i>
-
-                    </button>
-                </form>
-            </div>
-            <div id="buttons">
-            </div>
+                </button>
+            </form>
         </div>
-        <div id="blocklyDiv">
-            
+        
+        <div id="buttons">
+            <button id="robox-settings-button" class="button standard-button">
+                <i class="fa-solid fa-gear"></i>
+            </button>
+            <%~ include('src/templates/partials/toolbar.html', {
+                id: "settings-toolbar",
+                content: [
+                    "<button class='button' id='robox-settings-calibrate'><i class='fa-solid fa-eye-dropper'></i>Calibrate Colour</button>",
+                    "<button class='button' id='robox-settings-flash'><i class='fa-solid fa-screwdriver-wrench'></i>Update Firmware</button>",
+                ],
+            }) %>
         </div>
-        <div id="actionBar">
-            <!-- left side buttons -->
-            <div>
+    </div>
+    <div id="blocklyDiv">
+        
+        <div id="connection-management" status="disconnected">
+            <button class="button mainButton" id="code-download-robox-button">
+                Download Python
+            </button>
+            <button class="button mainButton" id="connect-robox-button">
+                Connect to Ro/Box
+            </button>
+            <button class="button mainButton" id="stop-robox-button">
+                Stop Ro/Box
+            </button>
+            <button class="button mainButton" id="run-robox-button">
+                Run Ro/Box
+            </button>
+            <button class="button mainButton" id="loading">
+                <i class="fa-solid fa-spinner fa-spin"></i>
+            </button>
+            <button class="sideButtons button" id="download">
+                <i class="fa-solid fa-download"></i>
+            </button>
+            <button class="sideButtons button" id="disconnect">
+                <i class="fa-solid fa-plug-circle-xmark"></i>
+            </button>
+            <button class="sideButtons button" id="console">
+                <i class="fa-solid fa-terminal"></i>
+            </button>
 
-            </div>
-            <div>
-                <div id="connection-managment" status="disconnected">
-                    <button class="button mainButton" id="download-robox-button">
-                        Download to Robox
-                    </button>
-                    <button class="button mainButton" id="connect-robox-button">
-                        Connect to Robox
-                    </button>
-                    <button class="button mainButton" id="stop-robox-button">
-                        Stop to Robox
-                    </button>
-                    <button class="button mainButton" id="run-robox-button">
-                        Run to Robox
-                    </button>
-                    <button class="button mainButton" id="loading">
-                        <i class="fa-solid fa-spinner fa-spin"></i>
-                    </button>
-                    <button class="sideButtons button" id="options">
-                        <i class="fa-solid fa-ellipsis-vertical"></i>
-                    </button>
-                    <button class="sideButtons button" id="disconnect">
-                        <i class="fa-solid fa-plug-circle-xmark"></i>
-                    </button>
-                    <button class="sideButtons button" id="console">
-                        <i class="fa-solid fa-terminal"></i>
-                    </button>
-                </div>
-                
-            </div>
-            <!-- right hand buttons -->
-            
         </div>
-    </body>
+    </div>
+
+    <%~ include('src/templates/partials/modal.html', {
+        id: "bootsel-boot",
+        class: "bootsel",
+        title: '1. Boot the RO/BOX into BOOTSEL mode', 
+        content: [
+            "<p>The RO/BOX is not currently in Bootsel mode, would you like us to try and enter it into BOOTSEL mode?</p>",
+        ],
+        buttons: [
+            '<button id="boot-try" class="button calibrate-button standard-button">Yes<i class="fa-solid fa-spinner fa-spin"></i></button>',
+        ],
+    }) %>
+    <%~ include('src/templates/partials/modal.html', {
+        id: "bootsel-outcome",
+        class: "bootsel",
+        title: '', 
+        content: [
+            "<p id='bootsel-outcome-text'></p>",
+        ],
+        buttons: [
+            '<button id="outcome-button" class="button calibrate-button standard-button"><i class="fa-solid fa-spinner fa-spin"></i></button>',
+        ],
+    }) %>
+    <%~ include('src/templates/partials/modal.html', {
+        id: "bootsel-flash",
+        title: '2. Flash the Ro/Box', 
+        class: "bootsel",
+        content: [
+            "<p>When you are ready, press the 'open' button below, this will open a file browser, please select the 'RPI' drive</p>",
+        ],
+        buttons: [
+            '<button id="open-file" class="button calibrate-button standard-button">Open<i class="fa-solid fa-spinner fa-spin"></i></button>',
+        ],
+    }) %>
+    <%~ include('src/templates/partials/modal.html', {
+        id: "color-calibration-modal",
+        title: 'Color Calibration', 
+        content: [
+            "<p>Please place Ro/Box on white calibration surface</p>",
+            "<p>Press the 'Calibrate' button when you are ready!'</p>",
+        ],
+        buttons: [
+            '<button id="calibrate-button" class="button calibrate-button standard-button">Calibrate<i class="fa-solid fa-spinner fa-spin"></i></button>',
+        ],
+    }) %>
+    <%~ include('src/templates/partials/modal.html', {
+        id: "color-calibration-outcome-modal",
+        title: '', 
+        content: [
+            "<p></p>",
+        ],
+        buttons: [
+            '<button id="calibrate-outcome-button" class="button standard-button">Retry<i class="fa-solid fa-spinner fa-spin"></i></button>',
+        ],
+    }) %>
+</body>
 </html>

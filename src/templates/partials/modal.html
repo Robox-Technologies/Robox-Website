@@ -1,0 +1,26 @@
+<dialog class="modal <%= it.class ? it.class : '' %>" id="<%= it.id %>">
+    <div class="modal-top-bar">
+        <h1 class="modal-title">
+            <%~ it.title ? it.title : ""%>
+        </h1>
+        <button class="button close-modal-button">
+            <i class="fa-solid fa-circle-xmark"></i>
+        </button>
+    </div>
+    <% if (it.content) { %>
+    <div class="modal-content">
+        <% it.content.forEach(function(content){ %>
+            <%~ content %>
+        <% }) %>
+
+    </div>
+    <% } %>
+    <div class="modal-bottom-bar">
+        <% if (it.buttons) { %>
+            <% it.buttons.forEach(function(button){ %>
+                <%~ button %>
+            <% }) %>
+        <% } %>
+    </div>
+    
+</dialog>

@@ -18,15 +18,10 @@ export const toolbox = {
         'kind': 'category',
         'name': 'Events',
         "cssConfig": {
-            "icon": "categoryIcon fa fa-flag"
+            "icon": "categoryIcon fa fa-flag",
         },
         'categorystyle': 'events_category',
         'contents': [
-            {
-                "kind": "label",
-                "text": "Events",
-                "web-class": "categoryLabel"
-            },
             {
                 'kind': 'block',
                 'type': 'event_begin',
@@ -43,12 +38,7 @@ export const toolbox = {
             "icon": "categoryIcon fa fa-cog"
         },
         'categorystyle': 'logic_category',
-        'contents': [
-            {
-                "kind": "label",
-                "text": "Logic",
-                "web-class": "categoryLabel"
-            },          
+        'contents': [         
             {
                 'kind': 'block',
                 'type': 'controls_if',
@@ -71,27 +61,18 @@ export const toolbox = {
             },
             {
                 'kind': 'block',
-                'type': 'logic_null',
-            },
-            {
-                'kind': 'block',
                 'type': 'logic_ternary',
             },
         ],
     },
     {
         'kind': 'category',
-        'name': 'Loops',
+        'name': 'Control',
         'categorystyle': 'loop_category',
         "cssConfig": {
             "icon": "categoryIcon fa fa-repeat"
         },
         'contents': [
-            {
-                "kind": "label",
-                "text": "Loops",
-                "web-class": "categoryLabel"
-            },
             {
             'kind': 'block',
             'type': 'controls_repeat_ext',
@@ -109,6 +90,10 @@ export const toolbox = {
           {
             'kind': 'block',
             'type': 'controls_whileUntil',
+          },
+          {
+            'kind': 'block',
+            'type': 'controls_forever',
           },
           {
             'kind': 'block',
@@ -158,11 +143,6 @@ export const toolbox = {
             "icon": "categoryIcon fa fa-plus"
         },
         'contents': [
-            {
-                "kind": "label",
-                "text": "Math",
-                "web-class": "categoryLabel"
-            },
           {
             'kind': 'block',
             'type': 'math_number',
@@ -336,32 +316,6 @@ export const toolbox = {
               },
             },
           },
-          {
-            'kind': 'block',
-            'type': 'math_random_float',
-          },
-          {
-            'kind': 'block',
-            'type': 'math_atan2',
-            'inputs': {
-              'X': {
-                'shadow': {
-                  'type': 'math_number',
-                  'fields': {
-                    'NUM': 1,
-                  },
-                },
-              },
-              'Y': {
-                'shadow': {
-                  'type': 'math_number',
-                  'fields': {
-                    'NUM': 1,
-                  },
-                },
-              },
-            },
-          },
         ],
       },
       {
@@ -372,15 +326,6 @@ export const toolbox = {
             "icon": "categoryIcon fa fa-table-list"
         },
         'contents': [
-            {
-                "kind": "label",
-                "text": "Lists",
-                "web-class": "categoryLabel"
-            },
-          {
-            'kind': 'block',
-            'type': 'lists_create_with',
-          },
           {
             'kind': 'block',
             'type': 'lists_create_with',
@@ -487,22 +432,27 @@ export const toolbox = {
         },
         'contents': [
             {
-                "kind": "label",
-                "text": "Sensors",
-                "web-class": "categoryLabel"
+                "kind": "block",
+                "type": "ultrasonic_distance"
             },
-          {
-            'kind': 'block',
-            'type': 'ultrasonic_distance',
-          },
-          {
-            'kind': 'block',
-            'type': 'distance_bool',
-          },
-          {
-            'kind': 'block',
-            'type': 'sensor_bool',
-          },
+            {
+                "kind": "block",
+                "type": "sensor_bool"
+            },
+            {
+                "kind": "block",
+                "type": "distance_bool",
+                "inputs": {
+                    "number": {
+                        "shadow": {
+                            "type": "math_number",
+                            "fields": {
+                                "NUM": 10
+                            }
+                        }
+                    }
+                }
+            }
         ]
       },
       {
@@ -513,11 +463,6 @@ export const toolbox = {
             "icon": "categoryIcon fa fa-robot"
         },
         'contents': [
-            {
-                "kind": "label",
-                "text": "System",
-                "web-class": "categoryLabel"
-            },
           {
             'kind': 'block',
             'type': 'sleep',
@@ -533,18 +478,18 @@ export const toolbox = {
             }
           },
           {
-            'kind': 'block',
-            'type': 'print',
-            "inputs": {
-              'string': {
-                'shadow': {
-                  'type': 'text',
-                  'fields': {
-                    'TEXT': '',
-                  },
-                },
-              },
-            }
+          "kind": "block",
+          "type": "print",
+          "inputs": {
+              "string": {
+                  "shadow": {
+                      "type": "text",
+                      "fields": {
+                          "TEXT": ""
+                      }
+                  }
+              }
+          }
           },
           {
             'kind': 'block',
@@ -570,71 +515,97 @@ export const toolbox = {
         ]
       },
       {
-        'kind': 'category',
-        'name': 'Motors',
-        'categorystyle': 'motor_category',
-        "cssConfig": {
-            "icon": "categoryIcon fa fa-truck-monster"
+  "kind": "category",
+  "name": "Motors",
+  "categorystyle": "motor_category",
+  "cssConfig": {
+    "icon": "categoryIcon fa fa-truck-monster"
+  },
+  "contents": [
+    {
+      "kind": "block",
+      "type": "motor_stop"
+    },
+    {
+      "kind": "block",
+      "type": "motor_reverse"
+    },
+    {
+      "kind": "block",
+      "type": "motor_move_simple"
+    },
+    {
+      "kind": "block",
+      "type": "motor_turn_simple"
+    },
+    {
+      "kind": "block",
+      "type": "motor_set_speed",
+      "inputs": {
+        "speed": {
+          "shadow": {
+            "type": "math_number",
+            "fields": {
+              "NUM": 50
+            }
+          }
+        }
+      }
+    },
+    {
+      "kind": "block",
+      "type": "motor_dual_speed",
+      "inputs": {
+        "left_speed": {
+          "shadow": {
+            "type": "math_number",
+            "fields": {
+              "NUM": 50
+            }
+          }
         },
-        'contents': [
-            {
-                "kind": "label",
-                "text": "Motors",
-                "web-class": "categoryLabel"
-            },
-          {
-            'kind': 'block',
-            'type': 'motor_move',
-          },
-          {
-            'kind': 'block',
-            'type': 'motor_turn',
-          },
-          {
-            'kind': 'block',
-            'type': 'motor_switch',
-          },
-          {
-            'kind': 'block',
-            'type': 'motor_percentage',
-            "inputs": {
-              'left_motor': {
-                'shadow': {
-                  'type': 'math_number',
-                  'fields': {
-                    'NUM': 50,
-                  },
-                },
-              },
-              'right_motor': {
-                'shadow': {
-                  'type': 'math_number',
-                  'fields': {
-                    'NUM': 50,
-                  },
-                },
-              },
+        "right_speed": {
+          "shadow": {
+            "type": "math_number",
+            "fields": {
+              "NUM": 50
             }
-            
-          },
-          {
-            'kind': 'block',
-            'type': 'motor_single_move',
-            "inputs": {
-              'power': {
-                'shadow': {
-                  'type': 'math_number',
-                  'fields': {
-                    'NUM': 50,
-                  },
-                },
-              },
+          }
+        }
+      }
+    },
+    {
+      "kind": "block",
+      "type": "motor_dual_speed_duration",
+      "inputs": {
+        "left_speed": {
+          "shadow": {
+            "type": "math_number",
+            "fields": {
+              "NUM": 50
             }
-  
-          },
-  
-        ]
-      },
+          }
+        },
+        "right_speed": {
+          "shadow": {
+            "type": "math_number",
+            "fields": {
+              "NUM": 50
+            }
+          }
+        },
+        "duration": {
+          "shadow": {
+            "type": "math_number",
+            "fields": {
+              "NUM": 2
+            }
+          }
+        }
+      }
+    }
+  ]
+},
       {
         'kind': 'sep',
       },
@@ -654,11 +625,6 @@ export const toolbox = {
             "icon": "categoryIcon fa fa-gears"
         },
         'contents': [
-            {
-                "kind": "label",
-                "text": "Functions",
-                "web-class": "categoryLabel"
-            },
         ],
         'categorystyle': 'procedure_category',
         'custom': 'PROCEDURE',

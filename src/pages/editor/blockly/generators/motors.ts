@@ -1,42 +1,38 @@
+import { pythonGenerator, Order } from 'blockly/python';
 
-import { pythonGenerator, Order } from 'blockly/python'
-
-
-pythonGenerator.forBlock['motor_move'] = function (block, generator) {
-    var dropdown_direction = block.getFieldValue('direction');
-    // TODO: Assemble python into code variable.
-    var code = `motors.run_motors(${dropdown_direction}*motor_speed*left_motor_polarity,${dropdown_direction}*motor_speed*right_motor_polarity)\n`;
-    return code;
+pythonGenerator.forBlock['motor_stop'] = function() {
+    return 'motors.stop_motors()\n';
 };
 
-pythonGenerator.forBlock['motor_turn'] = function (block, generator) {
-    var dropdown_direction = block.getFieldValue('direction');
-    // TODO: Assemble python into code variable.
-    var code = `motors.run_motors(left_motor_polarity*${dropdown_direction == "right" ? 1 : -1}*motor_speed,${dropdown_direction == "left" ? 1 : -1}*right_motor_polarity*motor_speed)\n`;
-    return code;
+pythonGenerator.forBlock['motor_reverse'] = function() {
+    return 'left_motor_polarity *= -1\nright_motor_polarity *= -1\n';
 };
 
-pythonGenerator.forBlock['motor_percentage'] = function (block, generator) {
-    var value_left_motor = generator.valueToCode(block, 'left_motor', Order.ATOMIC);
-    var value_right_motor = generator.valueToCode(block, 'right_motor', Order.ATOMIC);
-    // TODO: Assemble python into code variable.
-    var code = `motors.run_motors(left_motor_polarity*${value_left_motor},right_motor_polarity*${value_right_motor})\n`;
-    return code;
+pythonGenerator.forBlock['motor_move_simple'] = function(block) {
+    const direction = block.getFieldValue('direction');
+    const multiplier = (direction === 'forward') ? 1 : -1;
+    return `motors.run_motors(${multiplier} * motor_speed * left_motor_polarity, ${multiplier} * motor_speed * right_motor_polarity)\n`;
 };
-pythonGenerator.forBlock['motor_switch'] = function (block, generator) {
-    const dropdown_motor = block.getFieldValue('motor');
-    let polarities = {"left": "left_motor_polarity", "right": "right_motor_polarity", "both": "left_motor_polarity = right_motor_polarity"}
-    if (dropdown_motor === "both") {
-        return `left_motor_polarity = left_motor_polarity*-1\nright_motor_polarity = right_motor_polarity*-1\n`
-    }
-    else {
-        return `${dropdown_motor}_motor_polarity = ${dropdown_motor}_motor_polarity*-1\n`
-    }
-}
-pythonGenerator.forBlock['motor_single_move'] = function (block, generator) {
-    var dropdown_motor = block.getFieldValue('motor');
-    var value_power = generator.valueToCode(block, 'power', Order.ATOMIC);
-    // TODO: Assemble python into code variable.
-    var code = `motors.run_motors(${dropdown_motor == "right" ? 1 : 0}*left_motor_polarity*${value_power},${dropdown_motor == "right" ? 0 : 1}*right_motor_polarity*${value_power})\n`;
-    return code;
+
+pythonGenerator.forBlock['motor_turn_simple'] = function(block) {
+    const direction = block.getFieldValue('direction');
+    const directionValue = (direction === 'right') ? 1 : -1;
+    return `motors.run_motors(${directionValue} * motor_speed * left_motor_polarity, ${directionValue} * -1 * motor_speed * right_motor_polarity)\n`;
+};
+
+pythonGenerator.forBlock['motor_set_speed'] = function(block, generator) {
+    const speed = generator.valueToCode(block, 'speed', Order.ATOMIC) || '0';
+    return `motor_speed = ${speed}\n`;
+};
+pythonGenerator.forBlock['motor_dual_speed'] = function(block, generator) {
+  const left = generator.valueToCode(block, 'left_speed', Order.ATOMIC) || '0';
+  const right = generator.valueToCode(block, 'right_speed', Order.ATOMIC) || '0';
+  return `motors.run_motors(${left} * left_motor_polarity, ${right} * right_motor_polarity)\n`;
+};
+
+pythonGenerator.forBlock['motor_dual_speed_duration'] = function(block, generator) {
+  const left = generator.valueToCode(block, 'left_speed', Order.ATOMIC) || '0';
+  const right = generator.valueToCode(block, 'right_speed', Order.ATOMIC) || '0';
+  const duration = generator.valueToCode(block, 'duration', Order.ATOMIC) || '0';
+  return `motors.run_motors(${left} * left_motor_polarity, ${right} * right_motor_polarity)\ntime.sleep(${duration})\nmotors.stop_motors()\n`;
 };

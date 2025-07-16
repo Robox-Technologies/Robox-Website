@@ -26,7 +26,6 @@ $extensionAmount: 20px;
 //This is the height for the top and bottom divs
 $barHeight: 75px;
 
-$dropshadowBase: 2px;
 $topButtonsDropShadowMult: 1;
 $dropShadowColour: rgb(47, 47, 47);
 
@@ -65,7 +64,6 @@ $downloadButtonSize: 60px;
 }
 .blocklyTreeSeparator {
     display: flex;
-    border-top: $seperatorStrokeSize solid #F5F5F5;
     background-color: white;
     justify-content: center;
     align-items: center;
@@ -78,6 +76,7 @@ $downloadButtonSize: 60px;
 /* Adds space between the categories, rounds the corners and adds space around the label. */
 .blocklyToolboxCategory {
     border-top: $seperatorStrokeSize solid #F5F5F5;
+    cursor: pointer;
     
     &:last-child {
         border-bottom: $seperatorStrokeSize solid #F5F5F5;
@@ -89,29 +88,31 @@ $downloadButtonSize: 60px;
 .customIcon {
     color: white;
 }
-.blocklyToolboxDiv {
+.blocklyToolbox {
     background-color: white;
     padding: 0;
     width: $toolboxWidth;
     border-right: $seperatorStrokeSize solid $navEdges;
 }
 
-.blocklyFlyout { 
-    transform: translate(calc($toolboxWidth - $seperatorStrokeSize * 2), -$seperatorStrokeSize) !important;
-    border: $seperatorStrokeSize solid $navEdges;
-    width: 430px;
+.injectionDiv > .blocklyFlyout { 
+    border-right: $seperatorStrokeSize solid $navEdges;
     background-color: rgb(245, 245, 245);;
+}
+.blocklyMutatorBackground {
+    fill: #fff !important;
 }
 /* Stacks the icon on top of the label. */
 .blocklyTreeRowContentContainer {
     display: flex;
     position: relative;
     align-items: center;
+    flex-direction: row;
 }
 .blocklyTreeRowContentContainer >svg >path {
     fill: white;
 }
-.blocklyTreeRow {
+.blocklyToolboxCategory {
     height: initial;
 }
 .side-arch {
@@ -138,13 +139,11 @@ $downloadButtonSize: 60px;
 }
 #blocklyDiv {
     flex: auto;
-
+    position: relative;
 }
 .injectionDiv {
     border-top: $seperatorStrokeSize solid $navEdges;
-    border-bottom: $seperatorStrokeSize solid $navEdges;
     box-sizing: border-box;
-
 }
 .blocklyMainBackground {
     stroke: none;
@@ -161,7 +160,7 @@ body {
 #workspaceTabs {
     background-color: variables.$themeRed;
 }
-#workspaceTabs, #actionBar {
+#workspaceTabs {
     height: $barHeight;
     display: flex;
     justify-content: space-between;
@@ -174,6 +173,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
     gap: $topBarButtonGap;
 }
 #project-name-input {
@@ -186,14 +186,17 @@ body {
 }
 #download-button {
     background-color: unset;
-    border: 0;
+    cursor: pointer;
+    padding: 8px;
+    padding-right: 12px;
+    font-size: 16px;
 }
-$nameInputDropShadowMult: 2;
+
 #project-name-form {
+    @include variables.dropShadowSmaller;    
     background-color: white;
     display: flex;
     justify-content: space-between;
-    filter: drop-shadow(calc($dropshadowBase*$nameInputDropShadowMult) calc($dropshadowBase*$nameInputDropShadowMult) $dropShadowColour);
     border-radius: 7px;
 }
 #bluetooth, #learn {
@@ -206,7 +209,6 @@ $nameInputDropShadowMult: 2;
 }
 #back-button {
     background-color: unset;
-    border: 0;
     font-size: 20px;
     color: white;
     display: flex;
@@ -222,31 +224,6 @@ $nameInputDropShadowMult: 2;
     margin: auto;
 }
 
-.topButton {
-    width: 30px;
-    height: 30px;
-    background-color: variables.$themeBlue;
-    border-radius: 50%;
-    border: none;
-    filter: drop-shadow(calc($dropshadowBase*$topButtonsDropShadowMult) calc($dropshadowBase*$topButtonsDropShadowMult) $dropShadowColour);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-}
-#actionBar {
-    background-color: white;
-    border-top: $seperatorStrokeSize solid $navEdges;
-    margin-top: -$seperatorStrokeSize;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-#actionBar > div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 .mainButton {
     color: white;
     height: 100%;
@@ -257,15 +234,25 @@ $nameInputDropShadowMult: 2;
     border-right: $seperatorStrokeSize solid white;
 
 }
-#connection-managment {
-    background-color: variables.$themeRed;
+#connection-management {
+    @include variables.dropShadowSmaller;
+
     display: flex;
+    position: absolute;
+    z-index: 9;
+
+    background-color: variables.$themeRed;
     justify-content: space-between;
     padding: 0;
     width: 310px;
     height: 50px;
-    border-radius: 2em;
-    
+    border-radius: 25px;
+    bottom: variables.$standardGap;
+    right: variables.$standardGap;
+
+    & > * {
+        cursor: pointer;
+    }
 }
 .sideButtons {
     font-size: 20px;
@@ -282,16 +269,11 @@ $zoomButtonsGap: 10px;
     display: flex;
     gap: $zoomButtonsGap;
 }
-#blocklyCustomZoom {
-    flex-direction: column;
-}
 #blocklyCustomTimeControls {
+    top: variables.$standardGap;
+    right: variables.$standardGap;
     flex-direction: row;
     gap: 0;
-}
-$blocklyUIButtonsDropShadowMult: 2;
-#blocklyCustomZoom > .uiButtons{
-    border-radius: 50%;
 }
 
 #blocklyCustomTimeControls > .uiButtons:first-child {
@@ -301,7 +283,36 @@ $blocklyUIButtonsDropShadowMult: 2;
 #blocklyCustomTimeControls > .uiButtons:last-child {
     border-radius: 0 7px 7px 0;
 }
+
+#calibrate-button, #calibrate-outcome-button {
+    svg {
+        display: none;
+    }
+}
+.calibrate-button{
+    width: 100px;
+    height: 37px;
+    min-height: 37px;
+    svg {
+        display: none;
+    }
+}
+
+#calibrate-outcome-button[calibrating], #calibrate-button[calibrating] {
+    font-size: 0;
+    width: 76px;
+    max-height: 37px !important;
+    svg {
+        font-size: 20px;
+        display: inline;
+    }
+}
+button[calibrating]:hover {
+    cursor: not-allowed;
+}
 .uiButtons {
+    @include variables.dropShadowSmaller;
+
     background-color: white;
     color: variables.$themeBlue;
     border: $seperatorStrokeSize solid variables.$themeBlue;
@@ -310,102 +321,99 @@ $blocklyUIButtonsDropShadowMult: 2;
     height: $blocklyUIIconSize;
     display: flex;
     justify-content: center;
-    filter: drop-shadow(calc($dropshadowBase*$blocklyUIButtonsDropShadowMult) calc($dropshadowBase*$blocklyUIButtonsDropShadowMult) $dropShadowColour);
     align-items: center;
     padding: 20px;
     cursor: pointer;
 }
-#connection-managment[status="disconnected"] {
+#connection-management {
+    #download-robox-button {
+        display: none;
+    }
+    #connect-robox-button {
+        display: none;
+    }
+    #stop-robox-button {
+        display: none;
+    }
+    #code-download-robox-button {
+        display: none;
+    }
+    #run-robox-button {
+        display: none;
+    }
+
+    #loading {
+        display: none;
+    }
+
+    #options {
+        display: none;
+    }
+    #disconnect {
+        display: none;
+    }
+    #console {
+        display: none;
+    }
+    #download {
+        display: none;
+    }
+}
+#connection-management[status="disconnected"] {
     background-color: variables.$themeBlue;
-    #download-robox-button {
-        display: none;
-    }
     #connect-robox-button {
         display: block;
-    }
-    #stop-robox-button {
-        display: none;
-    }
-    #run-robox-button {
-        display: none;
-    }
-
-    #loading {
-        display: none;
-    }
-
-    #options {
-        display: block;
-    }
-    #disconnect {
-        display: none;
-    }
-    #console {
-        display: none;
+        width: 100%;
+        border-right: unset;
     }
 }
 
-#connection-managment[status="connected"] {
-    background-color: variables.$themeYellow;
-    #download-robox-button {
-        display: block;
-    }
-    #connect-robox-button {
-        display: none;
-    }
-    #stop-robox-button {
-        display: none;
-    }
-    #run-robox-button {
-        display: none;
-    }
-    
-    #loading {
-        display: none;
-    }
-    
-    #options {
-        display: none;
-    }
-    #disconnect {
-        display: block;
-    }
-    #console {
-        display: none;
-    }
-}
-#connection-managment[status="downloaded"] {
+#connection-management[status="downloaded"] {
     background-color: variables.$themeGreen;
-    #download-robox-button {
-        display: none;
-    }
-    #connect-robox-button {
-        display: none;
-    }
-    #stop-robox-button {
-        display: none;
-    }
     #run-robox-button {
         display: block;
     }
-
-    #loading {
-        display: none;
-    }
     
-    #options {
-        display: none;
-    }
-    #disconnect {
+    #download {
         display: block;
-    }
-    #console {
-        display: none;
     }
 }
 
-#connection-managment[status="running"] {
+#connection-management[status="running"] {
     background-color: variables.$themeRed;
+    #stop-robox-button {
+        display: block;
+    }
+    #console {
+        display: block;
+    }
+}
+$settingsToolbarWidth: 200px;
+#settings-toolbar {
+    width: $settingsToolbarWidth;
+    position: absolute;
+    bottom: 0;
+    left: calc(10px - $settingsToolbarWidth );
+    top: 35px;
+}
+#robox-settings-calibrate > svg {
+    color: variables.$themeBlue;
+}
+#connection-management[status="no-serial"] {
+    background-color: variables.$themeYellow;
+    border-right: unset;
+
+    .mainButton {
+        width: 100%;
+    }
+
+    #code-download-robox-button {
+        display: block;
+        border-right: unset;
+    }
+}
+
+#connection-management[loading="true"] {
     #download-robox-button {
         display: none;
     }
@@ -413,16 +421,15 @@ $blocklyUIButtonsDropShadowMult: 2;
         display: none;
     }
     #stop-robox-button {
-        display: block;
+        display: none;
+    }
+    #code-download-robox-button {
+        display: none;
     }
     #run-robox-button {
         display: none;
     }
 
-    #loading {
-        display: none;
-    }
-    
     #options {
         display: none;
     }
@@ -430,26 +437,30 @@ $blocklyUIButtonsDropShadowMult: 2;
         display: none;
     }
     #console {
-        display: block;
+        display: none;
     }
-}
-#connection-managment[loading="true"] {
+    #download {
+        display: none;
+    }
     
-    #download-robox-button {
-        display: none;
-    }
-    #connect-robox-button {
-        display: none;
-    }
-    #stop-robox-button {
-        display: none;
-    }
-    #run-robox-button {
-        display: none;
-    }
-
     #loading {
         display: block;
+        width: 100%;
+        font-size: 20px;
+        border-right: unset;
     }
 
+}
+#robox-settings-button {
+    font-size: 20px;
+    cursor: pointer;
+}
+.bootsel[loading] {
+    button.calibrate-button {
+        font-size: 0;
+    }
+    .fa-spinner {
+        display: inline;
+        font-size: 20px;
+    }
 }

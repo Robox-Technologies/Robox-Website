@@ -1,4 +1,9 @@
 import * as Blockly from 'blockly';
+// FORGIVE ME but for some reason blockly does not have every theme work in typescript
+// there is an active pull (https://github.com/google/blockly-samples/pull/2474) but has not been merged yet
+//So gotta ignore TS complaining for now
+
+
 
 Blockly.Msg.EVENT_COLOR = "#277DA1";
 
@@ -21,12 +26,14 @@ Blockly.Msg.PROCEDURES_COLOR = "#577590";
 
 
 
+
+
 export default Blockly.Theme.defineTheme('Robox', {
     name: "robox",
     'base': Blockly.Themes.Classic,
     componentStyles: {
         'workspaceBackgroundColour': '#F5F5F5',
-        'toolboxBackgroundColour': "#F",
+        'toolboxBackgroundColour': "#FFFFFF",
         'flyoutBackgroundColour': '#F5F5F5',
         'flyoutOpacity': 1,
     },
@@ -55,19 +62,27 @@ export default Blockly.Theme.defineTheme('Robox', {
         "events_category": {
             'colour': '%{BKY_EVENT_COLOR}'
         },
+        "variable_category": {
+            'colour': '%{BKY_VARIABLES_COLOR}'
+        },
+        "procedure_category": {
+            'colour': '%{BKY_PROCEDURES_COLOR}'
+        },
     },
     blockStyles: {
         'logic_blocks': {
-            'colourPrimary': '%{BKY_LOGIC_COLOR}'
+            'colourPrimary': '%{BKY_LOGIC_COLOR}',
         },
         'loop_blocks': {
             'colourPrimary': '%{BKY_LOOPS_COLOR}'
+
         },
         'math_blocks': {
             'colourPrimary': '%{BKY_MATH_COLOR}'
         },
         'list_blocks': {
-            'colourPrimary': '%{BKY_LISTS_COLOR}'
+            'colourPrimary': '%{BKY_LISTS_COLOR}',
+            'colourSecondary': "#FFFFFF"
         },
         'sensor_blocks': {
             'colourPrimary': '%{BKY_SENSOR_COLOR}'
@@ -78,8 +93,14 @@ export default Blockly.Theme.defineTheme('Robox', {
         "system_blocks": {
             'colourPrimary': '%{BKY_SYSTEM_COLOR}'
         },
-        "events_blocks": {
+        "event_blocks": {
             'colourPrimary': '%{BKY_EVENT_COLOR}'
+        },
+        "variable_blocks": {
+            'colourPrimary': '%{BKY_VARIABLES_COLOR}'
+        },
+        "procedure_blocks": {
+            'colourPrimary': '%{BKY_PROCEDURES_COLOR}'
         },
         
     },

@@ -1,0 +1,8 @@
+Order ID: {{order_id}}
+Date: {{date}}
+
+{{items}}
+===================
+Shipping: {{shipping}}
+===================
+Total: {{total}}

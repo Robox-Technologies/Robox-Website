@@ -1,8 +1,10 @@
 import * as Blockly from 'blockly';
 
-import archSVG from "./Arch.svg?raw"
+import archSVG from './Arch.svg?raw';
 
-type HexColor = `#${string}`;
+import { ContinuousFlyout, RecyclableBlockFlyoutInflater } from '@blockly/continuous-toolbox';
+
+// type HexColor = `#${string}`;
 
 class RoboxToolboxCategories extends Blockly.ToolboxCategory {
     /**
@@ -13,7 +15,7 @@ class RoboxToolboxCategories extends Blockly.ToolboxCategory {
         super(categoryDef, toolbox, opt_parent);
     }
     /** @override */
-    addColourBorder_(colour: HexColor){
+    addColourBorder_(/*colour: HexColor*/){
 
     }
     /** @override */
@@ -68,15 +70,36 @@ class RoboxToolboxSeperator extends Blockly.ToolboxSeparator {
         return dom
     }
 }
-export class RoundedFlyout extends Blockly.VerticalFlyout {
-    override readonly CORNER_RADIUS = 0;
-    constructor(workspaceOptions: Blockly.Options) {
-        super(workspaceOptions);
-        
+
+
+//Overriding the flyoutscale value (to prevent it scaliing with the workspace)
+
+
+class RoboxFlyout extends ContinuousFlyout {
+
+    /** @override */
+    protected reflowInternal_(): void {
+        this.width_ = 300;
+        this.targetWorkspace.recordDragTargets()
+    }
+    override scrollTo(position: number) {
+        const OFFSET = 5; // pixels
+        const adjustedPosition = position + OFFSET;
+
+        const metrics = this.getWorkspace().getMetrics();
+        const scrollTarget = Math.min(
+            adjustedPosition,
+            metrics.scrollHeight - metrics.viewHeight,
+        );
+
+        this.getWorkspace().scrollbar?.setY(scrollTarget);
     }
 }
 
-//TODO: add names for the variable and procedure category
+
+
+
+
 
 Blockly.registry.register(
     Blockly.registry.Type.TOOLBOX_ITEM,
@@ -84,7 +107,18 @@ Blockly.registry.register(
     RoboxToolboxCategories, true
 );
 Blockly.registry.register(
+    Blockly.registry.Type.FLYOUT_INFLATER,
+    'block',
+    RecyclableBlockFlyoutInflater,
+    true,
+);
+Blockly.registry.register(
     Blockly.registry.Type.TOOLBOX_ITEM,
     Blockly.ToolboxSeparator.registrationName,
     RoboxToolboxSeperator, true
+);
+Blockly.registry.register(
+    Blockly.registry.Type.FLYOUTS_VERTICAL_TOOLBOX,
+    'RoboxFlyout',
+    RoboxFlyout, true
 );

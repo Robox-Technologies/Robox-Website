@@ -1,0 +1,82 @@
+@use 'variables';
+
+#gaConsentPopup {
+    width: 640px;
+    position: fixed;
+    display: none;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    gap: 20px;
+    border-radius: variables.$borderRadius;
+    margin: 16px;
+    padding: 10px 30px;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: variables.$primary;
+    color: variables.$themeBlack;
+    border: 2px solid variables.$themeBlack;
+    z-index: 99999;
+
+    button {
+        background-color: variables.$themeRed;
+        color: variables.$primary;
+        border-radius: 10px;
+        font-size: 1rem;
+        padding: 15px 0;
+        width: 50%;
+        min-width: 110px;
+        cursor: pointer;
+        transition: background-color 0.3s ease-out;
+
+        &:hover {
+            background-color: #e34449;
+        }
+    }
+
+    #consentRejectBtn {
+        color: variables.$themeBlack;
+        background-color: transparent;
+        border: 1px solid variables.$themeBlack;
+
+        &:hover {
+            background-color: #405c643b;
+        }
+    }
+
+    p, a {
+        font-size: 0.9em;
+        line-height: 150%;
+    }
+
+    a {
+        text-decoration: underline;
+    }
+}
+
+#consentButtons {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    align-items: center;
+}
+
+@media only screen and (max-width: 640px) {
+
+    #gaConsentPopup {
+        width: auto;
+        left: 0;
+        transform: none;
+        padding: 15px 30px;
+    }
+
+    #consentButtons {
+        flex-direction: column;
+    }
+
+    #gaConsentPopup button {
+        width: 100%;
+    }
+
+}

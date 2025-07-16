@@ -8,7 +8,7 @@ $cardBorderRadius: 5%;
 
 
 #main {
-    padding: 30px;
+    padding: variables.$articleMargin;
 }
 .fa-square-binary {
     height: $projectIconSize;
@@ -26,7 +26,6 @@ $cardBorderRadius: 5%;
 .guide-icon-arrow {
     height: 12px;
     width: 12px;
-    margin-top: 1px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -60,7 +59,9 @@ $toolbarBorderColor: variables.$primary;
 $toolbarBorderStroke: 3px;
 $toolbarWidth: 130px;
 
-
+.item-sections > section > h1 {
+    margin-top: 0.83em;
+}
 
 #toolbar[open] {
     z-index: 4;
@@ -83,9 +84,7 @@ $toolbarWidth: 130px;
 #project-delete > svg > path{
     color: variables.$themeRed;
 }
-.card-wrapper:hover > .project-card, .card-wrapper:hover > .lesson-card:hover {
-    border: $hoverCardBorderSize solid variables.$themeBlue;
-}
+
 .project-card:has(> #toolbar[open]) {
     border: $hoverCardBorderSize solid variables.$themeGreen;
     z-index: 1;
@@ -141,6 +140,12 @@ $toolbarWidth: 130px;
 .assembly-card > .card-info > .card-buttons > .card-button:hover {
     --underline-width: 100%;
 }
+.assembly-card > .card-info > .card-buttons > .card-button {
+    font-family: "Nunito", sans-serif;
+    padding: 0 0 0.2em;
+
+}
+
 .card {
     background-color: white !important;
 }
@@ -149,3 +154,69 @@ $toolbarWidth: 130px;
     background-color: variables.$themeYellow;
 }
 
+#cancel-confirm-button {
+    background-color: variables.$themeBlue;
+}
+#delete-confirm-button {
+    background-color: variables.$themeRed;
+}
+
+$trashcanSize: 30px;
+#delete-modal {
+    .fa-trash-can {
+        color: variables.$themeRed;
+        font-size: $trashcanSize;
+    }
+}
+$renameInputSize: 20px;
+$renameInputWidth: 70%;
+$renameInputRoundedCorners: 10px;
+$renameInputPadding: 5px;
+$renameContentPadding: 5%;
+#rename-modal {
+    .fa-pencil {
+        color: variables.$themeBlue;
+        font-size: $trashcanSize;
+    }
+    #rename-confirm-button {
+        background-color: variables.$themeGreen;
+    }
+    .modal-content {
+        justify-content: center;
+        padding: calc($renameContentPadding*2) $renameContentPadding;
+        align-items: center;
+        p {
+            text-align: center;
+            margin-top: 0;
+        }
+        #new-project-name {
+            width: $renameInputWidth;
+            color: variables.$themeBlack;
+            padding: $renameInputPadding;
+            font-size: $renameInputSize;
+            border-radius: $renameInputRoundedCorners;
+            border: variables.$strokeSize variables.$themeBlue solid
+        }
+    }
+    
+} 
+
+.card-wrapper {
+    position:relative;
+}
+.project-card:hover {
+    transform: translateY(-2px);
+    border: $hoverCardBorderSize solid variables.$themeBlue;
+}
+.card-link {
+    display: flex;
+    align-items: center;
+}
+.card-link:hover {
+    --underline-width: 100%;
+}
+.project-card:has(.toolbar-target) {
+    border: $hoverCardBorderSize solid variables.$themeGreen;
+    transform: translateY(-2px);
+
+}

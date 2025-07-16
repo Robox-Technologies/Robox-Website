@@ -1,7 +1,6 @@
+@use '@root/variables';
 @use './lineClip.scss';
 
-$titleSidePadding: 40px;
-$titleFontsize: 49px;
 $heroTextWidth: max(350px, 35%); 
 
 $borderLineWidth: 10px;
@@ -12,23 +11,38 @@ $overlap: 10vw;
 $borderColour: #26363b;
 $heroContainerHeight: 320px;
 
-.hero-image-title {
+@mixin hero-image-title($direction) {
     height: 320px;
     width: 100%;
     display: flex;
     flex-direction: row;
-    background-color: #26363b;
+    background-color: variables.$dropShadow;
 
-    @include lineClip.slantedLine($overlap, $borderColour, $borderLineWidth, $heroTextWidth, left);
+    @include lineClip.slantedLine($overlap, $borderColour, $borderLineWidth, $heroTextWidth, $direction);
 }
 
-.hero-title {
-    font-size: $titleFontsize;
-    position: relative;
-    top: calc($heroContainerHeight - $titleFontsize - $titleSidePadding);
-    left: $titleSidePadding;
-    margin: 0;
+.hero-image-title {
+    @include hero-image-title(left);
 }
+
+.hero-image-title-alt {
+    @include hero-image-title(right);
+}
+
 .hero-image {
-    object-fit:cover;
+    object-fit: cover;
+}
+
+.hero-title-container {
+    padding-left: variables.$articleMargin;
+    padding-bottom: variables.$standardGap;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: flex-start;
+    gap: 8px;
+
+    & > * {
+        margin: 0;
+    }
 }

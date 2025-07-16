@@ -2,7 +2,7 @@
 
 .articleSection {
     display: flex;
-    // justify-content: space-between;
+    justify-content: space-between;
     align-items: start;
     gap: 50px;
 
@@ -36,11 +36,28 @@ section.centred {
 }
 
 article {
-    padding: var(--articleMargin);
+    padding: variables.$articleMargin;
 
     & > section {
-        margin-top: var(--articleMargin);
+        margin-top: variables.$articleMargin;
     }
+}
+
+.loadSpinner {
+    $loaderSize: 60px;
+    $loaderBorderSize: 8px;
+
+    border: $loaderBorderSize solid #405c6430;
+    border-top: $loaderBorderSize solid variables.$themeBlack;
+    border-radius: 50%;
+    width: $loaderSize;
+    height: $loaderSize;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .ctaButton {
@@ -48,7 +65,6 @@ article {
     @include variables.subheadingFont;
 
     border-radius: variables.$borderRadius;
-    // border: 3px solid variables.$dropShadow;
     background-color: variables.$themeRed;
     
     padding: 16px 25px;
@@ -62,6 +78,38 @@ article {
     * {
         margin-right: 8px;
     }
+
+    &:disabled {
+        background-color: variables.$tone3;
+        cursor: not-allowed;
+    }
+}
+
+.ctaButton.pill {
+    @include variables.bodyFont;
+    $btnHeight: 50px;
+    
+    width: 100%;
+    height: $btnHeight;
+    padding: 0;
+    margin: 0;
+    margin-top: 8px;
+
+    border-radius: calc($btnHeight / 2);
+    color: variables.$primary;
+    box-shadow: none;
+}
+
+.available {
+    color: #4aa21e;
+}
+
+.not-available {
+    color: #df1b41;
+}
+
+.preorder {
+    color: variables.$themeBlue;
 }
 
 @media screen and (max-width: 1000px) {

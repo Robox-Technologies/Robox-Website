@@ -1,9 +1,28 @@
 @use 'variables';
 
 $modalOpacity: 0.5;
+$titleFontSize: 20px;
+$modalPadding: 2.5%;
+$modalRoundedCorners: 20px;
 
-.modal::backdrop {
+$modalTopandBottomBarHeight: 60px;
+
+$modalButtonPadding:20px;
+$modalButtonRoundedCorners:10px;
+
+$modalWidth: 500px;
+$modalContentHeight: 300px;
+$modalButtonGap: 20px;
+
+$modalButtonText: 15px;
+
+$modalTitleTextGap: 15px;
+.modal::backdrop,
+.simpleModal::backdrop {
     background-color: rgba(0,0,0,$modalOpacity)
+}
+.modal {
+    border-color: variables.$dropShadow;
 }
 .modal[open] {
     display: flex;
@@ -12,8 +31,105 @@ $modalOpacity: 0.5;
 }
 .modal-title {
     margin-top: 0;
+    font-size: $titleFontSize;
+    margin-bottom: 0;
+    align-items: center;
+    display: inherit;
+    gap: $modalTitleTextGap;
+}
+.modal-bottom-bar .close-modal-button{
+    background-color: variables.$tone3;
 }
 .modal-title > svg{
     margin-top: 0;
-    height: 2em;
+}
+.modal {
+    border-radius: $modalRoundedCorners;
+    padding: 0;
+    width: $modalWidth;
+}
+.modal > * {
+    padding: $modalPadding;
+}
+.modal-top-bar, .modal-bottom-bar{
+    height: $modalTopandBottomBarHeight;
+    display: flex;
+    align-items: center;
+
+}
+.modal-bottom-bar {
+    justify-content: flex-end;
+}
+.modal-top-bar .close-modal-button {
+    margin-left: auto;
+    font-size: 30px;
+    color: variables.$themeRed;
+}
+.modal-top-bar .close-modal-button:hover {
+    cursor: pointer;
+}
+.modal-top-bar {
+    border-bottom: variables.$strokeSize variables.$tone3 solid;
+    display: flex;
+}
+
+.modal-bottom-bar {
+    border-top: variables.$strokeSize variables.$tone3 solid;
+    background-color: variables.$tone2;
+    gap: $modalButtonGap;
+}
+.modal-bottom-bar button {
+    background-color: variables.$themeBlue;
+    color: white;
+    padding: calc($modalButtonPadding/2) $modalButtonPadding calc($modalButtonPadding/2) $modalButtonPadding;
+    border-radius: $modalButtonRoundedCorners;
+    font-size: $modalButtonText;
+
+}
+.modal-bottom-bar button:hover {
+    cursor: pointer;
+}
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  color: variables.$themeBlack;
+  font-size: 1.05em;
+  text-align: center;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    width: 100%;
+    max-width: 320px;
+    padding: 0.75em 1em;
+    margin: 0.5em 0 1em 0;
+    border: 1.5px solid variables.$tone3;
+    border-radius: variables.$standardButtonRoundedCorners;
+    background: variables.$tone2;
+    font-size: variables.$standardButtonFontSize;
+    font-family: "Nunito", sans-serif;
+    color: variables.$themeBlack;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+        border-color: variables.$themeBlue;
+        box-shadow: 0 0 0 2px rgba(37, 136, 199, 0.12);
+        outline: none;
+        background: white;
+    }
+}
+
+.modal-content {
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }

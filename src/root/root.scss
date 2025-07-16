@@ -4,8 +4,10 @@
 @use 'footer';
 @use 'common';
 @use 'card';
+@use 'toolbar';
 @use 'modal';
 @use 'title-hero';
+@use 'gaConsent';
 
 
 body {
@@ -15,12 +17,31 @@ body {
 
 .button {
     background-color: unset;
-    border: 0;
 }
 
+button {
+    border: none;
+}
+
+hr {
+    background-color: variables.$dropShadow;
+    height: 2px;
+    border: none;
+}
+
+.standard-button {
+    color: white;
+    padding: calc(variables.$standardButtonPadding/2) variables.$standardButtonPadding;
+    border-radius: variables.$standardButtonRoundedCorners;
+    font-size: variables.$standardButtonFontSize;
+}
 a {
     text-decoration: none;
     -webkit-text-decoration: none;
+}
+
+label > a {
+    text-decoration: underline;
 }
 
 * {
@@ -45,7 +66,6 @@ h2 {
     background: linear-gradient(variables.$themeBlue 0 0) bottom left/var(--underline-width, 0%) 0.1em no-repeat;
 
     display: inline-block;
-    padding: 0 0 0.2em;
     text-decoration: none;
     transition: background-size 0.5s;
 }

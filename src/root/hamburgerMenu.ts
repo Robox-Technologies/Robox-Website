@@ -39,7 +39,7 @@ function updateHamburger() {
     }
 
     // Animate icon
-    let lottiePlayer = hamburgerLottie as LottiePlayer;
+    const lottiePlayer = hamburgerLottie as LottiePlayer;
     lottiePlayer.setDirection(hamburgerMenuOpened ? 1 : -1);
     lottiePlayer.play();
 }
