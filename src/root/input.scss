@@ -81,3 +81,53 @@
     font-size: 24px;
     color: variables.$themeBlack;
 }
+
+.side-menu {
+    width: 25%;
+    max-width: 340px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: left;
+    gap: 8px;
+    padding: 16px;
+    background-color: variables.$tone2;
+    border-radius: 8px;
+
+    button {
+        width: 100%;
+        background-color: transparent;
+        font-family: 'Nunito', sans-serif;
+        font-size: 18px;
+        border: none;
+        border-radius: 6px;
+        text-align: left;
+        padding: 6px;
+        align-self: flex-start;
+        cursor: pointer;
+        transition: ease-in-out 0.1s;
+
+        &.active {
+            background-color: variables.$tone3;
+            color: variables.$primary;
+            font-weight: bold;
+        }
+    }
+}
+
+.dropdown-input {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 16px;
+    border: 1.4px solid variables.$themeBlue;
+    width: 100%;
+    height: fit-content;
+    align-self: flex-start;
+    align-items: flex-start;
+    text-align: left;
+    display: flex;
+    min-height: 40px;
+    box-sizing: border-box;
+    font-family: 'Nunito', sans-serif;
+}
