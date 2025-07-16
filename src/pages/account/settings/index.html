@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <link href="@root/root.scss" rel="stylesheet">
+    <link href="./index.scss" rel="stylesheet">
+</head>
+<body>
+    <%~ include('src/templates/partials/header.html') %>
+    <div class="settings-page">
+        <div class="side-menu">
+            <button class="menu-item active" id="general-button">General</button>
+            <button class="menu-item" id="account-button">Account</button>
+            <button class="menu-item" id="appearance-button">Appearance</button>
+            <button class="menu-item" id="notification-button">Notifications</button>
+            <button class="menu-item" id="security-button">Security</button>
+            <button class="menu-item" id="advanced-button">Advanced</button>
+            <button class="menu-item sign-out" id="logout-button">Sign Out</button>
+        </div>
+        <div class="content" id="settingsContent">
+            <h1 class="title">Account Settings</h1>
+            <div class="general-page-container page-container" style="display: none;">
+                <div class="input-container two-column">
+                    <div class="column">
+                        <div class="input-group">
+                            <label for="firstNameInput" class="input-label">First Name</label>
+                            <input class="text-input" type="text" placeholder="John" id="firstNameInput">
+                        </div>
+                        <div class="input-group">
+                            <label for="School" class="input-label">School</label>
+                            <select class="dropdown-input">Search<i class="fa-solid fa-caret-down"></i></button>
+                                <option value="smgs"> St Michael's Grammar School</option>
+                                <option value="wesley">Wesley College</option>
+                                <option value="mgs">Melbourne Grammar School</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="School" class="input-label">Pronouns</label>
+                            <select class="dropdown-input">Search<i class="fa-solid fa-caret-down"></i></button>
+                                <option value="na">I would prefer not to share.</option>
+                                <option value="he-him">He/Him</option>
+                                <option value="she-her">She/Her</option>
+                                <option value="they-them">They/Them</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="input-group">
+                            <label for="lastNameInput" class="input-label">Search Settings:</label>
+                            <input class="text-input" type="text" placeholder="Doe" id="lastNameInput">
+                        </div>
+                        <div class="input-group">
+                            <label for="School" class="input-label">Location</label>
+                            <select class="dropdown-input">Search<i class="fa-solid fa-caret-down"></i></button>
+                                <option value="aus">Australia</option>
+                                <option value="nz">New Zealand</option>
+                                <option value="usa">United States of America</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="emailInput" class="input-label">Email</label>
+                            <input class="text-input" type="text" placeholder="me@robox.com.au" id="emailInput">
+                        </div>
+                    </div>
+                </div>
+                <button class="ctaButton save-settings" id="saveSettingsButton">Save Settings</button>
+            </div>
+            <div class="account-page-container" style="display: none;">
+                <p>Account settings content goes here.</p>
+            </div>
+            <div class="appearance-page-container" style="display: none;">
+                <p>Appearance settings content goes here.</p>
+            </div>
+            <div class="notification-page-container" style="display: none;">
+                <p>Notification settings content goes here.</p>
+            </div>
+            <div class="security-page-container" style="display: none;">
+                <p>Security settings content goes here.</p>
+            </div>
+            <div class="advanced-page-container" style="display: none;">
+                <p>Advanced settings content goes here.</p>
+            </div>
+        </div>
+    </div>
+
+    <%~ include('src/templates/partials/footer.html') %>
+    <script src="./index.ts"></script>
+</body>
+</html>
