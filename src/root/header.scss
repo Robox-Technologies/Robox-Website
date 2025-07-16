@@ -156,6 +156,21 @@ header {
     padding: 4px 24px;
 }
 
+.btn.account {
+    color: variables.$primary;
+    border: none;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+
+    .header-username {
+        font-size: 16px;
+        font-weight: bold;
+    }
+}
+
 @media (max-width: $hamburgerThreshold) {
     .header {
         .hamburger {
