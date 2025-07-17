@@ -164,9 +164,9 @@ document.addEventListener("DOMContentLoaded", () => {
         extender.classList.add("extended");
 
         setTimeout(() => {
-            const transition = "margin-left 0.3s ease";
-            icon.style.transition = transition;
-            extender.style.transition = "width 0.3s ease";
+            const transitionBoilerplate = "0.3s ease";
+            icon.style.transition = `margin-left ${transitionBoilerplate}`;
+            extender.style.transition = `width ${transitionBoilerplate}`;
         }, 1)
     }
     
