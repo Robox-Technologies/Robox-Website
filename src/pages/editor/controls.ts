@@ -12,7 +12,6 @@ function stepZoom(workspace: WorkspaceSvg, mult: number) {
     const centreY = workspaceCoordinates.height / 2;
 
     workspace.zoom(centreX, centreY, zoomStep * mult);
-    workspace.refreshToolboxSelection();
 }
 
 export function registerControls(workspace: WorkspaceSvg) {
@@ -33,7 +32,7 @@ export function registerControls(workspace: WorkspaceSvg) {
     document.addEventListener('wheel', (event: WheelEvent) => {
         if (!(event.target instanceof Element)) return;
         if (document.querySelector('dialog[open]') || !event.target.closest("#blocklyDiv")) return;
-        if (event.target.closest(".blocklyFlyout") || event.target.closest(".blocklyToolbox")) return;
+        if (event.target.closest(".blocklyFlyoutScrollbar") || event.target.closest(".blocklyFlyout") || event.target.closest(".blocklyToolbox")) return;
 
         // Workspace interaction - prevent window scrolling
         event.preventDefault();
@@ -42,7 +41,6 @@ export function registerControls(workspace: WorkspaceSvg) {
             // Zoom override
             const mouseSvgCoords = utils.browserEvents.mouseToSvg(event, workspace.getParentSvg(), workspace.getInverseScreenCTM());
             workspace.zoom(mouseSvgCoords.x, mouseSvgCoords.y, -event.deltaY * zoomFac);
-            workspace.refreshToolboxSelection();
             
             return;
         }

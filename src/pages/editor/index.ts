@@ -83,6 +83,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // Scroll for vertical movement,
     // Shift + scroll for horizontal movement
     registerControls(workspace)
+
+    // Update flyout scale if workspace scale changes
+    const flyoutWorkspace = workspace.getFlyout().getWorkspace();
+    let workspaceOldScale = 1;
+    workspace.addChangeListener((event) => {
+        if (event.type === Blockly.Events.VIEWPORT_CHANGE && workspace.scale !== workspaceOldScale) {
+            const flyoutScrollTop = flyoutWorkspace.scrollY;
+            
+            flyoutWorkspace.setScale(workspace.scale);
+            flyoutWorkspace.scroll(0, flyoutScrollTop * workspace.scale / workspaceOldScale);
+
+            workspaceOldScale = workspace.scale;
+        }
+    });
+
     if ("serial" in navigator) {
         postBlocklyWSInjection()
     }
