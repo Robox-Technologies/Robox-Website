@@ -23,9 +23,7 @@ registerFieldColour();
 import "./instructions/UF2Flash"
 import "./instructions/colourCalibration"
 
-interface IToolboxItem extends Blockly.IToolboxItem {
-    name_: string
-}
+
 
 const blocks = require.context("./blockly/blocks", false, /\.ts$/);
 const generators = require.context("./blockly/generators", false, /\.ts$/);
@@ -43,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         theme: theme,
         plugins: {
             'flyoutsVerticalToolbox': "RoboxFlyout",
-            'toolbox': ContinuousToolbox,
+            'toolbox': "RoboxToolbox",
             "MetricsManager": ContinuousMetrics
         },
         zoom: {
@@ -145,7 +143,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const extender = firstCategory.querySelector(".extender") as HTMLElement;
     if (icon && extender) {
         // Temp disable transitions
-        const transitionProperties = "width, margin-left";
         icon.style.transitionProperty = "none";
         extender.style.transitionProperty = "none";
 
@@ -159,21 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 1)
     }
     
-    //Prevents the flyout from closing (the category being deselected)
-    workspace.addChangeListener(function (event) {
-        if (event.type === Blockly.Events.TOOLBOX_ITEM_SELECT) {
-            const toolboxEvent = event as Blockly.Events.ToolboxItemSelect;
-
-            if (!toolboxEvent.newItem && toolboxEvent.oldItem) {
-                const toolbox = workspace.getToolbox() as Blockly.Toolbox;
-                const allItems = toolbox.getToolboxItems();
-                const item = allItems.find(i => (i as IToolboxItem).name_ === toolboxEvent.oldItem);
-                if (item) {
-                    toolbox.setSelectedItem(item);
-                }
-            }
-        }
-    });
     workspace.addChangeListener(Blockly.Events.disableOrphans);
 
 }) 
