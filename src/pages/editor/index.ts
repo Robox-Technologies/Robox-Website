@@ -1,7 +1,7 @@
 
 import * as Blockly from 'blockly';
 
-import { ContinuousToolbox, ContinuousMetrics } from '@blockly/continuous-toolbox';
+import { ContinuousMetrics } from '@blockly/continuous-toolbox';
 
 import theme from "./blockly/theme"
 
