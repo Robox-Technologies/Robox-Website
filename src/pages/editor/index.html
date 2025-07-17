@@ -40,33 +40,44 @@
         </div>
     </div>
     <div id="blocklyDiv">
+        <div id="blocklyCustomTimeControls">
+            <button class="button uiButtons" id="undo"><i class="fa-solid fa-rotate-left"></i></button>
+            <button class="button uiButtons" id="redo"><i class="fa-solid fa-rotate-right"></i></button>
+        </div>
         
-        <div id="connection-management" status="disconnected">
-            <button class="button mainButton" id="code-download-robox-button">
-                Download Python
-            </button>
-            <button class="button mainButton" id="connect-robox-button">
-                Connect to Ro/Box
-            </button>
-            <button class="button mainButton" id="stop-robox-button">
-                Stop Ro/Box
-            </button>
-            <button class="button mainButton" id="run-robox-button">
-                Run Ro/Box
-            </button>
-            <button class="button mainButton" id="loading">
-                <i class="fa-solid fa-spinner fa-spin"></i>
-            </button>
-            <button class="sideButtons button" id="download">
-                <i class="fa-solid fa-download"></i>
-            </button>
-            <button class="sideButtons button" id="disconnect">
-                <i class="fa-solid fa-plug-circle-xmark"></i>
-            </button>
-            <button class="sideButtons button" id="console">
-                <i class="fa-solid fa-terminal"></i>
-            </button>
+        <div class="sideControls">
+            <div class="zoomControls">
+                <button class="uiButtons" id="zoomIn"><i class="fa-solid fa-plus"></i></button>
+                <button class="uiButtons" id="zoomOut"><i class="fa-solid fa-minus"></i></button>
+            </div>
 
+            <div id="connection-management" status="disconnected">
+                <button class="button mainButton" id="code-download-robox-button">
+                    Download Python
+                </button>
+                <button class="button mainButton" id="connect-robox-button">
+                    Connect to Ro/Box
+                </button>
+                <button class="button mainButton" id="stop-robox-button">
+                    Stop Ro/Box
+                </button>
+                <button class="button mainButton" id="run-robox-button">
+                    Run Ro/Box
+                </button>
+                <button class="button mainButton" id="loading">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                </button>
+                <button class="sideButtons button" id="download">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+                <button class="sideButtons button" id="disconnect">
+                    <i class="fa-solid fa-plug-circle-xmark"></i>
+                </button>
+                <button class="sideButtons button" id="console">
+                    <i class="fa-solid fa-terminal"></i>
+                </button>
+
+            </div>
         </div>
     </div>
 

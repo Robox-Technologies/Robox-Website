@@ -8,9 +8,6 @@ import theme from "./blockly/theme"
 import {toolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
-import { CustomUndoControls } from './blockly/customUI';
-import { MyWorkspace } from 'types/blockly';
-
 import { Project } from 'types/projects';
 import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject } from '../../root/serialization';
 
@@ -46,6 +43,11 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         zoom: {
             controls: false,
+            maxScale: 2.5,
+            minScale: 0.2,
+            scaleSpeed: 1.5,
+            startScale: 1.0,
+            pinch: true
         },
         move:{
             scrollbars: {
@@ -62,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         renderer: 'Zelos',
         trashcan: false,
-    }) as MyWorkspace;
+    });
     const urlParams = new URLSearchParams(window.location.search);
     const workspaceId = urlParams.get('id')
     let project: null | Project = null
@@ -76,6 +78,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // Scroll for vertical movement,
     // Shift + scroll for horizontal movement
     registerControls(workspace)
+
+    // Update flyout scale if workspace scale changes
+    const flyoutWorkspace = workspace.getFlyout().getWorkspace();
+    let workspaceOldScale = 1;
+    workspace.addChangeListener((event) => {
+        if (event.type === Blockly.Events.VIEWPORT_CHANGE && workspace.scale !== workspaceOldScale) {
+            const flyoutScrollTop = flyoutWorkspace.scrollY;
+            
+            flyoutWorkspace.setScale(workspace.scale);
+            flyoutWorkspace.scroll(0, flyoutScrollTop * workspace.scale / workspaceOldScale);
+
+            workspaceOldScale = workspace.scale;
+        }
+    });
+
     if ("serial" in navigator) {
         postBlocklyWSInjection()
     }
@@ -90,9 +107,6 @@ document.addEventListener("DOMContentLoaded", () => {
             downloadBlocklyProject(workspaceId)
         })
     }
-    workspace.undoControls = new CustomUndoControls(workspace)
-    workspace.undoControls.init()
-    
     
     const nameForm = document.getElementById("project-name-form") as HTMLFormElement | null
     const nameInput = document.getElementById("project-name-input") as HTMLInputElement | null
@@ -157,7 +171,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     workspace.addChangeListener(Blockly.Events.disableOrphans);
-
 }) 
 
 

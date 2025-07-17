@@ -89,7 +89,8 @@ class RoboxFlyout extends ContinuousFlyout {
     }
     override scrollTo(position: number) {
         const OFFSET = 5; // pixels
-        const adjustedPosition = position + OFFSET;
+        const scale = this.getWorkspace().scale || 1;
+        const adjustedPosition = (position + OFFSET) * scale;
 
         const metrics = this.getWorkspace().getMetrics();
         const scrollTarget = Math.min(
