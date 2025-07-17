@@ -153,8 +153,9 @@ document.addEventListener("DOMContentLoaded", () => {
         extender.classList.add("extended");
 
         setTimeout(() => {
-            icon.style.transitionProperty = transitionProperties;
-            extender.style.transitionProperty = transitionProperties;
+            const transition = "margin-left 0.3s ease";
+            icon.style.transition = transition;
+            extender.style.transition = "width 0.3s ease";
         }, 1)
     }
     
