@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { isAuthenticated } from '@root/account'
 
 const supabaseUrl = process.env.PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.PUBLIC_SUPABASE_ANON_KEY
@@ -306,6 +307,13 @@ function selectUserType(type: 'student' | 'teacher') {
     
     hideAllErrors()
 }
+
+isAuthenticated().then(authenticated => {
+    if (authenticated) {
+        window.location.href = '/home'
+    }
+})
+
 
 document.addEventListener('DOMContentLoaded', () => {
     signupButton.addEventListener('click', handleSignup)
