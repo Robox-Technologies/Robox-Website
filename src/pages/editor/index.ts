@@ -157,8 +157,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const extender = firstCategory.querySelector(".extender") as HTMLElement;
     if (icon && extender) {
         // Temp disable transitions
-        icon.style.transitionProperty = "none";
-        extender.style.transitionProperty = "none";
+        icon.style.transition = "none";
+        extender.style.transition = "none";
 
         icon.style.marginLeft = "20px";
         extender.classList.add("extended");
