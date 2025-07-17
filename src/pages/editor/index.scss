@@ -267,13 +267,14 @@ body {
 }
 $blocklyUIIconSize: 40px;
 $zoomButtonsGap: 10px;
-.uiHolder {
-    display: flex;
-    gap: $zoomButtonsGap;
-}
+
 #blocklyCustomTimeControls {
+    z-index: 9;
+    position: absolute;
     top: variables.$standardGap;
     right: variables.$standardGap;
+
+    display: flex;
     flex-direction: row;
     gap: 0;
 }

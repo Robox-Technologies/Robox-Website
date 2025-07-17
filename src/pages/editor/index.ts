@@ -8,9 +8,6 @@ import theme from "./blockly/theme"
 import {toolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
-import { CustomUndoControls } from './blockly/customUI';
-import { MyWorkspace } from 'types/blockly';
-
 import { Project } from 'types/projects';
 import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject } from '../../root/serialization';
 
@@ -69,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         renderer: 'Zelos',
         trashcan: false,
-    }) as MyWorkspace;
+    });
     const urlParams = new URLSearchParams(window.location.search);
     const workspaceId = urlParams.get('id')
     let project: null | Project = null
@@ -112,9 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
             downloadBlocklyProject(workspaceId)
         })
     }
-    workspace.undoControls = new CustomUndoControls(workspace)
-    workspace.undoControls.init()
-    
     
     const nameForm = document.getElementById("project-name-form") as HTMLFormElement | null
     const nameInput = document.getElementById("project-name-input") as HTMLInputElement | null

@@ -15,6 +15,20 @@ function stepZoom(workspace: WorkspaceSvg, mult: number) {
 }
 
 export function registerControls(workspace: WorkspaceSvg) {
+    const undoButton = document.getElementById("undo");
+    if (undoButton) {
+        undoButton.addEventListener("click", () => {
+            workspace.undo(false);
+        });
+    }
+
+    const redoButton = document.getElementById("redo");
+    if (redoButton) {
+        redoButton.addEventListener("click", () => {
+            workspace.undo(true);
+        });
+    }
+
     const zoomInButton = document.getElementById("zoomIn");
     if (zoomInButton) {
         zoomInButton.addEventListener("click", () => {
