@@ -1,9 +1,12 @@
+<!DOCTYPE html>
 
+<html lang="en">
 <head>
     <%~ include('src/templates/partials/metadata.html') %>
+    <title>Ro/Box Hub</title>
     <script src="./index.ts"></script>
-    <link href="./index.scss" rel="stylesheet" />
-    <link href="@root/root.scss" rel="stylesheet" />
+    <link href="./index.scss" rel="stylesheet">
+    <link href="@root/root.scss" rel="stylesheet">
 </head>
 
 <body>
@@ -73,18 +76,18 @@
     }) %>
     <!-- Hero title -->
     <%~ include('src/templates/partials/title-hero.html', {
-        text: "Robox Hub",
-        image: "./student-hub-hero.jpg"
+        text: "Ro/Box Hub",
+        image: "@images/student-hub/hero.jpg"
     }) %>
     
     <div id="main" class="item-sections">
         
 
-        <section id="assembly-guides">
+        <section>
             <h1>
                 Assembly Guides
             </h1> 
-            <div class="card-holder" id="assembly-guides">
+            <div class="card-holder">
                 <%~ include('src/templates/partials/card.html', {
                     class: "assembly-card",
                     title: '<span>Assembly Guide</span>', 
@@ -130,7 +133,7 @@
             <h1>
                 Explore Our Lessons
             </h1> 
-            <div class="card-holder" id="assembly-guides">
+            <div class="card-holder">
                 
             </div>
         </section> -->
@@ -139,3 +142,4 @@
     
     <%~ include('src/templates/partials/footer.html') %>
 </body>
+</html>

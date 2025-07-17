@@ -1,11 +1,23 @@
+import { disableScroll, enableScroll } from "./scrollFreeze";
+
 document.addEventListener("DOMContentLoaded", () => {
-    const modals:NodeListOf<HTMLDialogElement> = document.querySelectorAll("dialog.modal")
+    const modals:NodeListOf<HTMLDialogElement> = document.querySelectorAll("dialog.modal, dialog.simpleModal");
+    
     for (const modal of modals) {
-        
+        modal.dispatchEvent(new Event('open'));
+
+        modal.addEventListener('toggle', () => {
+            if (modal.open) {
+                disableScroll();
+            } else {
+                enableScroll();
+            }
+        });
+
         modal.addEventListener("click", (event: MouseEvent) => {
-            let element = event?.target as HTMLElement | null
+            const element = event?.target as HTMLElement | null
             if (!element) return
-            let rect = modal.getBoundingClientRect();
+            const rect = modal.getBoundingClientRect();
             if (rect.left > event.clientX ||
                 rect.right < event.clientX ||
                 rect.top > event.clientY ||
@@ -15,11 +27,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             event.stopPropagation()
         })
-        let cancelButton: HTMLElement | null = modal.querySelector(".close-modal-button")
-        if (!cancelButton) return
-        cancelButton.addEventListener("click", (event) => {
-            modal.close()
-            event.stopPropagation()
-        })
+
+        const cancelButton: NodeListOf<HTMLElement> = modal.querySelectorAll(".close-modal-button")
+        
+        for (const button of cancelButton) {
+            button.addEventListener("click", (event) => {
+                modal.close()
+                event.stopPropagation()
+            })
+        }
     }
 })

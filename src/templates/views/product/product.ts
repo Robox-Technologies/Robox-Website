@@ -1,8 +1,8 @@
-import { calculateTotalCost, cartToDictionary } from "@root/stripe-helper";
 import { addCartItem, refreshCart } from "@root/cart";
+import { formatPrice } from "@root/stripe-shared-helper";
 
 // TODO: Find a non-hacky way fetching currentProduct without @ts-ignore
-// @ts-ignore
+// @ts-expect-error Fetched from HTML
 const product = currentProduct;
 
 const productId = product["item_id"]
@@ -10,9 +10,10 @@ const productId = product["item_id"]
 const carouselImageContainer = document.getElementById("image-carousel")
 const carouselImages = document.querySelectorAll(".carousel-image") as NodeListOf<HTMLDivElement>;
 const heroImages = document.querySelectorAll(".hero-image")
+const modalImage = document.getElementById("hero-image-large") as HTMLImageElement;
 
-const rightCarouselButton = document.getElementById("carousel-right-button")
-const leftCarouselButton = document.getElementById("carousel-left-button")
+const rightCarouselButtons = document.querySelectorAll(".carousel-right-button")
+const leftCarouselButtons = document.querySelectorAll(".carousel-left-button")
 
 const cartQuantityInput = document.querySelector(".cart-quantity") as HTMLInputElement;
 const increaseQuantityButton = document.querySelector(".increase-cart-button");
@@ -20,17 +21,29 @@ const decreaseQuantityButton = document.querySelector(".decrease-cart-button");
 
 const addToCartButton = document.getElementById("add-to-cart");
 const cartModal = document.getElementById("cart-modal") as HTMLDialogElement;
+const productImageModal = document.getElementById("productImageModal") as HTMLDialogElement;
 
 let quantity = 1;
 let currentImageIndex = 0;
 
-rightCarouselButton.addEventListener("click", () => {
-    if (rightCarouselButton.classList.contains("carousel-button-disabled")) return;
-    changeHeroImage(currentImageIndex+1, true);
-});
-leftCarouselButton.addEventListener("click", () => {
-    if (leftCarouselButton.classList.contains("carousel-button-disabled")) return;
-    changeHeroImage(currentImageIndex-1, true);
+for (const button of leftCarouselButtons) {
+    button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (button.classList.contains("carousel-button-disabled")) return;
+        changeHeroImage(currentImageIndex-1, true);
+    });
+}
+
+for (const button of rightCarouselButtons) {
+    button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (button.classList.contains("carousel-button-disabled")) return;
+        changeHeroImage(currentImageIndex+1, true);
+    });
+}
+
+document.getElementById("hero-image-container").addEventListener("click", () => {
+    productImageModal.showModal();
 });
 
 increaseQuantityButton.addEventListener("click", () =>{
@@ -42,7 +55,7 @@ decreaseQuantityButton.addEventListener("click", () => {
 });
 cartQuantityInput.addEventListener("input", () => {
     cartQuantityInput.value = cartQuantityInput.value.slice(0, 2);
-    let numberValue = Number(cartQuantityInput.value) ?? 0;
+    const numberValue = Number(cartQuantityInput.value ?? 0);
     quantity = numberValue;
 });
 
@@ -57,7 +70,7 @@ addToCartButton.addEventListener("click", () => {
     refreshCart();
 
     document.getElementById("modal-quantity").textContent = quantity.toString();
-    document.getElementById("modal-total-price").innerText = (Number(product.price) * quantity).toString();
+    document.getElementById("modal-total-price").innerText = formatPrice(product.price * quantity, true);
     cartModal.showModal();
 });
 
@@ -67,38 +80,44 @@ document.getElementById("dismiss-modal").addEventListener("click", () => {
 
 for (const carouselImage of carouselImages) {
     carouselImage.addEventListener("click", (e) => {
-        let divElement = (e.target as HTMLElement).closest("div");
+        const divElement = (e.target as HTMLElement).closest("div");
         changeHeroImage(Array.prototype.indexOf.call(divElement.parentNode.children, divElement));
     });
 }
 
 function changeHeroImage(number: number, autoscroll: boolean = false) {
-    if (number === 0) {
-        leftCarouselButton.classList.add("carousel-button-disabled");
-    } else if (leftCarouselButton.classList.contains("carousel-button-disabled")) {
-        leftCarouselButton.classList.remove("carousel-button-disabled");
+    for (const button of leftCarouselButtons) {
+        if (number === 0) {
+            button.classList.add("carousel-button-disabled");
+        } else if (button.classList.contains("carousel-button-disabled")) {
+            button.classList.remove("carousel-button-disabled");
+        }
     }
 
-    if (number === carouselImages.length-1) {
-        rightCarouselButton.classList.add("carousel-button-disabled");
-    } else if (rightCarouselButton.classList.contains("carousel-button-disabled")) {
-        rightCarouselButton.classList.remove("carousel-button-disabled");
+    for (const button of rightCarouselButtons) {
+        if (number === carouselImages.length-1) {
+            button.classList.add("carousel-button-disabled");
+        } else if (button.classList.contains("carousel-button-disabled")) {
+            button.classList.remove("carousel-button-disabled");
+        }
     }
 
-    let carouselThumb = carouselImages[currentImageIndex];
+    const carouselThumb = carouselImages[currentImageIndex];
     carouselThumb.querySelector("img").classList.remove("selected-carousel");
 
+    const heroImage = heroImages[number] as HTMLImageElement;
     document.querySelector(".active")?.classList.remove("active");
-    const heroImage = heroImages[number];
     heroImage.classList.add("active");
+    modalImage.src = heroImage.src;
+
     carouselImages[number].querySelector("img").classList.add("selected-carousel");
     currentImageIndex = number;
 
     // Scroll if out of bounds
     if (!autoscroll) return;
 
-    let thumbTop = carouselThumb.offsetTop - carouselThumb.clientHeight*3 - 15;
-    let thumbBottom = carouselThumb.offsetTop + carouselThumb.clientHeight;
+    const thumbTop = carouselThumb.offsetTop - carouselThumb.clientHeight*3 - 15;
+    const thumbBottom = carouselThumb.offsetTop + carouselThumb.clientHeight;
 
     if (thumbTop < carouselImageContainer.scrollTop) {
         carouselImageContainer.scrollTo({

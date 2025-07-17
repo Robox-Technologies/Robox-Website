@@ -16,7 +16,7 @@
     border-bottom: 4px solid variables.$dropShadow;
 
     .title {
-        margin: variables.$standardGap var(--articleMargin);
+        margin: variables.$standardGap variables.$articleMargin;
     }
 
     .heroGoober {

@@ -10,17 +10,16 @@
     "include": [
         "server.ts",
         "store.ts",
-        "stripe-helper.ts",
+        "stripe-server-helper.ts",
         "roboxSectionize.ts",
-        "webpack.config.ts",
+        "webpack.config.ts"
     ],
     "typeRoots": [
         "./node_modules/@types",
         "./types"
     ],
     "exclude": [
-        
         "node_modules",
-        "src",
+        "src"
     ]
 }

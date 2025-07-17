@@ -1,7 +1,7 @@
 @use 'variables';
 $toolbarBorderRadius: 0.5em;
 $toolbarBorderColor: variables.$tone3;
-$toolbarBorderStroke: 3px;
+$toolbarBorderStroke: 1px;
 $toolbarWidth: 130px;
 $toolbarPadding: 5px;
 
@@ -15,8 +15,9 @@ $toolbarPadding: 5px;
     justify-content: space-between;
     border-radius: $toolbarBorderRadius;
     margin: 0;
-    // border: $toolbarBorderStroke solid $toolbarBorderColor;
+    border: $toolbarBorderStroke solid $toolbarBorderColor;
     width: $toolbarWidth;
+    box-shadow: 0 0 10px #26363b5a;
 }
 .toolbar > .card-button > svg {
     margin-right: 5px;
@@ -25,14 +26,15 @@ $toolbarPadding: 5px;
     cursor: pointer;
 }
 .toolbar button {
-    padding: 5%;
-    width: 100%;
+    @include variables.bodyFont;
+
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    font-family: "Nunito", sans-serif;
-    font-weight: bold;
-    color: variables.$themeBlack;
+    padding: 5%;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 600;
 }
 .toolbar > button:nth-child(2n) {
     margin-top: 5px;

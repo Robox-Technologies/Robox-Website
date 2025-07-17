@@ -18,7 +18,16 @@ body {
 
 .button {
     background-color: unset;
-    border: 0;
+}
+
+button {
+    border: none;
+}
+
+hr {
+    background-color: variables.$dropShadow;
+    height: 2px;
+    border: none;
 }
 
 .standard-button {

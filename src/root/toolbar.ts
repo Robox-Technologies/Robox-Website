@@ -2,11 +2,11 @@
 const offsetX = 5;
 const offsetY = 10;
 document.addEventListener("click", (event: MouseEvent) => {
-    let item = event.target as HTMLElement | null
-    let toolbar = document.querySelector(".toolbar") as HTMLDialogElement | null
+    const item = event.target as HTMLElement | null
+    const toolbar = document.querySelector(".toolbar") as HTMLDialogElement | null
     if (!toolbar) return
     if (!item) return
-    let rect = toolbar.getBoundingClientRect();
+    const rect = toolbar.getBoundingClientRect();
     if (rect.left > event.clientX ||
         rect.right < event.clientX ||
         rect.top > event.clientY ||
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const toolbarModal = document.querySelector(".toolbar") as HTMLDialogElement | null;
     if (!toolbarModal) return;
     toolbarModal.addEventListener("close", () => {
-        let oldTarget = document.querySelector(".toolbar-target") as HTMLElement | null;
+        const oldTarget = document.querySelector(".toolbar-target") as HTMLElement | null;
         if (oldTarget) {
             oldTarget.classList.remove("toolbar-target");
         }
@@ -50,7 +50,8 @@ export function toggleToolbar(toolbar: HTMLDialogElement, open: boolean): void {
     }
 }
 
-export function moveToolbar(toolbar: HTMLDialogElement, target: HTMLElement): void {
+export function moveToolbar(toolbar: HTMLDialogElement, target: HTMLElement, offset: [number, number] = [0, 0]): void {
+    const [offsetX2, offsetY2] = offset;
     const oldTarget = document.querySelector(".toolbar-target") as HTMLElement | null;
     if (oldTarget) {
         oldTarget.classList.remove("toolbar-target");
@@ -61,6 +62,6 @@ export function moveToolbar(toolbar: HTMLDialogElement, target: HTMLElement): vo
     toolbar.style.position = 'absolute';
     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    toolbar.style.left = `${rect.left + scrollLeft + offsetX}px`;
-    toolbar.style.top = `${rect.top + scrollTop + offsetY}px`;
+    toolbar.style.left = `${rect.left + scrollLeft + offsetX + offsetX2}px`;
+    toolbar.style.top = `${rect.top + scrollTop + offsetY + offsetY2}px`;
 }

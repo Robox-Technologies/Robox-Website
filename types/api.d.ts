@@ -4,11 +4,14 @@ export type Product = {
     internalName?: string, // Used for filenames
     displayStatus?: string, // Used for display purposes
     description: string,
+    banner?: string, // Banner text above product name
     images: string[],
     price_id: string,
     price: number,
+    displayPrice: string, // Used for display purposes
     item_id: string,
-    status: ProductStatus
+    status: ProductStatus,
+    weight: number
 }
 export type ProductStatus = "available" | "not-available" | "preorder"
 

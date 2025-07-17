@@ -1,5 +1,5 @@
 import { wipeCart, stripePublishableKey } from "@root/cart";
-import { loadStripe } from '@stripe/stripe-js';
+import { Stripe, loadStripe } from '@stripe/stripe-js';
 
 const urlParams = new URLSearchParams(window.location.search);
 const paymentIntentClientSecret = urlParams.get("payment_intent_client_secret");
@@ -11,6 +11,9 @@ if (paymentIntentClientSecret) {
         let result = "retry";
         while (result === "retry") {
             result = await pollIntent(stripe);
+
+            // Wait 1s before polling again
+            await sleep(1000);
         }
     } catch (error) {
         console.warn("loadStripe/pollIntent failed with error: ", error);
@@ -19,6 +22,10 @@ if (paymentIntentClientSecret) {
 } else {
     console.warn("No payment intent client secret found in URL params");
     showFailure();
+}
+
+function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function showSuccess(email: string) {
@@ -36,12 +43,11 @@ function showFailure() {
 }
 
 async function pollIntent(stripe: Stripe): Promise<string> {
-    let paymentIntentResult = await stripe.retrievePaymentIntent(paymentIntentClientSecret);
-    let paymentIntent = paymentIntentResult.paymentIntent;
+    const paymentIntentResult = await stripe.retrievePaymentIntent(paymentIntentClientSecret);
+    const paymentIntent = paymentIntentResult.paymentIntent;
 
     if (!paymentIntent || paymentIntent.status === "processing") return "retry";
     
-
     if (paymentIntent.status === "succeeded") {
         showSuccess(paymentIntent.receipt_email);
     } else {

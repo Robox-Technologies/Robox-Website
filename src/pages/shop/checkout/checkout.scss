@@ -52,9 +52,25 @@ label {
     display: flex;
     flex-direction: column;
 }   
+
 #submit {
     margin-top: variables.$standardGap;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+
+    .loadSpinner {
+        width: 25px;
+        height: 25px;
+        border-width: 3px;
+        border-color: variables.$primary;
+        border-top-color: transparent;
+        margin: 0;
+        display: none;
+    }
 }
+
 #spinner {
     font-size: 40px;
     align-self: center;

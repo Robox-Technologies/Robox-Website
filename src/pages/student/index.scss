@@ -8,7 +8,7 @@ $cardBorderRadius: 5%;
 
 
 #main {
-    padding: 30px;
+    padding: variables.$articleMargin;
 }
 .fa-square-binary {
     height: $projectIconSize;
@@ -59,7 +59,7 @@ $toolbarBorderColor: variables.$primary;
 $toolbarBorderStroke: 3px;
 $toolbarWidth: 130px;
 
-.item-sections h1 {
+.item-sections > section > h1 {
     margin-top: 0.83em;
 }
 

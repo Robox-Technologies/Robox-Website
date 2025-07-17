@@ -8,6 +8,10 @@
     flex-direction: row;
 }
 
+hr {
+    background-color: #405C64;
+}
+
 .navigation {
     &.productNav {
         font-size: 16px;
@@ -116,10 +120,13 @@
     .ctaButton.pill {
         text-align: center;
         line-height: 46px;
+    }
 
-        &.continue {
-            background-color: variables.$themeBlue;
-        }
+    .continue {
+        text-align: center;
+        font-size: 16px;
+        margin-top: 16px;
+        margin-bottom: 8px;
     }
 
     .bulkCallout {
@@ -211,6 +218,7 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 @media only screen and (max-width: 900px) {

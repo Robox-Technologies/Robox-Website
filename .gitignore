@@ -1,3 +1,4 @@
+products.json
 # Logs
 logs
 *.log
@@ -143,3 +144,5 @@ build
 TEMPLATE_*.html
 GUIDE_*.html
 src/.DS_Store
+products.json
+products.json

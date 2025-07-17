@@ -4,8 +4,8 @@
     <head>
         <%~ include('src/templates/partials/metadata.html') %>
         <script src="./checkout.ts" defer></script>
-        <link href="./checkout.scss" rel="stylesheet" />
-        <title>Robox - Robotics for Everyone</title>
+        <link href="./checkout.scss" rel="stylesheet">
+        <title>Checkout - Ro/Box</title>
     </head>
     <body>
         <%~ include('src/templates/partials/header.html') %>
@@ -31,7 +31,7 @@
 
                         <div id="stripe-content">
                             <label style="display: none;"for="email" id="email-label">Email</label>
-                            <input style="display: none;"type="email" id="email" name="email" required />
+                            <input style="display: none;"type="email" id="email" name="email" required>
                             <div id="spinner" class="lds-dual-ring"></div>
                             <div id="address-element"></div>
 
@@ -42,11 +42,11 @@
                         </div>
 
                         <div>
-                            <input type="checkbox" id="termsConsent" required />
+                            <input type="checkbox" id="termsConsent" required>
                             <label for="termsConsent">I agree to the <a href="/tos" target="_blank">Consumer Terms of Sale</a> for this purchase.</label>
                         </div>
                         
-                        <button id="submit" class="ctaButton pill" disabled>Pay</button>
+                        <button id="submit" class="ctaButton pill" disabled>Pay <div id="paymentLoader" class="loadSpinner"></div></button>
                     </form>
                 </div>
                 
