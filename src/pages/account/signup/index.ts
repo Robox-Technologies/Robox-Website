@@ -77,11 +77,6 @@ function hideAllErrors() {
     confirmPasswordErrorMsg.style.display = 'none'
 }
 
-function isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
-}
-
 function isValidPassword(password: string): boolean {
     return password.length >= 6
 }
@@ -158,8 +153,7 @@ async function handlePersonalInfoStep() {
         return
     }
     
-    if (!isValidEmail(email)) {
-        showError('personal-info', 'Please enter a valid email address')
+    if (!(await isValidEmail(email))) {
         emailInput.focus()
         return
     }
@@ -210,47 +204,47 @@ async function createAccount() {
     signupButton.innerHTML = 'Nearly there!'
     
     try {
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error: authError } = await supabase.auth.signUp({
             email: userData.email,
             password: userData.password,
             options: {
                 data: {
-                    full_name: userData.fullName,
-                    user_type: userType // Will move to user type in new table in the future
+                    full_name: userData.fullName
                 }
             }
         })
         
-        if (error) {
-            throw error
+        if (authError) {
+            throw authError
         }
         
-        // If signup successful and user is created, save additional data to users table
-        if (data.user && data.user.id) {
-            const { error: insertError } = await supabase
-                .from('users')
+        if (!authError) {
+            const { error: dbError } = await supabase
+                .from('profiles')
                 .insert({
-                    id: data.user.id,
+                    user_id: data.user.id,
                     full_name: userData.fullName,
                     email: userData.email,
                     user_type: userType,
-                    created_at: new Date().toISOString()
+                    created_at: new Date()
                 })
             
-            if (insertError) {
-                console.error('Error saving user data:', insertError)
+            if (dbError) {
+                console.error('Error saving user data:', dbError)
             }
         }
-        
-        // Success - redirect or show confirmation
-        if (userType == 'teacher') {
+
+        if (userType == 'teacher' && !authError) {
             window.location.href = 'classroom/create'
         }
-        else {
+        else if (userType == 'student' && !authError) {
             window.location.href = 'classroom/join'
         }
+        else {
+            alert('Failed to create account')
+        }
         
-    } catch (error: any) {
+    } catch (error) {
         console.error('Signup error:', error)
         
         if (error.message.includes('User already registered')) {
