@@ -23,7 +23,7 @@ let downloadingToPico = false
 
 export function postBlocklyWSInjection() {
     const ws = Blockly.getMainWorkspace()
-    const connectionManagment = document.getElementById("connection-managment")
+    const connectionManagment = document.getElementById("connection-management")
 
     const connectButton = document.getElementById("connect-robox-button")
     const downloadButton = document.getElementById("download-robox-button")
@@ -101,6 +101,10 @@ export function postBlocklyWSInjection() {
         if (!dialog || dialog.open ) return
         dialog.show()
         event.stopPropagation()
+    })
+    pico.addEventListener("error", (event) => {
+        console.error("Pico Error: ", event)
+        //TODO: add toasts
     })
     pico.startupConnect()
 

@@ -40,6 +40,10 @@ $standardButtonRoundedCorners:10px;
 }
 
 // Drop shadows
+@mixin dropShadowSmaller {
+    box-shadow: 6px 6px 0px $dropShadow;
+}
+
 @mixin dropShadowSmall {
     box-shadow: 6px 6px 0px $dropShadow;
 }

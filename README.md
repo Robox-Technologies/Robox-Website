@@ -31,12 +31,7 @@ Install dependencies:
 npm install
 ```
 
-Create a new `.env` file in the root folder. The `.env` structure is shown in `example.env`:
-```env
-STRIPE_PUBLISHABLE_KEY=pk_...
-STRIPE_SECRET_KEY=sk_...
-FORCE_CACHE=false
-```
+Create a new `.env` file in the root folder. An example of its contents can be found in `example.env`.
 
 Compile and run on localhost:
 ```bash

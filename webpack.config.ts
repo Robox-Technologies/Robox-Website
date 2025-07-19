@@ -104,7 +104,7 @@ async function processProducts() {
 
         const productData = {
             product,
-            images: [""],
+            images: [],
             description: "",
         };
         //Searching for images that are in the product folder

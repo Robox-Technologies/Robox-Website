@@ -26,7 +26,6 @@ $extensionAmount: 20px;
 //This is the height for the top and bottom divs
 $barHeight: 75px;
 
-$dropshadowBase: 2px;
 $topButtonsDropShadowMult: 1;
 $dropShadowColour: rgb(47, 47, 47);
 
@@ -40,6 +39,11 @@ $downloadButtonSize: 60px;
 @mixin extendTransition {
     transition-property: width, margin-left;
     transition-duration: .5s;
+}
+
+body {
+    min-width: 870px;
+    min-height: 500px;
 }
 
 // Makes our label white.
@@ -65,7 +69,6 @@ $downloadButtonSize: 60px;
 }
 .blocklyTreeSeparator {
     display: flex;
-    border-top: $seperatorStrokeSize solid #F5F5F5;
     background-color: white;
     justify-content: center;
     align-items: center;
@@ -78,6 +81,7 @@ $downloadButtonSize: 60px;
 /* Adds space between the categories, rounds the corners and adds space around the label. */
 .blocklyToolboxCategory {
     border-top: $seperatorStrokeSize solid #F5F5F5;
+    cursor: pointer;
     
     &:last-child {
         border-bottom: $seperatorStrokeSize solid #F5F5F5;
@@ -140,13 +144,11 @@ $downloadButtonSize: 60px;
 }
 #blocklyDiv {
     flex: auto;
-
+    position: relative;
 }
 .injectionDiv {
     border-top: $seperatorStrokeSize solid $navEdges;
-    border-bottom: $seperatorStrokeSize solid $navEdges;
     box-sizing: border-box;
-
 }
 .blocklyMainBackground {
     stroke: none;
@@ -163,7 +165,7 @@ body {
 #workspaceTabs {
     background-color: variables.$themeRed;
 }
-#workspaceTabs, #actionBar {
+#workspaceTabs {
     height: $barHeight;
     display: flex;
     justify-content: space-between;
@@ -189,13 +191,17 @@ body {
 }
 #download-button {
     background-color: unset;
+    cursor: pointer;
+    padding: 8px;
+    padding-right: 12px;
+    font-size: 16px;
 }
-$nameInputDropShadowMult: 2;
+
 #project-name-form {
+    @include variables.dropShadowSmaller;    
     background-color: white;
     display: flex;
     justify-content: space-between;
-    filter: drop-shadow(calc($dropshadowBase*$nameInputDropShadowMult) calc($dropshadowBase*$nameInputDropShadowMult) $dropShadowColour);
     border-radius: 7px;
 }
 #bluetooth, #learn {
@@ -223,19 +229,6 @@ $nameInputDropShadowMult: 2;
     margin: auto;
 }
 
-#actionBar {
-    background-color: white;
-    border-top: $seperatorStrokeSize solid $navEdges;
-    margin-top: -$seperatorStrokeSize;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-#actionBar > div {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 .mainButton {
     color: white;
     height: 100%;
@@ -246,15 +239,22 @@ $nameInputDropShadowMult: 2;
     border-right: $seperatorStrokeSize solid white;
 
 }
-#connection-managment {
-    background-color: variables.$themeRed;
+#connection-management {
+    @include variables.dropShadowSmaller;
+
     display: flex;
+    pointer-events: auto;
+
+    background-color: variables.$themeRed;
     justify-content: space-between;
     padding: 0;
     width: 310px;
     height: 50px;
-    border-radius: 2em;
-    
+    border-radius: 25px;
+
+    & > * {
+        cursor: pointer;
+    }
 }
 .sideButtons {
     font-size: 20px;
@@ -267,15 +267,17 @@ $nameInputDropShadowMult: 2;
 }
 $blocklyUIIconSize: 40px;
 $zoomButtonsGap: 10px;
-.uiHolder {
-    display: flex;
-    gap: $zoomButtonsGap;
-}
+
 #blocklyCustomTimeControls {
+    z-index: 9;
+    position: absolute;
+    top: variables.$standardGap;
+    right: variables.$standardGap;
+
+    display: flex;
     flex-direction: row;
     gap: 0;
 }
-$blocklyUIButtonsDropShadowMult: 2;
 
 #blocklyCustomTimeControls > .uiButtons:first-child {
     border-radius: 7px 0 0 7px;
@@ -312,6 +314,8 @@ button[calibrating]:hover {
     cursor: not-allowed;
 }
 .uiButtons {
+    @include variables.dropShadowSmaller;
+
     background-color: white;
     color: variables.$themeBlue;
     border: $seperatorStrokeSize solid variables.$themeBlue;
@@ -320,12 +324,34 @@ button[calibrating]:hover {
     height: $blocklyUIIconSize;
     display: flex;
     justify-content: center;
-    filter: drop-shadow(calc($dropshadowBase*$blocklyUIButtonsDropShadowMult) calc($dropshadowBase*$blocklyUIButtonsDropShadowMult) $dropShadowColour);
     align-items: center;
     padding: 20px;
     cursor: pointer;
 }
-#connection-managment {
+
+.sideControls {
+    pointer-events: none;
+    user-select: none;
+    position: absolute;
+    z-index: 9;
+    right: variables.$standardGap;
+    bottom: variables.$standardGap;
+}
+
+.zoomControls {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    gap: 16px;
+    margin-bottom: variables.$standardGap;
+
+    .uiButtons {
+        pointer-events: auto;
+        border-radius: 50%;
+    }
+}
+
+#connection-management {
     #download-robox-button {
         display: none;
     }
@@ -359,7 +385,7 @@ button[calibrating]:hover {
         display: none;
     }
 }
-#connection-managment[status="disconnected"] {
+#connection-management[status="disconnected"] {
     background-color: variables.$themeBlue;
     #connect-robox-button {
         display: block;
@@ -368,7 +394,7 @@ button[calibrating]:hover {
     }
 }
 
-#connection-managment[status="downloaded"] {
+#connection-management[status="downloaded"] {
     background-color: variables.$themeGreen;
     #run-robox-button {
         display: block;
@@ -379,7 +405,7 @@ button[calibrating]:hover {
     }
 }
 
-#connection-managment[status="running"] {
+#connection-management[status="running"] {
     background-color: variables.$themeRed;
     #stop-robox-button {
         display: block;
@@ -399,17 +425,21 @@ $settingsToolbarWidth: 200px;
 #robox-settings-calibrate > svg {
     color: variables.$themeBlue;
 }
-#connection-managment[status="no-serial"] {
+#connection-management[status="no-serial"] {
     background-color: variables.$themeYellow;
-    width: 100%;
     border-right: unset;
+
+    .mainButton {
+        width: 100%;
+    }
+
     #code-download-robox-button {
         display: block;
         border-right: unset;
     }
 }
 
-#connection-managment[loading="true"] {
+#connection-management[loading="true"] {
     #download-robox-button {
         display: none;
     }
@@ -449,6 +479,7 @@ $settingsToolbarWidth: 200px;
 }
 #robox-settings-button {
     font-size: 20px;
+    cursor: pointer;
 }
 .bootsel[loading] {
     button.calibrate-button {

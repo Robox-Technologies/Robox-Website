@@ -40,26 +40,29 @@
         </div>
     </div>
     <div id="blocklyDiv">
-        
-    </div>
-    <div id="actionBar">
-        <!-- left side buttons -->
-        <div>
-
+        <div id="blocklyCustomTimeControls">
+            <button class="button uiButtons" id="undo"><i class="fa-solid fa-rotate-left"></i></button>
+            <button class="button uiButtons" id="redo"><i class="fa-solid fa-rotate-right"></i></button>
         </div>
-        <div>
-            <div id="connection-managment" status="disconnected">
+        
+        <div class="sideControls">
+            <div class="zoomControls">
+                <button class="uiButtons" id="zoomIn"><i class="fa-solid fa-plus"></i></button>
+                <button class="uiButtons" id="zoomOut"><i class="fa-solid fa-minus"></i></button>
+            </div>
+
+            <div id="connection-management" status="disconnected">
                 <button class="button mainButton" id="code-download-robox-button">
                     Download Python
                 </button>
                 <button class="button mainButton" id="connect-robox-button">
-                    Connect to Ro\box
+                    Connect to Ro/Box
                 </button>
                 <button class="button mainButton" id="stop-robox-button">
-                    Stop Ro\box
+                    Stop Ro/Box
                 </button>
                 <button class="button mainButton" id="run-robox-button">
-                    Run Ro\box
+                    Run Ro/Box
                 </button>
                 <button class="button mainButton" id="loading">
                     <i class="fa-solid fa-spinner fa-spin"></i>
@@ -75,10 +78,7 @@
                 </button>
 
             </div>
-            
         </div>
-        <!-- right hand buttons -->
-        
     </div>
 
     <%~ include('@partials/modal/modal.html', {
@@ -105,7 +105,7 @@
     }) %>
     <%~ include('@partials/modal/modal.html', {
         id: "bootsel-flash",
-        title: '2. Flash the Ro\\Box', 
+        title: '2. Flash the Ro/Box', 
         class: "bootsel",
         content: [
             "<p>When you are ready, press the 'open' button below, this will open a file browser, please select the 'RPI' drive</p>",

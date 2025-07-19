@@ -2,10 +2,14 @@ import * as Blockly from 'blockly';
 
 import archSVG from './Arch.svg?raw';
 
-import { ContinuousFlyout, RecyclableBlockFlyoutInflater } from '@blockly/continuous-toolbox';
+import { ContinuousFlyout, RecyclableBlockFlyoutInflater, ContinuousToolbox } from '@blockly/continuous-toolbox';
 
 // type HexColor = `#${string}`;
-
+class RoboxToolbox extends ContinuousToolbox {
+    override shouldDeselectItem_(oldItem: Blockly.ISelectableToolboxItem | null, newItem: Blockly.ISelectableToolboxItem | null,): boolean {
+        return oldItem !== null && newItem !== null && oldItem !== newItem;
+    }
+}
 class RoboxToolboxCategories extends Blockly.ToolboxCategory {
     /**
      * Constructor for a custom category.
@@ -21,6 +25,7 @@ class RoboxToolboxCategories extends Blockly.ToolboxCategory {
     /** @override */
     createRowContentsContainer_() {
         const dom = super.createRowContentsContainer_();
+        dom.querySelector(".categoryIcon")?.classList.add("categoryIcon");
         const rectangle = document.createElement("div")
         rectangle.className = "extender"
         rectangle.style.background = this.colour_
@@ -84,7 +89,8 @@ class RoboxFlyout extends ContinuousFlyout {
     }
     override scrollTo(position: number) {
         const OFFSET = 5; // pixels
-        const adjustedPosition = position + OFFSET;
+        const scale = this.getWorkspace().scale || 1;
+        const adjustedPosition = (position + OFFSET) * scale;
 
         const metrics = this.getWorkspace().getMetrics();
         const scrollTarget = Math.min(
@@ -111,6 +117,11 @@ Blockly.registry.register(
     'block',
     RecyclableBlockFlyoutInflater,
     true,
+);
+Blockly.registry.register(
+    Blockly.registry.Type.TOOLBOX,
+    'RoboxToolbox',
+    RoboxToolbox, true
 );
 Blockly.registry.register(
     Blockly.registry.Type.TOOLBOX_ITEM,
