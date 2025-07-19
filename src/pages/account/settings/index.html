@@ -79,7 +79,20 @@
                 <p>Security settings content goes here.</p>
             </div>
             <div class="advanced-page-container" style="display: none;">
-                <p>Advanced settings content goes here.</p>
+                <button class="ctaButton primaryButton" id="delete-account-button">Delete Account</button>
+
+                <!-- Delete account confirmation modal -->
+                <%~ include('src/templates/partials/modal.html', {
+                    id: "delete-account-modal",
+                    class: "confirmation-modal",
+                    title: 'Delete Account',
+                    content: [
+                        "<p>Are you sure you want to delete your account? This action cannot be undone.</p>",
+                    ],
+                    buttons: [
+                        '<button id="confirm-delete-button" class="button calibrate-button standard-button">Yes, Delete My Account</button>',
+                    ],
+                }) %>
             </div>
         </div>
     </div>

@@ -1,4 +1,5 @@
 import { authCheck, signOut } from '@root/account'
+import { ref } from 'process'
 
 // Containers
 const titleElement = document.querySelector('h1.title') as HTMLHeadingElement
@@ -8,6 +9,7 @@ const appearancePageContainer = document.querySelector('.appearance-page-contain
 const notificationPageContainer = document.querySelector('.notification-page-container') as HTMLDivElement
 const securityPageContainer = document.querySelector('.security-page-container') as HTMLDivElement
 const advancedPageContainer = document.querySelector('.advanced-page-container') as HTMLDivElement
+const deleteAccountModal = document.getElementById('delete-account-modal') as HTMLDialogElement | null
 // Buttons
 const generalButton = document.getElementById('general-button') as HTMLButtonElement
 const accountButton = document.getElementById('account-button') as HTMLButtonElement
@@ -16,6 +18,8 @@ const notificationButton = document.getElementById('notification-button') as HTM
 const securityButton = document.getElementById('security-button') as HTMLButtonElement
 const advancedButton = document.getElementById('advanced-button') as HTMLButtonElement
 const logOutButton = document.getElementById('logout-button') as HTMLButtonElement
+const deleteAccountButton = document.getElementById('delete-account-button') as HTMLButtonElement
+const deleteAccountModalButton = document.getElementById('confirm-delete-button') as HTMLDivElement
 
 let currentPage = 'general'
 
@@ -109,9 +113,24 @@ async function initializeSettingsPage() {
     loadPage(currentPage)
 }
 
+async function deleteAccount() {
+    console.log('Deleting account')
+}
+
 document.addEventListener('DOMContentLoaded', initializeSettingsPage)
 logOutButton.addEventListener("click", () => signOut('/'))
 
 Object.entries(buttonMap).forEach(([page, button]) => {
     button.addEventListener('click', () => { loadPage(page) })
+})
+
+console.log('Settings page initialized')
+
+deleteAccountButton.addEventListener('click', () => {
+    deleteAccountModal.showModal()
+})
+
+deleteAccountModalButton.addEventListener('click', async () => {
+    await deleteAccount()
+    window.location.href = '/'
 })
