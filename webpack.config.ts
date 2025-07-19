@@ -4,8 +4,8 @@ import HtmlBundlerPlugin from 'html-bundler-webpack-plugin';
 import Dotenv from 'dotenv-webpack';
 import { getProductList } from './stripe-server-helper.js';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
-import { TemplateData, TemplatePage } from './types/webpack.js';
-import { Product } from 'types/api.js';
+import { TemplateData, TemplatePage } from '~types/webpack.js';
+import { Product } from '~types/api.js';
 import { RoboxProcessor } from './roboxProcessor.js';
 
 const RECACHE_DURATION = 10 * 60 * 1000; // 10 minutes

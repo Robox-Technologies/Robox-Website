@@ -1,6 +1,6 @@
-import { Product } from "types/api";
-import { Fees } from "types/fees";
-import fees from "../../fees.json" with { type: "json" };
+import { Product } from "~types/api";
+import { Fees } from "~types/fees";
+import fees from "src/fees.json" with { type: "json" };
 
 const feesObject: Fees = typeof fees == "string" ? JSON.parse(fees) : fees;
 const feesShipping = feesObject.shipping;

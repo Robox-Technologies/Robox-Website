@@ -7,7 +7,7 @@ import { processEmail } from './email.js';
 
 import express from 'express'
 import { Request, Response } from 'express';
-import { PaymentIntentCreationBody, ProductsRequestQuery } from 'types/api';
+import { PaymentIntentCreationBody, ProductsRequestQuery } from '~types/api.js';
 import { calculateTotalCost } from './src/root/payment/stripe-shared-helper.js';
 
 const paymentRouter = express.Router()

@@ -3,13 +3,16 @@
   "scripts": {
     "build:server": "tsc -p tsconfig.server.json",
     "build:client": "webpack --config build/server/webpack.config.js",
-    "build": "npm run build:server && npm run build:client",
+    "build": "run-s build:server build:client",
+
     "dev:server": "tsc -w -p tsconfig.server.json",
     "dev:client": "webpack --watch --config build/server/webpack.config.js",
-    "dev:init": "npm run build:server && npm run dev",
-    "watch:client": "nodemon --watch build/server/webpack.config.js --exec \"npm run dev:client\"",
-    "dev": "concurrently \"npm:dev:server\" \"npm:watch:client\" \"nodemon build/server/server.js --watch build/server\"",
-    "start": "npm run build && node build/server/server.js",
+    "dev:init": "run-s build:server dev",
+
+    "dev": "run-p dev:server dev:client serve",
+    "serve": "nodemon build/server/server.js --watch build/server",
+
+    "start": "run-s build serve",
     "deploy": "npm run start"
   },
   "dependencies": {
@@ -78,6 +81,7 @@
     "jiti": "^2.4.2",
     "markdown-loader": "^8.0.0",
     "nodemon": "^3.1.10",
+    "npm-run-all": "^4.1.5",
     "responsive-loader": "^3.1.2",
     "rimraf": "^6.0.1",
     "sass": "^1.89.2",

@@ -11,7 +11,7 @@
             "@images/*": ["src/images/*"],
             "@partials/*": ["src/templates/partials/*"],
             "@root/*": ["src/root/*"],
-            "@types/*": ["types/*"],
+            "~types/*": ["types/*"],
 
         },
         "resolveJsonModule": true,
@@ -21,7 +21,7 @@
         "skipLibCheck": true,
         "typeRoots": [
             "./node_modules/@types",
-            "./@types"
+            "./types"
         ],
     },
 }

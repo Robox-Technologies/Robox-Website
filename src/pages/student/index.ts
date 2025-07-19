@@ -1,5 +1,5 @@
 import { createProject, getProject, getProjects, renameProject, sanitizeImageDataUrl } from "@root/blockly/serialization";
-import { Project } from "types/projects";
+import type { Project } from "~types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { toggleToolbar, moveToolbar } from '@partials/toolbar/toolbar';
