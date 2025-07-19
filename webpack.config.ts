@@ -4,6 +4,7 @@ import HtmlBundlerPlugin from 'html-bundler-webpack-plugin';
 import Dotenv from 'dotenv-webpack';
 import { getProductList } from './stripe-server-helper.js';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
+import webpack from 'webpack';
 import { TemplateData, TemplatePage } from './types/webpack.js';
 import { Product } from 'types/api.js';
 import { RoboxProcessor } from './roboxProcessor.js';
@@ -190,6 +191,10 @@ export default (async () => {
                         noErrorOnMissing: true, // optional
                     },
                 ],
+            }),
+            new webpack.DefinePlugin({
+                'process.env.SUPABASE_URL': JSON.stringify(process.env.SUPABASE_URL),
+                'process.env.SUPABASE_PUBLISHABLE_KEY': JSON.stringify(process.env.SUPABASE_PUBLISHABLE_KEY),
             }),
         ],
         

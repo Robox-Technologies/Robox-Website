@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Initialize Supabase client
-const supabaseUrl = process.env.PUBLIC_SUPABASE_URL
-const supabaseKey = process.env.PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY
 
 if (!supabaseUrl || !supabaseKey) {
     throw new Error('Missing Supabase environment variables')
