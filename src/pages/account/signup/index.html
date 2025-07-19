@@ -37,10 +37,17 @@
 
                 <!-- Personal Info Step -->
                 <div class="personal-info-container" style="display: none;">
-                    <div class="input-container">
-                        <label for="full-name" class="input-label">Full Name</label>
-                        <input type="text" id="full-name" name="full-name" placeholder="John Doe" class="text-input" autocomplete="name">
-                        <p id="full-name-error-msg" class="error" style="display: none;"></p>
+                    <div class="name-input-container" style="column-count: 2; column-width: 100%; gap: 12px;">
+                        <div class="input-container">
+                            <label for="first-name" class="input-label">First Name</label>
+                            <input type="text" id="first-name" name="first-name" placeholder="John" class="text-input" autocomplete="given-name">
+                            <p id="first-name-error-msg" class="error" style="display: none;"></p>
+                        </div>
+                        <div class="input-container">
+                            <label for="last-name" class="input-label">Last Name</label>
+                            <input type="text" id="last-name" name="last-name" placeholder="Doe" class="text-input" autocomplete="family-name">
+                            <p id="last-name-error-msg" class="error" style="display: none;"></p>
+                        </div>
                     </div>
                     <div class="input-container">
                         <label for="email" class="input-label">Email</label>

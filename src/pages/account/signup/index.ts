@@ -18,7 +18,8 @@ const passwordContainer = document.querySelector('.password-container') as HTMLD
 // Inputs and Buttons
 const studentButton = document.getElementById('student-button') as HTMLButtonElement
 const teacherButton = document.getElementById('teacher-button') as HTMLButtonElement
-const fullNameInput = document.getElementById('full-name') as HTMLInputElement
+const firstNameInput = document.getElementById('first-name') as HTMLInputElement
+const lastNameInput = document.getElementById('last-name') as HTMLInputElement
 const emailInput = document.getElementById('email') as HTMLInputElement
 const passwordInput = document.getElementById('password') as HTMLInputElement
 const confirmPasswordInput = document.getElementById('confirm-password') as HTMLInputElement
@@ -26,7 +27,8 @@ const signupButton = document.getElementById('signup-button') as HTMLButtonEleme
 const backButton = document.getElementById('back-button') as HTMLButtonElement
 // Error Messages 
 const userTypeErrorMsg = document.getElementById('user-type-error-msg') as HTMLParagraphElement
-const fullNameErrorMsg = document.getElementById('full-name-error-msg') as HTMLParagraphElement
+const firstNameErrorMsg = document.getElementById('first-name-error-msg') as HTMLParagraphElement
+const lastNameErrorMsg = document.getElementById('last-name-error-msg') as HTMLParagraphElement
 const emailErrorMsg = document.getElementById('email-error-msg') as HTMLParagraphElement
 const passwordErrorMsg = document.getElementById('password-error-msg') as HTMLParagraphElement
 const confirmPasswordErrorMsg = document.getElementById('confirm-password-error-msg') as HTMLParagraphElement
@@ -48,9 +50,13 @@ function showError(step: string, message: string) {
             userTypeErrorMsg.innerHTML = message
             userTypeErrorMsg.style.display = 'inline'
             break
-        case 'full-name':
-            fullNameErrorMsg.innerHTML = message
-            fullNameErrorMsg.style.display = 'inline'
+        case 'first-name':
+            firstNameErrorMsg.innerHTML = message
+            firstNameErrorMsg.style.display = 'inline'
+            break
+        case 'last-name':
+            lastNameErrorMsg.innerHTML = message
+            lastNameErrorMsg.style.display = 'inline'
             break
         case 'email':
             emailErrorMsg.innerHTML = message
@@ -70,7 +76,8 @@ function showConfirmPasswordError(message: string) {
 
 function hideAllErrors() {
     userTypeErrorMsg.style.display = 'none'
-    fullNameErrorMsg.style.display = 'none'
+    firstNameErrorMsg.style.display = 'none'
+    lastNameErrorMsg.style.display = 'none'
     emailErrorMsg.style.display = 'none'
     passwordErrorMsg.style.display = 'none'
     confirmPasswordErrorMsg.style.display = 'none'
@@ -105,7 +112,7 @@ function showPersonalInfoStep() {
     
     signupButton.innerHTML = 'Continue <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>'
     
-    fullNameInput.focus()
+    firstNameInput.focus()
     hideAllErrors()
 }
 
@@ -135,19 +142,26 @@ async function handleUserTypeStep() {
 }
 
 async function handlePersonalInfoStep() {
-    const fullName = fullNameInput.value.trim()
+    const firstName = firstNameInput.value.trim()
+    const lastName = lastNameInput.value.trim()
     const email = emailInput.value.trim()
     
     hideAllErrors()
-    
-    if (!fullName) {
-        showError('personal-info', 'Please enter your full name')
-        fullNameInput.focus()
+
+    if (!firstName) {
+        showError('first-name', 'Please enter your first name')
+        firstNameInput.focus()
         return
     }
-    
+
+    if (!lastName) {
+        showError('last-name', 'Please enter your last name')
+        lastNameInput.focus()
+        return
+    }
+
     if (!email) {
-        showError('personal-info', 'Please enter your email address')
+        showError('email', 'Please enter your email address')
         emailInput.focus()
         return
     }
@@ -155,7 +169,7 @@ async function handlePersonalInfoStep() {
     const emailExists = await isValidEmail(email)
     
     if (emailExists === false) {
-        userData.fullName = fullName
+        userData.fullName = nameGenerator(firstName, lastName)
         userData.email = email
         showPasswordStep()
         return
@@ -210,17 +224,29 @@ async function handlePasswordStep() {
     await createAccount()
 }
 
+function nameGenerator(firstName: string, lastName: string) {
+    const name: string = {
+        fullName: `${firstName.trim()} ${lastName.trim()}`,
+        displayName: `${firstName.trim()} ${lastName.trim().charAt(0)}`
+    }
+    return name
+
+}
+
 async function createAccount() {
     signupButton.disabled = true
     signupButton.innerHTML = 'Nearly there!'
-    
+
+    let userNames: { fullName: string, displayName: string } = nameGenerator(firstNameInput.value, lastNameInput.value)
+
     try {
         const { data, error: authError } = await supabase.auth.signUp({
             email: userData.email,
             password: userData.password,
             options: {
                 data: {
-                    full_name: userData.fullName
+                    full_name: userNames.fullName,
+                    display_name: userNames.displayName
                 }
             }
         })
@@ -234,7 +260,10 @@ async function createAccount() {
                 .from('profiles')
                 .insert({
                     user_id: data.user.id,
-                    full_name: userData.fullName,
+                    first_name: firstNameInput.value,
+                    last_name: lastNameInput.value,
+                    display_name: userNames.displayName,
+                    full_name: userNames.fullName,
                     email: userData.email,
                     user_type: userType,
                     created_at: new Date()
@@ -327,7 +356,13 @@ document.addEventListener('DOMContentLoaded', () => {
     studentButton.addEventListener('click', () => selectUserType('student'))
     teacherButton.addEventListener('click', () => selectUserType('teacher'))
     
-    fullNameInput.addEventListener('keypress', (e) => {
+    firstNameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && currentStep === 'personal-info') {
+            handleSignup()
+        }
+    })
+
+    lastNameInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && currentStep === 'personal-info') {
             handleSignup()
         }
@@ -351,7 +386,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     })
     
-    fullNameInput.addEventListener('input', hideAllErrors)
+    firstNameInput.addEventListener('input', hideAllErrors)
+    lastNameInput.addEventListener('input', hideAllErrors)
     emailInput.addEventListener('input', hideAllErrors)
     passwordInput.addEventListener('input', hideAllErrors)
     confirmPasswordInput.addEventListener('input', hideAllErrors)
