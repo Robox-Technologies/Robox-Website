@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        "module": "ESNext",        // ✅ must be ESNext, ES2022, or ES6 — NOT "CommonJS"
+        "target": "ES2022",        // ✅ or ESNext
+        "outDir": "build",
+        "sourceMap": true,
+        "inlineSources": true,
+        "esModuleInterop": true,
+        "baseUrl": ".",
+        "paths": {
+            "@root/*": ["src/root/*"],
+            "@pages/*": ["src/pages/*"],
+            "@components/*": ["src/components/*"],
+            "@types/*": ["@types/*"],
+            "@store/*": ["src/store/*"],
+            "@utils/*": ["src/utils/*"],
+            "@assets/*": ["src/assets/*"],
+        },
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
+        "strict": false,
+        "forceConsistentCasingInFileNames": true,
+        "skipLibCheck": true,
+        "typeRoots": [
+            "./node_modules/@types",
+            "./@types"
+        ],
+    },
+}

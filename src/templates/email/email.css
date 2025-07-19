@@ -1,0 +1,234 @@
+/* Base ------------------------------ */
+
+body {
+    width: 100%;
+    margin: 0;
+    -webkit-text-size-adjust: none;
+    box-sizing: border-box;
+}
+
+.email-container {
+    max-width: 700px;
+    padding: 32px;
+    text-align: left;
+}
+
+:root {
+    color-scheme: light dark;
+    supported-color-schemes: light dark;
+}
+
+td {
+    word-break: break-word;
+}
+
+table {
+    width: 100%;
+    -premailer-width: 100%;
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+}
+
+hr {
+    background-color: #717171;
+    height: 2px;
+    border: none;
+}
+
+.preheader {
+    display: none;
+    visibility: hidden;
+    mso-hide: all;
+    font-size: 1px;
+    line-height: 1px;
+    max-height: 0;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+}
+
+/* Fonts ------------------------------ */
+
+h1, h2, h3, p {
+    color: #405C64;
+}
+
+h1, h2, h3 {
+    font-family: "Nunito", sans-serif;
+    font-weight: bold;
+    text-align: left;
+}
+
+h1 {
+    font-size: 22px;
+}
+
+h2 {
+    font-size: 16px;
+}
+
+h3, p, a {
+    font-size: 14px;
+}
+
+p, a {
+    font-family: "Nunito Sans", sans-serif;
+    line-height: 150%;
+}
+
+.sub, .sub a {
+    font-size: 11px;
+}
+
+/* Utilities ------------------------------ */
+
+.align-left {
+    text-align: left;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.align-center {
+    text-align: center;
+}
+
+/* Buttons ------------------------------ */
+
+.button {
+    display: block;
+    text-decoration: none;
+    text-align: center;
+
+    background-color: #FF6166;
+    color: #F8F8F8;
+    width: 150px;
+    height: 40px;
+    line-height: 40px;
+    margin-bottom: 32px;
+
+    border-radius: 20px;
+}
+
+/* Social Icons ------------------------------ */
+
+.social {
+    width: auto;
+}
+
+.social td {
+    padding: 0;
+    width: auto;
+}
+
+.social_icon {
+    height: 20px;
+    margin: 0 8px 10px 8px;
+    padding: 0;
+}
+
+/* Purchase Summary ------------------------------ */
+
+.summary {
+    margin-top: 32px;
+}
+
+.purchase {
+    margin: 0;
+}
+
+.purchase p {
+    margin: 0;
+}
+
+.purchase_content {
+    width: 100%;
+    margin: 0;
+    padding: 25px 0 0 0;
+    -premailer-width: 100%;
+    -premailer-cellpadding: 0;
+    -premailer-cellspacing: 0;
+}
+
+th > p, td > p, th > h3, td > h3 {
+    margin: 16px 0;
+}
+
+td.small {
+    width: 15%;
+    min-width: 90px;
+}
+
+#total-row {
+    margin: 0;
+}
+
+.purchase_total {
+    text-align: right;
+    font-weight: bold;
+}
+
+.purchase_total--label {
+    padding: 0 15px 0 0;
+    text-align: left;
+}
+
+.row-separate {
+    border-bottom: 1px solid #FF6166;
+}
+
+.shipping {
+    border-top: 1px solid #FF6166;
+}
+
+/* Masthead ----------------------- */
+
+.masthead {
+    margin-bottom: 64px;
+}
+
+.logo > img {
+    max-width: 250px;
+}
+
+/* Body ------------------------------ */
+
+.billing-details {
+    margin-bottom: 32px;
+}
+
+.billing-details td {
+    vertical-align: top;
+}
+
+.socials {
+    margin-top: 64px;
+}
+
+.socials > p {
+    width: 100%;
+    text-align: center;
+    color: #717171 !important;
+}
+
+.socialButtons img {
+    width: 24px;
+    height: 24px;
+}
+
+.footer {
+    margin-top: 32px;
+}
+
+.footer td {
+    vertical-align: top;
+}
+
+/*Media Queries ------------------------------ */
+
+@media (prefers-color-scheme: dark) {
+    p, h1, h2, h3 {
+        color: #F8F8F8 !important;
+    }
+}

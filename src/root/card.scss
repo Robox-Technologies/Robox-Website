@@ -29,23 +29,16 @@ $maxTextWidth: 200px;
     background-color: #F5F5F5;
     flex-direction: column;
     border-radius: variables.$borderRadius;
+    overflow: hidden;
 }
 .card-image {
     background-color: gray;
     width: 100%;
     aspect-ratio: 16/9;
-    border: 0;
     outline: none;
     text-decoration: none;
     display: block; /* removes inline spacing gap */
     object-fit: cover;
-}
-.card > *:first-child {
-    border-radius: variables.$borderRadius variables.$borderRadius 0 0;
-
-}
-.card > *:last-child {
-    border-radius: 0 0 variables.$borderRadius variables.$borderRadius;
 }
 .card-title {
     right: auto;

@@ -33,7 +33,7 @@
 @mixin slantedLine($overlap, $lineColour, $lineWidth, $firstContainerWidth, $direction) {
     display: flex;
     flex-direction: row;
-    @include clipThing($direction, $lineWidth, $overlap);
+
     > :first-child {
         width: calc($firstContainerWidth + $overlap);
         position: absolute;
@@ -44,5 +44,19 @@
         position: absolute;
         height: inherit;
         width: calc(100% - $firstContainerWidth);
+    }
+
+    @media screen and (max-width: 500px) {
+        > :first-child {
+            width: 100%;
+        }
+
+        > :last-child {
+            display: none;
+        }
+    }
+
+    @media screen and (min-width: 500px) {
+        @include clipThing($direction, $lineWidth, $overlap);
     }
 }

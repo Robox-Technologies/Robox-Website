@@ -1,14 +1,17 @@
+<!DOCTYPE html>
 
+<html lang="en">
 <head>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <title>Ro/Box Hub</title>
     <script src="./index.ts"></script>
-    <link href="./index.scss" rel="stylesheet" />
-    <link href="@root/root.scss" rel="stylesheet" />
-    <%~ include('src/partials/metadata.html') %>
+    <link href="./index.scss" rel="stylesheet">
+    <link href="@root/root.scss" rel="stylesheet">
 </head>
 
 <body>
     <template id="projectCardTemplate">
-        <%~ include('src/partials/card.html', {
+        <%~ include('src/templates/partials/card.html', {
             class: "project-card",
             title: '<i class="fa-solid fa-square-binary"></i><span class="card-title-text"></span>', 
             imageSource: "https://placehold.co/1920x1080", 
@@ -19,7 +22,7 @@
         }) %>
     </template>
     <template id="lessonCardTemplate">
-        <%~ include('src/partials/card.html', {
+        <%~ include('src/templates/partials/card.html', {
             class: "lesson-card",
             title: '<span>Assembly Guide</span>', 
             imageSource: "https://placehold.co/1920x1080", 
@@ -31,7 +34,7 @@
         }) %>
     </template>
     <template id="assemblyGuideCardTemplate">
-        <%~ include('src/partials/card.html', {
+        <%~ include('src/templates/partials/card.html', {
             class: "assembly-card",
             title: '<span>Assembly Guide</span>', 
             imageSource: "https://placehold.co/1920x1080", 
@@ -46,15 +49,8 @@
             topRowButton: false,
         }) %>
     </template>
-    <%~ include('src/partials/header-workshop.html') %>
-    <%~ include('src/partials/toolbar.html', {
-        id: "toolbar",
-        content: [
-            ' <button class="button" id="project-edit"><i class="fa-solid fa-pen-to-square"></i>Edit</button>',
-            '<button class="button" id="project-delete"><i class="fa-solid fa-trash"></i>Delete</button>',
-        ],
-    }) %>
-    <%~ include('src/partials/modal.html', {
+    <%~ include('src/templates/partials/header-workshop.html') %>
+    <%~ include('src/templates/partials/modal.html', {
         id: "delete-modal",
         title: 'Delete Project <i class="fa-solid fa-trash-can"></i>', 
         content: [
@@ -62,51 +58,51 @@
             "<p>it will be deleted forever (a very long time)</p>"
         ],
         buttons: [
-            {
-                id: "cancel-confirm-button",
-                content: "Cancel",
-            },
-            {
-                id: "delete-confirm-button",
-                content: "Delete",
-            },
+            '<button id="delete-cancel-button" class="button standard-button close-modal-button">Cancel</button>',
+            '<button id="delete-confirm-button" class="button standard-button">Delete</button>',
         ],
     }) %>
-    <%~ include('src/partials/modal.html', {
-        id: "rename-modal",
-        title: 'Rename Project <i class="fa-solid fa-pencil"></i>', 
+    <%~ include('src/templates/partials/modal.html', {
+        id: "edit-modal",
+        title: 'Edit Project <i class="fa-solid fa-pen-to-square"></i>', 
         content: [
-            "<p>Enter a new name for your project</p>",
-            "<input id='new-project-name' type='text'>"
+            "<p>Change the name of your project</p>",
+            '<input type="text" id="project-name" placeholder="Project Name">',
         ],
         buttons: [
-            {
-                id: "cancel-confirm-button",
-                content: "Cancel",
-            },
-            {
-                id: "rename-confirm-button",
-                content: "Rename",
-            },
+            '<button id="edit-cancel-button" class="button standard-button close-modal-button">Cancel</button>',
+            '<button id="edit-confirm-button" class="button standard-button">Save</button>',
         ],
     }) %>
     <!-- Hero title -->
-    <%~ include('src/partials/title-hero.html', {
-        text: "Robox Hub",
-        image: "./student-hub-hero.jpg"
+    <%~ include('src/templates/partials/title-hero.html', {
+        text: "Ro/Box Hub",
+        image: "@images/student-hub/hero.jpg"
     }) %>
     
     <div id="main" class="item-sections">
         
 
-        <!-- <section id="assembly-guides">
+        <section>
             <h1>
                 Assembly Guides
             </h1> 
-            <div class="card-holder" id="assembly-guides">
-                
+            <div class="card-holder">
+                <%~ include('src/templates/partials/card.html', {
+                    class: "assembly-card",
+                    title: '<span>Assembly Guide</span>', 
+                    imageSource: "@images/student-hub/assembly-guide.png", 
+                    buttons: [
+                        {
+                            content: "<span class='underline-grow'>PDF Build Instructions</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
+                            link: "/public/latest.pdf"
+                        },
+
+                    ],
+                    topRowButton: false,
+                }) %>
             </div>
-        </section> -->
+        </section>
         <section id="projects">
             <div>
 
@@ -115,15 +111,20 @@
                 My Projects
             </h1>
             <div class="card-holder" id="project-holder">
-                <div class="card-wrapper">
-                    <button id="create-project" class="button">
-                        <i class="fa-solid fa-plus"></i>
-                        <p>
-                            New Project
-                        </p>
-                    </button>
-                </div>
-                
+                <button id="create-project" class="button">
+                    <i class="fa-solid fa-plus"></i>
+                    <p>
+                        New Project
+                    </p>
+                </button>
+                <%~ include('src/templates/partials/toolbar.html', {
+                    id: "project-toolbar",
+                    content: [
+                        '<button class="button" id="project-edit"><i class="fa-solid fa-pen-to-square"></i>Edit</button>',
+                        '<button class="button" id="project-delete"><i class="fa-solid fa-trash"></i>Delete</button>',
+                    ],
+                }) %>
+            
                 
             </div>
             
@@ -132,12 +133,13 @@
             <h1>
                 Explore Our Lessons
             </h1> 
-            <div class="card-holder" id="assembly-guides">
+            <div class="card-holder">
                 
             </div>
         </section> -->
         
     </div>
     
-    <%~ include('src/partials/footer.html') %>
+    <%~ include('src/templates/partials/footer.html') %>
 </body>
+</html>

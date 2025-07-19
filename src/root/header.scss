@@ -1,6 +1,6 @@
 @use 'variables';
 
-$hamburgerThreshold: 800px;
+$hamburgerThreshold: 1050px;
 
 header {
     position: sticky;
@@ -15,7 +15,7 @@ header {
     background-color: variables.$primary;
     width: 100%;
     height: variables.$headerHeight;
-    padding-left: var(--articleMargin);
+    padding-left: variables.$articleMargin;
 }
 
 .hamburger {
@@ -25,7 +25,6 @@ header {
     overflow: hidden;
     display: none;
     background: none;
-    border: none;
     cursor: pointer;
     width: $hamburgerSize;
     height: $hamburgerSize;
@@ -50,7 +49,7 @@ header {
     display: none;
     flex-direction: column;
     gap: variables.$standardGap;
-    padding: variables.$standardGap var(--articleMargin);
+    padding: variables.$standardGap variables.$articleMargin;
     transition: top 0.5s ease;
     z-index: -1;
     border-bottom: 1px solid variables.$secondary;
@@ -97,7 +96,7 @@ header {
     gap: variables.$standardGap;
     background-color: variables.$themeBlue;
     height: variables.$headerHeight;
-    padding: 0 var(--articleMargin);
+    padding: 0 variables.$articleMargin;
 }
 
 .btn {
@@ -110,10 +109,41 @@ header {
 }
 
 .btn.store {
-    background: #ff6666;
-    border: none;
+    background: variables.$themeRed;
+    color: variables.$primary;
     border-radius: 6px;
-    padding: 8px 24px;
+    padding: 4px 24px;
+}
+
+
+#cart {
+    position: relative;
+    text-decoration: none;
+    transform: translateY(6px);
+
+    i, svg {
+        color: variables.$primary;
+    }
+
+    p {
+        color: variables.$primary;
+        font-size: 10px;
+        text-align: center;
+        line-height: 20px;
+        margin: 0;
+        padding: 0 5px;
+    }
+
+    div {
+        position: absolute;
+        background-color: variables.$themeRed;
+        min-width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        right: -10px;
+        top: -8px;
+        margin: 0;
+    }
 }
 
 @media (max-width: $hamburgerThreshold) {
@@ -129,6 +159,15 @@ header {
         .ctaButtons > a {
             display: none;
         }
+
+        #cart {
+            display: block;
+        }
+    }
+
+    .btn.store {
+        padding: 8px;
+        text-align: center;
     }
 }
 

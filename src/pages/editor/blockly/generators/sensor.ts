@@ -3,6 +3,7 @@
 
 import { pythonGenerator, Order } from 'blockly/python'
 
+
 const hexToName: Record<
     "#ff0000" | "#ffa500" | "#ffff00" | "#008000" | "#0000ff" | "#800080" | "#000000" | "#ffffff",
     string
@@ -16,12 +17,12 @@ const hexToName: Record<
     "#000000": "black",
     "#ffffff": "white"
 };
+pythonGenerator.forBlock['ultrasonic_distance'] = function () {
+    const code = 'ultrasonic.distance()';
 
-pythonGenerator.forBlock['ultrasonic_distance'] = function (block, generator) {
-    var code = 'ultrasonic.distance()';
     return [code, Order.ATOMIC];
 };
-pythonGenerator.forBlock['sensor_bool'] = function (block, generator) {
+pythonGenerator.forBlock['sensor_bool'] = function (block) {
     const dropdown_sensor = block.getFieldValue('sensor');
     const colour_colour = block.getFieldValue('colour');
 
@@ -35,6 +36,7 @@ pythonGenerator.forBlock['distance_bool'] = function(block, generator) {
   
     const code = `ultrasonic.distance() ${dropdown_equality} ${value_number}`;
     return [code, Order.NONE];
+
 }
 pythonGenerator.forBlock['color_sensor_calibrate'] = function (block, generator) {
     const code = 'color_sensor.calibrate()\n';
