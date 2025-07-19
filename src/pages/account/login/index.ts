@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { isAuthenticated } from '@root/account'
+import { isAuthenticated, isValidEmail } from '@root/account'
 
 const supabaseUrl = process.env.PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.PUBLIC_SUPABASE_ANON_KEY
@@ -25,10 +25,10 @@ let userEmail = ''
 
 function showError(message: string) {
     if (currentStep === 'email') {
-        emailErrorMsg.textContent = message
+        emailErrorMsg.innerHTML = message
         emailErrorMsg.style.display = 'inline'
     } else {
-        passwordErrorMsg.textContent = message
+        passwordErrorMsg.innerHTML = message
         passwordErrorMsg.style.display = 'inline'
     }
 }
@@ -36,11 +36,6 @@ function showError(message: string) {
 function hideError() {
     emailErrorMsg.style.display = 'none'
     passwordErrorMsg.style.display = 'none'
-}
-
-function isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    return emailRegex.test(email)
 }
 
 function showPasswordStep() {
@@ -75,9 +70,6 @@ function showEmailStep() {
 
 async function handleEmailStep() {
     const email = emailInput.value.trim()
-    
-    console.log("running email step")
-
     hideError()
     
     if (!email) {
@@ -85,22 +77,25 @@ async function handleEmailStep() {
         return
     }
     
-    if (!isValidEmail(email)) {
-        showError('Please enter a valid email address')
-        return
-    }
+    const emailExists = await isValidEmail(email)
     
-    loginButton.disabled = true
-    
-    try {
+    if (emailExists === true) {
         userEmail = email
         showPasswordStep()
-        
-    } catch (error: any) {
-        console.error('Email check error:', error)
-        showError('An error occurred. Please try again.')
-    } finally {
-        loginButton.disabled = false
+        return
+    }
+    if (emailExists === false) {
+        showError('An account with this email does not exist. Please <a href="/account/signup" class="error-link">sign up</a> first.')
+        return
+    }
+    if (typeof emailExists === 'string') {
+        showError(emailExists)
+        return
+    }
+    else {
+        console.error('Unexpected return type from isValidEmail:', emailExists)
+        showError('An unexpected error occurred. Please try again.')
+        return
     }
 }
 

@@ -56,6 +56,14 @@
     left: 0;
 }
 
+a.error-link {
+    color: variables.$themeBlue;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Nunito', sans-serif;
+}
+
 .action-button {
     background-color: variables.$themeBlue;
     color: white;

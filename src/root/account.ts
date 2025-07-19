@@ -108,3 +108,38 @@ export function headerAuth() {
         await updateHeaderAuthState()
     })
 }
+
+export async function isValidEmail(email: string): Promise<boolean | string> {
+    console.log('Checking if email is valid:', email);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!emailRegex.test(cleanEmail)) {
+        console.log('Invalid email format:', cleanEmail);
+        return 'Please enter a valid email address';
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('email', cleanEmail);
+
+        console.log('Email check result:', { query: cleanEmail, data, error });
+
+        if (data && data.length > 0) {
+            return true;
+        }
+
+        if (error) {
+            console.error('Supabase error:', error);
+            return 'Please try again later.';
+        }
+
+        return false;
+        
+    } catch (err) {
+        console.error('Unexpected error during email validation:', err);
+        return 'Unable to validate email';
+    }
+}

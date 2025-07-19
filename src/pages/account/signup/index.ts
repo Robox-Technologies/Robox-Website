@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { isAuthenticated } from '@root/account'
+import { isAuthenticated, isValidEmail } from '@root/account'
 
 const supabaseUrl = process.env.PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.PUBLIC_SUPABASE_ANON_KEY
@@ -40,25 +40,24 @@ let userData = {
     password: ''
 }
 
-function showError(step: Step, message: string) {
+function showError(step: string, message: string) {
     hideAllErrors()
     
     switch (step) {
         case 'user-type':
-            userTypeErrorMsg.textContent = message
+            userTypeErrorMsg.innerHTML = message
             userTypeErrorMsg.style.display = 'inline'
             break
-        case 'personal-info':
-            if (!userData.fullName) {
-                fullNameErrorMsg.textContent = message
-                fullNameErrorMsg.style.display = 'inline'
-            } else {
-                emailErrorMsg.textContent = message
-                emailErrorMsg.style.display = 'inline'
-            }
+        case 'full-name':
+            fullNameErrorMsg.innerHTML = message
+            fullNameErrorMsg.style.display = 'inline'
+            break
+        case 'email':
+            emailErrorMsg.innerHTML = message
+            emailErrorMsg.style.display = 'inline'
             break
         case 'password':
-            passwordErrorMsg.textContent = message
+            passwordErrorMsg.innerHTML = message
             passwordErrorMsg.style.display = 'inline'
             break
     }
@@ -153,15 +152,27 @@ async function handlePersonalInfoStep() {
         return
     }
     
-    if (!(await isValidEmail(email))) {
-        emailInput.focus()
+    const emailExists = await isValidEmail(email)
+    
+    if (emailExists === false) {
+        userData.fullName = fullName
+        userData.email = email
+        showPasswordStep()
         return
     }
-    
-    userData.fullName = fullName
-    userData.email = email
-    
-    showPasswordStep()
+    if (emailExists === true) {
+        showError('email', 'An account with this email already exists. Please <a href="/account/login" class="error-link">log in</a>.')
+        return
+    }
+    if (typeof emailExists === 'string') {
+        showError('email', emailExists)
+        return
+    }
+    else {
+        console.error('Unexpected return type from isValidEmail:', emailExists)
+        showError('email', 'An unexpected error occurred. Please try again.')
+        return
+    }
 }
 
 async function handlePasswordStep() {
