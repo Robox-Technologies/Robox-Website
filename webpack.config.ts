@@ -31,7 +31,7 @@ const alias = {
     '@partials': 'src/templates/partials',
     '@root': 'src/root',
     '@types': 'types',
-}
+};
 const aliasPaths = Object.fromEntries(
     Object.entries(alias).map(([key, value]) => [key, path.join(__dirname, value)])
 );
