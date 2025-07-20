@@ -83,6 +83,30 @@ export async function signOut(redirectTo: string = '/') {
     }
 }
 
+export async function deleteAccount() {
+    const { data: { session } } = await supabase.auth.getSession()
+    const token = session?.access_token
+    if (!token) {
+        console.error('No active session found')
+        return
+    }
+
+    const res = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+
+    const result = await res.json()
+    if (res.ok) {
+        console.log('Account deleted successfully')
+    } else {
+        console.error('Failed to delete account:', result.error || 'Unknown error')
+    }
+}
+
 export function headerAuth() {
     const updateHeaderAuthState = async () => {
         const loginButton = document.getElementById('header-login-button') as HTMLButtonElement

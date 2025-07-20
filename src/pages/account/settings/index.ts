@@ -1,5 +1,4 @@
-import { authCheck, signOut } from '@root/account'
-import { ref } from 'process'
+import { authCheck, signOut, deleteAccount } from '@root/account'
 
 // Containers
 const titleElement = document.querySelector('h1.title') as HTMLHeadingElement
@@ -113,8 +112,9 @@ async function initializeSettingsPage() {
     loadPage(currentPage)
 }
 
-async function deleteAccount() {
-    console.log('Deleting account')
+async function deleteAccountRequest() {
+    await deleteAccount()
+    await signOut('/')
 }
 
 document.addEventListener('DOMContentLoaded', initializeSettingsPage)
@@ -131,6 +131,6 @@ deleteAccountButton.addEventListener('click', () => {
 })
 
 deleteAccountModalButton.addEventListener('click', async () => {
-    await deleteAccount()
+    await deleteAccountRequest()
     window.location.href = '/'
 })

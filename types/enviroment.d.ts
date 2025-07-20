@@ -5,6 +5,9 @@ declare global {
             STRIPE_SECRET_KEY: string;
             STRIPE_WEBHOOK_SECRET: string;
             FORCE_CACHE: boolean;
+            SUPABASE_URL: string;
+            SUPABASE_PUBLISHABLE_KEY: string;
+            SUPABASE_SERVICE_ROLE_KEY: string;
         }
     }
 }
