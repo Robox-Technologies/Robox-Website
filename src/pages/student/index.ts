@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("dragleave", function (e) {
         e.preventDefault();
         // Only hide if mouse leaves the window
-        if (e.clientX <= 0 && e.clientY <= 0) {
+        if (e.relatedTarget === null) {
             toggleDropzone(false);
         }
     });
