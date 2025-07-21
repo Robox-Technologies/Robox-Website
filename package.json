@@ -7,7 +7,7 @@
     "dev:server": "tsc -w -p tsconfig.server.json",
     "dev:client": "webpack --watch --config build/server/webpack.config.js",
     "dev:init": "run-s build:server dev",
-    "dev": "run-p dev:server dev:client serve",
+    "dev": "tsc -p tsconfig.server.json && run-p dev:server dev:client serve",
     "serve": "nodemon build/server/server.js --watch build/server",
     "start": "run-s build serve",
     "deploy": "npm run start"
