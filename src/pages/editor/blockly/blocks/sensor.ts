@@ -1,6 +1,6 @@
 
 
-import Blockly from 'blockly/core';
+import * as Blockly from 'blockly/core';
 const sensors = [
     {
         "type": "ultrasonic_distance",

@@ -1,4 +1,4 @@
-import Blockly from 'blockly/core';
+import * as Blockly from 'blockly/core';
 // FORGIVE ME but for some reason blockly does not have every theme work in typescript
 // there is an active pull (https://github.com/google/blockly-samples/pull/2474) but has not been merged yet
 //So gotta ignore TS complaining for now
