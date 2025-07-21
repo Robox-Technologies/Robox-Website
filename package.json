@@ -2,15 +2,13 @@
   "type": "module",
   "scripts": {
     "build:server": "tsc -p tsconfig.server.json",
-    "build:client": "cross-env NODE_ENV=production webpack --config build/server/webpack.config.js",
-    "build": "npm run build:server && npm run build:client",
-    "build:analyze": "tsc -p tsconfig.webpack.json && cross-env NODE_ENV=production ANALYZE=true webpack --config build/server/webpack.config.js",
+    "build:client": "cross-env NODE_ENV=production webpack --config build/webpack.prod.js",
+    "build": "npm run clean && npm run build:server && npm run build:client",
+    "build:analyze": "npm run clean && tsc -p tsconfig.webpack.json && cross-env NODE_ENV=production ANALYZE=true webpack --config build/webpack.prod.config.js",
+    "clean": "rimraf build",
     "dev:server": "tsc -w -p tsconfig.server.json",
-    "dev:client": "cross-env NODE_ENV=development webpack serve --config build/server/webpack.config.js --open",
-    "dev:run": "nodemon build/server/server.js --watch build/server",
-    "dev": "tsc -p tsconfig.webpack.json && npm-run-all --parallel dev:server dev:client dev:run",
-    "start": "npm run build && node build/server/server.js",
-    "deploy": "npm run start"
+    "dev:run": "cross-env NODE_ENV=development nodemon build/server/server.js --watch build/server",
+    "dev": "npm run clean && tsc -p tsconfig.webpack.json && npm-run-all --parallel dev:server dev:run"
   },
   "dependencies": {
     "@blockly/continuous-toolbox": "^7.0.1",
@@ -19,6 +17,7 @@
     "@express-rate-limit/tsconfig": "^1.0.2",
     "@stripe/stripe-js": "^7.4.0",
     "blockly": "^12.1.0",
+    "crossenv": "^0.0.2-security",
     "css-minimizer-webpack-plugin": "^7.0.2",
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.6",
