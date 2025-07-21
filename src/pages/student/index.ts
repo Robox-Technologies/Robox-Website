@@ -236,7 +236,7 @@ function readROBOXFile(file: File): Promise<Project | null> {
                 const project = JSON.parse(event.target.result as string) as Project;
                 resolve(project);
             } catch (e) {
-                console.error("Failed to parse ROBOT file:", e);
+                console.error("Failed to parse ROBOX file:", e);
                 resolve(null);
             }
         };
