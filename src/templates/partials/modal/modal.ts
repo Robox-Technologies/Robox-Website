@@ -1,4 +1,4 @@
-import { disableScroll, enableScroll } from "./scrollFreeze";
+import { disableScroll, enableScroll } from "@root/scrollFreeze";
 
 document.addEventListener("DOMContentLoaded", () => {
     const modals:NodeListOf<HTMLDialogElement> = document.querySelectorAll("dialog.modal, dialog.simpleModal");

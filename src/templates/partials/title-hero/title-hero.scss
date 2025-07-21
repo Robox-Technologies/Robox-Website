@@ -1,5 +1,5 @@
 @use '@root/variables';
-@use './lineClip.scss';
+@use '@root/lineClip';
 
 $heroTextWidth: max(350px, 35%); 
 

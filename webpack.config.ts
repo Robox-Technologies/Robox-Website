@@ -4,8 +4,8 @@ import HtmlBundlerPlugin from 'html-bundler-webpack-plugin';
 import Dotenv from 'dotenv-webpack';
 import { getProductList } from './stripe-server-helper.js';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
-import { TemplateData, TemplatePage } from './types/webpack.js';
-import { Product } from 'types/api.js';
+import { TemplateData, TemplatePage } from '~types/webpack.js';
+import { Product } from '~types/api.js';
 import { RoboxProcessor } from './roboxProcessor.js';
 
 const RECACHE_DURATION = 10 * 60 * 1000; // 10 minutes
@@ -25,6 +25,18 @@ const pages = findHtmlPages(pagesDir).map((file) => {
 });
 
 const dynamicPages: TemplatePage[] = [...pages];
+
+const alias = {
+    '@images': 'src/images',
+    '@partials': 'src/templates/partials',
+    '@root': 'src/root',
+    '@types': 'types',
+};
+const aliasPaths = Object.fromEntries(
+    Object.entries(alias).map(([key, value]) => [key, path.join(__dirname, value)])
+);
+
+
 
 function fetchPageData(file: string): TemplateData {
     // Convert filepaths to POSIX
@@ -133,12 +145,7 @@ export default (async () => {
         mode: 'development',
         devtool: 'source-map',
         resolve: {
-            alias: {
-                '@images': path.join(__dirname, 'src/images'),
-                '@partials': path.join(__dirname, 'templates/partials'),
-                '@root': path.join(__dirname, 'src/root'),
-                '@types': path.join(__dirname, 'types'),
-            },
+            alias: aliasPaths,
             extensions: ['.tsx', '.ts', '.js', '.json'],
         },
         plugins: [
@@ -156,7 +163,16 @@ export default (async () => {
                 data: {
                     products
                 },
-                preprocessor: (content, { data }) => roboxProcessor.renderString(content, data),
+                preprocessor: (content, { data }) => {
+                    for (const [key, value] of Object.entries(alias)) {
+                        // Replace only @key inside include('...') or include("...") paths ETA SPECIFIC
+                        content = content.replace(
+                            new RegExp(`(include\\(['"\`])${key}`, 'g'),
+                            `$1${value}`
+                        );
+                    }
+                    return roboxProcessor.renderString(content, data);
+                },
                 loaderOptions: {
                     sources: [
                         {
