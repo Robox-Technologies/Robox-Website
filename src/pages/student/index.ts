@@ -206,7 +206,7 @@ async function handleFileDrop(event: DragEvent) {
     if (file.type !== "application/json" && !file.name.endsWith(".robox")) return;
     const project = await readROBOXFile(file);
     if (!project) {
-        console.error("Failed to read or parse the ROBOT file.");
+        console.error("Failed to read or parse the ROBOX file.");
         return;
     }
     importProject(project);
