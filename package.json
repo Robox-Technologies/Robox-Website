@@ -2,11 +2,13 @@
   "type": "module",
   "scripts": {
     "build:server": "tsc -p tsconfig.server.json",
-    "build:client": "webpack --config build/server/webpack.config.js",
+    "build:client": "cross-env NODE_ENV=production webpack --config build/server/webpack.config.js",
     "build": "npm run build:server && npm run build:client",
+    "build:analyze": "tsc -p tsconfig.webpack.json && cross-env NODE_ENV=production ANALYZE=true webpack --config build/server/webpack.config.js",
     "dev:server": "tsc -w -p tsconfig.server.json",
+    "dev:client": "cross-env NODE_ENV=development webpack serve --config build/server/webpack.config.js --open",
     "dev:run": "nodemon build/server/server.js --watch build/server",
-    "dev": "tsc -p tsconfig.webpack.json && npm-run-all --parallel dev:server dev:run",
+    "dev": "tsc -p tsconfig.webpack.json && npm-run-all --parallel dev:server dev:client dev:run",
     "start": "npm run build && node build/server/server.js",
     "deploy": "npm run start"
   },

@@ -7,7 +7,10 @@ import TerserPlugin from 'terser-webpack-plugin';
 export default async () => {
     const { base } = await createBaseConfig();
     const plugins = [];
-    if (process.env.ANALYZE_BUNDLE === 'true') {
+    console.log(1)
+    console.log(process.env.ANALYZE);
+    if (process.env.ANALYZE === 'true') {
+
         const { BundleAnalyzerPlugin } = await import('webpack-bundle-analyzer');
         plugins.push(new BundleAnalyzerPlugin({
             analyzerMode: 'server',
