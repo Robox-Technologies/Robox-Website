@@ -4,14 +4,11 @@
     "build:server": "tsc -p tsconfig.server.json",
     "build:client": "webpack --config build/server/webpack.config.js",
     "build": "run-s build:server build:client",
-
     "dev:server": "tsc -w -p tsconfig.server.json",
     "dev:client": "webpack --watch --config build/server/webpack.config.js",
     "dev:init": "run-s build:server dev",
-
     "dev": "run-p dev:server dev:client serve",
     "serve": "nodemon build/server/server.js --watch build/server",
-
     "start": "run-s build serve",
     "deploy": "npm run start"
   },
@@ -56,7 +53,7 @@
   "devDependencies": {
     "@blockly/dev-tools": "^9.0.1",
     "@eslint/js": "^9.30.1",
-    "@eslint/json": "^0.12.0",
+    "@eslint/json": "^0.13.0",
     "@eslint/markdown": "^6.6.0",
     "@html-eslint/eslint-plugin": "^0.42.0",
     "@html-eslint/parser": "^0.42.0",
