@@ -37,7 +37,7 @@ app.use(express.json());
 if (isDev) {
     const webpack = (await import('webpack')).default;
     const webpackDevMiddleware = (await import('webpack-dev-middleware')).default;
-    const config = await(await import('./webpack.config.js')).default;
+    const config = await(await import('./webpack.base.config.js')).default;
 
     const compiler = webpack(config);
 

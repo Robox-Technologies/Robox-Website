@@ -12,6 +12,6 @@
         "src"
     ],
     "include": [
-        "webpack.config.ts",
+        "webpack.*.config.ts",
     ],
 }
