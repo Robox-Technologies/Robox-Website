@@ -55,6 +55,7 @@ export function moveToolbar(toolbar: HTMLDialogElement, target: HTMLElement, off
     if (oldTarget) {
         oldTarget.classList.remove("toolbar-target");
     }
+    const [offsetX2, offsetY2] = offset;
     target.classList.add("toolbar-target");
 
     const rect = target.getBoundingClientRect();
