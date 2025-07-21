@@ -137,6 +137,32 @@ export async function getFromDatabase(tableName: string, objectId: string, row: 
     }
 }
 
+export async function writeToDatabase(tableName: string, objectId: string, column: string, value: any, overwrite: boolean = true) {
+    try {
+        let data, error;
+        if (overwrite) {
+            ({ data, error } = await supabase
+                .from(tableName)
+                .update({ [column]: value })
+                .eq('id', objectId)
+                .select());
+        } else {
+            ({ data, error } = await supabase
+                .from(tableName)
+                .upsert({ id: objectId, [column]: value }, { onConflict: 'id' })
+                .select());
+        }
+        if (error) {
+            console.error('Database update error:', error)
+            throw error;
+        }
+        return data && data.length > 0 ? data[0] : null
+    } catch (error) {
+        console.error('Failed to update data in database:', error)
+        throw error
+    }
+}
+
 export function headerAuth() {
     const updateHeaderAuthState = async () => {
         const loginButton = document.getElementById('header-login-button') as HTMLButtonElement
