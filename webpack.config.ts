@@ -11,7 +11,7 @@ import { RoboxProcessor } from './roboxProcessor.js';
 const RECACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
 const __dirname = path.resolve();
-const eta = new RoboxProcessor({
+const roboxProcessor = new RoboxProcessor({
     defaultExtension: '.html',
     views: path.join(__dirname, ''),
     debug: true,
@@ -171,7 +171,7 @@ export default (async () => {
                             `$1${value}`
                         );
                     }
-                    return eta.renderString(content, data);
+                    return roboxProcessor.renderString(content, data);
                 },
                 loaderOptions: {
                     sources: [
