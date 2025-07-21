@@ -4,14 +4,14 @@
     "build:server": "tsc -p tsconfig.server.json",
     "build:client": "webpack --config build/server/webpack.config.js",
     "build": "npm run build:server && npm run build:client",
+
     "dev:server": "tsc -w -p tsconfig.server.json",
-    "dev:client": "webpack --watch --config build/server/webpack.config.js",
-    "dev:init": "npm run build:server && npm run dev",
-    "watch:client": "nodemon --watch build/server/webpack.config.js --exec \"npm run dev:client\"",
-    "dev": "concurrently \"npm:dev:server\" \"npm:watch:client\" \"nodemon build/server/server.js --watch build/server\"",
+    "dev:run": "nodemon build/server/server.js --watch build/server",
+    "dev": "tsc webpack.config.ts && npm-run-all --parallel dev:server dev:run",
+
     "start": "npm run build && node build/server/server.js",
     "deploy": "npm run start"
-  },
+},
   "dependencies": {
     "@blockly/continuous-toolbox": "^7.0.1",
     "@blockly/field-colour": "^6.0.3",
@@ -53,7 +53,7 @@
   "devDependencies": {
     "@blockly/dev-tools": "^9.0.1",
     "@eslint/js": "^9.30.1",
-    "@eslint/json": "^0.12.0",
+    "@eslint/json": "^0.13.0",
     "@eslint/markdown": "^6.6.0",
     "@html-eslint/eslint-plugin": "^0.42.0",
     "@html-eslint/parser": "^0.42.0",
@@ -78,6 +78,7 @@
     "jiti": "^2.4.2",
     "markdown-loader": "^8.0.0",
     "nodemon": "^3.1.10",
+    "npm-run-all": "^4.1.5",
     "responsive-loader": "^3.1.2",
     "rimraf": "^6.0.1",
     "sass": "^1.89.2",
@@ -89,7 +90,9 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.36.0",
     "webpack": "^5.99.9",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-middleware": "^7.4.2",
+    "webpack-hot-middleware": "^2.26.1"
   },
   "optionalDependencies": {
     "sass-embedded-linux-x64": "^1.89.2",
