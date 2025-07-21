@@ -45,7 +45,8 @@ pythonGenerator.forBlock['color_sensor_is_colour'] = function (block, generator)
     const hex = block.getFieldValue('colour').toLowerCase();
 
     if (!isStandardHex(hex)) {
-        throw new Error(`Unrecognized hex colour: ${hex}`);
+        const supportedColors = Object.keys(hexToName).join(', ');
+        throw new Error(`Unrecognized hex colour: ${hex}. Supported colors are: ${supportedColors}`);
     }
 
     const colourName = hexToName[hex];
