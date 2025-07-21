@@ -34,14 +34,25 @@ export function redirectToLogin() {
 
 export async function getCurrentUserData() {
     try {
-        const { data: { user }, error } = await supabase.auth.getUser()
-
-        if (error) {
-            console.error('Error getting user data:', error)
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        if (sessionError) {
+            console.error('Failed to get session:', sessionError)
             return null
         }
-        return user
-        
+        if (!session?.user?.id) {
+            console.warn('No user ID found in session')
+            return null
+        }
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+
+        if (error) {
+            console.error('Failed to get user data:', error)
+            return null
+        }
+        return data
     } catch (error) {
         console.error('Failed to get user data:', error)
         return null
@@ -104,6 +115,25 @@ export async function deleteAccount() {
         console.log('Account deleted successfully')
     } else {
         console.error('Failed to delete account:', result.error || 'Unknown error')
+    }
+}
+
+export async function getFromDatabase(tableName: string, objectId: string, row: string) {
+    try {
+        const { data, error } = await supabase
+            .from(tableName)
+            .select()
+            .eq('id', objectId)
+
+        if (error) {
+            console.error('Database retrieval error:', error)
+            throw error
+        }
+
+        return data && data.length > 0 ? data[0][row] : null
+    } catch (error) {
+        console.error('Failed to retrieve data from database:', error)
+        throw error
     }
 }
 
