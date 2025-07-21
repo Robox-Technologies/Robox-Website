@@ -137,7 +137,7 @@ export default (async () => {
                 '@images': path.join(__dirname, 'src/images'),
                 '@partials': path.join(__dirname, 'templates/partials'),
                 '@root': path.join(__dirname, 'src/root'),
-                '@types': path.join(__dirname, 'types'),
+                '~types': path.join(__dirname, 'types'),
             },
             extensions: ['.tsx', '.ts', '.js', '.json'],
         },
