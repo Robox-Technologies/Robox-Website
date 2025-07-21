@@ -7,8 +7,6 @@ import TerserPlugin from 'terser-webpack-plugin';
 export default async () => {
     const { base } = await createBaseConfig();
     const plugins = [];
-    console.log(1)
-    console.log(process.env.ANALYZE);
     if (process.env.ANALYZE === 'true') {
 
         const { BundleAnalyzerPlugin } = await import('webpack-bundle-analyzer');
@@ -33,12 +31,11 @@ export default async () => {
                 new CssMinimizerPlugin(),
             ],
             splitChunks: {
-                chunks: 'all',
                 cacheGroups: {
                     vendors: {
                         test: /[\\/]node_modules[\\/]/,
                         name: 'vendors',
-                        chunks: 'all',
+                        chunks: 'all', // only here!
                     },
                 },
             },

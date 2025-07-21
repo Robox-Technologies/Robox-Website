@@ -37,10 +37,10 @@ app.use(express.json());
 if (isDev) {
     const webpack = (await import('webpack')).default;
     const webpackDevMiddleware = (await import('webpack-dev-middleware')).default;
-    const config = await(await import('./webpack.base.config.js')).default;
 
+    const imported = await import('./webpack.dev.config.js');
+    const config = await imported.default();  // <-- call the async function to get config object
     const compiler = webpack(config);
-
     app.use(
         webpackDevMiddleware(compiler, {
             publicPath: config.output.publicPath || '/',

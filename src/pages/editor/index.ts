@@ -1,5 +1,5 @@
 
-import * as Blockly from 'blockly';
+import Blockly from 'blockly/core';
 
 import { ContinuousMetrics } from '@blockly/continuous-toolbox';
 

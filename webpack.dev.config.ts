@@ -23,5 +23,4 @@ export default async () => {
             new LiveReloadPlugin({ appendScriptTag: true, delay: 300 }),
         ],
     });
-    
 };

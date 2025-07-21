@@ -1,5 +1,5 @@
 import { pico } from './communication/communicate';
-import * as Blockly from 'blockly';
+import Blockly from 'blockly/core';
 import { pythonGenerator } from 'blockly/python'
 
 const scriptDependency = `
