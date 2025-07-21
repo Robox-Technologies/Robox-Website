@@ -7,6 +7,8 @@ import CopyWebpackPlugin from 'copy-webpack-plugin';
 import { TemplateData, TemplatePage } from './types/webpack.js';
 import { Product } from '~types/api.js';
 import { RoboxProcessor } from './roboxProcessor.js';
+import { Configuration } from 'webpack';
+import LiveReloadPlugin from 'webpack-livereload-plugin';
 
 const RECACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
@@ -127,9 +129,9 @@ async function processProducts() {
 }
 
 
-export default (async () => {
+export default (async (): Promise<Configuration> => {
     const products = await processProducts();
-    const config = {
+    const config: Configuration = {
         mode: 'development',
         devtool: 'source-map',
         resolve: {
@@ -148,7 +150,7 @@ export default (async () => {
                     filename: 'public/js/[name].[contenthash:8].js'
                 },
                 css: {
-                    filename: 'public/css/[name].[contenthash:8].css'
+                    filename: 'public/css/[name].[contenthash:8].css',
                 },
                 filename: () => {
                     return '[name].html';
@@ -191,6 +193,10 @@ export default (async () => {
                     },
                 ],
             }),
+            ...(process.env.NODE_ENV !== 'production' ? [new LiveReloadPlugin({
+                appendScriptTag: true, // injects the <script> tag to reload the page
+                delay: 300,            // optional: delay to avoid rapid reloads
+            })] : []),
         ],
         
         module: {

@@ -11,7 +11,7 @@
             "@root/*": ["src/root/*"],
             "@pages/*": ["src/pages/*"],
             "@components/*": ["src/components/*"],
-            "@types/*": ["@types/*"],
+            "~types/*": ["types/*"],
             "@store/*": ["src/store/*"],
             "@utils/*": ["src/utils/*"],
             "@assets/*": ["src/assets/*"],
