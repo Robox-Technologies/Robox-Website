@@ -68,13 +68,16 @@ $toolbarWidth: 130px;
     gap: 10px;
 }
 #toggle-dropzone {
-    font-size: 1.5em;
+    @include variables.bodyFont;
     background-color: white;
-    color: variables.$themeBlack;
-    padding: 15px;
+    padding: 8px 16px;
     border-radius: 20px;
-    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.2));
-    margin-left: 15px;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.1));
+    margin-left: variables.$standardGap;
+
+    svg {
+        margin-right: 4px;
+    }
 }
 #toggle-dropzone:hover {
     cursor: pointer;
