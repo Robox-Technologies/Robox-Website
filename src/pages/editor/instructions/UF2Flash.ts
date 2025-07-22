@@ -9,13 +9,13 @@ type failures = "no-device" | "uf2-web" | "file-failure" | "write-failure" | "su
 
 const failureText = {
     "no-device": {
-        "title": "RO\\BOX not in BOOTSEL mode",
-        "text": `Unfortunately that did not work! Please follow the following instructions to manually boot your RO\\BOX into BOOTSEL mode<br>
-                1. Disconnect the USB cable from your RO\\BOX<br>
-                2. Hold down the BOOTSEL button on your RO\\BOX<br> 
-                3. While holding the BOOTSEL button, connect the USB cable to your RO\\BOX<br>
+        "title": "Ro/Box not in BOOTSEL mode",
+        "text": `Unfortunately that did not work! Please follow the following instructions to manually boot your Ro/Box into BOOTSEL mode<br>
+                1. Disconnect the USB cable from your Ro/Box<br>
+                2. Hold down the BOOTSEL button on your Ro/Box<br> 
+                3. While holding the BOOTSEL button, connect the USB cable to your Ro/Box<br>
                 4. Release the BOOTSEL button<br>
-                5. Click the 'Retry' button below to check if your RO\\BOX is now in BOOTSEL mode
+                5. Click the 'Retry' button below to check if your Ro/Box is now in BOOTSEL mode
         `,
         "button": "Retry",
     },
@@ -26,22 +26,22 @@ const failureText = {
     },
     "file-failure": {
         "title": "Failed to write UF2 file",
-        "text": "Unfortunately we could not write the UF2 file to your RO\\BOX. Please ensure you selected the RPI-RP2 drive and try again.",
+        "text": "Unfortunately we could not write the UF2 file to your Ro/Box. Please ensure you selected the RPI-RP2 drive and try again.",
         "button": "Retry",
     },
     "write-failure": {
         "title": "Failed to write UF2 file",
-        "text": "Unfortunately we could not write the UF2 file to your RO\\BOX. Please try again.",
+        "text": "Unfortunately we could not write the UF2 file to your Ro/Box. Please try again.",
         "button": "Retry",
     },
     "success": {
-        "title": "RO\\BOX successfully flashed!",
-        "text": "Your RO\\BOX has been successfully flashed with the latest firmware! You can now close this dialog and start using your RO\\BOX.",
+        "title": "Ro/Box successfully flashed!",
+        "text": "Your Ro/Box has been successfully flashed with the latest firmware! You can now close this dialog and start using your Ro/Box.",
         "button": "Close",
     },
     "default": {
-        "title": "RO\\BOX Flashing Error",
-        "text": "An unknown error occurred while flashing your RO\\BOX. Please try again or contact support.",
+        "title": "Ro/Box Flashing Error",
+        "text": "An unknown error occurred while flashing your Ro/Box. Please try again or contact support.",
         "button": "Close",
     },
 
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
             fileOpenButton.click(); // Trigger the file open button to try again
 
         }
-        else if (failure === "success") { // When they successfully flashed the RO\\BOX
+        else if (failure === "success") { // When they successfully flashed the Ro/Box
             outcomeModal.close();
         }
     });

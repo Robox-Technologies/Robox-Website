@@ -3,7 +3,7 @@ import * as Blockly from 'blockly';
 import { pythonGenerator } from 'blockly/python'
 
 const scriptDependency = `
-from roboxlib import Motors, LineSensors, UltrasonicSensor
+from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
 from machine import Pin, Timer
 import time
 import json
@@ -11,6 +11,7 @@ ENV_LED = Pin(25, Pin.OUT)
 line = LineSensors()
 left_motor_polarity = right_motor_polarity = -1
 ultrasonic = UltrasonicSensor()
+color_sensor = ColorSensor()
 def generatePrint(typ, message):
     jsmessage = {"type": typ, "message": message}
     return json.dumps(jsmessage)

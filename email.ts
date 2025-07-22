@@ -3,8 +3,8 @@ import fs from "fs";
 import { JSDOM } from "jsdom";
 import { Stripe } from "stripe";
 import juice from "juice";
-import { Product } from './types/api';
-import { formatPrice } from './src/root/stripe-shared-helper.js';
+import { Product } from '~types/api.js';
+import { formatPrice } from './src/root/payment/stripe-shared-helper.js';
 import iso3311a2 from 'iso-3166-1-alpha-2';
 import { stripeAPI, readPaymentMethod } from './stripe-server-helper.js';
 
@@ -277,7 +277,6 @@ async function populateBilling(document: Document, paymentIntent: Stripe.Payment
 
     let addressText = "";
     if (address && addressEl) {
-
         // Unit/Street
         if (address.line1) addressText += `${address.line1}<br>`;
         if (address.line2) addressText += `${address.line2}<br>`;
@@ -298,25 +297,29 @@ async function populateBilling(document: Document, paymentIntent: Stripe.Payment
     }
 
     // Address
-    const billingEl = document.getElementById("billing") as HTMLParagraphElement;
-    let paymentMethod: Stripe.PaymentMethod | undefined = undefined;
-    
-    if (typeof paymentIntent.payment_method === "string") {
-        paymentMethod = await stripeAPI.paymentMethods.retrieve(paymentIntent.payment_method);
-    } else if (paymentIntent.payment_method) {
-        paymentMethod = paymentIntent.payment_method;
-    }
-    
     let billingText = "";
-    if (paymentMethod && billingEl) {
-        const paymentType = readPaymentMethod(paymentMethod);
+    const billingEl = document.getElementById("billing") as HTMLParagraphElement;
+    const stripePaymentData = paymentIntent.payment_method ?? paymentIntent.last_payment_error?.payment_method;
 
-        if (paymentType.name) billingText += `${titleCase(paymentType.name)}<br>`;
-        if (paymentType.userID) billingText += `${titleCase(paymentType.userID)}<br>`;
-        if (paymentType.last4) billingText += `Ending in ••••${paymentType.last4}<br>`;
-        if (paymentType.exp_month && paymentType.exp_year) billingText += `Expires on ${paymentType.exp_month}/${paymentType.exp_year % 1000}`;
-
-        billingEl.innerHTML = billingText;
+    if (billingEl && stripePaymentData) {
+        let paymentMethod: Stripe.PaymentMethod | undefined = undefined;
+        
+        if (typeof stripePaymentData === "string") {
+            paymentMethod = await stripeAPI.paymentMethods.retrieve(stripePaymentData);
+        } else {
+            paymentMethod = stripePaymentData;
+        }
+        
+        if (paymentMethod && billingEl) {
+            const paymentType = readPaymentMethod(paymentMethod);
+    
+            if (paymentType.name) billingText += `${titleCase(paymentType.name)}<br>`;
+            if (paymentType.userID) billingText += `${paymentType.userID}<br>`;
+            if (paymentType.last4) billingText += `Ending in ••••${paymentType.last4}<br>`;
+            if (paymentType.exp_month && paymentType.exp_year) billingText += `Expires on ${paymentType.exp_month}/${paymentType.exp_year % 1000}`;
+    
+            billingEl.innerHTML = billingText;
+        }
     }
 
     return [addressText, billingText];

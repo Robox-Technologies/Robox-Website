@@ -1,5 +1,5 @@
-import { addCartItem, refreshCart } from "@root/cart";
-import { formatPrice } from "@root/stripe-shared-helper";
+import { addCartItem, refreshCart } from "@root/payment/cart";
+import { formatPrice } from "@root/payment/stripe-shared-helper";
 
 // TODO: Find a non-hacky way fetching currentProduct without @ts-ignore
 // @ts-expect-error Fetched from HTML

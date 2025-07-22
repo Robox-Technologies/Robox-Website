@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
-import { Projects, Project } from "types/projects";
+import { Projects, Project } from "~types/projects";
 
 import { workspaceToPng_ } from './screenshot';
 

@@ -1,24 +1,28 @@
+<link rel="stylesheet" href="@partials/header/header.scss">
 <header>
     <div class="header">
-        <link href="@root/header-workshop.scss" rel="stylesheet">
-
         <nav class="navLinks">
             <a href="/" class="logo">
-                <img src="@images/logo-workshop.svg" alt="Ro/Box Logo">
+                <img src="@images/logo-full.svg" alt="Ro/Box Logo">
             </a>
             <div class="navItems">
                 <a href="/about">About</a>
                 <a href="#contactUs">Contact</a>
             </div>
         </nav>
-
+    
         <div class="ctaButtons">
             <a href="/student" class="btn"><i class="fa-regular fa-compass"></i> Ro/Box Hub</a>
             <a href="/teacher" class="btn"><i class="fa-solid fa-graduation-cap"></i> Teacher Resources</a>
-            <!-- <a href="#" class="iconBtn"><i class="fa-solid fa-gear fa-xl"></i></a>
+            <a href="/shop" class="btn store">Store</a>
 
-            <a href="#" class="btn signup"><i class="fa-regular fa-circle-user"></i> Sign In</a> -->
-            
+            <a href="/shop/cart" id="cart" style="display: none;">
+                <div>
+                    <p></p>
+                </div>
+                <i class="fa-solid fa-cart-shopping"></i>
+            </a>
+    
             <button class="hamburger" aria-label="Toggle menu"></button>
         </div>
     </div>
@@ -29,5 +33,7 @@
 
         <a href="/student" class="btn"><i class="fa-regular fa-compass"></i> Ro/Box Hub</a>
         <a href="/teacher" class="btn"><i class="fa-solid fa-graduation-cap"></i> Teacher Resources</a>
+
+        <a href="/shop" class="btn store">Store</a>
     </div>
 </header>

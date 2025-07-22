@@ -5,11 +5,11 @@ import {
     importProject,
     renameProject,
     sanitizeImageDataUrl
-} from "../../root/serialization";
-import { Project } from "types/projects";
+} from "@root/blockly/serialization";
+import type { Project } from "~types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
-import { toggleToolbar, moveToolbar } from "../../root/toolbar";
+import { toggleToolbar, moveToolbar } from '@partials/toolbar/toolbar';
 
 dayjs.extend(relativeTime);
 

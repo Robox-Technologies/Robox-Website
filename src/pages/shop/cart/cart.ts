@@ -1,6 +1,6 @@
-import { getCart, removeCartItem, setCartItem } from "@root/cart"
-import { renderCart } from "@root/shop"
-import { formatPrice } from "@root/stripe-shared-helper"
+import { getCart, removeCartItem, setCartItem } from "@root/payment/cart"
+import { renderCart } from "@root/payment/shop"
+import { formatPrice } from "@root/payment/stripe-shared-helper"
 const availableHolder = document.querySelector("#available-section")
 const preorderHolder = document.querySelector("#preorder-section")
 
@@ -10,7 +10,7 @@ const cartItemElement: HTMLTemplateElement = document.querySelector("#cart-item"
 const localProducts = products;
 
 function renderItemSubtotal(itemId: string) {
-    const products = getCart()["products"];
+    const products = getCart(localProducts)["products"];
     const subtotalElement = document.getElementById(itemId).querySelector(".cart-item-text-subtotal");
 
     if (!subtotalElement) return;
@@ -29,11 +29,13 @@ function renderItemSubtotal(itemId: string) {
 
 function renderPreview() {
     document.querySelectorAll(".cart-item-holder").forEach((e) => e.replaceChildren());
-    const products = getCart()["products"]
+    const products = getCart(localProducts).products
     let cartEmpty = true;
     for (const productId in products) {
-        const product = products[productId].data
-        if (!product || productId == "") continue
+        const product = products[productId].data;
+        const cachedProduct = localProducts[productId];
+
+        if (!product || !cachedProduct || productId == "") continue;
     
         const price = formatPrice(product.price)
         const name = product.name
@@ -51,7 +53,6 @@ function renderPreview() {
         const quantityInput = clone.querySelector(".cart-quantity") as HTMLInputElement
         const imageElement = clone.querySelector(".cart-item-photo") as HTMLImageElement
         
-        const cachedProduct = localProducts[productId];
         const productImage = document.getElementById(`hidden-${cachedProduct.internalName}`) as HTMLImageElement;
         imageElement.src = productImage.src;
         imageElement.alt = productImage.alt;
@@ -123,7 +124,7 @@ function updateCart(productId: string, quantity: number) {
     quantity = Math.min(Math.max(quantity, 0), 99);
     const productElement = document.getElementById(productId)
     const quantityInput = productElement.querySelector(".cart-quantity") as HTMLInputElement
-    const products = getCart()["products"]
+    const products = getCart(localProducts)["products"]
     quantityInput.value = quantity.toString()
     setCartItem(productId, Number(quantity), products[productId]["data"])
     renderCart()
