@@ -159,3 +159,9 @@ a.error-link {
     width: 100%;
     margin-bottom: 15px;
 }
+
+.required {
+    color: variables.$themeRed;
+    display: none;
+    margin-left: 2px;
+}
