@@ -2,7 +2,7 @@
 
 <html lang="en">
 <head>
-    <%~ include('src/templates/partials/metadata.html') %>
+    <%~ include('@partials/metadata.html') %>
     <title>Ro/Box Hub</title>
     <script src="./index.ts"></script>
     <link href="./index.scss" rel="stylesheet">
@@ -11,7 +11,7 @@
 
 <body>
     <template id="projectCardTemplate">
-        <%~ include('src/templates/partials/card.html', {
+        <%~ include('@partials/card.html', {
             class: "project-card",
             title: '<i class="fa-solid fa-square-binary"></i><span class="card-title-text"></span>', 
             imageSource: "https://placehold.co/1920x1080", 
@@ -22,7 +22,7 @@
         }) %>
     </template>
     <template id="lessonCardTemplate">
-        <%~ include('src/templates/partials/card.html', {
+        <%~ include('@partials/card.html', {
             class: "lesson-card",
             title: '<span>Assembly Guide</span>', 
             imageSource: "https://placehold.co/1920x1080", 
@@ -34,7 +34,7 @@
         }) %>
     </template>
     <template id="assemblyGuideCardTemplate">
-        <%~ include('src/templates/partials/card.html', {
+        <%~ include('@partials/card.html', {
             class: "assembly-card",
             title: '<span>Assembly Guide</span>', 
             imageSource: "https://placehold.co/1920x1080", 
@@ -49,8 +49,8 @@
             topRowButton: false,
         }) %>
     </template>
-    <%~ include('src/templates/partials/header-workshop.html') %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('@partials/header-workshop/header-workshop.html') %>
+    <%~ include('@partials/modal/modal.html', {
         id: "delete-modal",
         title: 'Delete Project <i class="fa-solid fa-trash-can"></i>', 
         content: [
@@ -62,7 +62,7 @@
             '<button id="delete-confirm-button" class="button standard-button">Delete</button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "edit-modal",
         title: 'Edit Project <i class="fa-solid fa-pen-to-square"></i>', 
         content: [
@@ -75,7 +75,7 @@
         ],
     }) %>
     <!-- Hero title -->
-    <%~ include('src/templates/partials/title-hero.html', {
+    <%~ include('@partials/title-hero/title-hero.html', {
         text: "Ro/Box Hub",
         image: "@images/student-hub/hero.jpg"
     }) %>
@@ -88,7 +88,7 @@
                 Assembly Guides
             </h1> 
             <div class="card-holder">
-                <%~ include('src/templates/partials/card.html', {
+                <%~ include('@partials/card.html', {
                     class: "assembly-card",
                     title: '<span>Assembly Guide</span>', 
                     imageSource: "@images/student-hub/assembly-guide.png", 
@@ -117,7 +117,7 @@
                         New Project
                     </p>
                 </button>
-                <%~ include('src/templates/partials/toolbar.html', {
+                <%~ include('@partials/toolbar/toolbar.html', {
                     id: "project-toolbar",
                     content: [
                         '<button class="button" id="project-edit"><i class="fa-solid fa-pen-to-square"></i>Edit</button>',
@@ -140,6 +140,6 @@
         
     </div>
     
-    <%~ include('src/templates/partials/footer.html') %>
+    <%~ include('@partials/footer/footer.html') %>
 </body>
 </html>

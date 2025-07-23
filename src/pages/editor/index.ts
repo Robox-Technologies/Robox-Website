@@ -8,8 +8,8 @@ import theme from "./blockly/theme"
 import {toolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
-import { Project } from 'types/projects';
-import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject } from '../../root/serialization';
+import { Project } from '~types/projects';
+import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject } from '@root/blockly/serialization';
 
 import {registerFieldColour} from '@blockly/field-colour';
 import { postBlocklyWSInjection } from './usb';

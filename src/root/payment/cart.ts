@@ -1,6 +1,6 @@
 //TODO: Remake this system (cache the product cost and get rid of weird funky quantity key)
 
-import type { Product } from '~types/api';
+import { Product } from "~types/api"
 
 interface Cart {
     quantity: number;
@@ -8,6 +8,7 @@ interface Cart {
 }
 
 export const stripePublishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
+
 export async function getProducts(): Promise<Record<string, Product>> {
     return await (await fetch("/api/store/products")).json()
 }
