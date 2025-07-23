@@ -9,7 +9,7 @@ import { RoboxProcessor } from './roboxProcessor.js';
 import { getProductList } from './stripe-server-helper.js';
 import { Product } from '~types/api.js';
 import { TemplateData, TemplatePage } from './types/webpack.js';
-import webpack from 'webpack';
+
 
 
 const __dirname = path.resolve();

@@ -19,6 +19,7 @@
     ],
     "exclude": [
         "node_modules",
-        "src"
+        "src",
+        "webpack.*.config.ts"
     ]
 }

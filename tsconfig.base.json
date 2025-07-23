@@ -9,12 +9,8 @@
         "baseUrl": ".",
         "paths": {
             "@root/*": ["src/root/*"],
-            "@pages/*": ["src/pages/*"],
-            "@components/*": ["src/components/*"],
             "~types/*": ["types/*"],
-            "@store/*": ["src/store/*"],
-            "@utils/*": ["src/utils/*"],
-            "@assets/*": ["src/assets/*"],
+            "@images/*": ["src/images/*"]
         },
         "resolveJsonModule": true,
         "allowSyntheticDefaultImports": true,
