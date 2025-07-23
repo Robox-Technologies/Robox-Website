@@ -11,7 +11,6 @@ export default async () => {
     return merge(base, {
         mode: 'development',
         devtool: 'source-map',
-        cache: { type: 'filesystem' },
         watchOptions: {
             ignored: ['**/node_modules'],
             aggregateTimeout: 300,
