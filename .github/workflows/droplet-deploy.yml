@@ -37,6 +37,8 @@ jobs:
             echo EMAIL_SECURE=${{ vars.EMAIL_SECURE }} >> .env
             echo EMAIL_USER=${{ secrets.EMAIL_USER }} >> .env
             echo EMAIL_PASS=${{ secrets.EMAIL_PASS }} >> .env
+            
+            echo NODE_ENV=production >> .env
 
             cat .env
 
