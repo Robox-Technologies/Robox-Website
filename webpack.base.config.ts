@@ -106,7 +106,6 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
     const products = await cacheProducts();
     const storePages = Object.values(products).map(p => `./src/pages/shop/product/${p.internalName}.html`);
     const productData = {};
-
     for (const page of storePages) {
         const name = path.parse(page).name;
         const product = Object.values(products).find(p => p.internalName === name);
@@ -120,7 +119,6 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
             images: fs.existsSync(imagesPath) ? fs.readdirSync(imagesPath).map(f => path.parse(f).base) : [],
         };
     }
-
     createPages(storePages, 'src/templates/views/product/product.html', productData);
     const htmlBundlerPluginOptions = {
         entry: dynamicPages,

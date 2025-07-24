@@ -10,7 +10,7 @@ import "./blockly/toolboxStyling"
 
 import { Project } from '~types/projects';
 import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject } from '@root/blockly/serialization';
-
+import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
 import { postBlocklyWSInjection } from './usb';
 import { registerControls } from './controls';
@@ -37,8 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
         toolbox: toolbox,
         theme: theme,
         plugins: {
-            'flyoutsVerticalToolbox': "RoboxFlyout",
-            'toolbox': "RoboxToolbox",
+            'flyoutsVerticalToolbox': RoboxFlyout,
+            'toolbox': RoboxToolbox,
             "MetricsManager": ContinuousMetrics
         },
         zoom: {
