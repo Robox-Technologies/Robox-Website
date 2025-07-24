@@ -1,0 +1,44 @@
+name: Deploy to DigitalOcean Droplet on merge
+on:
+  push:
+    branches:
+      - master
+      - feature/prod
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    environment: Production
+
+    permissions: {}
+
+    steps:
+      - name: Deploy to Droplet
+        uses: appleboy/ssh-action@2ead5e36573f08b82fbfce1504f1a4b05a647c6f
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USERNAME }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script: |
+            # Checkout current branch and pull
+            cd ~/Robox-Website
+            git checkout ${{ github.head_ref || github.ref_name }}
+            git pull
+
+            # Create .env file
+            touch .env
+          
+            echo STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_PUBLISHABLE_KEY }} > .env
+            echo STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} >> .env
+            echo FORCE_CACHE=${{ vars.FORCE_CACHE }} >> .env
+            
+            echo STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }} >> .env
+            echo EMAIL_HOST=${{ secrets.EMAIL_HOST }} >> .env
+            echo EMAIL_PORT=${{ secrets.EMAIL_PORT }} >> .env
+            echo EMAIL_SECURE=${{ vars.EMAIL_SECURE }} >> .env
+            echo EMAIL_USER=${{ secrets.EMAIL_USER }} >> .env
+            echo EMAIL_PASS=${{ secrets.EMAIL_PASS }} >> .env
+
+            cat .env
+
+            # Run deploy script
+            bash deploy.bash
