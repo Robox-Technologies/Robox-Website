@@ -5,7 +5,7 @@ import archSVG from './Arch.svg?raw';
 import { ContinuousFlyout, RecyclableBlockFlyoutInflater, ContinuousToolbox } from '@blockly/continuous-toolbox';
 
 // type HexColor = `#${string}`;
-class RoboxToolbox extends ContinuousToolbox {
+export class RoboxToolbox extends ContinuousToolbox {
     override shouldDeselectItem_(oldItem: Blockly.ISelectableToolboxItem | null, newItem: Blockly.ISelectableToolboxItem | null,): boolean {
         return oldItem !== null && newItem !== null && oldItem !== newItem;
     }
@@ -80,7 +80,7 @@ class RoboxToolboxSeperator extends Blockly.ToolboxSeparator {
 //Overriding the flyoutscale value (to prevent it scaliing with the workspace)
 
 
-class RoboxFlyout extends ContinuousFlyout {
+export class RoboxFlyout extends ContinuousFlyout {
 
     /** @override */
     protected reflowInternal_(): void {
@@ -119,17 +119,7 @@ Blockly.registry.register(
     true,
 );
 Blockly.registry.register(
-    Blockly.registry.Type.TOOLBOX,
-    'RoboxToolbox',
-    RoboxToolbox, true
-);
-Blockly.registry.register(
     Blockly.registry.Type.TOOLBOX_ITEM,
     Blockly.ToolboxSeparator.registrationName,
     RoboxToolboxSeperator, true
-);
-Blockly.registry.register(
-    Blockly.registry.Type.FLYOUTS_VERTICAL_TOOLBOX,
-    'RoboxFlyout',
-    RoboxFlyout, true
 );

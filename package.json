@@ -3,8 +3,8 @@
   "sideEffects": false,
   "scripts": {
     "build:server": "tsc -p tsconfig.server.json",
-    "build:client": "cross-env NODE_ENV=production webpack --config build/webpack.prod.js",
-    "build": "npm run clean && npm run build:server && npm run build:client",
+    "build:client": "cross-env NODE_ENV=production webpack --config build/webpack.prod.config.js",
+    "build": "npm run clean && tsc -p tsconfig.webpack.json && npm run build:server && npm run build:client",
     "build:analyze": "npm run clean && tsc -p tsconfig.webpack.json && cross-env NODE_ENV=production ANALYZE=true webpack --config build/webpack.prod.config.js",
     "clean": "rimraf build",
     "dev:server": "tsc -w -p tsconfig.server.json",
