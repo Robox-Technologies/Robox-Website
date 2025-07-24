@@ -21,7 +21,7 @@ jobs:
           script: |
             # Checkout current branch and pull
             cd ~/Robox-Website
-            git checkout ${{ github.head_ref || github.ref_name }}
+            git checkout ${{ github.head_ref || github.ref_name }} 2>/dev/null || git checkout -b ${{ github.head_ref || github.ref_name }}
             git pull
 
             # Create .env file
