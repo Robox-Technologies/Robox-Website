@@ -41,12 +41,21 @@ if (isDev) {
     const imported = await import('./webpack.dev.config.js');
     const config = await imported.default();  // <-- call the async function to get config object
     const compiler = webpack(config);
-    app.use(
-        webpackDevMiddleware(compiler, {
+    const devMiddleware = webpackDevMiddleware(compiler, {
             publicPath: config.output.publicPath || '/',
             stats: 'minimal'
         })
+    app.use(
+        devMiddleware
     );
+    devMiddleware.waitUntilValid(() => {
+        const fs = devMiddleware.context.outputFileSystem
+        const notFoundFile = fs.readFileSync(path.join(compiler.outputPath, '404.html')).toString("utf-8");
+
+        app.get('*', (_, res) => {
+            res.status(404).send(notFoundFile);
+        });
+    });
 } else {
     const websiteDir = path.resolve(__dirname, '../website');
     const path404 = path.join(websiteDir, '404.html');
