@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": true,
   "scripts": {
     "build:server": "tsc -p tsconfig.server.json",
     "build:client": "cross-env NODE_ENV=production webpack --config build/webpack.prod.config.js",
