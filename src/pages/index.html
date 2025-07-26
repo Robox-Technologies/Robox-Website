@@ -4,6 +4,8 @@
     <%~ include('src/templates/partials/metadata.html') %>
     <script src="./index.ts" defer></script>
     <link href="./index.scss" rel="stylesheet">
+    <link rel="preload" href="@images/landing/hero.jpg" as="image">
+    <link rel="preload" href="@images/landing/hero-mobile.jpg" as="image">
     <title>Ro/Box - Robotics for Everyone</title>
 </head>
 
@@ -13,8 +15,8 @@
     <div class="hero">
         <div class="title">
             <h1>
-                Robotics for<br>
-                Everyone
+                Robotics<br>
+                <span class="secondaryTitle">for everyone</span>
             </h1>
         </div>
 
