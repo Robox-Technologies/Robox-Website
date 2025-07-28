@@ -25,10 +25,16 @@
         }
     
         h1 {
-           font-size: 60px;
-           margin-top: 16px;
-           color: variables.$primary;
-           margin-bottom: 0;
+            font-size: 60px;
+            margin-top: 16px;
+            color: variables.$themeBlue;
+            margin-bottom: 0;
+            line-height: 100%;
+
+            .secondaryTitle {
+                color: variables.$themeRed;
+                font-size: 48px;
+            }
         }
     }
 
@@ -419,18 +425,16 @@ article.hubs {
     }
 
     .hero {
+        background-image: url("@images/landing/hero-mobile.jpg");
+        background-position: center;
+
         .title {
             width: 100%;
             top: inherit;
             right: 0;
-            bottom: 0;
+            top: 0;
             padding: calc(variables.$standardGap * 2) variables.$standardGap;
             transform: none;
-            background: linear-gradient(0deg, rgba(variables.$themeBlack, 0.7) 70%, rgba(variables.$themeBlack, 0) 100%);
-        }
-
-        .scroll-prompt {
-            background-color: transparent;
         }
     }
 

@@ -29,12 +29,15 @@ jobs:
           echo STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} >> .env
           echo FORCE_CACHE=${{ vars.FORCE_CACHE }} >> .env
           
+          echo NODE_ENV=production >> .env
+          
           cat .env
       
       - name: Build website
         run: |
-          tsc -p tsconfig.server.json
-          webpack --config build/server/webpack.config.js
+          npx tsc -p tsconfig.webpack.json
+          npx tsc -p tsconfig.server.json
+          npx webpack --config ./build/webpack.prod.config.js
       
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@0cbcac4740c2bfb00d632f0b863b57713124eb5a
