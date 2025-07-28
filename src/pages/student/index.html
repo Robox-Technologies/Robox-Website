@@ -82,7 +82,12 @@
     
     <div id="main" class="item-sections">
         
-
+        <div id="dropzone" style="display: none;">
+            <div>
+                <i class="fa-solid fa-upload" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <h2>Drop your .robox file to import!</h2>
+            </div>
+        </div>
         <section>
             <h1>
                 Assembly Guides
@@ -104,12 +109,15 @@
             </div>
         </section>
         <section id="projects">
-            <div>
-
+            <div class="section-header">
+                <h1>
+                    My Projects
+                </h1>
+                <button id="toggle-dropzone" class="button">
+                    <i class="fa-solid fa-download"></i> Import
+                </button>
             </div>
-            <h1>
-                My Projects
-            </h1>
+            
             <div class="card-holder" id="project-holder">
                 <button id="create-project" class="button">
                     <i class="fa-solid fa-plus"></i>
