@@ -1,5 +1,5 @@
 
-import * as Blockly from 'blockly';
+import * as Blockly from 'blockly/core';
 
 import { ContinuousMetrics } from '@blockly/continuous-toolbox';
 
@@ -8,9 +8,9 @@ import theme from "./blockly/theme"
 import {toolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
-import { Project } from 'types/projects';
-import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject } from '../../root/serialization';
-
+import { Project } from '~types/projects';
+import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject } from '@root/blockly/serialization';
+import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
 import { postBlocklyWSInjection } from './usb';
 import { registerControls } from './controls';
@@ -37,8 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
         toolbox: toolbox,
         theme: theme,
         plugins: {
-            'flyoutsVerticalToolbox': "RoboxFlyout",
-            'toolbox': "RoboxToolbox",
+            'flyoutsVerticalToolbox': RoboxFlyout,
+            'toolbox': RoboxToolbox,
             "MetricsManager": ContinuousMetrics
         },
         zoom: {

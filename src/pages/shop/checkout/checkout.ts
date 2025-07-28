@@ -1,8 +1,8 @@
-import { getCart, stripePublishableKey } from "@root/cart";
+import { getCart, stripePublishableKey } from "@root/payment/cart";
 import { Appearance, loadStripe } from '@stripe/stripe-js';
-import { Product } from "types/api";
-import "@root/shop";
-import { calculateTotalCost, cartToDictionary } from "@root/stripe-shared-helper";
+import { Product } from "~types/api";
+import "@root/payment/shop";
+import { calculateTotalCost, cartToDictionary } from "@root/payment/stripe-shared-helper";
 
 const cart = getCart();
 const cartProducts = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, productId: string) => {

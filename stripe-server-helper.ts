@@ -1,8 +1,8 @@
 import stripe, { Stripe } from 'stripe'
 
 import 'dotenv/config'
-import { Product, ProductStatus } from 'types/api';
-import { formatPrice } from './src/root/stripe-shared-helper.js';
+import { Product, ProductStatus } from '~types/api.js';
+import { formatPrice } from './src/root/payment/stripe-shared-helper.js';
 import { storeProcessor } from './roboxProcessor.js';
 
 const defaultWeight = 500;
