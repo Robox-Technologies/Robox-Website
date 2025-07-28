@@ -2,6 +2,7 @@
     "files": [],
     "references": [
         { "path": "./tsconfig.server.json" },
+        { "path": "./tsconfig.webpack.json" },
         { "path": "./tsconfig.client.json" }
     ]
 }

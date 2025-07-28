@@ -80,6 +80,7 @@
     position: relative;
     $imgWidth: 300px;
     $bottomSpace: calc($imgWidth / 2 - 95px);
+    $minMarginTop: 250px;
     margin-bottom: variables.$articleMargin;
 
     h1, h2, p {
@@ -128,7 +129,7 @@
             }
 
             &:nth-child(1) {
-                margin-top: 45vh;
+                margin-top: max(45vh, $minMarginTop);
 
                 & > .stepText > .stepNumber {
                     background: variables.$themeBlue;
@@ -169,7 +170,7 @@
     }
 
     .boxToBotImg {
-        padding-top: calc(45vh - $bottomSpace);
+        padding-top: calc(max(45vh, $minMarginTop) - $bottomSpace);
         width: $imgWidth;
         object-fit: contain;
         position: sticky;
