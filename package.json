@@ -1,16 +1,15 @@
 {
   "type": "module",
+  "sideEffects": true,
   "scripts": {
     "build:server": "tsc -p tsconfig.server.json",
-    "build:client": "webpack --config build/server/webpack.config.js",
-    "build": "run-s build:server build:client",
+    "build:client": "cross-env NODE_ENV=production webpack --config build/webpack.prod.config.js",
+    "build": "npm run clean && tsc -p tsconfig.webpack.json && npm run build:server && npm run build:client",
+    "build:analyze": "npm run clean && tsc -p tsconfig.webpack.json && cross-env NODE_ENV=production ANALYZE=true webpack --config build/webpack.prod.config.js",
+    "clean": "rimraf build",
     "dev:server": "tsc -w -p tsconfig.server.json",
-    "dev:client": "webpack --watch --config build/server/webpack.config.js",
-    "dev:init": "run-s build:server dev",
-    "dev": "tsc -p tsconfig.server.json && run-p dev:server dev:client serve",
-    "serve": "nodemon build/server/server.js --watch build/server",
-    "start": "run-s build serve",
-    "deploy": "npm run start"
+    "dev:run": "cross-env NODE_ENV=development nodemon build/server/server.js",
+    "dev": "npm run clean && tsc -p tsconfig.webpack.json && tsc -p tsconfig.server.json && npm-run-all --parallel dev:server dev:run"
   },
   "dependencies": {
     "@blockly/continuous-toolbox": "^7.0.1",
@@ -19,12 +18,14 @@
     "@express-rate-limit/tsconfig": "^1.0.2",
     "@stripe/stripe-js": "^7.4.0",
     "blockly": "^12.1.0",
+    "css-minimizer-webpack-plugin": "^7.0.2",
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.6",
     "dotenv": "^17.1.0",
     "eta": "^3.5.0",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.1",
+    "fork-ts-checker-webpack-plugin": "^9.1.0",
     "html-bundler-webpack-plugin": "^4.21.0",
     "iso-3166-1-alpha-2": "^1.0.2",
     "jsdom": "^26.1.0",
@@ -45,10 +46,14 @@
     "sass-embedded": "^1.89.2",
     "stripe": "^18.3.0",
     "style-loader": "^4.0.0",
+    "terser-webpack-plugin": "^5.3.14",
     "tsx": "^4.20.3",
     "unified": "^11.0.5",
     "unist-util-find-after": "^5.0.0",
-    "unist-util-visit": "^5.0.0"
+    "unist-util-visit": "^5.0.0",
+    "webpack-bundle-analyzer": "^4.10.2",
+    "webpack-livereload-plugin": "^3.0.2",
+    "webpackbar": "^7.0.0"
   },
   "devDependencies": {
     "@blockly/dev-tools": "^9.0.1",
@@ -69,8 +74,8 @@
     "@types/webpack": "^5.28.5",
     "@types/webpack-env": "^1.18.8",
     "@types/wicg-file-system-access": "^2023.10.6",
-    "concurrently": "^9.2.0",
     "copy-webpack-plugin": "^13.0.0",
+    "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
     "dotenv-webpack": "^8.1.1",
     "eslint": "^9.30.1",
@@ -90,7 +95,9 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.36.0",
     "webpack": "^5.99.9",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "webpack-dev-middleware": "^7.4.2",
+    "webpack-hot-middleware": "^2.26.1"
   },
   "optionalDependencies": {
     "sass-embedded-linux-x64": "^1.89.2",
