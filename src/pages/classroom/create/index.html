@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <link href="@root/root.scss" rel="stylesheet">
+    <link href="./index.scss" rel="stylesheet">
+</head>
+<body>
+    <%~ include('src/templates/partials/header.html') %>
+    <h1 class="title">
+        Create a new Classroom
+    </h1>
+    <div class="new-classroom-inputs two-column">
+        <div class="column">
+            <%~ include('src/templates/partials/text-input.html', {
+                containerId: "",
+                inputID: "classroomNameInput",
+                class: "",
+                label: 'Classroom Name',
+                placeholder: 'My Ro/Box Classroom',
+                required: true,
+                autocomplete: '',
+                errorId: '',
+            }) %>
+            <%~ include('src/templates/partials/text-input.html', {
+                containerId: "",
+                inputID: "classroomDescriptionInput",
+                class: "",
+                label: 'Class Description',
+                placeholder: 'This is my awesome Ro/Box classroom',
+                required: false,
+                autocomplete: '',
+                errorId: '',
+            }) %>
+            <%~ include('src/templates/partials/text-input.html', {
+                containerId: "",
+                inputID: "yearLevelInput",
+                class: "",
+                label: 'Year Level',
+                placeholder: 'Year 8',
+                required: false,
+                autocomplete: '',
+                errorId: '',
+            }) %>
+            <%~ include('src/templates/partials/text-input.html', {
+                containerId: "",
+                inputID: "classCodeInput",
+                class: "",
+                label: 'Class Code',
+                placeholder: '06DT-CRTECH01',
+                required: false,
+                autocomplete: '',
+                errorId: '',
+            }) %>
+            <%~ include('src/templates/partials/text-input.html', {
+                containerId: "",
+                inputID: "",
+                class: "locationInput",
+                label: 'Room/Location',
+                placeholder: 'Q04',
+                required: false,
+                autocomplete: '',
+                errorId: '',
+            }) %>
+            <%~ include('src/templates/partials/text-input.html', {
+                containerId: "",
+                inputID: "",
+                class: "",
+                label: 'LMS Class Page URL',
+                placeholder: 'myschool.learning.edu/page/12345',
+                required: false,
+                autocomplete: '',
+                errorId: '',
+            }) %>
+        </div>
+        <div class="column">
+            <div class="input-container">
+                <div class="radio-list">
+                    <form>
+                        <label class="input-label">Classroom Security</label>
+                        <label>
+                            <input type="radio" name="option" value="open"> Anyone can Join
+                        </label>
+                        <br>
+                        <label>
+                            <input type="radio" name="option" value="approval"> Approval required
+                        </label>
+                        <br>
+                        <label>
+                            <input type="radio" name="option" value="invite"> Invite only
+                        </label>
+                    </form>
+                </div>
+            </div>
+            <div class="input-container">
+                <div class="checkbox-list">
+                    <label class="input-label">Classroom Features</label>
+                    <label><input type="checkbox" name="option" value="code"> Code Projects</label>
+                    <label><input type="checkbox" name="option" value="lessons"> Lessons</label>
+                    <label><input type="checkbox" name="option" value="classcodeVis"> Class Code visibility for Students</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="ctaButton saveButton" id="create-classroom-button"><i class="fa-solid fa-chalkboard-teacher" style="margin-right: 10px;"></i>Create Classroom</button>
+    <div style="margin-bottom: 20px;"></div>
+
+    <%~ include('src/templates/partials/footer.html') %>
+    <script src="./index.ts"></script>
+</body>
+</html>

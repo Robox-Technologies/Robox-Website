@@ -165,3 +165,30 @@ a.error-link {
     display: none;
     margin-left: 2px;
 }
+
+// Checkbox
+.checkbox-list {
+    font-family: 'Nunito', sans-serif;
+
+    label {
+        display: block;
+        margin: 10px 0;
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+    }
+}
+
+// Radio buttons
+.radio-list {
+    font-family: 'Nunito', sans-serif;
+
+    label {
+        margin: 10px 0;
+    }
+
+    input[type="radio"] {
+            margin-right: 10px;
+    }
+}
