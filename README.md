@@ -41,6 +41,33 @@ This will open a localhost server on port 3000 (`localhost:3000`).
 
 The code automatically recompiles upon file changes.
 
+## Production
+Clone the repository:
+```bash
+git clone https://github.com/Robox-Technologies/Robox-Website.git <directory>
+```
+
+Install dependencies:
+```bash
+npm install
+```
+
+Create a new `.env` file in the root folder. An example of its contents can be found in `example.env`.
+To build the website for production the steps are mostly the same. 
+To build the static site run 
+```bash
+npm run build
+```
+Then to run you can just run the command:
+```bash
+node build/server/server.js
+```
+Or if you prefer you can
+```bash
+npm run start
+``` 
+to automatically do this all
+
 <br>
 
 <br>
