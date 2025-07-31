@@ -35,9 +35,7 @@ jobs:
       
       - name: Build website
         run: |
-          npx tsc -p tsconfig.webpack.json
-          npx tsc -p tsconfig.server.json
-          npx webpack --config ./build/webpack.prod.config.js
+          npm run prod
       
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@0cbcac4740c2bfb00d632f0b863b57713124eb5a
