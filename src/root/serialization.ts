@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
 import { Projects, Project } from "types/projects";
-
+import { uploadNewProject, getCurrentUserData, authCheck } from '@root/account';
 import { workspaceToPng_ } from './screenshot';
 
 
@@ -29,11 +29,18 @@ export function getProjects(): Projects {
 
     return projects;
 }
-export function createProject(name: string): string {
+export async function createProject(name: string): Promise<string> {
     const projects = getProjects()
     const uuid = crypto.randomUUID();
 
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
+    // If user is authenticated, upload the new project to the database
+    const isAuthenticated = await authCheck() || false;
+    if (isAuthenticated) {
+        const currentUser = await getCurrentUserData()
+        uploadNewProject(uuid, currentUser?.id, name)
+    }
 
     projects[uuid] = { name: name, time: dayjs(), workspace: {}, thumbnail: "" }
     localStorage.setItem("roboxProjects", JSON.stringify(projects))

@@ -164,6 +164,37 @@ export async function writeToDatabase(tableName: string, objectId: string, colum
     }
 }
 
+export async function uploadNewProject(projectId: string, userId: string, name: string) {
+    const defaultProjectName: string = 'unnamed project'
+
+    name = name || defaultProjectName;
+    console.log(userId, projectId)
+
+    try {
+        const { data, error } = await supabase
+            .from('projects')
+            .insert({
+                id: projectId,
+                owner: userId,
+                name: name,
+                status: 'active',
+                cloud_sync: true
+            })
+            .select();
+
+        if (error) {
+            console.error('Project creation error:', error)
+            throw error;
+        }
+
+        return data && data.length > 0 ? data[0] : null;
+    }
+    catch (error) {
+        console.error('Failed to create project:', error)
+        throw error
+    }
+}
+
 export function headerAuth() {
     const updateHeaderAuthState = async () => {
         const loginButton = document.getElementById('header-login-button') as HTMLButtonElement

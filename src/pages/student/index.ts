@@ -46,11 +46,12 @@ async function applyProjects() {
 document.addEventListener("DOMContentLoaded", () => {
     applyProjects();
     const createProjectButton = document.getElementById("create-project");
-    createProjectButton?.addEventListener("click", () => {
-        const uuid = createProject("unnamed project");
-        window.location.href = `/editor?id=${uuid}`;
-    });
-
+    if (createProjectButton) {
+        createProjectButton.addEventListener("click", async () => {
+            const uuid = await createProject("unnamed project");
+            window.location.href = `/editor?id=${uuid}`;
+        });
+    }
     
     const toolbarModal = document.getElementById("project-toolbar") as HTMLDialogElement | null;
 
