@@ -6,6 +6,7 @@
     "build:client": "cross-env NODE_ENV=production webpack --config build/webpack.prod.config.js",
     "build": "npm run clean && tsc -p tsconfig.webpack.json && npm run build:server && npm run build:client",
     "build:analyze": "npm run clean && tsc -p tsconfig.webpack.json && cross-env NODE_ENV=production ANALYZE=true webpack --config build/webpack.prod.config.js",
+    "prod": "npm run build && cross-env NODE_ENV=production node build/server/server.js",
     "clean": "rimraf build",
     "dev:server": "tsc -w -p tsconfig.server.json",
     "dev:run": "cross-env NODE_ENV=development nodemon build/server/server.js",
