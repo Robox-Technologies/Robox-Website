@@ -35,7 +35,7 @@ jobs:
       
       - name: Build website
         run: |
-          npm run prod
+          npm run build
       
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@0cbcac4740c2bfb00d632f0b863b57713124eb5a
