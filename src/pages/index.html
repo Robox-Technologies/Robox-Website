@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%~ include('src/templates/partials/metadata.html') %>
+    <%~ include('@partials/metadata.html') %>
     <script src="./index.ts" defer></script>
+    <script src="./boxToBot.ts" defer></script>
     <link href="./index.scss" rel="stylesheet">
+    <link rel="preload" href="@images/landing/hero.jpg" as="image">
+    <link rel="preload" href="@images/landing/hero-mobile.jpg" as="image">
     <title>Ro/Box - Robotics for Everyone</title>
 </head>
 
 <body>
-    <%~ include('src/templates/partials/header.html') %>
+    <%~ include('@partials/header/header.html') %>
 
     <div class="hero">
         <div class="title">
             <h1>
-                Robotics for<br>
-                Everyone
+                Robotics<br>
+                <span class="secondaryTitle">for everyone</span>
             </h1>
         </div>
 
@@ -127,7 +130,7 @@
             </p>
 
             <div class="cards">
-                <%~ include('src/templates/partials/card.html', {
+                <%~ include('@partials/card.html', {
                     class: "roboxHubCard",
                     title: 'Assembly', 
                     imageSource: "@images/landing/roboxHubCard1.png", 
@@ -139,7 +142,7 @@
                     gooberClass: "gooberPentagon"
                 }) %>
 
-                <%~ include('src/templates/partials/card.html', {
+                <%~ include('@partials/card.html', {
                     class: "roboxHubCard",
                     title: 'Workshop', 
                     imageSource: "@images/landing/roboxHubCard2.png",
@@ -149,7 +152,7 @@
                     ]
                 }) %>
 
-                <%~ include('src/templates/partials/card.html', {
+                <%~ include('@partials/card.html', {
                     class: "roboxHubCard",
                     title: 'Lessons', 
                     imageSource: "@images/landing/roboxHubCard3.png", 
@@ -206,7 +209,7 @@
                 %>
                 <% featuredProducts.forEach(function(product, index) { %>
                     <% let isBulkPack = product.internalName === "robox-10-pack"; %>
-                    <%~ include('src/templates/partials/card.html', {
+                    <%~ include('@partials/card.html', {
                         id: product.internalName,
                         class: "productCard",
                         title: product.name,
@@ -233,6 +236,6 @@
         </section>
     </article>
     
-    <%~ include('src/templates/partials/footer.html') %>
+    <%~ include('@partials/footer/footer.html') %>
 </body>
 </html>

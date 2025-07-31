@@ -1,0 +1,17 @@
+{
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "build/",
+        "baseUrl": ".",
+        "moduleResolution": "node",
+        "module": "esnext",
+        "target": "ES2022",
+    },
+    "exclude": [
+        "node_modules",
+        "src"
+    ],
+    "include": [
+        "webpack.*.config.ts",
+    ],
+}

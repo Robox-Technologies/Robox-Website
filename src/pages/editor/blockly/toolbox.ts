@@ -424,37 +424,50 @@ export const toolbox = {
         'kind': 'sep',
       },
       {
-        'kind': 'category',
-        'name': 'Sensors',
-        'categorystyle': 'sensor_category',
-        "cssConfig": {
-            "icon": "categoryIcon fa fa-eye"
-        },
-        'contents': [
-            {
-                "kind": "block",
-                "type": "ultrasonic_distance"
-            },
-            {
-                "kind": "block",
-                "type": "sensor_bool"
-            },
-            {
-                "kind": "block",
-                "type": "distance_bool",
-                "inputs": {
-                    "number": {
-                        "shadow": {
-                            "type": "math_number",
-                            "fields": {
-                                "NUM": 10
-                            }
-                        }
-                    }
-                }
-            }
-        ]
+          "kind": "category",
+          "name": "Sensors",
+          "categorystyle": "sensor_category",
+          "cssConfig": {
+              "icon": "categoryIcon fa fa-eye"
+          },
+          "contents": [
+              {
+                  "kind": "block",
+                  "type": "ultrasonic_distance"
+              },
+              {
+                  "kind": "block",
+                  "type": "sensor_bool"
+              },
+              {
+                  "kind": "block",
+                  "type": "distance_bool",
+                  "inputs": {
+                      "number": {
+                          "shadow": {
+                              "type": "math_number",
+                              "fields": {
+                                  "NUM": 10
+                              }
+                          }
+                      }
+                  }
+              },
+              {
+                  "kind": "block",
+                  "type": "color_sensor_value"
+              },
+              {
+                  "kind": "block",
+                  "type": "color_sensor_is_colour"
+              },
+              {
+                  "kind": "block",
+                  "type": "color_sensor_calibrate"
+              }
+          ]
       },
+
       {
         'kind': 'category',
         'name': 'System',

@@ -41,6 +41,11 @@ $downloadButtonSize: 60px;
     transition-duration: .5s;
 }
 
+body {
+    min-width: 870px;
+    min-height: 500px;
+}
+
 // Makes our label white.
 .blocklyTreeLabel {
     color: white;
@@ -238,8 +243,7 @@ body {
     @include variables.dropShadowSmaller;
 
     display: flex;
-    position: absolute;
-    z-index: 9;
+    pointer-events: auto;
 
     background-color: variables.$themeRed;
     justify-content: space-between;
@@ -247,8 +251,6 @@ body {
     width: 310px;
     height: 50px;
     border-radius: 25px;
-    bottom: variables.$standardGap;
-    right: variables.$standardGap;
 
     & > * {
         cursor: pointer;
@@ -265,13 +267,14 @@ body {
 }
 $blocklyUIIconSize: 40px;
 $zoomButtonsGap: 10px;
-.uiHolder {
-    display: flex;
-    gap: $zoomButtonsGap;
-}
+
 #blocklyCustomTimeControls {
+    z-index: 9;
+    position: absolute;
     top: variables.$standardGap;
     right: variables.$standardGap;
+
+    display: flex;
     flex-direction: row;
     gap: 0;
 }
@@ -325,6 +328,29 @@ button[calibrating]:hover {
     padding: 20px;
     cursor: pointer;
 }
+
+.sideControls {
+    pointer-events: none;
+    user-select: none;
+    position: absolute;
+    z-index: 9;
+    right: variables.$standardGap;
+    bottom: variables.$standardGap;
+}
+
+.zoomControls {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    gap: 16px;
+    margin-bottom: variables.$standardGap;
+
+    .uiButtons {
+        pointer-events: auto;
+        border-radius: 50%;
+    }
+}
+
 #connection-management {
     #download-robox-button {
         display: none;

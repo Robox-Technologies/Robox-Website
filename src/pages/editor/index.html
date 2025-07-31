@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%~ include('src/templates/partials/metadata.html') %>
+    <%~ include('@partials/metadata.html') %>
     <meta charset="utf-8">
     <title>Code Workshop - Ro/Box</title>
     <script src="index.ts"></script>
@@ -10,7 +10,7 @@
 </head>
     
 <body>
-    <%~ include('src/templates/partials/header-workshop.html') %>
+    <%~ include('@partials/header-workshop/header-workshop.html') %>
 
     <div id="workspaceTabs">
         <a id="back-button" href="/student">
@@ -30,7 +30,7 @@
             <button id="robox-settings-button" class="button standard-button">
                 <i class="fa-solid fa-gear"></i>
             </button>
-            <%~ include('src/templates/partials/toolbar.html', {
+            <%~ include('@partials/toolbar/toolbar.html', {
                 id: "settings-toolbar",
                 content: [
                     "<button class='button' id='robox-settings-calibrate'><i class='fa-solid fa-eye-dropper'></i>Calibrate Colour</button>",
@@ -40,37 +40,48 @@
         </div>
     </div>
     <div id="blocklyDiv">
+        <div id="blocklyCustomTimeControls">
+            <button class="button uiButtons" id="undo"><i class="fa-solid fa-rotate-left"></i></button>
+            <button class="button uiButtons" id="redo"><i class="fa-solid fa-rotate-right"></i></button>
+        </div>
         
-        <div id="connection-management" status="disconnected">
-            <button class="button mainButton" id="code-download-robox-button">
-                Download Python
-            </button>
-            <button class="button mainButton" id="connect-robox-button">
-                Connect to Ro/Box
-            </button>
-            <button class="button mainButton" id="stop-robox-button">
-                Stop Ro/Box
-            </button>
-            <button class="button mainButton" id="run-robox-button">
-                Run Ro/Box
-            </button>
-            <button class="button mainButton" id="loading">
-                <i class="fa-solid fa-spinner fa-spin"></i>
-            </button>
-            <button class="sideButtons button" id="download">
-                <i class="fa-solid fa-download"></i>
-            </button>
-            <button class="sideButtons button" id="disconnect">
-                <i class="fa-solid fa-plug-circle-xmark"></i>
-            </button>
-            <button class="sideButtons button" id="console">
-                <i class="fa-solid fa-terminal"></i>
-            </button>
+        <div class="sideControls">
+            <div class="zoomControls">
+                <button class="uiButtons" id="zoomIn"><i class="fa-solid fa-plus"></i></button>
+                <button class="uiButtons" id="zoomOut"><i class="fa-solid fa-minus"></i></button>
+            </div>
 
+            <div id="connection-management" status="disconnected">
+                <button class="button mainButton" id="code-download-robox-button">
+                    Download Python
+                </button>
+                <button class="button mainButton" id="connect-robox-button">
+                    Connect to Ro/Box
+                </button>
+                <button class="button mainButton" id="stop-robox-button">
+                    Stop Ro/Box
+                </button>
+                <button class="button mainButton" id="run-robox-button">
+                    Run Ro/Box
+                </button>
+                <button class="button mainButton" id="loading">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                </button>
+                <button class="sideButtons button" id="download">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+                <button class="sideButtons button" id="disconnect">
+                    <i class="fa-solid fa-plug-circle-xmark"></i>
+                </button>
+                <button class="sideButtons button" id="console">
+                    <i class="fa-solid fa-terminal"></i>
+                </button>
+
+            </div>
         </div>
     </div>
 
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "bootsel-boot",
         class: "bootsel",
         title: '1. Boot the RO/BOX into BOOTSEL mode', 
@@ -81,7 +92,7 @@
             '<button id="boot-try" class="button calibrate-button standard-button">Yes<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "bootsel-outcome",
         class: "bootsel",
         title: '', 
@@ -92,7 +103,7 @@
             '<button id="outcome-button" class="button calibrate-button standard-button"><i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "bootsel-flash",
         title: '2. Flash the Ro/Box', 
         class: "bootsel",
@@ -103,7 +114,7 @@
             '<button id="open-file" class="button calibrate-button standard-button">Open<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "color-calibration-modal",
         title: 'Color Calibration', 
         content: [
@@ -114,7 +125,7 @@
             '<button id="calibrate-button" class="button calibrate-button standard-button">Calibrate<i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
     }) %>
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "color-calibration-outcome-modal",
         title: '', 
         content: [
