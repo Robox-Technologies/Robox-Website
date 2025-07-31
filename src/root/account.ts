@@ -47,6 +47,7 @@ export async function getCurrentUserData() {
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
+            .single()
 
         if (error) {
             console.error('Failed to get user data:', error)
@@ -174,9 +175,11 @@ export function headerAuth() {
             accountButton.style.display = 'inline-flex'
             
             const userData = await getCurrentUserData()
-            const fullName = userData?.user_metadata?.full_name
-            const displayName = fullName.includes(' ') ? fullName.split(' ')[0] + ' ' + fullName.split(' ')[1]?.charAt(0) : fullName
-            usernameElement.textContent = displayName || userData?.email || 'User'
+            console.log('User data:', userData)
+            const displayName = userData.display_name
+            const firstName = userData?.first_name
+            const email = userData?.full_name
+            usernameElement.textContent = displayName || firstName || email || 'User'
         } else {
             loginButton.style.display = 'inline-flex'
             accountButton.style.display = 'none'
