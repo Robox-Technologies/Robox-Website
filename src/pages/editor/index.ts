@@ -20,6 +20,8 @@ registerFieldColour();
 import "./instructions/UF2Flash"
 import "./instructions/colourCalibration"
 
+import { showToast } from '@root/toast';
+
 
 
 const blocks = require.context("./blockly/blocks", false, /\.ts$/);
@@ -78,6 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Scroll for vertical movement,
     // Shift + scroll for horizontal movement
     registerControls(workspace)
+    
+
 
     // Update flyout scale if workspace scale changes
     const flyoutWorkspace = workspace.getFlyout().getWorkspace();
