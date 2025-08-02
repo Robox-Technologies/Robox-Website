@@ -1,7 +1,7 @@
 import { pico } from './communication/communicate';
 import * as Blockly from 'blockly/core';
 import { pythonGenerator } from 'blockly/python'
-
+import { showToast } from '@root/toast';
 const scriptDependency = `
 from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
 from machine import Pin, Timer
@@ -60,9 +60,6 @@ export function postBlocklyWSInjection() {
     pico.addEventListener("error", () => {
         connectionManagment.setAttribute("loading",  "false")
     })
-    ws.addChangeListener((event) => {
-        if (event.isUiEvent ) return; //Checking if this update changed the blocks
-    });
     connectButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
         pico.request()
@@ -104,8 +101,9 @@ export function postBlocklyWSInjection() {
         event.stopPropagation()
     })
     pico.addEventListener("error", (event) => {
+        const picoEvent = event as CustomEvent
         console.error("Pico Error: ", event)
-        //TODO: add toasts
+        showToast("error", "Pico Error", `An error occurred while communicating with the Pico. Please check your connection and try again. \nError: ${picoEvent.detail.message}`);
     })
     pico.startupConnect()
 

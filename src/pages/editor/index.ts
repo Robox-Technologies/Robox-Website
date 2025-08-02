@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
         postBlocklyWSInjection()
     }
     else {
-        showToast("warning", "Browser", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ");
+        showToast("warning", "Browser Incompatibility", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ");
 
         const connectionManagment = document.getElementById("connection-management")
         const downloadRoboxManagment = document.getElementById("code-download-robox-button")
@@ -112,6 +112,14 @@ document.addEventListener("DOMContentLoaded", () => {
         downloadRoboxManagment.addEventListener("click", () => {
             downloadPythonProject(workspace, workspaceId)
         })
+
+        const settingsButton = document.getElementById("robox-settings-button")
+        if (settingsButton) {
+            settingsButton.addEventListener("click", () => {
+                showToast("warning", "Browser Incompatibility", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ", 5000);
+            })
+        }
+
     }
     
     const nameForm = document.getElementById("project-name-form") as HTMLFormElement | null
@@ -131,6 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (nameInput.value !== project["name"]) {
             const newName = nameInput.value
             renameProject(workspaceId, newName)
+            showToast("success", "Project Renamed", `Project has been renamed to "${newName}"`, 3000);
         }
     })
     nameForm.addEventListener("submit", (event) => {

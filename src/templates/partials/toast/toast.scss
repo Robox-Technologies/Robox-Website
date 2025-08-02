@@ -4,16 +4,20 @@
     height: 100%;
     z-index: 9999;
     display: flex;
+    pointer-events: none;
     flex-direction: column-reverse;
     gap: 20px;
     bottom: 20px;
 }
 $toast-icon-size: 32px;
+$toast-max-width: 500px;
 .toast {
     background-color: #333;
     color: #fff;
+    pointer-events: all;
     padding: 12px 16px;
     border-radius: 4px;
+    max-width: $toast-max-width;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     animation: slide-in 0.3s ease-out forwards;
     .toast-header {
