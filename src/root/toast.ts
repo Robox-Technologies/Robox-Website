@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-export function showToast(type: keyof typeof toastStyles, title: string, message: string, duration = 3000) {
+export function showToast(type: keyof typeof toastStyles, title: string, message: string, duration = -1) {
     const toastHolder = document.getElementById('toast-holder');
     const style = toastStyles[type];
     const toast = document.createElement('div');
@@ -50,7 +50,9 @@ export function showToast(type: keyof typeof toastStyles, title: string, message
     `;
     toastHolder?.appendChild(toast);
 
-    setTimeout(() => {
-        toast.remove();
-    }, duration);
+    if (duration !== -1) {
+        setTimeout(() => {
+            toast.remove();
+        }, duration);
+    }
 }

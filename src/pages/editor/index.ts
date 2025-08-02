@@ -9,7 +9,7 @@ import {toolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
 import { Project } from '~types/projects';
-import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject } from '@root/blockly/serialization';
+import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject } from '@root/blockly/serialization';
 import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
 import { postBlocklyWSInjection } from './usb';
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
         project = getProject(workspaceId)
     }
     else window.location.href = "/student"
-    if (!project) return
+    if (!project) window.location.href = "/student"
 
     // Control + scroll for zoom,
     // Scroll for vertical movement,
@@ -101,6 +101,8 @@ document.addEventListener("DOMContentLoaded", () => {
         postBlocklyWSInjection()
     }
     else {
+        showToast("warning", "Browser", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ");
+
         const connectionManagment = document.getElementById("connection-management")
         const downloadRoboxManagment = document.getElementById("code-download-robox-button")
         if (!connectionManagment) return
@@ -108,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         connectionManagment.setAttribute("status",  "no-serial")
         downloadRoboxManagment.addEventListener("click", () => {
-            downloadBlocklyProject(workspaceId)
+            downloadPythonProject(workspace, workspaceId)
         })
     }
     

@@ -115,6 +115,10 @@ function sendCode(ws: Blockly.Workspace) {
     const finalCode = `${scriptDependency}\n${code}\nevent_begin()`
     pico.sendCode(finalCode)
 }
+export function getPythonCode(ws: Blockly.Workspace): string {
+    const code = pythonGenerator.workspaceToCode(ws);
+    return `${scriptDependency}\n${code}\nevent_begin()`
+}
 let rotation = 0;
 const degreesPerTooth = 60; // Adjust this value to match one gear tooth visually
 function rotateOneTooth(cog: HTMLElement) {
