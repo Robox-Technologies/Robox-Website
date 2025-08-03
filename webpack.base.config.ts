@@ -9,6 +9,7 @@ import { RoboxProcessor } from './roboxProcessor.js';
 import { getProductList } from './stripe-server-helper.js';
 import { Product } from '~types/api.js';
 import { TemplateData, TemplatePage } from './types/webpack.js';
+import { getCMSCollection } from './cms.js';
 
 
 
@@ -34,7 +35,7 @@ const aliasPaths = Object.fromEntries(
     Object.entries(alias).map(([key, value]) => [key, path.join(__dirname, value)])
 );
 
-
+console.log(await getCMSCollection("articles"));
 function findHtmlPages(rootDir: string): string[] {
     const result: string[] = [];
     const entries = fs.readdirSync(rootDir, { withFileTypes: true });

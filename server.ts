@@ -43,6 +43,6 @@ app.get('*', (_, res) => {
     res.sendFile(path404);
 });
 
-app.listen(3000, function () {
-    console.log('Ro/Box website listening on port 3000!\n');
+app.listen(3333, function () {
+    console.log('Ro/Box website listening on port 3333!\n');
 });
