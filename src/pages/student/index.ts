@@ -80,14 +80,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const deleteConfirmButton = deleteModal.querySelector("button#delete-confirm-button") as HTMLButtonElement | null;
     const editConfirmButton = editModal.querySelector("button#edit-confirm-button") as HTMLButtonElement | null;
     if (!deleteConfirmButton || !editConfirmButton) return;
-    editConfirmButton.addEventListener("click", () => {
+    editConfirmButton.addEventListener("click", async () => {
         let projectCard = document.querySelector(".toolbar-target")?.closest(".project-card") as HTMLElement | null;
         if (!projectCard) return;
         const projectId = projectCard.id;
         if (!projectId) return;
         const project = getProject(projectId);
         if (!project) return;
-        renameProject(projectId, projectNameInput.value);
+        await renameProject(projectId, projectNameInput.value);
         applyProjects();
         projectCard = document.getElementById(projectId) as HTMLElement | null;
         if (projectCard) {

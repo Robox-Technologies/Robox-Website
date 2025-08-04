@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
 import { Projects, Project } from "types/projects";
-import { uploadNewProject, getCurrentUserData, authCheck, updateProjectData, isSyncedProject, deleteCloudProject } from '@root/account';
+import { uploadNewProject, getCurrentUserData, authCheck, updateProjectData, isSyncedProject, deleteCloudProject, writeToDatabase } from '@root/account';
 import { workspaceToPng_ } from './screenshot';
 
 
@@ -124,13 +124,20 @@ export function saveBlocklyCompressed(projectRaw: string) {
     return projectData
 }
 
-export function renameProject(uuid: string, newName:string) {
+export async function renameProject(uuid: string, newName: string) {
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
     const projects = getProjects()
     if (!projects[uuid]) throw new Error("Project does not exist")
     projects[uuid]["name"] = newName
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
+    if (await isSyncedProject(uuid)) {
+        console.log('renaming', uuid);
+        const currentUser = await getCurrentUserData();
+        if (currentUser) {
+            await writeToDatabase('projects', uuid, 'name', newName, true);
+        }
+    }   
 }
 export async function deleteProject(uuid: string) {
     console.log('Deleting project:', uuid);

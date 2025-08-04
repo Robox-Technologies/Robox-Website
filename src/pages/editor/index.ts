@@ -121,17 +121,17 @@ document.addEventListener("DOMContentLoaded", () => {
     nameInput.addEventListener("input", () => {
         document.title = `${nameInput.value} - Ro/Box`
     })
-    nameInput.addEventListener("blur", () => {
+    nameInput.addEventListener("blur", async () => {
         if (nameInput.value !== project["name"]) {
             const newName = nameInput.value
-            renameProject(workspaceId, newName)
+            await renameProject(workspaceId, newName)
         }
     })
-    nameForm.addEventListener("submit", (event) => {
+    nameForm.addEventListener("submit", async (event) => {
         event.preventDefault()
         if (nameInput.value !== project["name"]) {
             const newName = nameInput.value
-            renameProject(workspaceId, newName)
+            await renameProject(workspaceId, newName)
         }
     })
     downloadButton.addEventListener("click", () => {
