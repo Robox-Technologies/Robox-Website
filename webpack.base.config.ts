@@ -35,7 +35,6 @@ const aliasPaths = Object.fromEntries(
     Object.entries(alias).map(([key, value]) => [key, path.join(__dirname, value)])
 );
 
-console.log(await getCMSCollection("articles"));
 function findHtmlPages(rootDir: string): string[] {
     const result: string[] = [];
     const entries = fs.readdirSync(rootDir, { withFileTypes: true });
@@ -120,7 +119,20 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
             images: fs.existsSync(imagesPath) ? fs.readdirSync(imagesPath).map(f => path.parse(f).base) : [],
         };
     }
+
     createPages(storePages, 'src/templates/views/product/product.html', productData);
+
+    const articles = await getCMSCollection("articles");
+    const caseStudies = articles.filter(article => article.type === "case-study");
+    // Find the index of the teacher hub to add the case studies
+    const teacherHubIndex = dynamicPages.findIndex(article => article.filename === "teacher/index.html");
+    if (teacherHubIndex !== -1) {
+        dynamicPages[teacherHubIndex].data = {
+            caseStudies: caseStudies,
+        };
+    }
+    
+
     const htmlBundlerPluginOptions = {
         entry: dynamicPages,
         js: { filename: 'public/js/[name].[contenthash:8].js' },
