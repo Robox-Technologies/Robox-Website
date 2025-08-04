@@ -164,6 +164,46 @@ export async function writeToDatabase(tableName: string, objectId: string, colum
     }
 }
 
+function isProtoPollution(key: string): boolean {
+    const forbiddenKeys = ["__proto__", "constructor", "prototype"];
+    return forbiddenKeys.includes(key);
+}
+
+export function isValidUUID(uuid: string): boolean {
+    if (isProtoPollution(uuid)) return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+}
+
+export async function updateProjectData(project_id: string, project_data: string) {
+    const now = new Date().toISOString();
+    await writeToDatabase('projects', project_id, 'project_data', project_data, true);
+    await writeToDatabase('projects', project_id, 'last_updated', now, true);
+}
+
+export async function isSyncedProject(uuid: string): Promise<boolean> {
+    if (!isValidUUID(uuid)) {
+        console.warn('Invalid UUID:', uuid);
+        return false;
+    }
+    try {
+        const { data, error } = await supabase
+            .from('projects')
+            .select('cloud_sync')
+            .eq('id', uuid)
+            .maybeSingle();
+        if (error) {
+            return false;
+        }
+        if (!data) {
+            return false;
+        }
+        return !!(data && data.cloud_sync === true);
+    } catch (error) {
+        return false;
+    }
+}
+
 export async function uploadNewProject(projectId: string, userId: string, name: string) {
     const defaultProjectName: string = 'unnamed project'
 
@@ -206,7 +246,6 @@ export function headerAuth() {
             accountButton.style.display = 'inline-flex'
             
             const userData = await getCurrentUserData()
-            console.log('User data:', userData)
             const displayName = userData.display_name
             const firstName = userData?.first_name
             const email = userData?.full_name

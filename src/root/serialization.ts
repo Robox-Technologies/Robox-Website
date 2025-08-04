@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
 import { Projects, Project } from "types/projects";
-import { uploadNewProject, getCurrentUserData, authCheck } from '@root/account';
+import { uploadNewProject, getCurrentUserData, authCheck, updateProjectData, isSyncedProject } from '@root/account';
 import { workspaceToPng_ } from './screenshot';
 
 
@@ -98,6 +98,15 @@ export async function saveBlockly(uuid: string, workspace: WorkspaceSvg, callbac
 
         if (callback) callback(JSON.stringify(projects[uuid]));
     });
+    if (await isSyncedProject(uuid)) {
+        const currentUser = await getCurrentUserData();
+        if (currentUser) {
+            const projects = getProjects()
+            const projectData = JSON.stringify(projects)
+            await updateProjectData(uuid, projectData);
+            console.log('Saved project', uuid, 'to cloud successfully.');
+        }
+    }
 }
 
 export function saveBlocklyCompressed(projectRaw: string) {
