@@ -102,7 +102,7 @@ export async function saveBlockly(uuid: string, workspace: WorkspaceSvg, callbac
         const currentUser = await getCurrentUserData();
         if (currentUser) {
             const projects = getProjects()
-            const projectData = JSON.stringify(projects)
+            const projectData = JSON.stringify(projects[uuid])
             await updateProjectData(uuid, projectData);
             console.log('Saved project', uuid, 'to cloud successfully.');
         }
