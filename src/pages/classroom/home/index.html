@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <link href="@root/root.scss" rel="stylesheet">
+    <link href="./index.scss" rel="stylesheet">
+</head>
+<body>
+    <%~ include('src/templates/partials/header.html') %>
+    <h1 class="title">
+        My Classrooms
+    </h1>
+    <div class="classroom-list">
+        <div class="classroom">
+            <div class="classroom-content">
+                <img src="https://api.dicebear.com/9.x/bottts/svg" alt="avatar" class="classroom-avatar">
+                <h3 class="classroom-name">Awesome Classroom 1</h3>
+                <p class="classroom-description">32 Students</p>
+            </div>
+        </div>
+        <div class="classroom action-classroom" id="join-classroom">
+            <div class="classroom-content">
+                <i class="fa-solid fa-plus classroom-action-icon"></i>
+                <h3>Join Existing Classroom</h3>
+                
+            </div>
+        </div>
+        <div class="classroom action-classroom" id="create-classroom">
+            <div class="classroom-content">
+                <i class="fa-solid fa-plus classroom-action-icon"></i>
+                <h3>Create New Classroom</h3>
+            </div>
+        </div>
+    </div>
+    <%~ include('src/templates/partials/footer.html') %>
+    <script src="./index.ts"></script>
+</body>
+</html>
