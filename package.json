@@ -17,8 +17,8 @@
     "dev:watch": "npm-run-all --parallel watch:webpackconfig watch:serverconfig watch:dev:webpack",
     "prod:watch": "npm-run-all --parallel watch:webpackconfig watch:serverconfig watch:prod:webpack",
     
-    "dev:build": "npm-run-all --parallel build:webpack build:server && webpack --config build/webpack.dev.config.js",
-    "prod:build": "npm-run-all --parallel build:webpack build:server && webpack --config build/webpack.prod.config.js",
+    "dev:build": "npm-run-all --parallel build:webpack build:server",
+    "prod:build": "npm-run-all --parallel build:webpack build:server",
 
     "run:dev": "sleep 2.5 && cross-env NODE_ENV=development nodemon build/server/server.js",
     "run:prod": "sleep 5 && cross-env NODE_ENV=production nodemon build/server/server.js",
