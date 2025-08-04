@@ -5,6 +5,8 @@
     <%~ include('@partials/metadata.html') %>
     <title>Teacher Hub - Ro/Box</title>
     <link href="./index.scss" rel="stylesheet">
+    <link href="@root/hub.scss" rel="stylesheet">
+
 </head>
 
 <body>
@@ -21,15 +23,37 @@
         </div>
     </section>
 
-    <article>
+    <div id="main" class="item-sections">
+        
+        <div id="dropzone" style="display: none;">
+            <div>
+                <i class="fa-solid fa-upload" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <h2>Drop your .robox file to import!</h2>
+            </div>
+        </div>
         <section>
-            <h1>🚧 Under Construction 🚧</h1>
-            <p>
-                Check back later once we have resources!<br>
-                <em>(We're definitely not slacking off 😴)</em>
-            </p>
+            <h1>
+                Assembly Guides
+            </h1> 
+            <div class="card-holder">
+                <% caseStudies.forEach(function(caseStudy) { %>
+                    <%~ include('@partials/card.html', {
+                        class: "assembly-card",
+                        title: `<span>${caseStudy.title}</span>`, 
+                        imageSource: `http://localhost:3000${caseStudy.url}` || "@images/teacher-hub/assembly-guide.png", 
+                        buttons: [
+                            {
+                                content: "<span class='underline-grow'>Read Article</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
+                                link: `/articles/${caseStudy.slug}`
+                            },
+                        ],
+                        topRowButton: false,
+                    }) %>
+                <% }) %>
+            </div>
         </section>
-    </article>
+        
+    </div>
     
     <%~ include('@partials/footer/footer.html') %>
 </body>
