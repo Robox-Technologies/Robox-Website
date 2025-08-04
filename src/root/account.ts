@@ -204,6 +204,26 @@ export async function isSyncedProject(uuid: string): Promise<boolean> {
     }
 }
 
+export async function deleteCloudProject(uuid: string) {
+    if (!isValidUUID(uuid)) {
+        console.warn('Invalid UUID:', uuid);
+        return;
+    }
+    try {
+        const { error } = await supabase
+            .from('projects')
+            .delete()
+            .eq('id', uuid);
+        if (error) {
+            console.error('Failed to delete cloud project:', error);
+            throw error;
+        }
+    } catch (error) {
+        console.error('Error deleting cloud project:', error);
+        throw error;
+    }
+}
+
 export async function uploadNewProject(projectId: string, userId: string, name: string) {
     const defaultProjectName: string = 'unnamed project'
 

@@ -1,4 +1,4 @@
-import { createProject, getProject, getProjects, renameProject, sanitizeImageDataUrl } from "../../root/serialization";
+import { createProject, getProject, getProjects, renameProject, sanitizeImageDataUrl, deleteProject } from "../../root/serialization";
 import { Project } from "types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!projectId) return;
         const projects = getProjects();
         if (projects[projectId]) {
-            delete projects[projectId];
+            deleteProject(projectId);
             localStorage.setItem("roboxProjects", JSON.stringify(projects));
             applyProjects();
             //Move the toolbar to the renamed project card if it exists
