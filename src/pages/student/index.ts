@@ -95,14 +95,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         editModal.close();
     });
-    deleteConfirmButton.addEventListener("click", () => {
+    deleteConfirmButton.addEventListener("click", async () => {
         const projectCard = document.querySelector(".toolbar-target")?.closest(".project-card") as HTMLElement | null;
         if (!projectCard) return;
         const projectId = projectCard.id;
         if (!projectId) return;
         const projects = getProjects();
         if (projects[projectId]) {
-            deleteProject(projectId);
+            await deleteProject(projectId);
+            delete projects[projectId];
             localStorage.setItem("roboxProjects", JSON.stringify(projects));
             applyProjects();
             //Move the toolbar to the renamed project card if it exists
