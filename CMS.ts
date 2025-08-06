@@ -13,6 +13,7 @@ export interface CMSArticle {
     content: object[];
     filename: string | null;
     mimetype: string | null;
+    status: "draft" | "published" | "archived";
     html: string | null;
     url: string | null;
 }
@@ -28,7 +29,9 @@ export async function getCMSCollection(collectionName: string): Promise<CMSArtic
             console.warn(`Failed to fetch collection ${collectionName}: ${response.statusText}`);
             return null;
         }
-        const collection = (await response.json())["docs"];
+        const collection = (await response.json())["docs"].filter((item: CMSArticle) => {
+            return item.status === "published";
+        });
         return collection;
     } catch (error) {
         console.error(`Error fetching collection ${collectionName}:`, error);
