@@ -9,7 +9,7 @@ import { RoboxProcessor } from './roboxProcessor.js';
 import { getProductList } from './stripe-server-helper.js';
 import { Product } from '~types/api.js';
 import { TemplateData, TemplatePage } from './types/webpack.js';
-import { getCMSArticles } from './cms.js';
+import { convertSlateToHtml, getCMSArticles } from './cms.js';
 
 
 
@@ -122,15 +122,28 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
 
     createPages(storePages, 'src/templates/views/product/product.html', productData);
 
-    const articles = await getCMSArticles();
+    let articles = await getCMSArticles();
+    if (!articles) {
+        console.warn("No articles found in CMS, skipping article pages creation... IS THE CMS RUNNING?");
+        articles = [];
+    }
     const caseStudies = articles.filter(article => article.type === "case-study");
-    // Find the index of the teacher hub to add the case studies
+    // Allows the teacher hub to have case studies
     const teacherHubIndex = dynamicPages.findIndex(article => article.filename === "teacher/index.html");
     if (teacherHubIndex !== -1) {
         dynamicPages[teacherHubIndex].data = {
             caseStudies: caseStudies,
         };
     }
+    const caseStudiesPages = caseStudies.map(cs => `./src/pages/articles/${cs.slug}.html`);
+    const caseStudiesData: Record<string, TemplateData> = {};
+    for (const caseStudy of caseStudies) {
+        const studyHTML = await convertSlateToHtml(caseStudy.content);
+        caseStudy["html"] = studyHTML
+        const name = caseStudy.slug;
+        caseStudiesData[name] = { caseStudy };
+    }
+    createPages(caseStudiesPages, 'src/templates/views/articles/case-study/case-study.html', caseStudiesData);
     
 
     const htmlBundlerPluginOptions = {
