@@ -20,6 +20,12 @@ $cardBorderRadius: 5%;
 .fa-chevron-right {
     font-size: 12px;
 }
+.card-button:hover {
+    cursor: pointer;
+}
+.card {
+    background-color: white !important;
+}
 .card-link {
     display: flex;
     align-items: center;
