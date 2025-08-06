@@ -22,5 +22,17 @@ export async function getCMSCollection(collectionName: string): Promise<CMSArtic
         console.warn(`Failed to fetch collection ${collectionName}: ${response.statusText}`);
         return [];
     }
-    return (await response.json())["docs"];
+    const collection = (await response.json())["docs"];
+
+    return collection;
+}
+export async function getCMSArticles(): Promise<CMSArticle[]> {
+    const articles = await getCMSCollection('articles');
+    for (const item of articles) {
+        const itemSlug = item.title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
+        item.slug = itemSlug;
+    }
+    // most recent articles we want to show first
+    articles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return articles;
 }

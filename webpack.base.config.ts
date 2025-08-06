@@ -9,7 +9,7 @@ import { RoboxProcessor } from './roboxProcessor.js';
 import { getProductList } from './stripe-server-helper.js';
 import { Product } from '~types/api.js';
 import { TemplateData, TemplatePage } from './types/webpack.js';
-import { getCMSCollection } from './cms.js';
+import { getCMSArticles } from './cms.js';
 
 
 
@@ -122,7 +122,7 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
 
     createPages(storePages, 'src/templates/views/product/product.html', productData);
 
-    const articles = await getCMSCollection("articles");
+    const articles = await getCMSArticles();
     const caseStudies = articles.filter(article => article.type === "case-study");
     // Find the index of the teacher hub to add the case studies
     const teacherHubIndex = dynamicPages.findIndex(article => article.filename === "teacher/index.html");

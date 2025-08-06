@@ -126,9 +126,7 @@ $toolbarWidth: 130px;
     justify-content: space-between;
     flex-direction: row;
 }
-.card-button:hover {
-    cursor: pointer;
-}
+
 //Credits too https://stackoverflow.com/questions/62867788/text-underline-animation-in-css-the-simplest-way
 
 .assembly-card > .card-info > .card-buttons > .card-button:hover {
@@ -165,9 +163,7 @@ $toolbarWidth: 130px;
     font-size: 24px;
     color: white;
 }
-.card {
-    background-color: white !important;
-}
+
 
 .hero-title-container {
     background-color: variables.$themeYellow;
