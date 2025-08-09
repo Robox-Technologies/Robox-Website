@@ -17,7 +17,7 @@ addEventListener('DOMContentLoaded', () => {
 
     const createButton = document.getElementById('create-classroom-button');
     if (createButton) {
-        createButton.addEventListener('click', () => {
+        createButton.addEventListener('click', async () => {
             console.log('Create button clicked');
             const nameValidation = validateClassroomName();
             const lmsValidation = validateLmsUrl();
@@ -33,7 +33,14 @@ addEventListener('DOMContentLoaded', () => {
                     features: [classroomFeaturesInput?.value] || null
                 };
                 console.log('Creating classroom with data:', newClassroom);
-                createClassroom(newClassroom);
+                let classroomData = await createClassroom(newClassroom);
+                if (classroomData.id && classroomData.id.length > 0) {
+                    window.location.href = `/classroom?id=${classroomData.id}`;
+                }
+                else {
+                    console.error('Failed to create classroom:', classroomData);
+                    alert('Failed to create classroom. Please try again.');
+                }
             }
         });
     }
