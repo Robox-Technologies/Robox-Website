@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <link href="@root/root.scss" rel="stylesheet">
+    <link href="./index.scss" rel="stylesheet">
+</head>
+<body>
+    <%~ include('src/templates/partials/header.html') %>
+    <h1 class="title">
+        Add Students to Classroom
+        <!-- TODO: Add classroom name here -->
+    </h1>
+    <div class="two-column page-content">
+        <div class="dialog column">
+            <%~ include('src/templates/partials/add-students.html') %>
+        </div>
+        <div class="instructions column">
+            <h2>Instructions</h2>
+            <p>To add students to your classroom, generate a class code and share it with your students.</p>
+            <p>The class code is made of 8 numerical digits.</p>
+            <p>If you already have a class code, but want a new one, click regenerate.</p>
+            <p>Note: when regenerating a class code, the previous one will become invalid.</p>
+        </div>
+    </div>
+    <%~ include('src/templates/partials/footer.html') %>
+    <script src="./index.ts"></script>
+</body>
+</html>
