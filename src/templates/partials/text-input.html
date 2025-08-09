@@ -1,5 +1,5 @@
 <div class="input-container <%= it.class ? it.class : '' %>" id="<%= it.containerId %>">
     <label for="first-name" class="input-label"><%= it.label ? it.label : '' %><p class="required" style="display: <%= it.required ? 'inline' : 'none' %>">*</p></label>
-    <input type="text" id="<%= it.inputId %>" name="first-name" placeholder="<%= it.placeholder %>" class="text-input" autocomplete="<%= it.autocomplete %>">
+    <input type="text" id="<%= it.inputId %>" name="first-name" placeholder="<%= it.placeholder %>" class="text-input" <%= it.autocomplete ? `autocomplete="${it.autocomplete}"` : '' %>>
     <p id="<% it.errorId %>" class="error" style="display: none;"></p>
 </div>
