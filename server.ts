@@ -9,6 +9,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const isDev = process.env.NODE_ENV !== 'production';
 
+
+app.set("trust proxy", 1) // Trust the first proxy (if behind one, e.g., in production)
 // Rate limit 3000 requests per minute
 app.use(rateLimit({
     windowMs: 60 * 1000,
