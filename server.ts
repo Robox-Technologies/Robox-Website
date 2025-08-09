@@ -35,7 +35,12 @@ const apiRateLimit = rateLimit({
 
 app.use("/api/store", apiRateLimit, paymentRouter);
 app.use(express.json());
-
+app.get('/public/latest.pdf', (req, res, next) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    next();
+});
 if (isDev) {
     const webpack = (await import('webpack')).default;
     const webpackDevMiddleware = (await import('webpack-dev-middleware')).default;
