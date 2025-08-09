@@ -1,2 +1,36 @@
 @use '@root/variables';
 
+h1.title {
+    margin: 20px;
+}
+
+.page-content {
+    margin: 16px;
+    width: calc(100% - 32px) !important;
+}
+
+.instructions {
+    font-size: 16px;
+    color: variables.$themeBlack;
+    font-family: 'Nunito', sans-serif;
+    text-align: center;
+    vertical-align: middle;
+    padding: 20px;
+    width: 200px;
+    background-color: variables.$tone2;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    h2 {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    p {
+        font-size: 16px;
+        margin: 0;
+        padding: 0;
+    }
+}

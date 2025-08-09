@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <link href="@root/root.scss" rel="stylesheet">
+    <link href="./index.scss" rel="stylesheet">
+</head>
+<body>
+    <%~ include('src/templates/partials/header.html') %>
+    <h1 class="title">
+        Join Classroom
+    </h1>
+    <div class="two-column page-content">
+        <div class="dialog column">
+            <%~ include('src/templates/partials/join-classroom.html') %>
+        </div>
+        <div class="instructions column">
+            <h2>Instructions</h2>
+            <p>To join a classroom, ask your teacher for the class code.</p>
+            <p>The class code should be 8 numerical digits.</p>
+            <p>If you have a class code, enter it into the boxes on the left of this page.</p>
+            <p>Once you have entered the Class Code, click the "Join Classroom" button to join.</p>
+        </div>
+    </div>
+    <%~ include('src/templates/partials/footer.html') %>
+    <script src="./index.ts"></script>
+</body>
+</html>
