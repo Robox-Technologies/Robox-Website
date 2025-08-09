@@ -255,6 +255,45 @@ export async function uploadNewProject(projectId: string, userId: string, name: 
     }
 }
 
+export async function createClassroom(data) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const ownerId = session?.user?.id;
+    if (!ownerId) {
+        console.error('No authenticated user found');
+    }
+
+    const row = {
+        owner: ownerId,
+        name: data.name,
+        description: data.description,
+        year_level: data.year_level,
+        class_code: data.class_code,
+        location: data.location,
+        lms_url: data.lms_url,
+        security: data.security,
+        features: data.features,
+        status: 'active',
+    };
+
+    try {
+        const { data, error } = await supabase
+            .from('classrooms')
+            .insert(row)
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Failed to create classroom:', error);
+            throw error;
+        }
+        return data;
+
+    } catch (error) {
+        console.error('Error creating classroom:', error);
+        throw error;
+    }
+}
+
 export function headerAuth() {
     const updateHeaderAuthState = async () => {
         const loginButton = document.getElementById('header-login-button') as HTMLButtonElement
