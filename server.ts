@@ -35,12 +35,7 @@ const apiRateLimit = rateLimit({
 
 app.use("/api/store", apiRateLimit, paymentRouter);
 app.use(express.json());
-app.get('/public/latest.pdf', (req, res, next) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-    next();
-});
+
 if (isDev) {
     const webpack = (await import('webpack')).default;
     const webpackDevMiddleware = (await import('webpack-dev-middleware')).default;
@@ -68,7 +63,15 @@ if (isDev) {
     const path404 = path.join(websiteDir, '404.html');
 
     app.use("/", express.static(websiteDir));
-
+    app.use("/public", express.static(websiteDir + "/public", {
+        setHeaders: (res, filePath) => {
+            if (path.basename(filePath) === 'latest.pdf') {
+                    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+                    res.setHeader('Pragma', 'no-cache');
+                    res.setHeader('Expires', '0');
+                }
+            }
+    }));
     app.get('*', (_, res) => {
         res.sendFile(path404);
     });
