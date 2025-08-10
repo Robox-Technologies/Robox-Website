@@ -145,7 +145,7 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
     }
     createPages(caseStudiesPages, 'src/templates/views/articles/case-study/case-study.html', caseStudiesData);
     const blogPages = fs.readdirSync(path.resolve(__dirname, 'src/pages/blog/blogs'))
-    const blogPagesOutput = blogPages.map(file => `./src/pages/blog/${file}`);
+    const blogPagesOutput = blogPages.map(file => `./src/pages/articles/${file}`);
     const blogContent: Record<string, TemplateData> = {};
     for (const page of blogPages) {
         blogContent[path.parse(page).name] = { article: `src/pages/blog/blogs/${page}` };
