@@ -10,14 +10,17 @@ $cardBorderRadius: 5%;
 #main {
     padding: variables.$articleMargin;
 }
-.fa-square-binary {
+.fa-square-binary, .fa-download, .fa-cloud-arrow-up {
     height: $projectIconSize;
     width: $projectIconSize;
     background-color: white;
     margin-right: $projectIconGap;
 }
-.fa-square-binary > path {
+.fa-square-binary, .fa-cloud-arrow-up > path {
     color: variables.$themeBlue;
+}
+.fa-download > path {
+    color: variables.$themeRed;
 }
 .fa-chevron-right {
     font-size: 12px;

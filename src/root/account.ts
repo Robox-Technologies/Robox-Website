@@ -255,6 +255,16 @@ export async function uploadNewProject(projectId: string, userId: string, name: 
     }
 }
 
+export async function getProjectSyncStatus(uuid: string) {
+    if (!isValidUUID(uuid)) {
+        return false;
+    }
+    if (await getFromDatabase('projects', uuid, 'cloud_sync') === true) {
+        return true;
+    }
+    return false;
+}
+
 export async function createClassroom(data) {
     const { data: { session } } = await supabase.auth.getSession();
     const ownerId = session?.user?.id;

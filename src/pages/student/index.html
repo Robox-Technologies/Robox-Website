@@ -10,10 +10,21 @@
 </head>
 
 <body>
-    <template id="projectCardTemplate">
+    <template id="localProjectCardTemplate">
         <%~ include('src/templates/partials/card.html', {
             class: "project-card",
-            title: '<i class="fa-solid fa-square-binary"></i><span class="card-title-text"></span>', 
+            title: '<i class="fa-solid fa-download"></i><span class="card-title-text"></span>', 
+            imageSource: "https://placehold.co/1920x1080", 
+            descriptions: [
+                "2 hours ago", 
+            ],
+            topRowButton: true,
+        }) %>
+    </template>
+    <template id="cloudProjectCardTemplate">
+        <%~ include('src/templates/partials/card.html', {
+            class: "project-card",
+            title: '<i class="fa-solid fa-cloud-arrow-up"></i><span class="card-title-text"></span>', 
             imageSource: "https://placehold.co/1920x1080", 
             descriptions: [
                 "2 hours ago", 

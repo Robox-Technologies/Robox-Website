@@ -3,7 +3,7 @@ import { Project } from "types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { toggleToolbar, moveToolbar } from "../../root/toolbar";
-
+import { getProjectSyncStatus } from "@root/account";
 
 dayjs.extend(relativeTime);
 
@@ -14,9 +14,10 @@ async function applyProjects() {
     });
 
     const projectContainer = document.getElementById("project-holder");
-    const projectTemplate = document.getElementById("projectCardTemplate") as HTMLTemplateElement;
+    const projectCloudTemplate = document.getElementById("cloudProjectCardTemplate") as HTMLTemplateElement;
+    const projectLocalTemplate = document.getElementById("localProjectCardTemplate") as HTMLTemplateElement;
     const toolbarModal = document.getElementById("project-toolbar") as HTMLDialogElement;
-    if (!projectContainer || !projectTemplate || !toolbarModal) return;
+    if (!projectContainer || !projectCloudTemplate || !projectLocalTemplate || !toolbarModal) return;
 
     const projects = getProjects();
     const projectIds = Object.keys(projects);
@@ -25,7 +26,8 @@ async function applyProjects() {
     );
     for (const uuid of sortedByTime) {
         const project = projects[uuid];
-        const card = createProjectCard(uuid, project);
+        const synced = (await getProjectSyncStatus(uuid)) as boolean;
+        const card = createProjectCard(uuid, project, synced);
         card.addEventListener("click", (event: MouseEvent) => {
             const item = event.target as HTMLElement | null;
             if (!item) return;
@@ -114,8 +116,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-function createProjectCard(uuid: string, project: Project): HTMLElement {
-    const projectTemplate = document.getElementById("projectCardTemplate") as HTMLTemplateElement;
+function createProjectCard(uuid: string, project: Project, type: boolean = false): HTMLElement {
+    const templateId = type === true ? "cloudProjectCardTemplate" : "localProjectCardTemplate";
+    const projectTemplate = document.getElementById(templateId) as HTMLTemplateElement;
     if (!projectTemplate) return document.createElement("div");
 
     const fragment = projectTemplate.content.cloneNode(true) as DocumentFragment;
