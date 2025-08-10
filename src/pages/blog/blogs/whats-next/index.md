@@ -108,6 +108,8 @@ We’ll cover coding in later articles, but for now:
 1. Click the **cog icon** in the top-left corner.
 2. Select **Calibrate Colour**.
 3. Follow the on-screen prompts.
+["Calibration"](@images/blogs/whats-next/calibratecolour.png)
+
 
 This process is much simpler than line sensor calibration.
 
