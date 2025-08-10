@@ -259,13 +259,13 @@ async function createAccount() {
             const { error: dbError } = await supabase
                 .from('profiles')
                 .insert({
-                    user_id: data.user.id,
+                    id: data.user.id,
                     first_name: firstNameInput.value,
                     last_name: lastNameInput.value,
                     display_name: userNames.displayName,
                     full_name: userNames.fullName,
                     email: userData.email,
-                    user_type: userType,
+                    user_role: userType,
                     created_at: new Date()
                 })
             
