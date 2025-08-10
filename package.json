@@ -50,6 +50,7 @@
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
     "remark-sectionize": "^2.1.0",
+    "resend": "^4.7.0",
     "sass-embedded": "^1.89.2",
     "stripe": "^18.3.0",
     "style-loader": "^4.0.0",

@@ -9,6 +9,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
+
+app.set("trust proxy", 1) // Trust the first proxy (if behind one, e.g., in production)
 // Rate limit 3000 requests per minute
 app.use(rateLimit({
     windowMs: 60 * 1000,
@@ -38,10 +40,23 @@ const websiteDir = path.resolve(__dirname, '../website');
 const path404 = path.join(websiteDir, '404.html');
 
 app.use("/", express.static(websiteDir));
-
+app.use("/public", express.static(websiteDir + "/public", {
+    setHeaders: (res, filePath) => {
+        if (path.basename(filePath) === 'latest.pdf') {
+                res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+                res.setHeader('Pragma', 'no-cache');
+                res.setHeader('Expires', '0');
+            }
+        }
+}));
 app.get('*', (_, res) => {
     res.sendFile(path404);
 });
+
+app.use((_, res) => {
+    res.status(404).sendFile(path404);
+});
+
 
 app.listen(3000, function () {
     console.log('Ro/Box website listening on port 3333!\n');
