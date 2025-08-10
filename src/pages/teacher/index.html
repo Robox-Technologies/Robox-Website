@@ -27,18 +27,18 @@
         
         <section>
             <h1>
-                Community Hub
+                Articles
             </h1> 
             <div class="card-holder">
-                <% caseStudies.forEach(function(caseStudy) { %>
+                <% articles.forEach(function(blog) { %>
                     <%~ include('@partials/card.html', {
                         class: "assembly-card",
-                        title: `<span>${caseStudy.title}</span>`, 
-                        imageSource: `http://localhost:3000${caseStudy.thumbnailURL}` || "@images/teacher-hub/assembly-guide.png", 
+                        title: `<span>${blog.title}</span>`, 
+                        imageSource: `http://localhost:3000${blog.thumbnailURL}` || "@images/teacher-hub/assembly-guide.png", 
                         buttons: [
                             {
                                 content: "<span class='underline-grow'>Read Article</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
-                                link: `/articles/${caseStudy.slug}.html`
+                                link: `/articles/${blog.slug}.html`
                             },
                         ],
                         topRowButton: false,

@@ -122,33 +122,35 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
 
     createPages(storePages, 'src/templates/views/product/product.html', productData);
 
-    let articles = await getCMSArticles();
-    if (!articles) {
-        console.warn("No articles found in CMS, skipping article pages creation... IS THE CMS RUNNING?");
-        articles = [];
-    }
-    const caseStudies = articles.filter(article => article.type === "case-study");
+    // let articles = await getCMSArticles();
+    // if (!articles) {
+    //     console.warn("No articles found in CMS, skipping article pages creation... IS THE CMS RUNNING?");
+    //     articles = [];
+    // }
+    // const caseStudies = articles.filter(article => article.type === "case-study");
     // Allows the teacher hub to have case studies
     const teacherHubIndex = dynamicPages.findIndex(article => article.filename === "teacher/index.html");
-    if (teacherHubIndex !== -1) {
-        dynamicPages[teacherHubIndex].data = {
-            caseStudies: caseStudies,
-        };
-    }
-    const caseStudiesPages = caseStudies.map(cs => `./src/pages/articles/${cs.slug}.html`);
-    const caseStudiesData: Record<string, TemplateData> = {};
-    for (const caseStudy of caseStudies) {
-        const studyHTML = await convertSlateToHtml(caseStudy.content);
-        caseStudy["html"] = studyHTML
-        const name = caseStudy.slug;
-        caseStudiesData[name] = { caseStudy };
-    }
-    createPages(caseStudiesPages, 'src/templates/views/articles/case-study/case-study.html', caseStudiesData);
+    
+    // const caseStudiesPages = caseStudies.map(cs => `./src/pages/articles/${cs.slug}.html`);
+    // const caseStudiesData: Record<string, TemplateData> = {};
+    // for (const caseStudy of caseStudies) {
+    //     const studyHTML = await convertSlateToHtml(caseStudy.content);
+    //     caseStudy["html"] = studyHTML
+    //     const name = caseStudy.slug;
+    //     caseStudiesData[name] = { caseStudy };
+    // }
+    // createPages(caseStudiesPages, 'src/templates/views/articles/case-study/case-study.html', caseStudiesData);
     const blogPages = fs.readdirSync(path.resolve(__dirname, 'src/pages/blog/blogs'))
     const blogPagesOutput = blogPages.map(file => `./src/pages/articles/${file}`);
     const blogContent: Record<string, TemplateData> = {};
     for (const page of blogPages) {
         blogContent[path.parse(page).name] = { article: `src/pages/blog/blogs/${page}` };
+    }
+
+    if (teacherHubIndex !== -1) {
+        dynamicPages[teacherHubIndex].data = {
+            articles: blogPages
+        };
     }
     createPages(blogPagesOutput, 'src/templates/views/articles/article.html', blogContent);
 
