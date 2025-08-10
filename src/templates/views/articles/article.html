@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <%~ include('@partials/metadata.html') %>
+    <link rel="stylesheet" href="./article.scss">
     <title>Article</title>
 </head>
 <body>
     <%~ include('@partials/header/header.html') %>
     
-    <div class="content">
+    <div class="content" id="main">
         <%~ include(article) %>
     </div>
 

@@ -9,7 +9,9 @@ body {
     margin: 0;
     background-color: variables.$primary;
 }
-
+#main {
+    padding: variables.$articleMargin;
+}
 .button {
     background-color: unset;
 }
