@@ -102,7 +102,7 @@ The “sweet spot” is when the LED switches instantly as you move between blac
 
 ## 4. Calibrating the Colour Sensor
 
-Now head over to the [Student Hub](https://robox.com.au/student/) and create a project.  
+Now head over to the [Student Hub](https://robox.com.au/student/) and create a project. **Please use Chrome as other browsers don't support WebUSB**
 We’ll cover coding in later articles, but for now:
 
 1. Click the **cog icon** in the top-left corner.
