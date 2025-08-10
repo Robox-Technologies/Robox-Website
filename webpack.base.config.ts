@@ -140,16 +140,17 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
     //     caseStudiesData[name] = { caseStudy };
     // }
     // createPages(caseStudiesPages, 'src/templates/views/articles/case-study/case-study.html', caseStudiesData);
-    const blogPages = fs.readdirSync(path.resolve(__dirname, 'src/pages/blog/blogs'))
+    //Read all the blog folders, 
+    // Inside blogs/* there are the folders with the articles name on it. inside each blog folder there should be a thumbnail.png, index.md
+    const blogPages = fs.readdirSync(path.resolve(__dirname, 'src/pages/blog/blogs')).filter(file => fs.statSync(path.join(__dirname, 'src/pages/blog/blogs', file)).isDirectory());
     const blogPagesOutput = blogPages.map(file => `./src/pages/articles/${file}`);
     const blogContent: Record<string, TemplateData> = {};
     for (const page of blogPages) {
-        blogContent[path.parse(page).name] = { article: `src/pages/blog/blogs/${page}` };
+        blogContent[path.parse(page).name] = { article: `src/pages/blog/blogs/${page}/index.md`, slug: path.parse(page).name, thumbnail: `@images/blogs/${page}/thumbnail.png`, metadata: {} };
     }
-
     if (teacherHubIndex !== -1) {
         dynamicPages[teacherHubIndex].data = {
-            articles: blogPages
+            articles: blogContent,
         };
     }
     createPages(blogPagesOutput, 'src/templates/views/articles/article.html', blogContent);
