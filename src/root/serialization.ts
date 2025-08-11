@@ -39,7 +39,7 @@ export async function createProject(name: string): Promise<string> {
     const isAuthenticated = await authCheck() || false;
     if (isAuthenticated) {
         const currentUser = await getCurrentUserData()
-        uploadNewProject(uuid, currentUser?.id, name)
+        await uploadNewProject(uuid, currentUser?.id, name)
     }
 
     projects[uuid] = { name: name, time: dayjs(), workspace: {}, thumbnail: "" }
