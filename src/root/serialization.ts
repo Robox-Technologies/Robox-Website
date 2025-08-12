@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
 import { Projects, Project } from "types/projects";
-import { uploadNewProject, getCurrentUserData, authCheck, updateProjectData, isSyncedProject, deleteCloudProject, writeToDatabase } from '@root/account';
+import { uploadNewProject, getCurrentUserData, authCheck, updateProjectData, isSyncedProject, deleteCloudProject, writeToDatabase, getFromDatabase } from '@root/account';
 import { workspaceToPng_ } from './screenshot';
 
 
@@ -59,6 +59,36 @@ export function getProject(uuid: string, projects: Projects | null = null): Proj
 export async function loadBlockly(uuid: string, workspace: Workspace) {
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
+    const cloud = await isSyncedProject(uuid);
+
+    if (cloud) { // If project is synced, try to load from cloud first
+        try {
+            const raw = await getFromDatabase('projects', uuid, 'project_data'); // Fetch project data from the database
+            if (raw) { // if raw data exists
+                const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw; // parse the raw data into JSON
+                const remoteSnapshot = parsed?.workspace || parsed?.blocks ? (parsed.workspace || parsed) : null; // Check if workspace or blocks exist in the parsed data
+                const remoteThumb = parsed?.thumbnail || ''; // Get thumbnail if it exists
+                if (remoteSnapshot) { // If remote snapshot exists, load it into the workspace
+                    const projects = getProjects(); // get current projects (local cache)
+                    if (projects[uuid]) { // If project already exists in local cache, update it
+                        projects[uuid].workspace = remoteSnapshot; // Update workspace data
+                        if (remoteThumb && !projects[uuid].thumbnail) { // If remote thumbnail exists and local thumbnail is empty, update it
+                            projects[uuid].thumbnail = sanitizeImageDataUrl(remoteThumb); // Sanitize and set the thumbnail
+                        }
+                        localStorage.setItem('roboxProjects', JSON.stringify(projects)); // Save updated projects to local storage
+                    }
+                    const blockly = await import('blockly/core');
+                    blockly.Events.disable(); // Disable Blockly events
+                    blockly.serialization.workspaces.load(remoteSnapshot, workspace, { recordUndo: true }); // Load the workspace data into the Blockly workspace
+                    blockly.Events.enable(); // Re-enable Blockly events after loading
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn('Remote load failed; falling back to local', e); // If remote load fails, fall back to local storage
+        }
+    }
+
     const blockly = await import('blockly/core');
     const project = getProject(uuid)
     if (!project) return;
@@ -97,16 +127,20 @@ export async function saveBlockly(uuid: string, workspace: WorkspaceSvg, callbac
         localStorage.setItem("roboxProjects", projectData)
 
         if (callback) callback(JSON.stringify(projects[uuid]));
+
+        (async () => {
+            if (await isSyncedProject(uuid)) {
+                const currentUser = await getCurrentUserData();
+                if (currentUser) {
+                    try {
+                        await updateProjectData(uuid, JSON.stringify({ workspace: data, thumbnail: sanitizeImageDataUrl(thumburi) }));
+                    } catch (e) {
+                        console.warn('Cloud update failed:', e);
+                    }
+                }
+            }
+        })();
     });
-    if (await isSyncedProject(uuid)) {
-        const currentUser = await getCurrentUserData();
-        if (currentUser) {
-            const projects = getProjects()
-            const projectData = JSON.stringify(projects[uuid])
-            await updateProjectData(uuid, projectData);
-            console.log('Saved project', uuid, 'to cloud successfully.');
-        }
-    }
 }
 
 export function saveBlocklyCompressed(projectRaw: string) {

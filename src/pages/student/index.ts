@@ -3,7 +3,7 @@ import { Project } from "types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { toggleToolbar, moveToolbar } from "../../root/toolbar";
-import { getProjectSyncStatus } from "@root/account";
+import { getProjectSyncStatus, syncCloudProjects, getCurrentUserData, getFromDatabase } from "@root/account";
 
 dayjs.extend(relativeTime);
 
@@ -12,6 +12,10 @@ async function applyProjects() {
     projectCards.forEach((card) => {
         card.remove();
     });
+
+    const user = await getCurrentUserData();
+    const currentUserId = user?.id as string | undefined;
+    await syncCloudProjects(currentUserId);
 
     const projectContainer = document.getElementById("project-holder");
     const projectCloudTemplate = document.getElementById("cloudProjectCardTemplate") as HTMLTemplateElement;
@@ -26,7 +30,18 @@ async function applyProjects() {
     );
     for (const uuid of sortedByTime) {
         const project = projects[uuid];
-        const synced = (await getProjectSyncStatus(uuid)) as boolean;
+        const synced = await getProjectSyncStatus(uuid) as boolean;
+
+        if (synced) {
+            if (!currentUserId) {
+                continue;
+            }
+            const owner = await getFromDatabase('projects', uuid, 'owner') as string | null;
+            if (!owner || owner !== currentUserId) {
+                continue;
+            }
+        }
+
         const card = createProjectCard(uuid, project, synced);
         card.addEventListener("click", (event: MouseEvent) => {
             const item = event.target as HTMLElement | null;
@@ -45,7 +60,7 @@ async function applyProjects() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     applyProjects();
     const createProjectButton = document.getElementById("create-project");
     if (createProjectButton) {
@@ -54,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
             window.location.href = `/editor?id=${uuid}`;
         });
     }
-    
+
     const toolbarModal = document.getElementById("project-toolbar") as HTMLDialogElement | null;
 
     const toolbarEditButton = document.getElementById("project-edit") as HTMLButtonElement | null;
@@ -66,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const projectNameInput = editModal.querySelector("input#project-name") as HTMLInputElement | null;
     if (!projectNameInput) return;
 
-    
     toolbarEditButton.addEventListener("click", () => {
         const projectCard = document.querySelector(".toolbar-target")?.closest(".project-card") as HTMLElement | null;
         if (!projectCard) return;
@@ -82,6 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const deleteConfirmButton = deleteModal.querySelector("button#delete-confirm-button") as HTMLButtonElement | null;
     const editConfirmButton = editModal.querySelector("button#edit-confirm-button") as HTMLButtonElement | null;
     if (!deleteConfirmButton || !editConfirmButton) return;
+
     editConfirmButton.addEventListener("click", async () => {
         let projectCard = document.querySelector(".toolbar-target")?.closest(".project-card") as HTMLElement | null;
         if (!projectCard) return;
@@ -90,13 +105,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const project = getProject(projectId);
         if (!project) return;
         await renameProject(projectId, projectNameInput.value);
-        applyProjects();
+        await applyProjects();
         projectCard = document.getElementById(projectId) as HTMLElement | null;
         if (projectCard) {
             moveToolbar(toolbarModal, projectCard.querySelector(".options") as HTMLElement);
         }
         editModal.close();
     });
+
     deleteConfirmButton.addEventListener("click", async () => {
         const projectCard = document.querySelector(".toolbar-target")?.closest(".project-card") as HTMLElement | null;
         if (!projectCard) return;
@@ -107,13 +123,11 @@ document.addEventListener("DOMContentLoaded", () => {
             await deleteProject(projectId);
             delete projects[projectId];
             localStorage.setItem("roboxProjects", JSON.stringify(projects));
-            applyProjects();
-            //Move the toolbar to the renamed project card if it exists
+            await applyProjects();
             toggleToolbar(toolbarModal, false);
         }
         deleteModal.close();
     });
-
 });
 
 function createProjectCard(uuid: string, project: Project, type: boolean = false): HTMLElement {

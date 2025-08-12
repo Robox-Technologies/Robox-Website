@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
+import 'blockly/blocks';
+import { getProjects } from './serialization';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL
@@ -175,10 +177,58 @@ export function isValidUUID(uuid: string): boolean {
     return uuidRegex.test(uuid);
 }
 
-export async function updateProjectData(project_id: string, project_data: string) {
+export async function updateProjectData(project_id: string, project_data: any) {
     const now = new Date().toISOString();
-    await writeToDatabase('projects', project_id, 'project_data', project_data, true);
+    let payload: string;
+
+    if (typeof project_data === 'string') {
+        payload = project_data;
+    } else {
+        console.warn('updateProjectData not JSON string');
+    }
+
+    await writeToDatabase('projects', project_id, 'project_data', payload, true);
     await writeToDatabase('projects', project_id, 'last_updated', now, true);
+}
+
+function normaliseSnapshot(pd) {
+    if (pd?.workspace) return pd.workspace; // Normalize workspace data
+    if (pd?.blocks?.blocks) return { blocks: pd.blocks.blocks, variables: pd.blocks.variables ?? [] }; // Normalize blocks data
+    if (pd?.blocks?.languageVersion || pd?.blocks?.blocks) return { blocks: pd.blocks }; // Normalize legacy blocks data
+    return null;
+}
+
+export async function loadProjectData(uuid: string) {
+    if (!isValidUUID(uuid)) return null;
+
+    const raw = await getFromDatabase('projects', uuid, 'project_data'); // Retrieve raw project data
+    const pd = typeof raw === 'string' ? JSON.parse(raw) : raw; // Parse JSON if it's a string
+    if (!pd) return null; // If no data, return null
+
+    const snapshot = normaliseSnapshot(pd);
+    if (!snapshot?.blocks) { // If no blocks in snapshot, return null
+        console.error('No workspace snapshot in project_data');
+        return null;
+    }
+
+    try {
+        const blockly = await import('blockly/core'); // Import Blockly dynamically
+        const ws = blockly.getMainWorkspace?.() || blockly.common?.getMainWorkspace?.(); // Get the main workspace
+
+        if (ws && blockly.serialization?.workspaces?.load) { // If workspace and serialization are available
+            try {
+                ws.clear(); // Clear the workspace before loading
+                const loadPayload = snapshot.blocks?.blocks ? { blocks: snapshot.blocks } : snapshot; // Load the blocks data
+                blockly.serialization.workspaces.load(loadPayload, ws); // Load the workspace data
+            } catch (e) {
+                console.warn('Failed to deserialize workspace snapshot', e);
+            }
+        }
+
+        return ws ?? null; // Return the workspace or null if not available
+    } catch {
+        return null;
+    }
 }
 
 export async function isSyncedProject(uuid: string): Promise<boolean> {
@@ -224,6 +274,30 @@ export async function deleteCloudProject(uuid: string) {
     }
 }
 
+// Sync cloud projects owned by the current user into local storage (placeholder entries) if not already present.
+export async function syncCloudProjects(userId?: string) {
+    try {
+        if (!userId) return; // If logged in no cloud projects, return early
+        const remoteIds = await findUserProjects(userId); 
+        if (!remoteIds || remoteIds.length === 0) return; // If no remote projects, return early
+        const projects = getProjects();
+        let changed = false; // Flag to track if any changes were made
+        for (const id of remoteIds) {
+            if (!projects[id]) { // If project not in local storage, add it
+                let name = await getFromDatabase('projects', id, 'name') as string | null; // Fetch project name from database
+                if (!name) name = 'unnamed project';
+                projects[id] = { name, time: dayjs(), workspace: {}, thumbnail: "" } as Project; // Create project entry
+                changed = true; // Set changed flag to true
+            }
+        }
+        if (changed) {
+            localStorage.setItem("roboxProjects", JSON.stringify(projects)); // Save updated projects to local storage
+        }
+    } catch (e) {
+        console.warn("Cloud project sync failed", e);
+    }
+}
+
 export async function uploadNewProject(projectId: string, userId: string, name: string) {
     const defaultProjectName: string = 'unnamed project'
 
@@ -263,6 +337,28 @@ export async function getProjectSyncStatus(uuid: string) {
         return true;
     }
     return false;
+}
+
+export async function findUserProjects(userId: string): Promise<string[]> {
+    if (!isValidUUID(userId)) {
+        console.warn('Invalid user ID:', userId);
+        return [];
+    }
+    try {
+        const { data, error } = await supabase
+            .from('projects')
+            .select('id')
+            .eq('owner', userId);
+
+        if (error) {
+            console.error('Error finding user projects:', error);
+            return [];
+        }
+        return (data ?? []).map(p => p.id as string);
+    } catch (error) {
+        console.error('Unexpected error during user project retrieval:', error);
+        return [];
+    }
 }
 
 export async function createClassroom(data) {

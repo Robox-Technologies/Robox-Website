@@ -32,7 +32,7 @@ blocks.keys().forEach(modulePath => {
 generators.keys().forEach(modulePath => {
     generators(modulePath);
 });
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const workspace = Blockly.inject('blocklyDiv', {
         toolbox: toolbox,
         theme: theme,
@@ -141,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
 
 
-    loadBlockly(workspaceId, workspace)
+    await loadBlockly(workspaceId, workspace)
 
     if (project["thumbnail"] === '') {
         saveBlockly(workspaceId, workspace);
