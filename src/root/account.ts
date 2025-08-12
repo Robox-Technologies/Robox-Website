@@ -121,19 +121,21 @@ export async function deleteAccount() {
     }
 }
 
-export async function getFromDatabase(tableName: string, objectId: string, row: string) {
+export async function getFromDatabase(tableName: string, objectId: string, column?: string) {
     try {
+        const selectOption = column && column.trim().length > 0 ? column : '*';
         const { data, error } = await supabase
             .from(tableName)
-            .select()
-            .eq('id', objectId)
+            .select(selectOption)
+            .eq('id', objectId);
 
         if (error) {
             console.error('Database retrieval error:', error)
             throw error
         }
 
-        return data && data.length > 0 ? data[0][row] : null
+        if (!data || data.length === 0) return null;
+        return column ? data[0][column] : data[0];
     } catch (error) {
         console.error('Failed to retrieve data from database:', error)
         throw error
