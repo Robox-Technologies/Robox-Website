@@ -18,7 +18,6 @@ addEventListener('DOMContentLoaded', () => {
     const createButton = document.getElementById('create-classroom-button');
     if (createButton) {
         createButton.addEventListener('click', async () => {
-            console.log('Create button clicked');
             const nameValidation = validateClassroomName();
             const lmsValidation = validateLmsUrl();
             if (nameValidation && lmsValidation) {
@@ -32,7 +31,6 @@ addEventListener('DOMContentLoaded', () => {
                     security_level: classroomSecurityInput?.value || 1,
                     features: [classroomFeaturesInput?.value] || null
                 };
-                console.log('Creating classroom with data:', newClassroom);
                 const classroomId = await createClassroom(newClassroom);
                 if (classroomId) {
                     window.location.href = `/classroom?id=${classroomId}`;
@@ -47,14 +45,12 @@ addEventListener('DOMContentLoaded', () => {
 
     function validateClassroomName() {
         const name = classroomNameInput.value.trim();
-        console.log('Validating classroom name:', name);
         if (!name) {
             console.log('Classroom name is empty');
             classroomNameError.innerHTML = 'Classroom name is required.';
             classroomNameError.style.display = 'block';
             return false;
         } else {
-            console.log('Classroom name is valid:', name);
             classroomNameError.innerHTML = '';
             classroomNameError.style.display = 'none';
             return true;
@@ -63,14 +59,12 @@ addEventListener('DOMContentLoaded', () => {
 
     function validateLmsUrl() {
         const lmsUrl = classroomLmsInput.value.trim();
-        console.log('Validating LMS URL:', lmsUrl);
         if (lmsUrl && !isValidUrl(lmsUrl)) {
             console.log('Invalid LMS URL:', lmsUrl);
             classroomLmsUrlError.innerHTML = "Please enter a valid LMS URL. (Make sure you're including http:// or https://)";
             classroomLmsUrlError.style.display = 'block';
             return false;
         } else {
-            console.log('LMS URL is valid:', lmsUrl);
             classroomLmsUrlError.innerHTML = '';
             classroomLmsUrlError.style.display = 'none';
             return true;
