@@ -1,4 +1,4 @@
-import { authCheck, signOut, deleteAccount } from '@root/account'
+import { authCheck, signOut, deleteAccount, getCurrentUserData } from '@root/account'
 
 // Containers
 const titleElement = document.querySelector('h1.title') as HTMLHeadingElement
@@ -19,6 +19,10 @@ const advancedButton = document.getElementById('advanced-button') as HTMLButtonE
 const logOutButton = document.getElementById('logout-button') as HTMLButtonElement
 const deleteAccountButton = document.getElementById('delete-account-button') as HTMLButtonElement
 const deleteAccountModalButton = document.getElementById('confirm-delete-button') as HTMLDivElement
+// Inputs
+const firstNameInput = document.getElementById('first-name-input') as HTMLInputElement | null
+const lastNameInput = document.getElementById('last-name-input') as HTMLInputElement | null
+const emailInput = document.getElementById('email-input') as HTMLInputElement | null
 
 let currentPage = 'general'
 
@@ -105,6 +109,8 @@ function loadPage(page: string) {
             advancedPage()
             break
     }
+
+    updatePlaceholders()
 }
 
 async function initializeSettingsPage() {
@@ -134,3 +140,10 @@ deleteAccountModalButton.addEventListener('click', async () => {
     await deleteAccountRequest()
     window.location.href = '/'
 })
+
+async function updatePlaceholders() {
+    const user = await getCurrentUserData()
+    firstNameInput.placeholder = user.first_name || 'First Name'
+    lastNameInput.placeholder = user.last_name || 'Last Name'
+    emailInput.placeholder = user.email || 'Email'
+}

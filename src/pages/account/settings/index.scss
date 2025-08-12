@@ -17,27 +17,6 @@
     text-align: center !important;
 }
 
-.two-column {
-    column-count: 2;
-    column-width: 100%;
-    gap: 20px;
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.column {
-    flex: 1;
-    min-width: 300px;
-    width: 100%;
-}
-
-.input-group {
-    column-span: all;
-    width: 100%;
-    margin-bottom: 15px;
-}
-
 .page-container {
     width: 100%;
     height: fit-content;
