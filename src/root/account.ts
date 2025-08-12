@@ -414,6 +414,7 @@ export async function createClassroom(data): Promise<string | null> {
 
     if (classroomId) {
         await appendToDatabase('profiles', ownerId, 'classrooms', classroomId);
+        await appendToDatabase('classrooms', classroomId, 'teachers', ownerId);
     }
 
     return classroomId;
