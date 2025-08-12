@@ -33,12 +33,12 @@ addEventListener('DOMContentLoaded', () => {
                     features: [classroomFeaturesInput?.value] || null
                 };
                 console.log('Creating classroom with data:', newClassroom);
-                let classroomData = await createClassroom(newClassroom);
-                if (classroomData.id && classroomData.id.length > 0) {
-                    window.location.href = `/classroom?id=${classroomData.id}`;
+                const classroomId = await createClassroom(newClassroom);
+                if (classroomId) {
+                    window.location.href = `/classroom?id=${classroomId}`;
                 }
                 else {
-                    console.error('Failed to create classroom:', classroomData);
+                    console.error('Failed to create classroom:', classroomId);
                     alert('Failed to create classroom. Please try again.');
                 }
             }

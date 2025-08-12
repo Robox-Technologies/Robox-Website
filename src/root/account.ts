@@ -370,13 +370,15 @@ export async function findUserProjects(userId: string): Promise<string[]> {
     }
 }
 
-export async function createClassroom(data) {
+export async function createClassroom(data): Promise<string | null> {
     const { data: { session } } = await supabase.auth.getSession();
     const ownerId = session?.user?.id;
     if (!ownerId) {
         console.error('No authenticated user found');
+        return null;
     }
 
+    // Add to classrooms table
     const row = {
         owner: ownerId,
         name: data.name,
@@ -390,24 +392,33 @@ export async function createClassroom(data) {
         status: 'active',
     };
 
+    let classroomId: string | null = null;
+
     try {
-        const { data, error } = await supabase
+        const { data: inserted, error } = await supabase
             .from('classrooms')
             .insert(row)
-            .select()
+            .select('id')
             .single();
 
         if (error) {
             console.error('Failed to create classroom:', error);
             throw error;
         }
-        return data;
 
+        classroomId = inserted?.id ?? null;
     } catch (error) {
         console.error('Error creating classroom:', error);
         throw error;
     }
+
+    if (classroomId) {
+        await appendToDatabase('profiles', ownerId, 'classrooms', classroomId);
+    }
+
+    return classroomId;
 }
+
 
 export function headerAuth() {
     const updateHeaderAuthState = async () => {
