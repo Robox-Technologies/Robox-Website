@@ -168,6 +168,13 @@ export async function writeToDatabase(tableName: string, objectId: string, colum
     }
 }
 
+export async function appendToDatabase(tableName: string, objectId: string, column: string, value: any) {
+	const current = await getFromDatabase(tableName, objectId, column);
+	const arr = Array.isArray(current) ? current : [];
+	const updated = [...arr, value];
+	return await writeToDatabase(tableName, objectId, column, updated, true);
+}
+
 function isProtoPollution(key: string): boolean {
     const forbiddenKeys = ["__proto__", "constructor", "prototype"];
     return forbiddenKeys.includes(key);
