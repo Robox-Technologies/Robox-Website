@@ -1,5 +1,19 @@
-<link href="@root/add-students.scss" rel="stylesheet">
 <script src="@root/add-students.ts"></script>
+
+<template id="classroomTemplate">
+    <div class="classroom-item card">
+        <div class="classroom-avatar">
+            <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Felix" alt="Classroom Avatar">
+        </div>
+        <div class="classroom-titles">
+            <h3 class="classroom-name">Year 8 DT</h3>
+            <h4 class="classroom-code">06DT-CRTECH01</h4>
+        </div>
+        <div class="classroom-info pending">
+            Pending Request
+        </div>
+    </div>
+</template>
 
 <div class="add-students-dialog">
     <div class="add-students-container">
@@ -27,18 +41,6 @@
             My Classrooms
         </h2>
         <div class="my-classrooms-list">
-            <div class="classroom-item">
-                <div class="classroom-avatar">
-                    <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Felix" alt="Classroom Avatar">
-                </div>
-                <div class="classroom-name">
-                    <h3>Year 8 DT</h3>
-                    <h4>06DT-CRTECH01</h4>
-                </div>
-                <div class="classroom-info pending">
-                    Pending Request
-                </div>
-            </div>
         </div>
     </div>
 </div>
