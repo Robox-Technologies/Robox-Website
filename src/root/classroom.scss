@@ -164,4 +164,8 @@ h2 {
         &.active  { color: variables.$themeGreen; }
         &.error   { color: variables.$themeRed; }
     }
+
+    &.selected {
+        background-color: variables.$tone3 !important;
+    }
 }

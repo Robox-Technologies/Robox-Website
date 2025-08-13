@@ -462,6 +462,75 @@ export function headerAuth() {
     })
 }
 
+function genRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export async function validateClassroom(id): Promise<boolean> {
+    if (!id || typeof id !== 'string' || id.length !== 36) {
+        console.warn('Invalid classroom ID:', id);
+        return false;
+    }
+    try {
+        const { data, error } = await supabase
+            .from('classrooms')
+            .select('id')
+            .eq('id', id)
+            .single();
+
+        if (error) {
+            console.error('Error validating classroom:', error);
+            return false;
+        }
+
+        return !!data;
+    } catch (error) {
+        console.error('Unexpected error during classroom validation:', error);
+        return false;
+    }
+}
+
+export async function generateClassCode(classroomId: string): Promise<string | null> {
+    if (!(await validateClassroom(classroomId))) {
+        console.warn('generateClassCode: invalid classroomId', classroomId);
+        return null;
+    }
+
+    const length = 8;
+    const genCode = () => {
+        let out = '';
+        for (let i = 0; i < length; i++) {
+            out += String(genRandomInt(0, 9));
+        }
+        return out;
+    };
+
+    for (let attempt = 0; attempt < 60; attempt++) {
+        const code = genCode();
+
+        const { data: existingCode, error: checkErr } = await supabase
+            .from('classrooms')
+            .select('id')
+            .eq('class_code', code)
+            .maybeSingle();
+
+        if (checkErr) {
+            console.error('Error checking code uniqueness (attempt ' + attempt + '):', checkErr);
+            continue;
+        }
+
+        if (existingCode) continue;
+        await writeToDatabase('classrooms', classroomId, 'class_code', code, true);
+        return code || null;
+    }
+
+    return null;
+}
+
+
+
 export async function isValidEmail(email: string): Promise<boolean | string> {
     console.log('Checking if email is valid:', email);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
