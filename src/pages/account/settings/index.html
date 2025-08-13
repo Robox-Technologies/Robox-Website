@@ -24,11 +24,11 @@
                     <div class="column">
                         <div class="input-group">
                             <label for="firstNameInput" class="input-label">First Name</label>
-                            <input class="text-input" type="text" placeholder="John" id="first-name-input">
+                            <input class="text-input" type="text" placeholder="" id="first-name-input">
                         </div>
                         <div class="input-group">
                             <label for="School" class="input-label">School</label>
-                            <select class="dropdown-input">Search<i class="fa-solid fa-caret-down"></i></button>
+                            <select class="dropdown-input">
                                 <option value="smgs"> St Michael's Grammar School</option>
                                 <option value="wesley">Wesley College</option>
                                 <option value="mgs">Melbourne Grammar School</option>
@@ -36,7 +36,7 @@
                         </div>
                         <div class="input-group">
                             <label for="School" class="input-label">Pronouns</label>
-                            <select class="dropdown-input">Search<i class="fa-solid fa-caret-down"></i></button>
+                            <select class="dropdown-input">
                                 <option value="na">I would prefer not to share.</option>
                                 <option value="he-him">He/Him</option>
                                 <option value="she-her">She/Her</option>
@@ -48,11 +48,11 @@
                     <div class="column">
                         <div class="input-group">
                             <label for="lastNameInput" class="input-label">Last Name</label>
-                            <input class="text-input" type="text" placeholder="Doe" id="last-name-input">
+                            <input class="text-input" type="text" placeholder="" id="last-name-input">
                         </div>
                         <div class="input-group">
                             <label for="School" class="input-label">Location</label>
-                            <select class="dropdown-input">Search<i class="fa-solid fa-caret-down"></i></button>
+                            <select class="dropdown-input">
                                 <option value="aus">Australia</option>
                                 <option value="nz">New Zealand</option>
                                 <option value="usa">United States of America</option>
@@ -60,7 +60,7 @@
                         </div>
                         <div class="input-group">
                             <label for="emailInput" class="input-label">Email</label>
-                            <input class="text-input" type="text" placeholder="me@robox.com.au" id="email-input">
+                            <input class="text-input" type="text" placeholder="" id="email-input">
                         </div>
                     </div>
                 </div>
@@ -76,7 +76,34 @@
                 <p>Notification settings content goes here.</p>
             </div>
             <div class="security-page-container" style="display: none;">
-                <p>Security settings content goes here.</p>
+                <div class="input-container two-column">
+                    <div class="column">
+                        <%~ include('src/templates/partials/text-input.html', {
+                            containerId: "",
+                            inputId: "password-input",
+                            class: "myNewAwesomePassword",
+                            label: 'New Password',
+                            placeholder: '',
+                            required: false,
+                            autocomplete: 'new-password',
+                            errorId: 'password-error',
+                            type: 'password'
+                        }) %>
+                    </div>
+                    <div class="column">
+                        <%~ include('src/templates/partials/text-input.html', {
+                            containerId: "",
+                            inputId: "confirm-password-input",
+                            class: "",
+                            label: 'Confirm Password',
+                            placeholder: '',
+                            required: false,
+                            autocomplete: 'new-password',
+                            errorId: 'confirm-password-error',
+                            type: 'password'
+                        }) %>
+                    </div>
+                </div>
             </div>
             <div class="advanced-page-container" style="display: none;">
                 <button class="ctaButton primaryButton" id="delete-account-button">Delete Account</button>
