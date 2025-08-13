@@ -398,7 +398,7 @@ export async function createClassroom(data): Promise<string | null> {
         name: data.name,
         description: data.description,
         year_level: data.year_level,
-        class_code: data.class_code,
+        course_code: data.course_code,
         location: data.location,
         lms_url: data.lms_url,
         security: data.security,

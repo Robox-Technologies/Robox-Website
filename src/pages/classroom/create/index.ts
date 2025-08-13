@@ -5,7 +5,7 @@ addEventListener('DOMContentLoaded', () => {
     const classroomNameInput = document.getElementById('name-input') as HTMLInputElement | null;
     const classroomDescriptionInput = document.getElementById('description-input') as HTMLInputElement | null;
     const classroomYearLevelInput = document.getElementById('year-level-input') as HTMLInputElement | null;
-    const classroomClassCodeInput = document.getElementById('class-code-input') as HTMLInputElement | null;
+    const classroomCourseCodeInput = document.getElementById('class-code-input') as HTMLInputElement | null;
     const classroomLocationInput = document.getElementById('location-input') as HTMLInputElement | null;
     const classroomLmsInput = document.getElementById('lms-input') as HTMLInputElement | null;
     const classroomSecurityInput = document.getElementById('classroom-security') as HTMLInputElement | null;
@@ -25,7 +25,7 @@ addEventListener('DOMContentLoaded', () => {
                     name: classroomNameInput?.value || "My Ro/Box Classroom",
                     description: classroomDescriptionInput?.value || null,
                     year_level: classroomYearLevelInput?.value || null,
-                    class_code: classroomClassCodeInput?.value || null,
+                    course_code: classroomCourseCodeInput?.value || null,
                     location: classroomLocationInput?.value || null,
                     lms_url: (classroomLmsInput?.value.trim() || null),
                     security_level: classroomSecurityInput?.value || 1,
