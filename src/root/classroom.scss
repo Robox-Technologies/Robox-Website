@@ -1,5 +1,6 @@
 @use '@root/variables';
 
+.add-students-dialog,
 .join-classroom-dialog {
     height: 100%;
     display: flex;
@@ -8,6 +9,7 @@
     gap: 10px;
 }
 
+.add-students-container,
 .join-classroom-container {
     width: 100%;
     background-color: variables.$tone2;
@@ -30,7 +32,14 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
+.pill-slider::-webkit-scrollbar { display: none; }
 
+.input-container {
+    width: 100%;
+    padding: 0;
+}
+
+.classcode-viewer,
 .classcode-input {
     display: flex;
     align-self: flex-start;
@@ -39,7 +48,29 @@
     border-radius: 8px;
     background-color: variables.$tone3;
     width: 100%;
-    
+}
+
+
+.classcode-viewer {
+    .digit-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        width: 100%;
+        height: 80px;
+        border: 2px solid variables.$tone3;
+        border-radius: 8px;
+        background-color: white;
+        font-family: 'Nunito', sans-serif;
+        font-size: 36px;
+        font-weight: bold;
+        text-align: center;
+        outline: none;
+    }
+}
+
+.classcode-input {
     .digit-input {
         width: 100%;
         height: 80px;
@@ -83,6 +114,7 @@ h2 {
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
+.my-classrooms-list::-webkit-scrollbar { display: none; }
 
 .classroom-item {
     display: flex;
@@ -103,18 +135,18 @@ h2 {
         font-size: 16px;
     }
 
-    .classroom-name {
+    .classroom-titles {
         font-family: 'Nunito', sans-serif;
         font-size: 18px;
         text-align: center;
 
-        & h3 {
+        h3 {
             font-size: 20px;
             color: variables.$primary;
             margin: 0;
         }
 
-        & h4 {
+        h4 {
             font-size: 12px;
             color: variables.$secondary;
             margin: 0;
@@ -128,16 +160,8 @@ h2 {
         text-align: center;
         margin-top: 2px;
 
-        &.pending {
-            color: variables.$themeYellow;
-        }
-
-        &.active {
-            color: variables.$themeGreen;
-        }
-
-        &.error {
-            color: variables.$themeRed;
-        }
+        &.pending { color: variables.$themeYellow; }
+        &.active  { color: variables.$themeGreen; }
+        &.error   { color: variables.$themeRed; }
     }
 }
