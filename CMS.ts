@@ -39,9 +39,9 @@ export async function getCMSCollection(collectionName: string): Promise<CMSArtic
     }
 
 }
-export async function getCMSArticles(): Promise<CMSArticle[] | null> {
+export async function getCMSArticles(): Promise<CMSArticle[]> {
     const articles = await getCMSCollection('articles');
-    if (!articles) return null;
+    if (!articles) return [];
     for (const item of articles) {
         const itemSlug = item.title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
         item.slug = itemSlug;

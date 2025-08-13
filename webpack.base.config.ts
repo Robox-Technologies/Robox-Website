@@ -122,29 +122,37 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
 
     createPages(storePages, 'src/templates/views/product/product.html', productData);
 
-    let articles = await getCMSArticles();
-    if (!articles) {
+    const articles = await getCMSArticles();
+    if (articles.length === 0) {
         console.warn("No articles found in CMS, skipping article pages creation... IS THE CMS RUNNING?");
-        articles = [];
     }
-    const caseStudies = articles.filter(article => article.type === "case-study");
+    const articlePages: Record<string, string[]> = {};
+    for (const article of articles) {
+        if (!articlePages[article.type]) {
+            articlePages[article.type] = [];
+        }
+        articlePages[article.type].push(`./src/pages/articles/${article.slug}.html`);
+    }
+
+    const articleData: Record<string, Record<string, TemplateData>> = {};
+    for (const article of articles) {
+        const articleType = article.type;
+        if (!articleData[articleType]) {
+            articleData[articleType] = {};
+        }
+        article["html"] = await convertSlateToHtml(article.content);
+        articleData[articleType][article.slug] = { article };
+    }
+
     // Allows the teacher hub to have case studies
+    console.log(Object.values(articleData["case-study"] || {}))
     const teacherHubIndex = dynamicPages.findIndex(article => article.filename === "teacher/index.html");
     if (teacherHubIndex !== -1) {
         dynamicPages[teacherHubIndex].data = {
-            caseStudies: caseStudies,
+            caseStudies: Object.values(articleData["case-study"] || {}),
         };
     }
-    const caseStudiesPages = caseStudies.map(cs => `./src/pages/articles/${cs.slug}.html`);
-    const caseStudiesData: Record<string, TemplateData> = {};
-    for (const caseStudy of caseStudies) {
-        const studyHTML = await convertSlateToHtml(caseStudy.content);
-        caseStudy["html"] = studyHTML
-        const name = caseStudy.slug;
-        caseStudiesData[name] = { caseStudy };
-    }
-    createPages(caseStudiesPages, 'src/templates/views/articles/case-study/case-study.html', caseStudiesData);
-    
+    createPages(articlePages["case-study"] || [], 'src/templates/views/articles/article.html', articleData["case-study"] || {});
 
     const htmlBundlerPluginOptions = {
         entry: dynamicPages,
