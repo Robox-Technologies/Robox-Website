@@ -204,6 +204,20 @@ export async function appendToDatabase(tableName: string, objectId: string, colu
 	return await writeToDatabase(tableName, objectId, column, updated, true);
 }
 
+export async function removeClassroomFromProfile(classroomId: string, userId: string) {
+    try {
+        const tryAgain = await getFromDatabase('classrooms', classroomId) as any;
+        if (!tryAgain) {
+            console.warn(`Classroom with ID ${classroomId} not found, removing from profile.`);
+            await appendToDatabase('profiles', userId, 'classrooms', classroomId, false);
+        }
+        return true;
+    } catch (error) {
+        console.error(`Failed to remove classroom ${classroomId} from profile ${userId}:`, error);
+        return false;
+    }
+}
+
 function isProtoPollution(key: string): boolean {
     const forbiddenKeys = ["__proto__", "constructor", "prototype"];
     return forbiddenKeys.includes(key);

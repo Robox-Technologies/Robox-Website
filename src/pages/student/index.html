@@ -60,6 +60,28 @@
             topRowButton: false,
         }) %>
     </template>
+    <template id="studentProjectCardTemplate">
+        <%~ include('src/templates/partials/card.html', {
+            class: "project-card",
+            title: '<i class="fa-solid fa-chalkboard-user"></i><span class="card-title-text"></span>', 
+            imageSource: "https://placehold.co/1920x1080", 
+            descriptions: [
+                "2 hours ago", 
+            ],
+            topRowButton: true,
+        }) %>
+    </template>
+    <template id="teacherProjectCardTemplate">
+        <%~ include('src/templates/partials/card.html', {
+            class: "project-card",
+            title: '<i class="fa-solid fa-person-chalkboard"></i><span class="card-title-text"></span>', 
+            imageSource: "https://placehold.co/1920x1080", 
+            descriptions: [
+                "2 hours ago", 
+            ],
+            topRowButton: true,
+        }) %>
+    </template>
     <%~ include('src/templates/partials/header-workshop.html') %>
     <%~ include('src/templates/partials/modal.html', {
         id: "delete-modal",
@@ -140,6 +162,21 @@
             </div>
             
         </section>
+        <section id="classrooms">
+        <h1>
+            My Classrooms
+        </h1>
+            <div class="card-holder" id="classroom-holder">
+                <a id="create-classroom" class="button" href="/classroom/create">
+                    <i class="fa-solid fa-plus"></i>
+                    <p>
+                        New Classroom
+                    </p>
+                </a>
+                
+            </div>
+        </section>
+        
         <!-- <section id="lessons">
             <h1>
                 Explore Our Lessons

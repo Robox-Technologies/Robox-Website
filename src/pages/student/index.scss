@@ -10,7 +10,7 @@ $cardBorderRadius: 5%;
 #main {
     padding: variables.$articleMargin;
 }
-.fa-square-binary, .fa-download, .fa-cloud-arrow-up {
+.fa-square-binary, .fa-download, .fa-cloud-arrow-up, .fa-chalkboard-user, .fa-person-chalkboard {
     height: $projectIconSize;
     width: $projectIconSize;
     background-color: white;
@@ -126,9 +126,43 @@ $toolbarWidth: 130px;
     color: white;
 }
 
+#create-classroom {
+    width: $projectCardWidth;
+    border-radius: $cardBorderRadius;
+    background-color: variables.$themeRed;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    height: 226.75px;
+    flex-direction: column;
+}
 
+#create-classroom, .classroom-card {
+    width: $projectCardWidth;
+    transition: transform 0.1s ease-out;
+    transform-style: preserve-3d;
+    will-change: transform;
+    position: relative;
+    cursor: pointer;
+}
 
-
+#create-classroom:hover {
+    cursor: pointer;
+    
+}
+#create-classroom > * {
+    color: white;
+    text-align: center;
+    font-size: 30px;
+    width: 100%;
+}
+#create-classroom > p{
+    margin-top: 10px;
+    margin-bottom: 0;
+}
+#create-classroom > svg > path {
+    color: white;
+}
 
 .lesson-card > .card-info > .card-descriptions {
     display: flex;

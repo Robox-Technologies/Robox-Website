@@ -3,9 +3,22 @@ import { Project } from "types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { toggleToolbar, moveToolbar } from "../../root/toolbar";
-import { getProjectSyncStatus, syncCloudProjects, getCurrentUserData, getFromDatabase } from "@root/account";
+import { getProjectSyncStatus, syncCloudProjects, getCurrentUserData, getFromDatabase, removeClassroomFromProfile } from "@root/account";
 
 dayjs.extend(relativeTime);
+
+let userData: any = null;
+async function userDataPromise() {
+    console.log("Fetching user data for classrooms");
+	try {
+		userData = await getCurrentUserData() ?? null;
+		if (!userData) console.warn("No user data found, cannot apply classrooms.");
+	} catch (err) {
+		console.warn("Failed to get user data", err);
+		userData = null;
+	}
+	return userData;
+};
 
 async function applyProjects() {
     const projectCards = document.querySelectorAll(".project-card");
@@ -13,8 +26,7 @@ async function applyProjects() {
         card.remove();
     });
 
-    const user = await getCurrentUserData();
-    const currentUserId = user?.id as string | undefined;
+    const currentUserId = userData?.id as string | undefined;
     await syncCloudProjects(currentUserId);
 
     const projectContainer = document.getElementById("project-holder");
@@ -61,7 +73,9 @@ async function applyProjects() {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-    applyProjects();
+    await userDataPromise();
+    await Promise.allSettled([applyProjects(), applyClassrooms(), hideCreateClassroomButton()]);
+
     const createProjectButton = document.getElementById("create-project");
     if (createProjectButton) {
         createProjectButton.addEventListener("click", async () => {
@@ -153,4 +167,102 @@ function createProjectCard(uuid: string, project: Project, type: boolean = false
     clone.id = uuid;
 
     return clone;
+}
+
+async function applyClassrooms() {
+    if (!userData) {
+        console.warn("No user data available for classrooms. Skipping classroom rendering.");
+        return;
+    }
+    const classroomIdsRaw = await getFromDatabase('profiles', userData.id, 'classrooms') as string[] | null;
+    if (!Array.isArray(classroomIdsRaw) || classroomIdsRaw.length === 0) {
+        console.warn("No classrooms found for user.");
+        return;
+    }
+    const classroomIds = classroomIdsRaw;
+
+    const classroomCards = document.querySelectorAll(".classroom-card");
+    classroomCards.forEach((card) => {
+        card.remove();
+    });
+
+    const classroomContainer = document.getElementById("classroom-holder");
+    if (!classroomContainer) {
+        console.warn("Classroom container not found.");
+        return;
+    }
+
+    const toolbarModal = document.getElementById("project-toolbar") as HTMLDialogElement | null;
+
+    for (const uuid of classroomIds) {
+        const classroom = await getFromDatabase('classrooms', uuid) as any;
+        console.log("Loading classroom with ID:", uuid);
+        if (!classroom) {
+            removeClassroomFromProfile(uuid, userData.id);
+            continue;
+        }
+
+        const students: string[] = Array.isArray(classroom.students) ? classroom.students : [];
+        const teachers: string[] = Array.isArray(classroom.teachers) ? classroom.teachers : [];
+
+        const isStudent = students.includes(userData.id);
+        const isTeacher = teachers.includes(userData.id) || classroom.owner === userData.id;
+        console.log(`Classroom ${uuid} - Owner: ${classroom.owner}, Is Teacher: ${isTeacher}, Is Student: ${isStudent}`);
+        if (!isTeacher && !isStudent) {
+            removeClassroomFromProfile(uuid, userData.id);
+            continue;
+        }
+
+        console.log("Creating classroom card for:", uuid);
+        const card = createClassroomCard(uuid, classroom, isTeacher);
+        card.addEventListener("click", (event: MouseEvent) => {
+            const item = event.target as HTMLElement | null;
+            if (!item) return;
+            window.location.href = `/classroom?id=${uuid}`;
+            event.stopPropagation();
+        });
+        const options = card.querySelector(".options") as HTMLButtonElement | null;
+        if (options) {
+            options.addEventListener("click", (event: MouseEvent) => {
+                event.stopImmediatePropagation();
+                if (toolbarModal) {
+                    moveToolbar(toolbarModal, options, [10, 20]);
+                    toggleToolbar(toolbarModal, true);
+                }
+            });
+        }
+        classroomContainer.appendChild(card);
+    }
+}
+
+function createClassroomCard(uuid: string, classroom: any, type: boolean = false): HTMLElement {
+    const templateId = type === true ? "teacherProjectCardTemplate" : "studentProjectCardTemplate";
+    const projectTemplate = document.getElementById(templateId) as HTMLTemplateElement;
+    if (!projectTemplate) return document.createElement("div");
+
+    const fragment = projectTemplate.content.cloneNode(true) as DocumentFragment;
+    const clone = fragment.querySelector(".card") as HTMLElement;
+    if (!clone) return document.createElement("div");
+    clone.classList.add("classroom-card");
+
+    const title = clone.querySelector(".card-title-text");
+    const time = clone.querySelector(".card-description");
+    const image = clone.querySelector(".card-image") as HTMLImageElement | null;
+
+    const classroomTime = dayjs(classroom.time);
+
+    image.src = classroom.avatar_url;
+    title.textContent = classroom.name || "Untitled Classroom";
+    time.textContent = classroomTime.isValid() ? classroomTime.fromNow() : "";
+    clone.id = uuid;
+
+    console.log("Creating classroom card:", clone.id, title.textContent, time.textContent);
+    return clone;
+}
+
+function hideCreateClassroomButton() {
+    const createProjectButton = document.getElementById("create-classroom");
+    if (createProjectButton && userData.user_role === 'student') {
+        createProjectButton.style.display = "none";
+    }
 }
