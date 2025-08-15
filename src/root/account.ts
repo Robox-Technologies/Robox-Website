@@ -182,10 +182,25 @@ export async function writeToDatabase(tableName: string, objectId: string, colum
     }
 }
 
-export async function appendToDatabase(tableName: string, objectId: string, column: string, value: any) {
+export async function appendToDatabase(tableName: string, objectId: string, column: string, value: any, add: boolean = true) {
+	// add: true = add value, false = delete value
 	const current = await getFromDatabase(tableName, objectId, column);
-	const arr = Array.isArray(current) ? current : [];
-	const updated = [...arr, value];
+	const arr: any[] = Array.isArray(current) ? [...current] : [];
+
+	let updated: any[] = arr;
+
+	if (add) {
+		if (value !== undefined && value !== null && !arr.includes(value)) {
+			updated = [...arr, value];
+		}
+	} else {
+		updated = arr.filter(v => v !== value);
+	}
+
+	if (updated === arr || (updated.length === arr.length && updated.every((v,i)=>v===arr[i]))) {
+		return current;
+	}
+
 	return await writeToDatabase(tableName, objectId, column, updated, true);
 }
 
