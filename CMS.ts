@@ -4,20 +4,23 @@ import { slateToHtml, payloadSlateToHtmlConfig } from '@slate-serializers/html'
 
 const CMS_URL = process.env.CMS_URL || 'http://localhost:3000';
 export type ArticleLocation = 'Newsletter' | 'Teacher Resource' | 'Student Resources';
-
-export interface CMSArticle {
+export interface CMSItem {
     createdAt: string;
+    updatedAt: string;
+    slug: string;
+    location: ArticleLocation;
+    favorite: boolean;
+    filename: string | null;
+    mimetype: string | null;
+    status: "draft" | "published" | "archived";
+}
+export interface CMSArticle extends CMSItem {
     location: ArticleLocation
     updatedAt: string;
     title: string;
-    slug: string;
-    favorite: boolean;
     content: object[];
     dramaticTitle: string;
-    filename: string | null;
-    mimetype: string | null;
     author: string | null;
-    status: "draft" | "published" | "archived";
     html: string | null;
     url: string | null;
 }
@@ -26,7 +29,7 @@ export interface CaseStudy extends CMSArticle {
 }  
 
 
-export async function getCMSCollection(collectionName: string): Promise<CMSArticle[] | null> {
+export async function getCMSCollection(collectionName: string): Promise<CMSItem[] | null> {
     try {
         const response = await fetch(`${CMS_URL}/api/${collectionName}?pagination=false`);
         if (!response.ok) {
@@ -44,24 +47,32 @@ export async function getCMSCollection(collectionName: string): Promise<CMSArtic
 
 }
 export async function getCMSArticles(): Promise<CMSArticle[]> {
+    // Assert that articles are CMSArticle
     const articles = await getCMSCollection('articles');
+    const validArticles: CMSArticle[] = [];
     if (!articles) return [];
     for (const item of articles) {
-        const itemSlug = item.title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
-        item.slug = itemSlug;
+        if (isCMSArticle(item)) {
+            const itemSlug = item.title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
+            item.slug = itemSlug;
+            validArticles.push(item);
+        }
     }
     // most recent articles we want to show first but favour favorited articles
-    articles.sort((a, b) => {
+    validArticles.sort((a, b) => {
         if (b.favorite === a.favorite) {
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         }
         return b.favorite ? 1 : -1;
     });
-    return articles;
+    return validArticles;
 }
 export async function convertSlateToHtml(slateContent: object[]): Promise<string> {
     
     const HTMLString = slateToHtml([slateContent["root"]], payloadSlateToHtmlConfig).replaceAll("/api/media/file/", `${CMS_URL}/api/media/file/`);
 
     return HTMLString;
+}
+function isCMSArticle(item: CMSItem): item is CMSArticle {
+    return "title" in item && "content" in item;
 }
