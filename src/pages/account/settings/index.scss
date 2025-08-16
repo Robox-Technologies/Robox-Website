@@ -33,3 +33,34 @@
 .save-settings {
     width: 100%;
 }
+
+.user-type-button {
+    width: 100%;
+    padding: 20px;
+    border: 2px solid variables.$tone3;
+    border-radius: 8px;
+    background-color: variables.$tone1;
+    color: variables.$themeBlack;
+    font-size: 20px;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        border-color: variables.$themeBlue;
+        background-color: rgba(variables.$themeBlue, 0.05);
+    }
+
+    &.selected {
+        border-color: variables.$themeBlue;
+        background-color: rgba(variables.$themeBlue, 0.1);
+        color: variables.$themeBlue;
+    }
+
+    i {
+        margin-right: 4px;
+        font-size: 18px;
+    }
+}

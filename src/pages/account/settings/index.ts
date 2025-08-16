@@ -1,4 +1,4 @@
-import { authCheck, signOut, deleteAccount, getCurrentUserData } from '@root/account'
+import { authCheck, signOut, deleteAccount, getCurrentUserData, writeToDatabase } from '@root/account'
 
 // Containers
 const titleElement = document.querySelector('h1.title') as HTMLHeadingElement
@@ -25,6 +25,8 @@ const lastNameInput = document.getElementById('last-name-input') as HTMLInputEle
 const emailInput = document.getElementById('email-input') as HTMLInputElement | null
 
 let currentPage = 'general'
+let currentUserRole: string | null = null
+let roleButtonsInitialized = false
 
 const buttonMap = {
     'general': generalButton,
@@ -60,9 +62,53 @@ function generalPage() {
     generalPageContainer.style.display = 'block'
 }
 
-function accountPage() {
+async function accountPage() {
     titleElement.textContent = 'Account Settings'
     accountPageContainer.style.display = 'block'
+    const user = await getCurrentUserData()
+    if (!user) {
+        console.warn('No user data available')
+        return
+    }
+    currentUserRole = user.user_role || null
+
+    const studentRoleButton = document.getElementById('student-role-button') as HTMLButtonElement | null
+    const teacherRoleButton = document.getElementById('teacher-role-button') as HTMLButtonElement | null
+
+    studentRoleButton?.classList.toggle('selected', currentUserRole === 'student')
+    teacherRoleButton?.classList.toggle('selected', currentUserRole === 'teacher')
+
+    if (!roleButtonsInitialized) {
+        roleButtonsInitialized = true
+
+        studentRoleButton?.addEventListener('click', async () => {
+            if (currentUserRole === 'student') return
+            if (!user?.id) return
+            try {
+                await writeToDatabase('profiles', user.id, 'user_role', 'student', true)
+                currentUserRole = 'student'
+                studentRoleButton.classList.add('selected')
+                teacherRoleButton?.classList.remove('selected')
+                console.log('Role updated to student')
+            } catch (e) {
+                console.error('Failed to set role student', e)
+            }
+        })
+
+        teacherRoleButton?.addEventListener('click', async () => {
+            if (currentUserRole === 'teacher') return
+            if (!user?.id) return
+            try {
+                await writeToDatabase('profiles', user.id, 'user_role', 'teacher', true)
+                currentUserRole = 'teacher'
+                teacherRoleButton.classList.add('selected')
+                studentRoleButton?.classList.remove('selected')
+                console.log('Role updated to teacher')
+            } catch (e) {
+                console.error('Failed to set role teacher', e)
+            }
+        })
+    }
 }
 
 function appearancePage() {
