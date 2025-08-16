@@ -3,13 +3,15 @@ import { slateToHtml, payloadSlateToHtmlConfig } from '@slate-serializers/html'
 
 
 const CMS_URL = process.env.CMS_URL || 'http://localhost:3000';
+export type ArticleLocation = 'Newsletter' | 'Teacher Resource' | 'Student Resources';
 
 export interface CMSArticle {
     createdAt: string;
-    type: string;
+    location: ArticleLocation
     updatedAt: string;
     title: string;
     slug: string;
+    favorite: boolean;
     content: object[];
     dramaticTitle: string;
     filename: string | null;
@@ -48,8 +50,13 @@ export async function getCMSArticles(): Promise<CMSArticle[]> {
         const itemSlug = item.title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
         item.slug = itemSlug;
     }
-    // most recent articles we want to show first
-    articles.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // most recent articles we want to show first but favour favorited articles
+    articles.sort((a, b) => {
+        if (b.favorite === a.favorite) {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        }
+        return b.favorite ? 1 : -1;
+    });
     return articles;
 }
 export async function convertSlateToHtml(slateContent: object[]): Promise<string> {

@@ -9,7 +9,7 @@ import { RoboxProcessor } from './roboxProcessor.js';
 import { getProductList } from './stripe-server-helper.js';
 import { Product } from '~types/api.js';
 import { TemplateData, TemplatePage } from './types/webpack.js';
-import { convertSlateToHtml, getCMSArticles } from './cms.js';
+import { ArticleLocation, convertSlateToHtml, getCMSArticles } from './cms.js';
 
 
 
@@ -126,17 +126,26 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
     if (articles.length === 0) {
         console.warn("No articles found in CMS, skipping article pages creation... IS THE CMS RUNNING?");
     }
-    const articlePages: Record<string, string[]> = {};
+    const articlePages: Record<ArticleLocation, string[]> = {
+        "Newsletter": [],
+        "Teacher Resource": [],
+        "Student Resources": [],
+    };
     for (const article of articles) {
-        if (!articlePages[article.type]) {
-            articlePages[article.type] = [];
+        if (!articlePages[article.location]) {
+            articlePages[article.location] = [];
         }
-        articlePages[article.type].push(`./src/pages/articles/${article.slug}.html`);
+        articlePages[article.location].push(`./src/pages/articles/${article.slug}.html`);
     }
 
-    const articleData: Record<string, Record<string, TemplateData>> = {};
+    const articleData: Record<ArticleLocation, Record<string, TemplateData>> = {
+        "Newsletter": {},
+        "Teacher Resource": {},
+        "Student Resources": {},
+
+    };
     for (const article of articles) {
-        const articleType = article.type;
+        const articleType = article.location;
         if (!articleData[articleType]) {
             articleData[articleType] = {};
         }
@@ -145,14 +154,15 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
     }
 
     // Allows the teacher hub to have case studies
-    console.log(Object.values(articleData["case-study"] || {}))
     const teacherHubIndex = dynamicPages.findIndex(article => article.filename === "teacher/index.html");
     if (teacherHubIndex !== -1) {
         dynamicPages[teacherHubIndex].data = {
-            caseStudies: Object.values(articleData["case-study"] || {}),
+            caseStudies: Object.values(articleData["Teacher Resource"] || {}),
         };
     }
-    createPages(articlePages["case-study"] || [], 'src/templates/views/articles/article.html', articleData["case-study"] || {});
+    for (const [location, pages] of Object.entries(articlePages)) {
+        createPages(pages, 'src/templates/views/articles/article.html', articleData[location] || {});
+    }
 
     const htmlBundlerPluginOptions = {
         entry: dynamicPages,
