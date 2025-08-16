@@ -275,10 +275,10 @@ async function createAccount() {
         }
 
         if (userType == 'teacher' && !authError) {
-            window.location.href = 'classroom/create'
+            window.location.href = '/classroom/create'
         }
         else if (userType == 'student' && !authError) {
-            window.location.href = 'classroom/join'
+            window.location.href = '/classroom/join'
         }
         else {
             alert('Failed to create account')
