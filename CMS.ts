@@ -7,17 +7,16 @@ export type ArticleLocation = 'Newsletter' | 'Teacher Resource' | 'Student Resou
 export interface CMSItem {
     createdAt: string;
     updatedAt: string;
-    slug: string;
     location: ArticleLocation;
     favorite: boolean;
     filename: string | null;
     mimetype: string | null;
     status: "draft" | "published" | "archived";
+    title: string;
 }
 export interface CMSArticle extends CMSItem {
     location: ArticleLocation
-    updatedAt: string;
-    title: string;
+    slug: string;
     content: object[];
     dramaticTitle: string;
     author: string | null;
@@ -29,7 +28,7 @@ export interface CaseStudy extends CMSArticle {
 }  
 
 
-export async function getCMSCollection(collectionName: string): Promise<CMSItem[] | null> {
+async function getCMSCollection(collectionName: string): Promise<CMSItem[] | null> {
     try {
         const response = await fetch(`${CMS_URL}/api/${collectionName}?pagination=false`);
         if (!response.ok) {
@@ -46,7 +45,7 @@ export async function getCMSCollection(collectionName: string): Promise<CMSItem[
     }
 
 }
-export async function getCMSArticles(): Promise<CMSArticle[]> {
+async function getCMSArticles(): Promise<CMSArticle[]> {
     // Assert that articles are CMSArticle
     const articles = await getCMSCollection('articles');
     const validArticles: CMSArticle[] = [];
@@ -58,14 +57,21 @@ export async function getCMSArticles(): Promise<CMSArticle[]> {
             validArticles.push(item);
         }
     }
-    // most recent articles we want to show first but favour favorited articles
-    validArticles.sort((a, b) => {
+    return validArticles;
+}
+export async function getCMSResources(): Promise<(CMSItem | CMSArticle)[]> {
+    const files = await getCMSCollection('resources');
+    if (!files) return [];
+    const articles = await getCMSArticles();
+    return sortItems([...files, ...articles]);
+}
+export function sortItems<T extends CMSItem>(items: T[]): T[] {
+    return items.sort((a, b) => {
         if (b.favorite === a.favorite) {
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         }
         return b.favorite ? 1 : -1;
     });
-    return validArticles;
 }
 export async function convertSlateToHtml(slateContent: object[]): Promise<string> {
     

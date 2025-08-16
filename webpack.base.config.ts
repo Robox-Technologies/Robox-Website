@@ -9,7 +9,7 @@ import { RoboxProcessor } from './roboxProcessor.js';
 import { getProductList } from './stripe-server-helper.js';
 import { Product } from '~types/api.js';
 import { TemplateData, TemplatePage } from './types/webpack.js';
-import { ArticleLocation, convertSlateToHtml, getCMSArticles } from './cms.js';
+import { ArticleLocation, convertSlateToHtml, getCMSResources } from './cms.js';
 
 
 
@@ -122,7 +122,7 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
 
     createPages(storePages, 'src/templates/views/product/product.html', productData);
 
-    const articles = await getCMSArticles();
+    const articles = await getCMSResources();
     if (articles.length === 0) {
         console.warn("No articles found in CMS, skipping article pages creation... IS THE CMS RUNNING?");
     }
@@ -131,26 +131,25 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
         "Teacher Resource": [],
         "Student Resources": [],
     };
-    for (const article of articles) {
-        if (!articlePages[article.location]) {
-            articlePages[article.location] = [];
-        }
-        articlePages[article.location].push(`./src/pages/articles/${article.slug}.html`);
-    }
-
     const articleData: Record<ArticleLocation, Record<string, TemplateData>> = {
         "Newsletter": {},
         "Teacher Resource": {},
         "Student Resources": {},
-
     };
     for (const article of articles) {
         const articleType = article.location;
+        if (!articlePages[articleType]) {
+            articlePages[articleType] = [];
+        }
+        
         if (!articleData[articleType]) {
             articleData[articleType] = {};
         }
-        article["html"] = await convertSlateToHtml(article.content);
-        articleData[articleType][article.slug] = { article };
+        if ("content" in article) {
+            articlePages[articleType].push(`./src/pages/articles/${article.slug}.html`);
+            article["html"] = await convertSlateToHtml(article.content);
+            articleData[articleType][article.slug] = { article };
+        }
     }
 
     // Allows the teacher hub to have case studies
