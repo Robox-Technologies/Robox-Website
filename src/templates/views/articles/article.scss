@@ -1,0 +1,25 @@
+@use "@root/variables";
+.article {
+    padding: 20px;
+}
+.icon {
+    color: variables.$themeRed;
+}
+.article-header {
+    .article-author {
+        font-size: 1.2em;
+        color: #868686;
+        span.author-name {
+            color: variables.$themeBlue !important;
+        }
+    }
+    .article-title {
+        margin-bottom: 0.83em;
+    }
+    .date {
+        color: variables.$themeBlue;
+    }
+    hr {
+        background-color: variables.$themeRed;
+    }
+}

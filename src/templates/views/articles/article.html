@@ -2,14 +2,32 @@
 <html lang="en">
 <head>
     <%~ include('@partials/metadata.html') %>
+    <link rel="stylesheet" href="./article.scss">
     <title>Page Not Found - Ro/Box</title>
 </head>
 <body>
     <%~ include('@partials/header/header.html') %>
+    <article id="main">
+        <div class="article-header">
+            <p class="article-dramatic-title">
+                <span class="dramatic-title"><%= article.dramaticTitle %></span>
+            </p>
+            <h1 class="article-title">
+                <%= article.title %>
+            </h1>
+            <h2 class="article-author">Posted by <span class="author-name"><%= article.author %></span></h2>
+            <hr>
+            <div>
+                <p class="article-date">
+                    <i class="fa fa-calendar icon"></i> Posted on <span class="date"><%= new Date(article.createdAt).toLocaleDateString() %></span>
+                </p>
+            </div>
+        </div>
+        <div class="content">
+            <%~ article.html %>
+        </div>
+    </article>
     
-    <div class="content">
-        <%~ article.html %>
-    </div>
 
     <%~ include('@partials/footer/footer.html') %>
 </body>
