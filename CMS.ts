@@ -11,8 +11,10 @@ export interface CMSArticle {
     title: string;
     slug: string;
     content: object[];
+    dramaticTitle: string;
     filename: string | null;
     mimetype: string | null;
+    author: string | null;
     status: "draft" | "published" | "archived";
     html: string | null;
     url: string | null;
