@@ -1,7 +1,3 @@
-<link href="@root/join-classroom.scss" rel="stylesheet">
-<link href="@root/input.scss" rel="stylesheet">
-<script src="@root/join-classroom.ts"></script>
-
 <div class="join-classroom-dialog">
         <div class="join-classroom-container">
             <div class="pill-slider">
@@ -15,20 +11,20 @@
 
         <div class="input-container">
             <div class="classcode-input">
-                <input type="text" class="digit-input" maxlength="1" data-index="0">
-                <input type="text" class="digit-input" maxlength="1" data-index="1">
-                <input type="text" class="digit-input" maxlength="1" data-index="2">
-                <input type="text" class="digit-input" maxlength="1" data-index="3">
-                <input type="text" class="digit-input" maxlength="1" data-index="4">
-                <input type="text" class="digit-input" maxlength="1" data-index="5">
-                <input type="text" class="digit-input" maxlength="1" data-index="6">
-                <input type="text" class="digit-input" maxlength="1" data-index="7">
+                <input type="text" class="digit-input" maxlength="1" data-index="0" inputmode="numeric" pattern="[0-9]*">
+                <input type="text" class="digit-input" maxlength="1" data-index="1" inputmode="numeric" pattern="[0-9]*">
+                <input type="text" class="digit-input" maxlength="1" data-index="2" inputmode="numeric" pattern="[0-9]*">
+                <input type="text" class="digit-input" maxlength="1" data-index="3" inputmode="numeric" pattern="[0-9]*">
+                <input type="text" class="digit-input" maxlength="1" data-index="4" inputmode="numeric" pattern="[0-9]*">
+                <input type="text" class="digit-input" maxlength="1" data-index="5" inputmode="numeric" pattern="[0-9]*">
+                <input type="text" class="digit-input" maxlength="1" data-index="6" inputmode="numeric" pattern="[0-9]*">
+                <input type="text" class="digit-input" maxlength="1" data-index="7" inputmode="numeric" pattern="[0-9]*">
             </div>
             <input type="hidden" id="classroom-code-value" name="classroom-code" value="">
             <p id="classroom-code-error-msg" class="error" style="display: none;"></p>
         </div>
 
-        <button id="join-classroom-button" class="action-button">
+        <button id="scan-qr-button" class="action-button">
             Scan QR Code <i class="fa-solid fa-qrcode"></i>
         </button>
 
@@ -41,13 +37,13 @@
             My Classrooms
         </h2>
         <div class="my-classrooms-list">
-            <div class="classroom-item">
+            <div class="classroom-item card">
                 <div class="classroom-avatar">
                     <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Felix" alt="Classroom Avatar">
                 </div>
-                <div class="classroom-name">
-                    <h3>Year 8 DT</h3>
-                    <h4>06DT-CRTECH01</h4>
+                <div class="classroom-titles">
+                    <h3 class="classroom-name">Year 8 DT</h3>
+                    <h4 class="course-code">06DT-CRTECH01</h4>
                 </div>
                 <div class="classroom-info pending">
                     Pending Request
@@ -56,3 +52,4 @@
         </div>
     </div>
 </div>
+<script src="@root/join-classroom.ts"></script>
