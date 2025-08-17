@@ -95,33 +95,19 @@
             </h1> 
             <div class="card-holder">
                 <% Object.values(studentresources).forEach(function(studentResource) { %>
-                    <% if (studentResource.article.content) { %>
-                        <%~ include('@partials/card.html', {
-                            class: "assembly-card",
-                            title: `<span>${studentResource.article.title}</span>`, 
-                            imageSource: `http://localhost:3000${studentResource.article.thumbnailURL}` || "@images/teacher-hub/assembly-guide.png", 
-                            buttons: [
-                                {
-                                    content: "<span class='underline-grow'>Read Resource</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
-                                    link: `/articles/${studentResource.article.slug}.html`
-                                },
-                            ],
-                            topRowButton: false,
-                        }) %>
-                    <% } else { %>
-                        <%~ include('@partials/card.html', {
-                            class: "assembly-card",
-                            title: `<span>${studentResource.article.title}</span>`, 
-                            imageSource: `http://localhost:3000${studentResource.article.thumbnailURL}` || "@images/teacher-hub/assembly-guide.png", 
-                            buttons: [
-                                {
-                                    content: "<span class='underline-grow'>Read Resource</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
-                                    link: `http://localhost:3000${studentResource.article.File.url}`
-                                },
-                            ],
-                            topRowButton: false,
-                        }) %>
-                    <% } %> 
+                    <%~ include('@partials/card.html', {
+                        class: "assembly-card",
+                        title: `<span>${studentResource.article.title}</span>`, 
+                        imageSource: `http://localhost:3000${studentResource.article.thumbnailURL}`, 
+                        buttons: [
+                            {
+                                content: "<span class='underline-grow'>Read Resource</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
+                                // Slightly weird thing because the slug requires the .html and the file URL does not...
+                                link: `${studentResource.article.slug ? `/articles/${studentResource.article.slug}.html` : `http://localhost:3000${studentResource.article.File.url}`}`
+                            },
+                        ],
+                        topRowButton: false,
+                    }) %>
                 <% }) %>
                 <%~ include('@partials/card.html', {
                     class: "assembly-card",
