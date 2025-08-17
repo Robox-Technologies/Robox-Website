@@ -102,13 +102,27 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signOut(redirectTo: string = '/') {
+    let success = true;
     try {
-        await supabase.auth.signOut()
-        window.location.href = redirectTo
-    } catch (error) {
-        console.error('Sign out error:', error)
-        window.location.href = redirectTo
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.warn('Supabase signOut error:', error);
+            success = false;
+        }
+    } catch (err) {
+        console.error('Sign out threw:', err);
+        success = false;
+    } finally {
+        try {
+            Object.keys(localStorage)
+                .filter(k => k.startsWith('supabase') || k.startsWith('sb-'))
+                .forEach(k => localStorage.removeItem(k));
+        } catch (err) {
+            console.error('Failed to clear localStorage:', err);
+        }
+        window.location.replace(redirectTo);
     }
+    return success;
 }
 
 export async function deleteAccount() {
