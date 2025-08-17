@@ -16,6 +16,7 @@ import { ArticleLocation, convertSlateToHtml, getCMSResources } from './cms.js';
 const __dirname = path.resolve();
 const RECACHE_DURATION = 10 * 60 * 1000;
 const pagesDir = path.resolve(__dirname, 'src/pages');
+// Initalise new md processor so we can do the fancy image formatting
 const roboxProcessor = new RoboxProcessor({
     defaultExtension: '.html',
     views: path.join(__dirname, ''),
@@ -31,9 +32,17 @@ const alias = {
     '@root': 'src/root',
     '@types': 'types',
 };
+// Map the aliases to absolute since HTML bundler only accepts absolute paths
 const aliasPaths = Object.fromEntries(
     Object.entries(alias).map(([key, value]) => [key, path.join(__dirname, value)])
 );
+// To dynamically link the location to a file
+const CMSLocationMapping: Record<ArticleLocation, string> = {
+    "Student Resources": "student/index.html",
+    "Teacher Resources": "teacher/index.html",
+    "Newsletter": "newsletter/index.html"
+}
+
 
 function findHtmlPages(rootDir: string): string[] {
     const result: string[] = [];
@@ -126,39 +135,44 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
     if (articles.length === 0) {
         console.warn("No articles found in CMS, skipping article pages creation... IS THE CMS RUNNING?");
     }
+    // Initialising the data and pages so I dont need to check later
     const articlePages: Record<ArticleLocation, string[]> = {
         "Newsletter": [],
-        "Teacher Resource": [],
+        "Teacher Resources": [],
         "Student Resources": [],
     };
     const articleData: Record<ArticleLocation, Record<string, TemplateData>> = {
         "Newsletter": {},
-        "Teacher Resource": {},
+        "Teacher Resources": {},
         "Student Resources": {},
     };
+
     for (const article of articles) {
         const articleType = article.location;
-        if (!articlePages[articleType]) {
-            articlePages[articleType] = [];
-        }
-        
-        if (!articleData[articleType]) {
-            articleData[articleType] = {};
-        }
+        // Articles contain HTML and slug
+        // but resources do not
         if ("content" in article) {
             articlePages[articleType].push(`./src/pages/articles/${article.slug}.html`);
             article["html"] = await convertSlateToHtml(article.content);
             articleData[articleType][article.slug] = { article };
         }
+        else {
+            articleData[articleType][article.url] = { article };
+        }
     }
 
-    // Allows the teacher hub to have case studies
-    const teacherHubIndex = dynamicPages.findIndex(article => article.filename === "teacher/index.html");
-    if (teacherHubIndex !== -1) {
-        dynamicPages[teacherHubIndex].data = {
-            caseStudies: Object.values(articleData["Teacher Resource"] || {}),
-        };
+    // Looping through the CMS locations and attaching them to their respective files
+    for (const [location, locationPath] of Object.entries(CMSLocationMapping)) {
+        const index = dynamicPages.findIndex(article => article.filename === locationPath);
+        // So later on we can have multiple articles per location
+        const locationName = location.replace(/\s+/g, '').toLowerCase();
+        if (index !== -1) {
+            dynamicPages[index].data = {
+                [locationName]: Object.values(articleData[location] || {}),
+            };
+        }
     }
+    // Create the CMS pages for static rendering purposes
     for (const [location, pages] of Object.entries(articlePages)) {
         createPages(pages, 'src/templates/views/articles/article.html', articleData[location] || {});
     }

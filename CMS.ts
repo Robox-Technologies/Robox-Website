@@ -3,12 +3,13 @@ import { slateToHtml, payloadSlateToHtmlConfig } from '@slate-serializers/html'
 
 
 const CMS_URL = process.env.CMS_URL || 'http://localhost:3000';
-export type ArticleLocation = 'Newsletter' | 'Teacher Resource' | 'Student Resources';
+export type ArticleLocation = 'Newsletter' | 'Teacher Resources' | 'Student Resources';
 export interface CMSItem {
     createdAt: string;
     updatedAt: string;
     location: ArticleLocation;
     favorite: boolean;
+    url: string;
     filename: string | null;
     mimetype: string | null;
     status: "draft" | "published" | "archived";
@@ -75,7 +76,7 @@ export function sortItems<T extends CMSItem>(items: T[]): T[] {
 }
 export async function convertSlateToHtml(slateContent: object[]): Promise<string> {
     
-    const HTMLString = slateToHtml([slateContent["root"]], payloadSlateToHtmlConfig).replaceAll("/api/media/file/", `${CMS_URL}/api/media/file/`);
+    const HTMLString = slateToHtml([slateContent["root"]], payloadSlateToHtmlConfig);
 
     return HTMLString;
 }

@@ -30,15 +30,15 @@
                 Community Hub
             </h1> 
             <div class="card-holder">
-                <% Object.values(caseStudies).forEach(function(caseStudy) { %>
+                <% Object.values(teacherresources).forEach(function(article) { %>
                     <%~ include('@partials/card.html', {
                         class: "assembly-card",
-                        title: `<span>${caseStudy.article.title}</span>`, 
-                        imageSource: `http://localhost:3000${caseStudy.article.thumbnailURL}` || "@images/teacher-hub/assembly-guide.png", 
+                        title: `<span>${article.title}</span>`, 
+                        imageSource: `http://localhost:3000${article.thumbnailURL}` || "@images/teacher-hub/assembly-guide.png", 
                         buttons: [
                             {
                                 content: "<span class='underline-grow'>Read Article</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
-                                link: `/articles/${caseStudy.article.slug}.html`
+                                link: `/articles/${article.slug}.html`
                             },
                         ],
                         topRowButton: false,
