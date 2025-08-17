@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <link href="@root/root.scss" rel="stylesheet">
+    <link href="./index.scss" rel="stylesheet">
+</head>
+<body>
+    <%~ include('src/templates/partials/header.html') %>
+    <h1 class="title">
+        Manage Classroom
+    </h1>
+    <div class="manage-classroom-page">
+        <div class="side-menu">
+            <button class="menu-item" id="my-class-button">My Class</button>
+            <button class="menu-item" id="student-settings-button">Settings</button>
+            <button class="menu-item" id="home-button">Home</button>
+            <button class="menu-item" id="students-button">Students</button>
+            <button class="menu-item" id="learning-button">Learning</button>
+            <button class="menu-item" id="settings-button">Settings</button>
+        </div>
+
+        <div class="content" id="classroomContent">
+            <div class="my-class-page-container page-container" style="display: none;">
+                <div class="my-classroom-heading">
+                    <h2 class="classroom-name" id="classroom-name">My Class</h1>
+                </div>
+            </div>
+            <div class="student-settings-page-container page-container" style="display: none;">
+            </div>
+            <div class="home-page-container page-container" style="display: none;">
+                <div class="home-heading">
+                    <h2 class="classroom-name" id="classroom-name">My Class</h1>
+                </div>
+            </div>
+            </div>
+            <div class="students-page-container page-container" style="display: none;">
+            </div>
+            <div class="learning-page-container page-container" style="display: none;">
+            </div>
+            <div class="settings-page-container page-container" style="display: none;">
+            </div>
+        </div>
+    </div>
+    <%~ include('src/templates/partials/footer.html') %>
+    <script src="./index.ts"></script>
+</body>
+</html>

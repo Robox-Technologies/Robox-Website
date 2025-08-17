@@ -1,0 +1,14 @@
+@use '@root/variables';
+
+h1.title {
+    margin: 20px;
+}
+
+.manage-classroom-page {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 20px;
+}
+

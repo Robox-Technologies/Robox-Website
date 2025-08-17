@@ -218,6 +218,19 @@ export async function removeClassroomFromProfile(classroomId: string, userId: st
     }
 }
 
+export async function getBasicUserData(users: string[] | string): Promise<{ id: string, display_name: string, user_role: string, avatar_url: string }[]> {
+    const userIds = Array.isArray(users) ? users : [users];
+    const results = await Promise.all(userIds.map(async id => {
+        const [display_name, user_role, avatar_url] = await Promise.all([
+            getFromDatabase('profiles', id, 'display_name'),
+            getFromDatabase('profiles', id, 'user_role'),
+            getFromDatabase('profiles', id, 'avatar_url')
+        ]);
+        return { id, display_name, user_role, avatar_url };
+    }));
+    return results;
+}
+
 function isProtoPollution(key: string): boolean {
     const forbiddenKeys = ["__proto__", "constructor", "prototype"];
     return forbiddenKeys.includes(key);
@@ -463,8 +476,105 @@ export async function createClassroom(data): Promise<string | null> {
     return classroomId;
 }
 
+export async function isValidClassroom(classroomId: string): Promise<boolean | null> {
+    if (!isValidUUID(classroomId)) {
+        console.warn('Invalid classroom ID:', classroomId);
+        return null;
+    }
+    const { error } = await supabase
+        .from('classrooms')
+        .select('*')
+        .eq('id', classroomId)
+        .single();
+    if (error) {
+        console.error('Error finding classroom by ID:', error);
+        return false;
+    }
+    return true;
+}
 
-export function headerAuth() {
+
+export async function getClassroomPermissions(classroomId: string, userId: string): Promise<string | null> {
+    if (!isValidUUID(classroomId) || !isValidUUID(userId)) {
+        console.warn('Invalid classroom or user ID:', classroomId, userId);
+        return false;
+    }
+
+    try {
+        const classroom: any = await getFromDatabase('classrooms', classroomId);
+        if (!classroom) return null;
+
+        const owner = classroom?.owner as string | undefined;
+        if (owner === userId) return 'owner';
+
+        const teachers: string[] = Array.isArray(classroom?.teachers) ? classroom.teachers : [];
+        if (teachers.includes(userId)) return 'teacher';
+
+        const students: string[] = Array.isArray(classroom?.students) ? classroom.students : [];
+        if (students.includes(userId)) return 'student';
+
+        // const userClassrooms = (await getFromDatabase('profiles', userId, 'classrooms')) as string[] | null;
+        // if (Array.isArray(userClassrooms) && userClassrooms.includes(classroomId)) {
+        //     return 'authorized';
+        // }
+
+        return null;
+    } catch (err) {
+        console.error('Error getting classroom permissions:', err);
+        return null;
+    }
+}
+
+export async function findClassroomByCode(classCode: string): Promise<string | null> {
+    const { data, error } = await supabase
+        .from('classrooms')
+        .select('*')
+        .eq('class_code', classCode)
+        .single();
+    if (error) {
+        console.error('Error finding classroom by code:', error);
+        return null;
+    }
+    return data;
+}
+
+export async function joinClassroom(classCode: string) {
+    if (!classCode || classCode.length !== 8) {
+        console.warn('Invalid class code:', classCode);
+        return null;
+    }
+
+    try {
+        const classroom = await findClassroomByCode(classCode);
+        if (!classroom) {
+            console.warn('No classroom found for class code:', classCode);
+            return null;
+        }
+
+        const userId = (await getCurrentUserData())?.id;
+        if (!userId) {
+            console.error('No authenticated user found');
+            return null;
+        }
+
+        const role = await getClassroomPermissions(classroom.id, userId);
+        if (role) {
+            console.warn('User already has access to this classroom:', role);
+            return null;
+        }
+
+        // Add user to classroom
+        await appendToDatabase('classrooms', classroom.id, 'students', userId);
+        await appendToDatabase('profiles', userId, 'classrooms', classroom.id);
+
+        return classroom;
+    } catch (error) {
+        console.error('Error joining classroom:', error);
+        return null;
+    }
+}
+
+export async function headerAuth() {
     const updateHeaderAuthState = async () => {
         const loginButton = document.getElementById('header-login-button') as HTMLButtonElement
         const accountButton = document.getElementById('header-loggedin-button') as HTMLButtonElement
