@@ -42,19 +42,18 @@ async function applyProjects() {
     );
     for (const uuid of sortedByTime) {
         const project = projects[uuid];
-        const synced = await getProjectSyncStatus(uuid) as boolean;
+        const cloudProject = await getFromDatabase('projects', uuid) as (Project & { owner?: string; time?: number; last_updated?: number }) | null;
 
-        if (synced) {
-            if (!currentUserId) {
-                continue;
-            }
-            const owner = await getFromDatabase('projects', uuid, 'owner') as string | null;
-            if (!owner || owner !== currentUserId) {
-                continue;
-            }
+        let isSynced = false;
+        if (cloudProject) {
+            if (!currentUserId) continue;
+            if (!cloudProject.owner || cloudProject.owner !== currentUserId) continue;
+            project.time = cloudProject.last_updated ?? cloudProject.time ?? project.time;
+            isSynced = true;
+            console.log("Project is synced:", uuid, "time source:", cloudProject.last_updated ? "last_updated" : (cloudProject.time ? "time" : "local"));
         }
 
-        const card = createProjectCard(uuid, project, synced);
+        const card = createProjectCard(uuid, project, isSynced);
         card.addEventListener("click", (event: MouseEvent) => {
             const item = event.target as HTMLElement | null;
             if (!item) return;
@@ -196,7 +195,6 @@ async function applyClassrooms() {
 
     for (const uuid of classroomIds) {
         const classroom = await getFromDatabase('classrooms', uuid) as any;
-        console.log("Loading classroom with ID:", uuid);
         if (!classroom) {
             removeClassroomFromProfile(uuid, userData.id);
             continue;
@@ -207,13 +205,11 @@ async function applyClassrooms() {
 
         const isStudent = students.includes(userData.id);
         const isTeacher = teachers.includes(userData.id) || classroom.owner === userData.id;
-        console.log(`Classroom ${uuid} - Owner: ${classroom.owner}, Is Teacher: ${isTeacher}, Is Student: ${isStudent}`);
         if (!isTeacher && !isStudent) {
             removeClassroomFromProfile(uuid, userData.id);
             continue;
         }
 
-        console.log("Creating classroom card for:", uuid);
         const card = createClassroomCard(uuid, classroom, isTeacher);
         card.addEventListener("click", (event: MouseEvent) => {
             const item = event.target as HTMLElement | null;
@@ -256,7 +252,6 @@ function createClassroomCard(uuid: string, classroom: any, type: boolean = false
     time.textContent = classroomTime.isValid() ? classroomTime.fromNow() : "";
     clone.id = uuid;
 
-    console.log("Creating classroom card:", clone.id, title.textContent, time.textContent);
     return clone;
 }
 

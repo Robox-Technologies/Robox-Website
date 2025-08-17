@@ -346,14 +346,19 @@ export async function syncCloudProjects(userId?: string) {
         const remoteIds = await findUserProjects(userId); 
         if (!remoteIds || remoteIds.length === 0) return; // If no remote projects, return early
         const projects = getProjects();
-        let changed = false; // Flag to track if any changes were made
+        let changed = false;
         for (const id of remoteIds) {
-            if (!projects[id]) { // If project not in local storage, add it
-                let name = await getFromDatabase('projects', id, 'name') as string | null; // Fetch project name from database
-                if (!name) name = 'unnamed project';
-                projects[id] = { name, workspace: {}, thumbnail: "" } as any;
-                (projects[id] as any).last_updated = new Date();
-                changed = true; // Set changed flag to true
+            if (!projects[id]) {
+                const name = project?.name || 'unnamed project';
+                projects[id] = {
+                    id,
+                    owner: userId,
+                    name,
+                    workspace: {},
+                    thumbnail: "",
+                    last_updated: project?.last_updated || new Date().toISOString()
+                } as any;
+                changed = true;
             }
         }
         if (changed) {
