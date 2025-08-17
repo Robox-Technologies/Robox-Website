@@ -1,5 +1,3 @@
-import './boxToBot.ts';
-
 const scrollPrompt = document.querySelector(".scroll-prompt") as HTMLElement;
 const scrollTarget = document.getElementById("scrollTarget") as HTMLElement;
 

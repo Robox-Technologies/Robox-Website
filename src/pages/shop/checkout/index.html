@@ -2,13 +2,13 @@
 
 <html lang="en">
     <head>
-        <%~ include('src/templates/partials/metadata.html') %>
+        <%~ include('@partials/metadata.html') %>
         <script src="./checkout.ts" defer></script>
         <link href="./checkout.scss" rel="stylesheet">
         <title>Checkout - Ro/Box</title>
     </head>
     <body>
-        <%~ include('src/templates/partials/header.html') %>
+        <%~ include('@partials/header/header.html') %>
         
         <article class="content">
             <a class="navigation" href="/shop/cart"><i class="fa-solid fa-chevron-left"></i> Cart</a>
@@ -50,10 +50,10 @@
                     </form>
                 </div>
                 
-                <%~ include('src/templates/partials/shopSummary.html', { checkoutButton: false }) %>
+                <%~ include('@partials/shopSummary.html', { checkoutButton: false }) %>
             </div>
         </article>
         
-        <%~ include('src/templates/partials/footer.html') %>
+        <%~ include('@partials/footer/footer.html') %>
     </body>
 </html>

@@ -8,13 +8,11 @@
         "esModuleInterop": true,
         "baseUrl": ".",
         "paths": {
+            "@images/*": ["src/images/*"],
+            "@partials/*": ["src/templates/partials/*"],
             "@root/*": ["src/root/*"],
-            "@pages/*": ["src/pages/*"],
-            "@components/*": ["src/components/*"],
-            "@types/*": ["@types/*"],
-            "@store/*": ["src/store/*"],
-            "@utils/*": ["src/utils/*"],
-            "@assets/*": ["src/assets/*"],
+            "~types/*": ["types/*"],
+
         },
         "resolveJsonModule": true,
         "allowSyntheticDefaultImports": true,
@@ -23,7 +21,7 @@
         "skipLibCheck": true,
         "typeRoots": [
             "./node_modules/@types",
-            "./@types"
+            "./types"
         ],
     },
 }

@@ -12,7 +12,6 @@
         "store.ts",
         "stripe-server-helper.ts",
         "roboxSectionize.ts",
-        "webpack.config.ts"
     ],
     "typeRoots": [
         "./node_modules/@types",
@@ -20,6 +19,7 @@
     ],
     "exclude": [
         "node_modules",
-        "src"
+        "src",
+        "webpack.*.config.ts"
     ]
 }

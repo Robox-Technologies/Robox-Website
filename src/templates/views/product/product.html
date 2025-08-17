@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%~ include('src/templates/partials/metadata.html') %>
+    <%~ include('@partials/metadata.html') %>
     <script src="./product.ts" defer></script>
     <link href="./product.scss" rel="stylesheet">
     <link href="@root/shop.scss" rel="stylesheet">
@@ -14,7 +14,7 @@
 </head>
 
 <body>
-    <%~ include('src/templates/partials/header.html') %>
+    <%~ include('@partials/header/header.html') %>
 
     <article class="productArticle">
         <p class="navigation productNav"><a href="/shop">Shop all</a> / <%= product.name %></p>
@@ -74,7 +74,7 @@
         <%~ include(description) %>
     </article>
 
-    <%~ include('src/templates/partials/footer.html') %>
+    <%~ include('@partials/footer/footer.html') %>
 
     <dialog id="productImageModal" class="simpleModal">
         <img id="hero-image-large" alt="Product image of <%= product.name %>" src="@images/product/<%= product.internalName %>/<%= images[0] %>">
@@ -92,7 +92,7 @@
         </button>
     </dialog>
 
-    <%~ include('src/templates/partials/modal.html', {
+    <%~ include('@partials/modal/modal.html', {
         id: "cart-modal",
         title: '<i class="fa-solid fa-cart-plus"></i> Added to Cart',
         content: [

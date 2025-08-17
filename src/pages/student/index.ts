@@ -1,15 +1,22 @@
-import { createProject, getProject, getProjects, renameProject, sanitizeImageDataUrl, deleteProject } from "../../root/serialization";
-import { Project } from "types/projects";
+import {
+    createProject,
+    getProject,
+    getProjects,
+    importProject,
+    renameProject,
+    deleteProject,
+    sanitizeImageDataUrl
+} from "@root/blockly/serialization";
+import { Project } from "~types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
-import { toggleToolbar, moveToolbar } from "../../root/toolbar";
-import { getProjectSyncStatus, syncCloudProjects, getCurrentUserData, getFromDatabase, removeClassroomFromProfile } from "@root/account";
+import { toggleToolbar, moveToolbar } from "@partials/toolbar/toolbar";
+import { syncCloudProjects, getCurrentUserData, getFromDatabase, removeClassroomFromProfile } from "@root/account";
 
 dayjs.extend(relativeTime);
 
 let userData: any = null;
 async function userDataPromise() {
-    console.log("Fetching user data for classrooms");
 	try {
 		userData = await getCurrentUserData() ?? null;
 		if (!userData) console.warn("No user data found, cannot apply classrooms.");
@@ -50,7 +57,6 @@ async function applyProjects() {
             if (!cloudProject.owner || cloudProject.owner !== currentUserId) continue;
             project.time = cloudProject.last_updated ?? cloudProject.time ?? project.time;
             isSynced = true;
-            console.log("Project is synced:", uuid, "time source:", cloudProject.last_updated ? "last_updated" : (cloudProject.time ? "time" : "local"));
         }
 
         const card = createProjectCard(uuid, project, isSynced);
@@ -84,13 +90,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const toolbarModal = document.getElementById("project-toolbar") as HTMLDialogElement | null;
-
     const toolbarEditButton = document.getElementById("project-edit") as HTMLButtonElement | null;
     const toolbarDeleteButton = document.getElementById("project-delete") as HTMLButtonElement | null;
     if (!toolbarModal || !toolbarEditButton || !toolbarDeleteButton) return;
+
     const editModal = document.getElementById("edit-modal") as HTMLDialogElement | null;
     const deleteModal = document.getElementById("delete-modal") as HTMLDialogElement | null;
     if (!editModal || !deleteModal) return;
+
     const projectNameInput = editModal.querySelector("input#project-name") as HTMLInputElement | null;
     if (!projectNameInput) return;
 
@@ -102,6 +109,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         projectNameInput.value = getProject(projectId)?.name || "";
         editModal.showModal();
     });
+
     toolbarDeleteButton.addEventListener("click", () => {
         deleteModal.showModal();
     });
@@ -140,6 +148,61 @@ document.addEventListener("DOMContentLoaded", async () => {
             toggleToolbar(toolbarModal, false);
         }
         deleteModal.close();
+    });
+
+    // DROPZONE STUFF
+    const dropzone = document.getElementById("dropzone");
+    const toggleDropzoneButton = document.getElementById("toggle-dropzone");
+    if (!dropzone || !toggleDropzoneButton) return;
+    toggleDropzoneButton.addEventListener("click", () => {
+        //Open file dialog
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".robox,application/json";
+        input.style.display = "none";
+        input.addEventListener("change", async (event) => {
+            const files = (event.target as HTMLInputElement).files;
+            if (!files || files.length === 0) return;
+            const file = files[0];
+            if (file.type !== "application/json" && !file.name.endsWith(".robox")) return;
+            const project = await readROBOXFile(file);
+            if (!project) {
+                console.error("Failed to read or parse the ROBOT file.");
+                return;
+            }
+            importProject(project);
+            applyProjects();
+        }
+        );
+        document.body.appendChild(input);
+        input.click();
+        document.body.removeChild(input);
+        toggleDropzone(false);
+    });
+    dropzone.addEventListener("drop", handleFileDrop);
+
+    document.addEventListener("dragover", (e) => {
+        e.preventDefault();
+    });
+
+    document.addEventListener("dragenter", function (e) {
+        e.preventDefault();
+        if (e.dataTransfer?.types?.includes("Files")) {
+            toggleDropzone(true);
+        }
+    });
+
+    document.addEventListener("dragleave", function (e) {
+        e.preventDefault();
+        // Only hide if mouse leaves the window
+        if (e.relatedTarget === null) {
+            toggleDropzone(false);
+        }
+    });
+
+    document.addEventListener("drop", (e) => {
+        e.preventDefault();
+        toggleDropzone(false);
     });
 });
 
@@ -260,4 +323,49 @@ function hideCreateClassroomButton() {
     if (createProjectButton && userData.user_role === 'student') {
         createProjectButton.style.display = "none";
     }
+}
+async function handleFileDrop(event: DragEvent) {
+    event.preventDefault();
+    const files = event.dataTransfer?.files;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    if (file.type !== "application/json" && !file.name.endsWith(".robox")) return;
+    const project = await readROBOXFile(file);
+    if (!project) {
+        console.error("Failed to read or parse the ROBOX file.");
+        return;
+    }
+    importProject(project);
+    applyProjects();
+    toggleDropzone(false);
+}
+
+function toggleDropzone(show?: boolean) {
+    const dropzone = document.getElementById("dropzone");
+    if (!dropzone) return;
+    if (show === undefined) {
+        dropzone.style.display = dropzone.style.display === "none" ? "flex" : "none";
+    } else {
+        dropzone.style.display = show ? "flex" : "none";
+    }
+}
+
+function readROBOXFile(file: File): Promise<Project | null> {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            if (!event.target || !event.target.result) {
+                resolve(null);
+                return;
+            }
+            try {
+                const project = JSON.parse(event.target.result as string) as Project;
+                resolve(project);
+            } catch (e) {
+                console.error("Failed to parse ROBOX file:", e);
+                resolve(null);
+            }
+        };
+        reader.readAsText(file);
+    });
 }

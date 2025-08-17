@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import 'blockly/blocks';
-import { getProjects } from './serialization';
+import { getProjects } from '@root/blockly/serialization';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL

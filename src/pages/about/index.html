@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <%~ include('src/templates/partials/metadata.html') %>
+    <%~ include('@partials/metadata.html') %>
     <title>About Us - Ro/Box</title>
     <link href="./index.scss" rel="stylesheet">
 </head>
 
 <body>
-    <%~ include('src/templates/partials/header.html') %>
+    <%~ include('@partials/header/header.html') %>
     
     <section class="hero">
         <img src="@images/about/hero.jpg" alt="Outdoor photo of a Ro/Box outside, resting atop a square wooden pole">
@@ -59,8 +59,11 @@
                     These high prices pose serious challenges for schools and limit access to STEM learning for countless students.
                 </p>
             </div>
-    
-            <img src="@images/about/article2.png" class="media" alt="An early prototype of Ro/Box following a line">
+            
+            <div>
+                <img src="@images/about/article2.png" class="media" alt="An early prototype of Ro/Box following a line">
+                <p class="caption">An early Ro/Box prototype.</p>
+            </div>
         </section>
 
         <section class="articleSection LTR equalWidth">
@@ -108,6 +111,6 @@
         </section>
     </article>
 
-    <%~ include('src/templates/partials/footer.html') %>
+    <%~ include('@partials/footer/footer.html') %>
 </body>
 </html>

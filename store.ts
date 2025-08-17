@@ -7,8 +7,8 @@ import { processEmail } from './email.js';
 
 import express from 'express'
 import { Request, Response } from 'express';
-import { PaymentIntentCreationBody, ProductsRequestQuery } from 'types/api';
-import { calculateTotalCost } from './src/root/stripe-shared-helper.js';
+import { PaymentIntentCreationBody, ProductsRequestQuery } from '~types/api.js';
+import { calculateTotalCost } from './src/root/payment/stripe-shared-helper.js';
 
 const paymentRouter = express.Router()
 
@@ -17,6 +17,7 @@ const verifiedProducts = await getProductList()
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 paymentRouter.post('/webhook', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
+    console.log('Received webhook event');
     const signature = req.headers['stripe-signature'];
 
     let event: Stripe.Event;

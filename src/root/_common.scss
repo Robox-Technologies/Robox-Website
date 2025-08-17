@@ -12,6 +12,11 @@
         max-height: 100%;
     }
 
+    .caption {
+        color: variables.$tone3;
+        font-size: 14px;
+    }
+
     .text a:not(.ctaButton) {
         text-decoration: underline;
     }

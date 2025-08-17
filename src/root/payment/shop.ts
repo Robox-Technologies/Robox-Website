@@ -1,4 +1,4 @@
-import { Product } from "types/api";
+import { Product } from "~types/api";
 import { getCart } from "./cart";
 import { calculateTotalCost, cartToDictionary } from "./stripe-shared-helper";
 

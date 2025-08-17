@@ -6,7 +6,7 @@
     <link href="./index.scss" rel="stylesheet">
 </head>
 <body>
-    <%~ include('src/templates/partials/header.html') %>
+    <%~ include('@partials/header/header.html') %>
     <div class="settings-page">
         <div class="side-menu">
             <button class="menu-item active" id="general-button">General</button>
@@ -122,7 +122,7 @@
                 <button class="ctaButton primaryButton" id="delete-account-button">Delete Account</button>
 
                 <!-- Delete account confirmation modal -->
-                <%~ include('src/templates/partials/modal.html', {
+                <%~ include('@partials/modal/modal.html', {
                     id: "delete-account-modal",
                     class: "confirmation-modal",
                     title: 'Delete Account',
@@ -137,7 +137,7 @@
         </div>
     </div>
 
-    <%~ include('src/templates/partials/footer.html') %>
+    <%~ include('@partials/footer/footer.html') %>
     <script src="./index.ts"></script>
 </body>
 </html>
