@@ -20,8 +20,8 @@
     "dev:build": "npm-run-all --parallel build:webpack build:server && webpack --config build/webpack.dev.config.js",
     "prod:build": "npm-run-all --parallel build:webpack build:server && webpack --config build/webpack.prod.config.js",
 
-    "run:dev": "sleep 2.5 && cross-env NODE_ENV=development nodemon build/server/server.js",
-    "run:prod": "sleep 5 && cross-env NODE_ENV=production nodemon build/server/server.js",
+    "run:dev": "node -e \"setTimeout(() => process.exit(0), 2500)\" && cross-env NODE_ENV=development nodemon build/server/server.js",
+    "run:prod": "node -e \"setTimeout(() => process.exit(0), 5000)\" && cross-env NODE_ENV=production nodemon build/server/server.js",
 
     "dev": "npm run dev:build && npm-run-all --parallel dev:watch run:dev",
     "prod": "npm run prod:build && npm-run-all --parallel prod:watch run:prod"
