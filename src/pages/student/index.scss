@@ -126,7 +126,7 @@ $toolbarWidth: 130px;
     color: white;
 }
 
-#create-classroom {
+#create-classroom, #join-classroom {
     width: $projectCardWidth;
     border-radius: $cardBorderRadius;
     background-color: variables.$themeRed;
@@ -137,7 +137,7 @@ $toolbarWidth: 130px;
     flex-direction: column;
 }
 
-#create-classroom, .classroom-card {
+#create-classroom, #join-classroom, .classroom-card {
     width: $projectCardWidth;
     transition: transform 0.1s ease-out;
     transform-style: preserve-3d;
@@ -146,21 +146,21 @@ $toolbarWidth: 130px;
     cursor: pointer;
 }
 
-#create-classroom:hover {
+#create-classroom:hover, #join-classroom:hover {
     cursor: pointer;
     
 }
-#create-classroom > * {
+#create-classroom > *, #join-classroom > * {
     color: white;
     text-align: center;
     font-size: 30px;
     width: 100%;
 }
-#create-classroom > p{
+#create-classroom > p, #join-classroom > p {
     margin-top: 10px;
     margin-bottom: 0;
 }
-#create-classroom > svg > path {
+#create-classroom > svg > path, #join-classroom > svg > path {
     color: white;
 }
 
