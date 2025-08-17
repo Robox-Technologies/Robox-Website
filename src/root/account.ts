@@ -351,7 +351,8 @@ export async function syncCloudProjects(userId?: string) {
             if (!projects[id]) { // If project not in local storage, add it
                 let name = await getFromDatabase('projects', id, 'name') as string | null; // Fetch project name from database
                 if (!name) name = 'unnamed project';
-                projects[id] = { name, time: dayjs(), workspace: {}, thumbnail: "" } as Project; // Create project entry
+                projects[id] = { name, workspace: {}, thumbnail: "" } as any;
+                (projects[id] as any).last_updated = new Date();
                 changed = true; // Set changed flag to true
             }
         }
