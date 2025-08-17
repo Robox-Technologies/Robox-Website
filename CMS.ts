@@ -4,39 +4,49 @@ import { slateToHtml, payloadSlateToHtmlConfig } from '@slate-serializers/html'
 
 const CMS_URL = process.env.CMS_URL || 'http://localhost:3000';
 export type ArticleLocation = 'Newsletter' | 'Teacher Resources' | 'Student Resources';
-export interface CMSItem {
+type ContentArticle = {
+    id: string;
+    type: 'article';
     createdAt: string;
     updatedAt: string;
-    location: ArticleLocation;
-    favorite: boolean;
-    url: string;
-    filename: string | null;
-    mimetype: string | null;
-    status: "draft" | "published" | "archived";
-    title: string;
-}
-export interface CMSArticle extends CMSItem {
-    location: ArticleLocation
+    thumbnail: { id: string, url: string; };
+    previewTitle: string;
+    articleTitle: string;
+    description: string;
     slug: string;
-    content: object[];
-    dramaticTitle: string;
-    author: string | null;
-    html: string | null;
-    url: string | null;
-}
-export interface CaseStudy extends CMSArticle {
-    type: 'case-study';
-}  
+    author: string;
+    tags?: string[];
+    content?: object[];
+    status: string;
+    location: string;
+    favorite: boolean;
+};
+
+type ContentResource = {
+    id: string;
+    type: 'resource';
+    createdAt: string;
+    updatedAt: string;
+    thumbnail: { id: string, url: string; };
+    previewTitle: string;
+    description: string;
+    File: { id: string; url: string; filename: string; };
+    status: string;
+    location: string;
+    favorite: boolean;
+};
+
+type ContentItem = ContentArticle | ContentResource;
 
 
-async function getCMSCollection(collectionName: string): Promise<CMSItem[] | null> {
+async function getCMSCollection(collectionName: string): Promise<ContentItem[] | null> {
     try {
         const response = await fetch(`${CMS_URL}/api/${collectionName}?pagination=false`);
         if (!response.ok) {
             console.warn(`Failed to fetch collection ${collectionName}: ${response.statusText}`);
             return null;
         }
-        const collection = (await response.json())["docs"].filter((item: CMSArticle) => {
+        const collection = (await response.json())["docs"].filter((item: ContentItem) => {
             return item.status === "published";
         });
         return collection;
@@ -46,27 +56,21 @@ async function getCMSCollection(collectionName: string): Promise<CMSItem[] | nul
     }
 
 }
-async function getCMSArticles(): Promise<CMSArticle[]> {
-    // Assert that articles are CMSArticle
-    const articles = await getCMSCollection('articles');
-    const validArticles: CMSArticle[] = [];
-    if (!articles) return [];
-    for (const item of articles) {
-        if (isCMSArticle(item)) {
-            const itemSlug = item.title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
+
+export async function getCMSResources(): Promise<(ContentItem)[]> {
+    const content = await getCMSCollection('content');
+    if (!content) return [];
+    const publishedContent = content.filter((item: ContentItem) => item.status === 'published');
+    for (const item of publishedContent) {
+
+        if (item.type === 'article') {
+            const itemSlug = item.articleTitle.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
             item.slug = itemSlug;
-            validArticles.push(item);
         }
     }
-    return validArticles;
+    return sortItems(publishedContent);
 }
-export async function getCMSResources(): Promise<(CMSItem | CMSArticle)[]> {
-    const files = await getCMSCollection('resources');
-    if (!files) return [];
-    const articles = await getCMSArticles();
-    return sortItems([...files, ...articles]);
-}
-export function sortItems<T extends CMSItem>(items: T[]): T[] {
+export function sortItems<T extends ContentItem>(items: T[]): T[] {
     return items.sort((a, b) => {
         if (b.favorite === a.favorite) {
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -79,7 +83,4 @@ export async function convertSlateToHtml(slateContent: object[]): Promise<string
     const HTMLString = slateToHtml([slateContent["root"]], payloadSlateToHtmlConfig);
 
     return HTMLString;
-}
-function isCMSArticle(item: CMSItem): item is CMSArticle {
-    return "title" in item && "content" in item;
 }

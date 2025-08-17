@@ -97,8 +97,8 @@
                 <% Object.values(studentresources).forEach(function(studentResource) { %>
                     <%~ include('@partials/card.html', {
                         class: "assembly-card",
-                        title: `<span>${studentResource.article.title}</span>`, 
-                        imageSource: `http://localhost:3000${studentResource.article.thumbnailURL}`, 
+                        title: `<span>${studentResource.article.previewTitle}</span>`, 
+                        imageSource: `http://localhost:3000${studentResource.article.thumbnail.url}`, 
                         buttons: [
                             {
                                 content: "<span class='underline-grow'>Read Resource</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",

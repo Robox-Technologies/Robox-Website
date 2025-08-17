@@ -131,8 +131,8 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
 
     createPages(storePages, 'src/templates/views/product/product.html', productData);
 
-    const articles = await getCMSResources();
-    if (articles.length === 0) {
+    const content = await getCMSResources();
+    if (content.length === 0) {
         console.warn("No articles found in CMS, skipping article pages creation... IS THE CMS RUNNING?");
     }
     // Initialising the data and pages so I dont need to check later
@@ -147,17 +147,19 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
         "Student Resources": {},
     };
 
-    for (const article of articles) {
+    for (const article of content) {
         const articleType = article.location;
         // Articles contain HTML and slug
         // but resources do not
-        if ("content" in article) {
+        if (article.type === 'article') {
             articlePages[articleType].push(`./src/pages/articles/${article.slug}.html`);
             article["html"] = await convertSlateToHtml(article.content);
             articleData[articleType][article.slug] = { article };
         }
         else {
-            articleData[articleType][article.url] = { article };
+            // We dont really need the article as a slug
+            // This is because we just need it to be unique in the case of resources, since the slug is only needed to link it to the article
+            articleData[articleType][article.id] = { article };
         }
     }
 
