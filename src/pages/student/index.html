@@ -101,7 +101,7 @@
                         imageSource: `http://localhost:3000${studentResource.article.thumbnail.url}`, 
                         buttons: [
                             {
-                                content: "<span class='underline-grow'>Read Resource</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
+                                content: `<span class='underline-grow'>${studentResource.article.callToAction || 'Read Resource'}</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>`,
                                 // Slightly weird thing because the slug requires the .html and the file URL does not...
                                 link: `${studentResource.article.slug ? `/articles/${studentResource.article.slug}.html` : `http://localhost:3000${studentResource.article.File.url}`}`
                             },
@@ -118,7 +118,6 @@
                             content: "<span class='underline-grow'>PDF Build Instructions</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
                             link: "/public/latest.pdf"
                         },
-
                     ],
                     topRowButton: false,
                 }) %>

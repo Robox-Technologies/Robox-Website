@@ -17,6 +17,7 @@ type ContentArticle = {
     author: string;
     tags?: string[];
     content?: object[];
+    callToAction?: string;
     status: string;
     location: string;
     favorite: boolean;
@@ -26,6 +27,7 @@ type ContentResource = {
     id: string;
     type: 'resource';
     createdAt: string;
+    callToAction?: string;
     updatedAt: string;
     thumbnail: { id: string, url: string; };
     previewTitle: string;
