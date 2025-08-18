@@ -740,3 +740,95 @@ export async function isValidEmail(email: string): Promise<boolean | string> {
         return 'Unable to validate email';
     }
 }
+
+// Classroom OOP
+export interface ClassroomCreationData {
+    name: string;
+    description?: string | null;
+    year_level?: string | null;
+    course_code?: string | null;
+    location?: string | null;
+    lms_url?: string | null;
+    security?: unknown;
+    features?: unknown;
+}
+
+interface ClassroomRow {
+    id: string;
+    owner: string;
+    name: string;
+    students?: string[];
+    teachers?: string[];
+    created_at?: string;
+    year_level?: string | null;
+    course_code?: string | null;
+    location?: string | null;
+    lms_url?: string | null;
+    security?: unknown;
+    features?: unknown;
+    class_code?: number | null;
+    school?: string | null;
+    description?: string | null;
+    status?: string | null;
+}
+
+export class Classroom {
+    constructor(public id: string, public owner: string, private data: ClassroomRow) {}
+
+    get name() { return this.data.name; }
+    set name(value: string) {
+        this.data.name = value;
+        writeToDatabase('classrooms', this.id, 'name', value, true)
+            .catch(err => console.error('Failed to persist classroom name:', err));
+    }
+    get students(): string[] { return Array.isArray(this.data.students) ? this.data.students : []; }
+    get teachers(): string[] { return Array.isArray(this.data.teachers) ? this.data.teachers : []; }
+
+    static async create(payload: ClassroomCreationData): Promise<Classroom | null> {
+        const id = await createClassroom(payload);
+        if (!id) return null;
+        const row = await getFromDatabase('classrooms', id);
+        return row ? new Classroom(id, row.owner, row) : null;
+    }
+
+    static async load(id: string): Promise<Classroom | null> {
+        if (!isValidUUID(id)) return null;
+        const row = await getFromDatabase('classrooms', id) as ClassroomRow | null;
+        if (!row) return null;
+        return new Classroom(id, row.owner, row);
+    }
+
+    static async byCode(code: string): Promise<Classroom | null> {
+        const foundId = await findClassroomByCode(code);
+        if (!foundId || typeof foundId !== 'string') return null;
+        const row = await getFromDatabase('classrooms', foundId) as ClassroomRow | null;
+        return row ? new Classroom(row.id, row.owner, row) : null;
+    }
+
+    async refresh(): Promise<void> {
+        const row = await getFromDatabase('classrooms', this.id);
+        if (row) this.data = row;
+    }
+
+    async generateCode(): Promise<string | null> {
+        return await generateClassCode(this.id);
+    }
+
+    async roleForUser(userId: string): Promise<string | null> {
+        return await getClassroomPermissions(this.id, userId);
+    }
+
+    async addStudent(userId: string): Promise<boolean> {
+        if (!userId) return false;
+        await appendToDatabase('classrooms', this.id, 'students', userId, true);
+        await appendToDatabase('profiles', userId, 'classrooms', this.id, true);
+        await this.refresh();
+        return true;
+    }
+
+    async removeStudent(userId: string): Promise<boolean> {
+        await appendToDatabase('classrooms', this.id, 'students', userId, false);
+        await this.refresh();
+        return true;
+    }
+}
