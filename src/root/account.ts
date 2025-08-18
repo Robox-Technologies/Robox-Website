@@ -356,27 +356,43 @@ export async function deleteCloudProject(uuid: string) {
 // Sync cloud projects owned by the current user into local storage (placeholder entries) if not already present.
 export async function syncCloudProjects(userId?: string) {
     try {
-        if (!userId) return; // If logged in no cloud projects, return early
-        const remoteIds = await findUserProjects(userId); 
-        if (!remoteIds || remoteIds.length === 0) return; // If no remote projects, return early
+        if (!userId) return;
+        const remoteIds = await findUserProjects(userId);
+        if (!remoteIds || remoteIds.length === 0) return;
         const projects = getProjects();
         let changed = false;
         for (const id of remoteIds) {
             if (!projects[id]) {
-                const name = project?.name || 'unnamed project';
-                projects[id] = {
+                const remoteProject = await getFromDatabase('projects', id);
+                const name = (remoteProject && (remoteProject as any).name) ?? 'unnamed project';
+                const last_updated = (remoteProject && (remoteProject as any).last_updated) ?? new Date().toISOString();
+
+                const projectDataRaw = remoteProject?.project_data;
+                let projectDataParsed: any = null;
+                try { projectDataParsed = JSON.parse(projectDataRaw); } catch {}
+
+                const placeholder: {
+                    id: string;
+                    owner: string;
+                    name: string;
+                    workspace: Record<string, unknown>;
+                    thumbnail: string;
+                    last_updated: string;
+                } = {
                     id,
                     owner: userId,
                     name,
                     workspace: {},
-                    thumbnail: "",
-                    last_updated: project?.last_updated || new Date().toISOString()
-                } as any;
+                    thumbnail: projectDataParsed?.thumbnail || '',
+                    last_updated
+                };
+
+                projects[id] = placeholder;
                 changed = true;
             }
         }
         if (changed) {
-            localStorage.setItem("roboxProjects", JSON.stringify(projects)); // Save updated projects to local storage
+            localStorage.setItem("roboxProjects", JSON.stringify(projects));
         }
     } catch (e) {
         console.warn("Cloud project sync failed", e);
