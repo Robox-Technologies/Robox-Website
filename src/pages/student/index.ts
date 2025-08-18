@@ -79,6 +79,10 @@ async function applyProjects() {
 
 document.addEventListener("DOMContentLoaded", async () => {
     await userDataPromise();
+    if (!userData) {
+        const classroomsSection = document.getElementById("classrooms");
+        classroomsSection.style.display = "none";
+    }
     await Promise.allSettled([applyProjects(), applyClassrooms(), hideCreateClassroomButton()]);
 
     const createProjectButton = document.getElementById("create-project");
