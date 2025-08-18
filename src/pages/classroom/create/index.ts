@@ -1,4 +1,6 @@
-import { createClassroom } from '@root/account'
+import { authCheck, createClassroom } from '@root/account'
+
+authCheck()
 
 addEventListener('DOMContentLoaded', () => {
     // Inputs
