@@ -1,0 +1,36 @@
+@use '@root/variables';
+
+.clr-field {
+    display: flex;
+    align-items: center;
+}
+
+.clr-field button {
+    border-radius: 16px;
+    height: 100%;
+    width: 20%;
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+.color-input {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 16px;
+    border: 1.4px solid variables.$themeBlue;
+    width: 100%;
+    height: fit-content;
+    align-self: flex-start;
+    align-items: center;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    min-height: 40px;
+    box-sizing: border-box;
+    font-family: 'Nunito', sans-serif;
+}
+
+.clr-picker {
+    font-family: 'Nunito', sans-serif;
+}

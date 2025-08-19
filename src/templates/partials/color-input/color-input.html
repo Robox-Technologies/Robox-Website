@@ -1,0 +1,22 @@
+<link rel="stylesheet" href="@partials/color-input/coloris.min.css"/>
+<script src="@partials/color-input/coloris.min.js"></script>
+<link href="@partials/color-input/color-input.scss" rel="stylesheet">
+<div class="input-container <%= it.class ? it.class : '' %>" id="<%= it.containerId %>">
+    <label for="<%= it.inputId %>" class="input-label"><%= it.label ? it.label : '' %><p class="required" style="display: <%= it.required ? 'inline' : 'none' %>">*</p></label>
+    <input data-coloris type="<%= it.type ? it.type : 'text' %>" id="<%= it.inputId %>" name="<%= it.name || it.inputId %>" placeholder="<%= it.placeholder %>" class="color-input" <%= it.autocomplete ? `autocomplete="${it.autocomplete}"` : '' %>>
+    <p id="<%= it.errorId %>" class="error color-error" style="display: none;"></p>
+</div>
+<script src="@partials/color-input/color-input.ts"></script>
+<script>
+    Coloris({
+        theme: 'pill',
+        formatToggle: true,
+        swatches: [
+            '#2588C7', // Theme Blue
+            '#91CC31', // Theme Green
+            '#FFCD44', // Theme Yellow
+            '#FF6166', // Theme Red
+            '#405C64'  // Theme Black
+        ], 
+    });
+</script>
