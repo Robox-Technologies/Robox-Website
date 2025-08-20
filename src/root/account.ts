@@ -612,13 +612,19 @@ export async function joinClassroom(classCode: string) {
 
 export async function headerAuth() {
     const updateHeaderAuthState = async () => {
-        const loginButton = document.getElementById('header-login-button') as HTMLButtonElement
-        const accountButton = document.getElementById('header-loggedin-button') as HTMLButtonElement
-        const usernameElement = document.getElementById('header-username') as HTMLDivElement
+        const loginButton= document.getElementById('header-login-button') as HTMLButtonElement;
+        const accountButton = document.getElementById('header-loggedin-button') as HTMLButtonElement;
+        const usernameElement= document.getElementById('header-username') as HTMLDivElement;
+        const mobileLoginButton = document.getElementById('mobile-header-login-button') as HTMLButtonElement;
         
+        if (!loginButton || !accountButton || !usernameElement || !mobileLoginButton) {
+            return;
+        }
+
         if (await isAuthenticated()) {
             loginButton.style.display = 'none'
             accountButton.style.display = 'inline-flex'
+            mobileLoginButton.style.display = 'none'
             
             const userData = await getCurrentUserData()
             const displayName = userData.display_name
@@ -629,6 +635,8 @@ export async function headerAuth() {
             loginButton.style.display = 'inline-flex'
             accountButton.style.display = 'none'
             usernameElement.textContent = ''
+
+            mobileLoginButton.style.display = 'inline-flex'
         }
     }
 
