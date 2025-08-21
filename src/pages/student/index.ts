@@ -298,8 +298,8 @@ async function applyClassrooms() {
     }
 }
 
-function createClassroomCard(uuid: string, classroom: any, type: boolean = false): HTMLElement {
-    const templateId = type === true ? "teacherProjectCardTemplate" : "studentProjectCardTemplate";
+function createClassroomCard(classroom: Classroom, isTeacher: boolean = false): HTMLElement {
+    const templateId = isTeacher ? "teacherClassroomCardTemplate" : "studentClassroomCardTemplate";
     const projectTemplate = document.getElementById(templateId) as HTMLTemplateElement;
     if (!projectTemplate) return document.createElement("div");
 
@@ -309,7 +309,7 @@ function createClassroomCard(uuid: string, classroom: any, type: boolean = false
     clone.classList.add("classroom-card");
 
     const title = clone.querySelector(".card-title-text");
-    const time = clone.querySelector(".card-description");
+    const description = clone.querySelector(".card-description");
     const image = clone.querySelector(".card-image") as HTMLImageElement | null;
 
     const classroomTime = dayjs(classroom.time);

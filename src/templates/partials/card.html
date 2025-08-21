@@ -11,7 +11,12 @@
         <%~ it.absoluteContent %>
     <% } %>
 
-    <img class="card-image" src="<%= it.imageSource %>" alt="<%= it.imageAlt ?? "" %>">
+    <% if (it.imageSource) { %>
+        <img class="card-image" src="<%= it.imageSource %>" alt="<%= it.imageAlt ?? "" %>">
+    <% } else if (it.imageColor) { %>
+        <div class="card-image" style="background-color: <%= it.imageColor %>"></div>
+    <% } %>
+    
     <div class="card-info">
         <div class="card-top-row">
             <h1 class="card-title">

@@ -1,0 +1,72 @@
+<template id="localProjectCardTemplate">
+    <%~ include('card.html', {
+        class: "project-card",
+        title: '<i class="fa-solid fa-download"></i><span class="card-title-text"></span>', 
+        imageSource: "https://placehold.co/1920x1080", 
+        descriptions: [
+            "2 hours ago", 
+        ],
+        topRowButton: true,
+    }) %>
+</template>
+<template id="cloudProjectCardTemplate">
+    <%~ include('card.html', {
+        class: "project-card",
+        title: '<i class="fa-solid fa-cloud-arrow-up"></i><span class="card-title-text"></span>', 
+        imageSource: "https://placehold.co/1920x1080", 
+        descriptions: [
+            "2 hours ago", 
+        ],
+        topRowButton: true,
+    }) %>
+</template>
+<template id="lessonCardTemplate">
+    <%~ include('card.html', {
+        class: "lesson-card",
+        title: '<span>Assembly Guide</span>', 
+        imageSource: "https://placehold.co/1920x1080", 
+        descriptions: [
+            "30-45 min",
+            "Beginner"
+        ],
+        topRowButton: false,
+    }) %>
+</template>
+<template id="assemblyGuideCardTemplate">
+    <%~ include('card.html', {
+        class: "assembly-card",
+        title: '<span>Assembly Guide</span>', 
+        imageSource: "https://placehold.co/1920x1080", 
+        buttons: [
+            {
+                content: "<span class='underline-grow'>PDF Build Instructions</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
+            },
+            {
+                content: "<span class='underline-grow'>3D Build Instructions</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
+            },
+        ],
+        topRowButton: false,
+    }) %>
+</template>
+<template id="studentClassroomCardTemplate">
+    <%~ include('card.html', {
+        class: "project-card",
+        title: '<i class="fa-solid fa-chalkboard-user"></i><span class="card-title-text"></span>', 
+    imageColor: 'red', 
+        descriptions: [
+            "4 Students", 
+        ],
+        topRowButton: true,
+    }) %>
+</template>
+<template id="teacherClassroomCardTemplate">
+    <%~ include('card.html', {
+        class: "project-card",
+        title: '<i class="fa-solid fa-person-chalkboard"></i><span class="card-title-text"></span>', 
+    imageColor: 'red',
+        descriptions: [
+            "4 Students", 
+        ],
+        topRowButton: true,
+    }) %>
+</template>

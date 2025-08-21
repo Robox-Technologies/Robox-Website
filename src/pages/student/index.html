@@ -10,78 +10,7 @@
 </head>
 
 <body>
-    <template id="localProjectCardTemplate">
-        <%~ include('@partials/card.html', {
-            class: "project-card",
-            title: '<i class="fa-solid fa-download"></i><span class="card-title-text"></span>', 
-            imageSource: "https://placehold.co/1920x1080", 
-            descriptions: [
-                "2 hours ago", 
-            ],
-            topRowButton: true,
-        }) %>
-    </template>
-    <template id="cloudProjectCardTemplate">
-        <%~ include('@partials/card.html', {
-            class: "project-card",
-            title: '<i class="fa-solid fa-cloud-arrow-up"></i><span class="card-title-text"></span>', 
-            imageSource: "https://placehold.co/1920x1080", 
-            descriptions: [
-                "2 hours ago", 
-            ],
-            topRowButton: true,
-        }) %>
-    </template>
-    <template id="lessonCardTemplate">
-        <%~ include('@partials/card.html', {
-            class: "lesson-card",
-            title: '<span>Assembly Guide</span>', 
-            imageSource: "https://placehold.co/1920x1080", 
-            descriptions: [
-                "30-45 min",
-                "Beginner"
-            ],
-            topRowButton: false,
-        }) %>
-    </template>
-    <template id="assemblyGuideCardTemplate">
-        <%~ include('@partials/card.html', {
-            class: "assembly-card",
-            title: '<span>Assembly Guide</span>', 
-            imageSource: "https://placehold.co/1920x1080", 
-            buttons: [
-                {
-                    content: "<span class='underline-grow'>PDF Build Instructions</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
-                },
-                {
-                    content: "<span class='underline-grow'>3D Build Instructions</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
-                },
-            ],
-            topRowButton: false,
-        }) %>
-    </template>
-    <template id="studentProjectCardTemplate">
-        <%~ include('src/templates/partials/card.html', {
-            class: "project-card",
-            title: '<i class="fa-solid fa-chalkboard-user"></i><span class="card-title-text"></span>', 
-            imageSource: "https://placehold.co/1920x1080", 
-            descriptions: [
-                "2 hours ago", 
-            ],
-            topRowButton: true,
-        }) %>
-    </template>
-    <template id="teacherProjectCardTemplate">
-        <%~ include('src/templates/partials/card.html', {
-            class: "project-card",
-            title: '<i class="fa-solid fa-person-chalkboard"></i><span class="card-title-text"></span>', 
-            imageSource: "https://placehold.co/1920x1080", 
-            descriptions: [
-                "2 hours ago", 
-            ],
-            topRowButton: true,
-        }) %>
-    </template>
+    <%~ include('@partials/card_templates.html') %>
     <%~ include('@partials/header-workshop/header-workshop.html') %>
     <%~ include('@partials/modal/modal.html', {
         id: "delete-modal",
