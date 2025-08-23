@@ -56,7 +56,7 @@
         descriptions: [
             "4 Students", 
         ],
-        topRowButton: true,
+        topRowButton: false,
     }) %>
 </template>
 <template id="teacherClassroomCardTemplate">
@@ -67,6 +67,34 @@
         descriptions: [
             "4 Students", 
         ],
-        topRowButton: true,
+        topRowButton: false,
     }) %>
+</template>
+<template id="studentCardTemplate">
+    <div class="student-item card">
+        <div class="student-avatar">
+            <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Felix" alt="Classroom Avatar" class="student-avatar">
+        </div>
+        <div class="student-info">
+            <h3 class="student-name">Student Name</h3>
+            <h4 class="student-email">student.email@example.com</h4>
+        </div>
+        <div class="student-status">
+            <!-- Status can be dynamically inserted here -->
+        </div>
+    </div>
+</template>
+<template id="teacherCardTemplate">
+    <div class="classroom-item card">
+        <div class="classroom-avatar">
+            <img src="https://api.dicebear.com/9.x/bottts/svg?seed=Felix" alt="Classroom Avatar">
+        </div>
+        <div class="classroom-titles">
+            <h3 class="classroom-name">Year 8 DT</h3>
+            <h4 class="course-code">06DT-CRTECH01</h4>
+        </div>
+        <div class="classroom-info pending">
+            Pending Request
+        </div>
+    </div>
 </template>
