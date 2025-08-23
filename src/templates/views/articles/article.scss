@@ -10,7 +10,8 @@
         font-size: 1.2em;
         color: #868686;
         span.author-name {
-            color: variables.$themeBlue !important;
+            color: variables.$themeBlack;
+            font-weight: bolder;
         }
     }
     .article-title {
@@ -21,5 +22,16 @@
     }
     hr {
         background-color: variables.$themeRed;
+    }
+}
+#main .content {
+    font-family: 'Nunito', sans-serif;
+    color: variables.$themeBlack;
+    hr {
+        background-color: variables.$themeBlue;
+    }
+    img {
+        max-width: 50%;
+        height: auto;
     }
 }
