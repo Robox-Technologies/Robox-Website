@@ -300,6 +300,15 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
             path: path.resolve(__dirname, 'build/website'),
             publicPath: '/',
         },
+        watchOptions: {
+            ignored: [
+                "**/node_modules/**",
+                "**/build/server/**",
+                //Ignore top level typscript files
+            ],
+            aggregateTimeout: 300,
+            poll: 1000,
+        },
     };
 
     return { base, products, htmlBundlerPluginOptions };
