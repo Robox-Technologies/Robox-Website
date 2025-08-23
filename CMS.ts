@@ -82,8 +82,8 @@ export function sortItems<T extends ContentItem>(items: T[]): T[] {
 }
 export async function convertSlateToHtml(slateContent): Promise<string> {
     // Convert the Slate content to HTML
-    const HTMLString = convertLexicalToHTML({data: slateContent});
+    const HTMLString = convertLexicalToHTML({data: slateContent}).replaceAll("/api/", `${CMS_URL}/api/`);
+    // Replace the CMS URL with the actual URL
 
-    console.log(HTMLString, slateContent);
     return HTMLString;
 }
