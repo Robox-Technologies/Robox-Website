@@ -34,7 +34,7 @@
                     <%~ include('@partials/card.html', {
                         class: "assembly-card",
                         title: `<span>${article.title}</span>`, 
-                        imageSource: `http://${process.env.CMS_URL}${article.thumbnailURL}` || "@images/teacher-hub/assembly-guide.png", 
+                        imageSource: `${process.env.CMS_URL}${article.thumbnailURL}` || "@images/teacher-hub/assembly-guide.png", 
                         buttons: [
                             {
                                 content: "<span class='underline-grow'>Read Article</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
