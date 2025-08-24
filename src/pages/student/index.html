@@ -103,7 +103,7 @@
                             {
                                 content: `<span class='underline-grow'>${studentResource.article.callToAction || 'Read Resource'}</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>`,
                                 // Slightly weird thing because the slug requires the .html and the file URL does not...
-                                link: `${studentResource.article.slug ? `/articles/${studentResource.article.slug}.html` : `${process.env.CMS_URL}${studentResource.article.File.url}`}`
+                                link: `${studentResource.article.type === 'article' ? `/articles/${studentResource.article.slug}.html` : `${process.env.CMS_URL}${studentResource.article.File.url}`}`
                             },
                         ],
                         topRowButton: false,

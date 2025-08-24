@@ -37,7 +37,12 @@ type ContentResource = {
     location: string;
     favorite: boolean;
 };
-
+type CMSRedirect = {
+    slug: string;
+    destination: {
+        url: string;
+    };
+}
 type ContentItem = ContentArticle | ContentResource;
 
 
@@ -58,18 +63,24 @@ async function getCMSCollection(collectionName: string): Promise<ContentItem[] |
     }
 
 }
-
+export async function getCMSRedirects(): Promise<CMSRedirect[] | null> {
+    try {
+        const response = await fetch(`${CMS_URL}/api/redirects?pagination=false`);
+        if (!response.ok) {
+            console.warn(`Failed to fetch redirects: ${response.statusText}`);
+            return null;
+        }
+        const redirects = (await response.json())["docs"];
+        return redirects;
+    } catch (error) {
+        console.error(`Error fetching redirects:`, error);
+        return null;
+    }
+}
 export async function getCMSResources(): Promise<(ContentItem)[]> {
     const content = await getCMSCollection('content');
     if (!content) return [];
     const publishedContent = content.filter((item: ContentItem) => item.status === 'published');
-    for (const item of publishedContent) {
-
-        if (item.type === 'article') {
-            const itemSlug = item.articleTitle.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-');
-            item.slug = itemSlug;
-        }
-    }
     return sortItems(publishedContent);
 }
 export function sortItems<T extends ContentItem>(items: T[]): T[] {
