@@ -37,7 +37,6 @@ app.use(express.json());
 
 const websiteDir = path.resolve(__dirname, '../website');
 const path404 = path.join(websiteDir, '404.html');
-console.log(redirects)
 app.get("/api/redirect/:slug", async (req, res) => {
     const { slug } = req.params;
     const redirect = redirects.find((r) => r.slug === slug);
