@@ -124,7 +124,7 @@ async function handlePasswordStep() {
             throw error
         }
         
-        window.location.href = '/home'
+        window.location.href = '/student'
         
     } catch (error: any) {
         console.error('Login error:', error)
@@ -154,12 +154,6 @@ function handleBack() {
     showEmailStep()
     userEmail = ''
 }
-
-isAuthenticated().then(authenticated => {
-    if (authenticated) {
-        window.location.href = '/home'
-    }
-})
 
 document.addEventListener('DOMContentLoaded', () => {
     loginButton.addEventListener('click', handleLogin)
