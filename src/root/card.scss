@@ -31,7 +31,7 @@ $maxTextWidth: 200px;
     border-radius: variables.$borderRadius;
     overflow: hidden;
 }
-.card-image {
+.card-image, .card-color {
     background-color: gray;
     width: 100%;
     aspect-ratio: 16/9;
