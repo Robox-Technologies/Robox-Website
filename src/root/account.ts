@@ -12,26 +12,62 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
-export async function authCheck() {
+export async function authCheck(role: string = 'user', redirect: boolean = true):Promise<boolean | null> {
     const { data: { session }, error } = await supabase.auth.getSession()
-    
+
     if (error) {
         console.error('Auth error:', error)
-        redirectToLogin()
         return false
     }
-    
+
     if (!session) {
         console.warn('No active session found')
-        redirectToLogin()
         return false
     }
 
-    return true
-}
+    let userRole: 'student' | 'teacher' | null = null;
+    if (role === 'student' || role === 'teacher') {
+        if (session) {
+            userRole = await getFromDatabase('profiles', session.user.id, 'user_role');
+        }
+    }
 
-export function redirectToLogin() {
-    window.location.href = "/account/login"
+    switch (role) {
+        case 'guest':
+            if (!session) {
+                return true
+            }
+            if (redirect) {
+                window.location.href = '/login'
+            }
+            return false
+        case 'user':
+            if (session) {
+                return true
+            }
+            if (redirect) {
+                window.location.href = '/student'
+            }
+            return false
+        case 'student':
+            if (userRole === 'student') {
+                return true
+            }
+            if (redirect) {
+                window.location.href = '/student'
+            }
+            return false
+        case 'teacher':
+            if (userRole === 'teacher') {
+                return true
+            }
+            if (redirect) {
+                window.location.href = '/student'
+            }
+            return false
+        default:
+            return null
+    }
 }
 
 export async function checkPasswordRequirements(password: string): Promise<boolean> {
