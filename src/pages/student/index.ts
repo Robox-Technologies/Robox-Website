@@ -11,11 +11,12 @@ import { Project } from "~types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { toggleToolbar, moveToolbar } from "@partials/toolbar/toolbar";
-import { syncCloudProjects, getCurrentUserData, getFromDatabase, removeClassroomFromProfile } from "@root/account";
+import { syncCloudProjects, getCurrentUserData, getFromDatabase, removeClassroomFromProfile, Classroom } from "@root/account";
 
 dayjs.extend(relativeTime);
 
-let userData: any = null;
+interface StudentUser { id: string; user_role?: string; }
+let userData: StudentUser | null = null;
 async function userDataPromise() {
 	try {
 		userData = await getCurrentUserData() ?? null;
@@ -55,7 +56,8 @@ async function applyProjects() {
         if (cloudProject) {
             if (!currentUserId) continue;
             if (!cloudProject.owner || cloudProject.owner !== currentUserId) continue;
-            project.time = cloudProject.last_updated ?? cloudProject.time ?? project.time;
+            const newTime = cloudProject.last_updated ?? cloudProject.time;
+            if (typeof newTime === 'number') project.time = dayjs(newTime);
             isSynced = true;
         }
 
@@ -240,60 +242,36 @@ async function applyClassrooms() {
         console.warn("No user data available for classrooms. Skipping classroom rendering.");
         return;
     }
-    const classroomIdsRaw = await getFromDatabase('profiles', userData.id, 'classrooms') as string[] | null;
-    if (!Array.isArray(classroomIdsRaw) || classroomIdsRaw.length === 0) {
-        console.warn("No classrooms found for user.");
-        return;
-    }
-    const classroomIds = classroomIdsRaw;
+    const classroomIds = await getFromDatabase('profiles', userData.id, 'classrooms') as string[] | null;
+    if (!Array.isArray(classroomIds) || classroomIds.length === 0) return;
 
-    const classroomCards = document.querySelectorAll(".classroom-card");
-    classroomCards.forEach((card) => {
-        card.remove();
-    });
+    // Remove existing cards
+    document.querySelectorAll(".classroom-card").forEach(card => card.remove());
 
     const classroomContainer = document.getElementById("classroom-holder");
-    if (!classroomContainer) {
-        console.warn("Classroom container not found.");
-        return;
-    }
-
-    const toolbarModal = document.getElementById("project-toolbar") as HTMLDialogElement | null;
-
-    for (const uuid of classroomIds) {
-        const classroom = await getFromDatabase('classrooms', uuid) as any;
-        if (!classroom) {
-            removeClassroomFromProfile(uuid, userData.id);
+    if (!classroomContainer) return;
+    
+    for (const id of classroomIds) {
+        const classroomData = await Classroom.load(id);
+        if (!classroomData) {
+            removeClassroomFromProfile(id, userData.id);
+            continue;
+        }
+        const role = await classroomData.roleForUser(userData.id);
+        if (!role) {
+            removeClassroomFromProfile(id, userData.id);
             continue;
         }
 
-        const students: string[] = Array.isArray(classroom.students) ? classroom.students : [];
-        const teachers: string[] = Array.isArray(classroom.teachers) ? classroom.teachers : [];
+        const isTeacher = role === 'teacher' || role === 'owner';
+        const card = createClassroomCard(classroomData, isTeacher);
 
-        const isStudent = students.includes(userData.id);
-        const isTeacher = teachers.includes(userData.id) || classroom.owner === userData.id;
-        if (!isTeacher && !isStudent) {
-            removeClassroomFromProfile(uuid, userData.id);
-            continue;
-        }
-
-        const card = createClassroomCard(uuid, classroom, isTeacher);
         card.addEventListener("click", (event: MouseEvent) => {
-            const item = event.target as HTMLElement | null;
-            if (!item) return;
-            window.location.href = `/classroom?id=${uuid}`;
+            if (!(event.target as HTMLElement)) return;
+            window.location.href = `/classroom?id=${id}`;
             event.stopPropagation();
         });
-        const options = card.querySelector(".options") as HTMLButtonElement | null;
-        if (options) {
-            options.addEventListener("click", (event: MouseEvent) => {
-                event.stopImmediatePropagation();
-                if (toolbarModal) {
-                    moveToolbar(toolbarModal, options, [10, 20]);
-                    toggleToolbar(toolbarModal, true);
-                }
-            });
-        }
+
         classroomContainer.appendChild(card);
     }
 }
@@ -310,14 +288,15 @@ function createClassroomCard(classroom: Classroom, isTeacher: boolean = false): 
 
     const title = clone.querySelector(".card-title-text");
     const description = clone.querySelector(".card-description");
-    const image = clone.querySelector(".card-image") as HTMLImageElement | null;
+    const color = clone.querySelector(".card-color") as HTMLImageElement | null;
+    console.log(color);
 
-    const classroomTime = dayjs(classroom.time);
-
-    image.src = classroom.avatar_url;
+    if (color) {
+        color.style.backgroundColor = classroom.color || "#2588C7";
+    }
     title.textContent = classroom.name || "Untitled Classroom";
-    time.textContent = classroomTime.isValid() ? classroomTime.fromNow() : "";
-    clone.id = uuid;
+    description.textContent = `${classroom.students.length} Students`;
+    clone.id = classroom.id;
 
     return clone;
 }
