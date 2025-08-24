@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { isAuthenticated, isValidEmail } from '@root/account'
+import { isAuthenticated, isValidEmail, checkPasswordRequirements } from '@root/account'
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY
@@ -81,10 +81,6 @@ function hideAllErrors() {
     emailErrorMsg.style.display = 'none'
     passwordErrorMsg.style.display = 'none'
     confirmPasswordErrorMsg.style.display = 'none'
-}
-
-function isValidPassword(password: string): boolean {
-    return password.length >= 6
 }
 
 // Step Management
@@ -201,8 +197,10 @@ async function handlePasswordStep() {
         return
     }
     
-    if (!isValidPassword(password)) {
-        showError('password', 'Password must be at least 6 characters long')
+    const passwordRequirements: string | boolean = checkPasswordRequirements(password) || false;
+
+    if (typeof passwordRequirements === 'string') {
+        showError('password', String(passwordRequirements))
         passwordInput.focus()
         return
     }

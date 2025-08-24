@@ -70,18 +70,42 @@ export async function authCheck(role: string = 'user', redirect: boolean = true)
     }
 }
 
-export async function checkPasswordRequirements(password: string): Promise<boolean> {
+export function checkPasswordRequirements(password: string): boolean | string {
     // Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.
 
-    if (!password || password.length < 8) {
-        return false; // Password must be at least 8 characters long
-    }
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumber = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const problems: string[] = []
 
-    return hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
+    if (!password || password.length < 8) {
+        problems.push("be at least 8 characters long");
+    }
+    if (!/[A-Z]/.test(password)) {
+        problems.push('contain at least one uppercase letter');
+    }
+    if (!/[a-z]/.test(password)) {
+        problems.push('contain at least one lowercase letter');
+    }
+    if (!/\d/.test(password)) {
+        problems.push('contain at least one number');
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        problems.push('contain at least one special character');
+    }
+
+    if (problems.length === 0) {
+        return true;
+    }
+    // Make sentence
+    let sentence: string = 'Password must ';
+    if (problems.length === 1) {
+        sentence += problems[0];
+    } else if (problems.length === 2) {
+        sentence += problems.join(' and ');
+    } else {
+        const last = problems.pop();
+        sentence += problems.join(', ') + ', and ' + last;
+    }
+    
+    return sentence + '.';
 }
 
 export async function getCurrentUserData() {
