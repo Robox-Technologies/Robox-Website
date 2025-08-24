@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { isAuthenticated, isValidEmail } from '@root/account'
+import { authCheck, isValidEmail } from '@root/account'
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY
@@ -22,6 +22,8 @@ const backButton = document.getElementById('back-button') as HTMLButtonElement
 
 let currentStep: 'email' | 'password' = 'email'
 let userEmail = ''
+
+authCheck('guest', true)
 
 function showError(message: string) {
     if (currentStep === 'email') {
