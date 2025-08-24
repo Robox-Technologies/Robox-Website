@@ -1,4 +1,45 @@
 {
+    "roboxPackaging": {
+        "excessPenalty": {
+            "cost": 500,
+            "heightPerTen": 5,
+            "dimensions": {
+                "length": 48.5,
+                "width": 36,
+                "height": 5
+            }
+        },
+        "qtyBrackets": [
+            { 
+                "maxQty": 1,
+                "cost": 165,
+                "dimensions": {
+                    "length": 22.9,
+                    "width": 15.1,
+                    "height": 5
+                } 
+            },
+            { 
+                "maxQty": 3, 
+                "cost": 275,
+                "dimensions": {
+                    "length": 43,
+                    "width": 28.5,
+                    "height": 5
+                }
+            },
+            { 
+                "maxQty": 10, 
+                "cost": 345,
+                "dimensions": {
+                    "length": 48.5,
+                    "width": 36,
+                    "height": 5
+                }
+            }
+        ]
+    },
+
     "shipping": {
         "maximum": 2330,
         "penaltyFeePerKg": 500,

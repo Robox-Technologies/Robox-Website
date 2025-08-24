@@ -50,8 +50,7 @@ if (totalCost < 50) {
         };
         const elements = stripe.elements(options)
         const addressElement = elements.create('address', {
-            mode: "shipping",
-            allowedCountries: ['AU']
+            mode: "shipping"
         });
         addressElement.mount('#address-element');
         const paymentElement = elements.create('payment');
@@ -62,6 +61,12 @@ if (totalCost < 50) {
             document.getElementById("email-label").style.display = "block"
             document.getElementById("stripe-content").style.justifyContent = "flex-start"
         })
+
+        addressElement.on("change", (event) => {
+            const country = event.value.address.country;
+            const postCode = event.value.address.postal_code;
+            // Recalculate shipping cost
+        });
     
         document.getElementById("termsConsent").addEventListener("click", () => {
             updateSubmitButton();
