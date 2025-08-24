@@ -30,15 +30,16 @@
                 Community Hub
             </h1> 
             <div class="card-holder">
-                <% Object.values(teacherresources).forEach(function(article) { %>
+                <% Object.values(teacherresources).forEach(function(studentResource) { %>
                     <%~ include('@partials/card.html', {
                         class: "assembly-card",
-                        title: `<span>${article.title}</span>`, 
-                        imageSource: `${process.env.CMS_URL}${article.thumbnailURL}` || "@images/teacher-hub/assembly-guide.png", 
+                        title: `<span>${studentResource.article.previewTitle}</span>`, 
+                        imageSource: `${process.env.CMS_URL}${studentResource.article.thumbnail.url}`, 
                         buttons: [
                             {
-                                content: "<span class='underline-grow'>Read Article</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
-                                link: `/articles/${article.slug}.html`
+                                content: `<span class='underline-grow'>${studentResource.article.callToAction || 'Read Resource'}</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>`,
+                                // Slightly weird thing because the slug requires the .html and the file URL does not...
+                                link: `${studentResource.article.type === 'article' ? `/articles/${studentResource.article.slug}.html` : `${process.env.CMS_URL}${studentResource.article.File.url}`}`
                             },
                         ],
                         topRowButton: false,
