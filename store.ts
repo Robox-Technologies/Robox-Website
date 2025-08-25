@@ -17,6 +17,7 @@ const verifiedProducts = await getProductList()
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 paymentRouter.post('/webhook', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
+    console.log('Received webhook event');
     const signature = req.headers['stripe-signature'];
 
     let event: Stripe.Event;

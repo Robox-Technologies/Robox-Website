@@ -1,4 +1,4 @@
-import { createTransport } from "nodemailer";
+
 import fs from "fs";
 import { JSDOM } from "jsdom";
 import { Stripe } from "stripe";
@@ -8,15 +8,9 @@ import { formatPrice } from './src/root/payment/stripe-shared-helper.js';
 import iso3311a2 from 'iso-3166-1-alpha-2';
 import { stripeAPI, readPaymentMethod } from './stripe-server-helper.js';
 
-const transporter = createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT || "587"),
-    secure: process.env.EMAIL_SECURE === "true", // true for 465, false
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_KEY || 're_...');
 
 export type ProductEmail = Record<string, {
     quantity: number;
@@ -243,12 +237,12 @@ function createCell(document: Document, text: string, className: string): HTMLTa
 
 async function sendEmail(to: string, subject: string, content: string, plaintext?: string, attachments?: attachments): Promise<void> {
     try {
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: to,
+        await resend.emails.send({
+            from: 'Robox <hello@store.robox.com.au>',
+            to: [to],
             subject: subject,
-            text: plaintext ?? "",
             html: content,
+            text: plaintext ?? "",
             attachments: attachments ?? [],
         });
 
@@ -268,7 +262,6 @@ async function loadTemplate(templatePath: string): Promise<string> {
     }
 }
 
-export default transporter;
 
 async function populateBilling(document: Document, paymentIntent: Stripe.PaymentIntent): Promise<[string, string]> {
     // Billing
