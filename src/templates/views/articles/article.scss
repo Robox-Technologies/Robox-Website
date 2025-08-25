@@ -18,17 +18,18 @@
         margin-bottom: 0.83em;
     }
     .date {
-        color: variables.$themeBlue;
+        color: variables.$themeBlack;
     }
     hr {
         background-color: variables.$themeRed;
     }
 }
 #main .content {
+    max-width: 800px;
     font-family: 'Nunito', sans-serif;
     color: variables.$themeBlack;
     hr {
-        background-color: variables.$themeBlue;
+        background-color: variables.$themeBlack;
     }
     img {
         max-width: 50%;
