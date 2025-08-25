@@ -12,3 +12,11 @@ h1.title {
     gap: 20px;
 }
 
+.students-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: variables.$tone2;
+    padding: 20px;
+    border-radius: variables.$borderRadius;
+}

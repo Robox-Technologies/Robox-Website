@@ -34,12 +34,120 @@
                     <h2 class="classroom-name" id="classroom-name">My Class</h1>
                 </div>
             </div>
-            </div>
             <div class="students-page-container page-container" style="display: none;">
+                <div class="students-list" id="students-list">
+                    <!-- Students go here -->
+                </div>
+                <a class="ctaButton" id="add-student-button" href="/classroom/addstudents">Generate Class Code</a>
             </div>
             <div class="learning-page-container page-container" style="display: none;">
             </div>
             <div class="settings-page-container page-container" style="display: none;">
+                <div class="teacher-settings-inputs two-column">
+                    <div class="column">
+                        <%~ include('@partials/text-input.html', {
+                            containerId: "",
+                            inputId: "name-input",
+                            class: "",
+                            label: 'Classroom Name',
+                            placeholder: 'My Ro/Box Classroom',
+                            required: false,
+                            autocomplete: '',
+                            errorId: 'name-error'
+                        }) %>
+                        <%~ include('@partials/text-input.html', {
+                            containerId: "",
+                            inputId: "description-input",
+                            class: "",
+                            label: 'Class Description',
+                            placeholder: 'This is my awesome Ro/Box classroom',
+                            required: false,
+                            autocomplete: '',
+                            errorId: 'description-error'
+                        }) %>
+                        <%~ include('@partials/text-input.html', {
+                            containerId: "",
+                            inputId: "year-level-input",
+                            class: "",
+                            label: 'Year Level',
+                            placeholder: 'Year 8',
+                            required: false,
+                            autocomplete: '',
+                            errorId: 'year-level-error'
+                        }) %>
+                        <%~ include('@partials/color-input/color-input.html', {
+                            containerId: "",
+                            inputId: "color-input",
+                            class: "",
+                            label: 'Classroom Colour',
+                            placeholder: '#f0f0f0',
+                            required: false,
+                            autocomplete: '',
+                            errorId: 'color-error',
+                        }) %>
+                    </div>
+                    <div class="column">
+                        <%~ include('@partials/text-input.html', {
+                            containerId: "",
+                            inputId: "course-code-input",
+                            class: "",
+                            label: 'Course Code',
+                            placeholder: '06DT-CRTECH01',
+                            required: false,
+                            autocomplete: '',
+                            errorId: 'course-code-error'
+                        }) %>
+                        <%~ include('@partials/text-input.html', {
+                            containerId: "",
+                            inputId: "location-input",
+                            class: "",
+                            label: 'Room/Location',
+                            placeholder: 'Q04',
+                            required: false,
+                            autocomplete: '',
+                            errorId: 'location-error'
+                        }) %>
+                        <%~ include('@partials/text-input.html', {
+                            containerId: "",
+                            inputId: "lms-input",
+                            class: "",
+                            label: 'LMS Class Page URL',
+                            placeholder: 'myschool.learning.edu/page/12345',
+                            required: false,
+                            autocomplete: '',
+                            errorId: 'lms-url-error'
+                        }) %>
+                    </div>
+                    <div class="column">
+                        <div class="input-container">
+                            <div class="radio-list">
+                                <form>
+                                    <label class="input-label">Classroom Security</label>
+                                    <label>
+                                        <input type="radio" name="option" value="open"> Anyone can Join
+                                    </label>
+                                    <br>
+                                    <label>
+                                        <input type="radio" name="option" value="approval"> Approval required
+                                    </label>
+                                    <br>
+                                    <label>
+                                        <input type="radio" name="option" value="invite"> Invite only
+                                    </label>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="input-container">
+                            <div class="checkbox-list">
+                                <label class="input-label">Classroom Features</label>
+                                <label><input type="checkbox" name="option" value="code"> Code Projects</label>
+                                <label><input type="checkbox" name="option" value="lessons"> Lessons</label>
+                                <label><input type="checkbox" name="option" value="classcodeVis"> Class Code visibility for Students</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="ctaButton" id="save-classroom-settings-button">Save Settings</button>
             </div>
         </div>
     </div>
