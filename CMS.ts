@@ -46,12 +46,12 @@ type CMSRedirect = {
 type ContentItem = ContentArticle | ContentResource;
 
 
-async function getCMSCollection(collectionName: string): Promise<ContentItem[] | null> {
+async function getCMSCollection(collectionName: string): Promise<ContentItem[]> {
     try {
         const response = await fetch(`${CMS_URL}/api/${collectionName}?pagination=false`);
         if (!response.ok) {
             console.warn(`Failed to fetch collection ${collectionName}: ${response.statusText}`);
-            return null;
+            return [];
         }
         const collection = (await response.json())["docs"].filter((item: ContentItem) => {
             return item.status === "published";
@@ -59,22 +59,22 @@ async function getCMSCollection(collectionName: string): Promise<ContentItem[] |
         return collection;
     } catch (error) {
         console.error(`Error fetching collection ${collectionName}:`, error);
-        return null;
+        return [];
     }
 
 }
-export async function getCMSRedirects(): Promise<CMSRedirect[] | null> {
+export async function getCMSRedirects(): Promise<CMSRedirect[]> {
     try {
         const response = await fetch(`${CMS_URL}/api/redirects?pagination=false`);
         if (!response.ok) {
             console.warn(`Failed to fetch redirects: ${response.statusText}`);
-            return null;
+            return [];
         }
         const redirects = (await response.json())["docs"];
         return redirects;
     } catch (error) {
         console.error(`Error fetching redirects:`, error);
-        return null;
+        return [];
     }
 }
 export async function getCMSResources(): Promise<(ContentItem)[]> {
