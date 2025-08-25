@@ -15,7 +15,6 @@ addEventListener("DOMContentLoaded", async () => {
         const classroomInfo = await getFromDatabase('classrooms', uuid);
         if (!classroomInfo) continue;
         const card = createClassroomCard(uuid, classroomInfo);
-        console.log("Classroom Card: ", card);
         card.addEventListener("click", async (event: MouseEvent) => {
             const card = event.currentTarget as HTMLElement;
             selectedClassroomData = await selectClassroom(uuid, card);
@@ -34,7 +33,6 @@ addEventListener("DOMContentLoaded", async () => {
                 return;
             }
             try {
-                console.log("Generating class code for: ", selectedClassroom);
                 const code = await generateClassCode(selectedClassroom);
                 displayClassCode(code);
             } catch (err) {

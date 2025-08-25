@@ -289,7 +289,6 @@ function createClassroomCard(classroom: Classroom, isTeacher: boolean = false): 
     const title = clone.querySelector(".card-title-text");
     const description = clone.querySelector(".card-description");
     const color = clone.querySelector(".card-color") as HTMLImageElement | null;
-    console.log(color);
 
     if (color) {
         color.style.backgroundColor = classroom.color || "#2588C7";

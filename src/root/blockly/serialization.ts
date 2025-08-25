@@ -182,7 +182,6 @@ export async function renameProject(uuid: string, newName: string) {
     projects[uuid]["name"] = newName
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
     if (await isSyncedProject(uuid)) {
-        console.log('renaming', uuid);
         const currentUser = await getCurrentUserData();
         if (currentUser) {
             await writeToDatabase('projects', uuid, 'name', newName, true);
@@ -190,7 +189,6 @@ export async function renameProject(uuid: string, newName: string) {
     }   
 }
 export async function deleteProject(uuid: string) {
-    console.log('Deleting project:', uuid);
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
     const projects = getProjects()
@@ -198,11 +196,9 @@ export async function deleteProject(uuid: string) {
     delete projects[uuid]
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
     if (await isSyncedProject(uuid)) {
-        console.log('Project is synced, deleting from cloud as well:', uuid);
         const currentUser = await getCurrentUserData();
         if (currentUser) {
             await deleteCloudProject(uuid);
-            console.log('Successfully deleted project', uuid, 'from cloud.');
         }
     }
 }

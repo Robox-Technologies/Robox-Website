@@ -463,7 +463,6 @@ export async function uploadNewProject(projectId: string, userId: string, name: 
     const defaultProjectName: string = 'unnamed project'
 
     name = name || defaultProjectName;
-    console.log(userId, projectId)
 
     try {
         const { data, error } = await supabase
