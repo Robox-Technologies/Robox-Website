@@ -463,7 +463,6 @@ export async function uploadNewProject(projectId: string, userId: string, name: 
     const defaultProjectName: string = 'unnamed project'
 
     name = name || defaultProjectName;
-    console.log(userId, projectId)
 
     try {
         const { data, error } = await supabase
@@ -775,12 +774,10 @@ export async function generateClassCode(classroomId: string): Promise<string | n
 
 
 export async function isValidEmail(email: string): Promise<boolean | string> {
-    console.log('Checking if email is valid:', email);
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const cleanEmail = email.trim().toLowerCase();
 
     if (!emailRegex.test(cleanEmail)) {
-        console.log('Invalid email format:', cleanEmail);
         return 'Please enter a valid email address';
     }
 
@@ -789,8 +786,6 @@ export async function isValidEmail(email: string): Promise<boolean | string> {
             .from('profiles')
             .select('email')
             .eq('email', cleanEmail);
-
-        console.log('Email check result:', { query: cleanEmail, data, error });
 
         if (data && data.length > 0) {
             return true;

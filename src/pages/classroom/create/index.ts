@@ -48,7 +48,6 @@ addEventListener('DOMContentLoaded', () => {
     function validateClassroomName() {
         const name = classroomNameInput.value.trim();
         if (!name) {
-            console.log('Classroom name is empty');
             classroomNameError.innerHTML = 'Classroom name is required.';
             classroomNameError.style.display = 'block';
             return false;
@@ -62,7 +61,6 @@ addEventListener('DOMContentLoaded', () => {
     function validateLmsUrl() {
         const lmsUrl = classroomLmsInput.value.trim();
         if (lmsUrl && !isValidUrl(lmsUrl)) {
-            console.log('Invalid LMS URL:', lmsUrl);
             classroomLmsUrlError.innerHTML = "Please enter a valid LMS URL. (Make sure you're including http:// or https://)";
             classroomLmsUrlError.style.display = 'block';
             return false;

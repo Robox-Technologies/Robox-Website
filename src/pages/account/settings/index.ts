@@ -89,7 +89,6 @@ async function accountPage() {
                 currentUserRole = 'student'
                 studentRoleButton.classList.add('selected')
                 teacherRoleButton?.classList.remove('selected')
-                console.log('Role updated to student')
             } catch (e) {
                 console.error('Failed to set role student', e)
             }
@@ -103,7 +102,6 @@ async function accountPage() {
                 currentUserRole = 'teacher'
                 teacherRoleButton.classList.add('selected')
                 studentRoleButton?.classList.remove('selected')
-                console.log('Role updated to teacher')
             } catch (e) {
                 console.error('Failed to set role teacher', e)
             }
