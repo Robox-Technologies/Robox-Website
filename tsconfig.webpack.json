@@ -3,8 +3,8 @@
     "compilerOptions": {
         "outDir": "build/",
         "baseUrl": ".",
-        "moduleResolution": "node",
-        "module": "esnext",
+        "moduleResolution": "nodenext",
+        "module": "nodenext",
         "target": "ES2022",
     },
     "exclude": [
