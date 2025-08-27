@@ -592,7 +592,7 @@ export async function isValidClassroom(classroomId: string): Promise<boolean | n
 export async function getClassroomPermissions(classroomId: string, userId: string): Promise<string | null> {
     if (!isValidUUID(classroomId) || !isValidUUID(userId)) {
         console.warn('Invalid classroom or user ID:', classroomId, userId);
-        return false;
+        return null;
     }
 
     try {
@@ -640,7 +640,7 @@ export async function joinClassroom(classCode: string) {
     }
 
     try {
-        const classroom = await findClassroomByCode(classCode);
+    const classroom = await findClassroomByCode(classCode);
         if (!classroom) {
             console.warn('No classroom found for class code:', classCode);
             return null;
@@ -652,7 +652,7 @@ export async function joinClassroom(classCode: string) {
             return null;
         }
 
-        const role = await getClassroomPermissions(classroom.id, userId);
+    const role = await getClassroomPermissions(classroom.id, userId);
         if (role) {
             console.warn('User already has access to this classroom:', role);
             return null;
