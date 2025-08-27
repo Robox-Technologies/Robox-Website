@@ -920,6 +920,28 @@ export class Classroom {
         return row ? new Classroom(row.id, row.owner, row) : null;
     }
 
+    async save(): Promise<boolean> {
+        try {
+            const remoteData = await getFromDatabase('classrooms', this.id) as ClassroomRow | null;
+
+            const { id, created_at, owner, ...updateData } = this.data;
+            const promises = Object.entries(updateData)
+                .filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(remoteData[key]))
+                .map(([key, value]) =>
+                    writeToDatabase('classrooms', this.id, key, value, true)
+                );
+
+            if (promises.length > 0) {
+                await Promise.all(promises);
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error saving classroom data:', error);
+            return false;
+        }
+    }
+
     async refresh(): Promise<void> {
         const row = await getFromDatabase('classrooms', this.id);
         if (row) this.data = row;
