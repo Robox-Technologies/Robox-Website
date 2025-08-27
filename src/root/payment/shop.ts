@@ -28,8 +28,12 @@ export function renderCart() {
             checkoutButton.style.display = "block";
         }
     }
-    if (totalValue && orderValue && shippingValue) {
+
+    if (orderValue) {
         orderValue.textContent = cost.displayProducts;
+    }
+
+    if (totalValue && shippingValue) {
         totalValue.textContent = cost.displayTotal;
         shippingValue.textContent = cost.displayShipping;
     }
