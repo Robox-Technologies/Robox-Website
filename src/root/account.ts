@@ -823,6 +823,7 @@ interface ClassroomRow {
     students?: string[];
     teachers?: string[];
     created_at?: string;
+    avatar_url?: string | null;
     year_level?: string | null;
     course_code?: string | null;
     location?: string | null;
@@ -833,6 +834,7 @@ interface ClassroomRow {
     school?: string | null;
     description?: string | null;
     status?: string | null;
+    color?: string | null;
 }
 
 export class Classroom {
@@ -844,6 +846,56 @@ export class Classroom {
         writeToDatabase('classrooms', this.id, 'name', value, true)
             .catch(err => console.error('Failed to persist classroom name:', err));
     }
+    get description() { return this.data.description; }
+    set description(value: string | null | undefined) {
+        this.data.description = value;
+        writeToDatabase('classrooms', this.id, 'description', value, true)
+            .catch(err => console.error('Failed to persist classroom description:', err));
+    }
+    get year_level() { return this.data.year_level; }
+    set year_level(value: string | null | undefined) {
+        this.data.year_level = value;
+        writeToDatabase('classrooms', this.id, 'year_level', value, true)
+            .catch(err => console.error('Failed to persist classroom year_level:', err));
+    }
+    get course_code() { return this.data.course_code; }
+    set course_code(value: string | null | undefined) {
+        this.data.course_code = value;
+        writeToDatabase('classrooms', this.id, 'course_code', value, true)
+            .catch(err => console.error('Failed to persist classroom course_code:', err));
+    }
+    get location() { return this.data.location; }
+    set location(value: string | null | undefined) {
+        this.data.location = value;
+        writeToDatabase('classrooms', this.id, 'location', value, true)
+            .catch(err => console.error('Failed to persist classroom location:', err));
+    }
+    get lms_url() { return this.data.lms_url; }
+    set lms_url(value: string | null | undefined) {
+        this.data.lms_url = value;
+        writeToDatabase('classrooms', this.id, 'lms_url', value, true)
+            .catch(err => console.error('Failed to persist classroom lms_url:', err));
+    }
+    get security_level() { return this.data.security; }
+    set security_level(value: unknown) {
+        this.data.security = value;
+        writeToDatabase('classrooms', this.id, 'security', value, true)
+            .catch(err => console.error('Failed to persist classroom security:', err));
+    }
+    get features() { return this.data.features; }
+    set features(value: unknown) {
+        this.data.features = value;
+        writeToDatabase('classrooms', this.id, 'features', value, true)
+            .catch(err => console.error('Failed to persist classroom features:', err));
+    }
+    get color() { return this.data.color; }
+    set color(value: string | null | undefined) {
+        this.data.color = value;
+        writeToDatabase('classrooms', this.id, 'color', value, true)
+            .catch(err => console.error('Failed to persist classroom color:', err));
+    }
+
+    get raw(): ClassroomRow { return this.data; }
     get students(): string[] { return Array.isArray(this.data.students) ? this.data.students : []; }
     get teachers(): string[] { return Array.isArray(this.data.teachers) ? this.data.teachers : []; }
 
