@@ -8,8 +8,7 @@ nvm use node
 npm install
 
 # Compile and deploy
-npx tsc -p tsconfig.webpack.json
-npx tsc -p tsconfig.server.json
-npx webpack --config ./build/webpack.prod.config.js
+npx cross-env NODE_ENV=production npm run prod:build
+
 pm2 delete server 2> /dev/null || true
 pm2 start ./build/server/server.js --name "server"
