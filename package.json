@@ -2,7 +2,7 @@
   "type": "module",
   "sideEffects": true,
   "scripts": {
-    "build:webpack": "tsc -p tsconfig.webpack.json",
+    "build:webpack": "tsc -p tsconfig.webpack.json && webpack --config build/webpack.prod.config.js",
     "build:server": "tsc -p tsconfig.server.json",
     "watch:webpackconfig": "tsc -w -p tsconfig.webpack.json",
     "watch:serverconfig": "tsc -w -p tsconfig.server.json",
