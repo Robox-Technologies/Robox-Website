@@ -2,7 +2,7 @@
   "type": "module",
   "sideEffects": true,
   "scripts": {
-    "build:webpack": "tsc -p tsconfig.webpack.json",
+    "build:webpack": "tsc -p tsconfig.webpack.json && webpack --config build/webpack.prod.config.js",
     "build:server": "tsc -p tsconfig.server.json",
     "watch:webpackconfig": "tsc -w -p tsconfig.webpack.json",
     "watch:serverconfig": "tsc -w -p tsconfig.server.json",
@@ -12,10 +12,10 @@
     "prod:watch": "npm-run-all --parallel watch:webpackconfig watch:serverconfig watch:prod:webpack",
     "dev:build": "npm-run-all --parallel build:webpack build:server",
     "prod:build": "npm-run-all --parallel build:webpack build:server",
-    "run:dev": "cross-env NODE_ENV=development nodemon --watch build/server/ --delay 100ms build/server/server.js",
-    "run:prod": "cross-env NODE_ENV=production nodemon --watch build/server/ --delay 100ms build/server/server.js",
-    "dev": "npm run dev:build && npm-run-all --parallel dev:watch run:dev",
-    "prod": "npm run prod:build && npm-run-all --parallel prod:watch run:prod"
+    "run:dev": "nodemon --watch build/server/ --delay 100ms build/server/server.js",
+    "run:prod": "node build/server/server.js",
+    "dev": "cross-env NODE_ENV=development npm run dev:build && npm-run-all --parallel dev:watch run:dev",
+    "prod": "cross-env NODE_ENV=production npm run prod:build && npm run run:prod"
   },
   "dependencies": {
     "@blockly/continuous-toolbox": "^7.0.1",
