@@ -11,7 +11,7 @@ const cartProducts = Object.keys(cart["products"]).reduce((acc: Record<string, P
     return acc;
 }, {});
 
-const totalCost = calculateTotalCost(cartToDictionary(), cartProducts).total;
+const totalCost = (await calculateTotalCost(cartToDictionary(), cartProducts)).total;
 
 const appearance: Appearance = {
     theme: "flat",
@@ -64,8 +64,10 @@ if (totalCost < 50) {
 
         addressElement.on("change", (event) => {
             const country = event.value.address.country;
-            const postCode = event.value.address.postal_code;
+            const postcode = event.value.address.postal_code;
+            
             // Recalculate shipping cost
+            updatePaymentIntentShipping(country, postcode);
         });
     
         document.getElementById("termsConsent").addEventListener("click", () => {
@@ -121,6 +123,19 @@ async function getPaymentIntent() {
     });
 
     return (await clientSecret.json()).client_secret;
+}
+
+async function updatePaymentIntentShipping(country: string, postcode: string) {
+    await fetch("/api/store/create", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            paymentIntentID: "cdscsd",
+            products: cartToDictionary(),
+            country: country,
+            postcode: postcode
+        })
+    });
 }
 
 function checkoutErrored() {
