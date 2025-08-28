@@ -98,10 +98,16 @@ paymentRouter.post("/updateShipping", async (req: Request<object, object, Shippi
         const verifiedServerCost = await calculateTotalCost(body.products, verifiedProducts, {
             country: body.country, postcode: body.postcode
         });
+
+        if (!verifiedServerCost.shippingSucceeded) {
+            throw new Error("Unable to calculate shipping cost");
+        }
     
         stripeAPI.paymentIntents.update(body.paymentIntentID, {
             amount: verifiedServerCost.total
         });
+
+        res.json({verifiedServerCost: verifiedServerCost})
     } catch (err) {
         console.log(err)
         res.status(500).send({error: err})

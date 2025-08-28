@@ -25,7 +25,14 @@ const submitButton = document.getElementById("submit") as HTMLButtonElement;
 const paymentLoader = document.getElementById("paymentLoader") as HTMLDivElement;
 const form = document.getElementById('payment-form') as HTMLFormElement;
 const messageContainer = document.getElementById('error-message') as HTMLParagraphElement;
+
+const totalValue = document.getElementById("total-value") as HTMLParagraphElement;
+const shippingValue = document.getElementById("shipping-cost") as HTMLParagraphElement;
+
 let paymentProcessing = false;
+let shippingPricingValid = false;
+
+updateShippingObfuscation(true);
 
 // Don't accept payments below 50c (min charge amount)
 if (totalCost < 50) {
@@ -62,12 +69,28 @@ if (totalCost < 50) {
             document.getElementById("stripe-content").style.justifyContent = "flex-start"
         })
 
-        addressElement.on("change", (event) => {
+        addressElement.on("change", async (event) => {
             const country = event.value.address.country;
             const postcode = event.value.address.postal_code;
             
             // Recalculate shipping cost
-            updatePaymentIntentShipping(country, postcode);
+            shippingPricingValid = false;
+            updateSubmitButton();
+
+            const newCosts = await updatePaymentIntentShipping(country, postcode);
+
+            if (newCosts) {
+                // Pricing updated successfully
+                totalValue.textContent = newCosts.displayTotal;
+                shippingValue.textContent = newCosts.displayShipping;
+                shippingPricingValid = true;
+
+                updateSubmitButton();
+                updateShippingObfuscation(false);
+            } else {
+                // Price update unsuccessful
+                updateShippingObfuscation(true);
+            }
         });
     
         document.getElementById("termsConsent").addEventListener("click", () => {
@@ -125,8 +148,17 @@ async function getPaymentIntent() {
     return (await clientSecret.json()).client_secret;
 }
 
+async function updateShippingObfuscation(obfuscate: boolean) {
+    if (obfuscate) {
+        shippingValue.textContent = "AU$0.00";
+        shippingValue.classList.add("obfuscated");
+    } else {
+        shippingValue.classList.remove("obfuscated");
+    }
+}
+
 async function updatePaymentIntentShipping(country: string, postcode: string) {
-    await fetch("/api/store/create", {
+    const updatedPricing = await fetch("/api/store/create", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
@@ -136,6 +168,12 @@ async function updatePaymentIntentShipping(country: string, postcode: string) {
             postcode: postcode
         })
     });
+
+    if (updatedPricing.ok) {
+        return (await updatedPricing.json()).verifiedServerCost;
+    } else {
+        return undefined;
+    }
 }
 
 function checkoutErrored() {
@@ -146,7 +184,7 @@ function checkoutErrored() {
 
 function updateSubmitButton() {
     const formValid = form.checkValidity();
-    submitButton.disabled = !formValid || paymentProcessing;
+    submitButton.disabled = !formValid || paymentProcessing || !shippingPricingValid;
 
     paymentLoader.style.display = paymentProcessing ? "block" : "none";
 }
