@@ -42,17 +42,16 @@ if (totalCost < 50) {
     const stripePromise = loadStripe(stripePublishableKey);
     const clientSecretPromise = getPaymentIntent();
     const paymentPromises = Promise.all([stripePromise, clientSecretPromise]);
-
-    paymentPromises.then((values) => {
-        const [stripe, clientSecret] = values
     
-        if (!clientSecret) {
+    paymentPromises.then((values) => {
+        const [stripe, { client_secret, paymentIntentID }] = values
+        if (!client_secret) {
             checkoutErrored();
             return;
         }
     
         const options = {
-            clientSecret: clientSecret,
+            clientSecret: client_secret,
             appearance: appearance
         };
         const elements = stripe.elements(options)
@@ -72,12 +71,13 @@ if (totalCost < 50) {
         addressElement.on("change", async (event) => {
             const country = event.value.address.country;
             const postcode = event.value.address.postal_code;
-            
+            if (!country || !postcode) return;
+
             // Recalculate shipping cost
             shippingPricingValid = false;
             updateSubmitButton();
 
-            const newCosts = await updatePaymentIntentShipping(country, postcode);
+            const newCosts = await updatePaymentIntentShipping(paymentIntentID, country, postcode);
 
             if (newCosts) {
                 // Pricing updated successfully
@@ -145,7 +145,7 @@ async function getPaymentIntent() {
         })
     });
 
-    return (await clientSecret.json()).client_secret;
+    return (await clientSecret.json());
 }
 
 async function updateShippingObfuscation(obfuscate: boolean) {
@@ -157,12 +157,12 @@ async function updateShippingObfuscation(obfuscate: boolean) {
     }
 }
 
-async function updatePaymentIntentShipping(country: string, postcode: string) {
-    const updatedPricing = await fetch("/api/store/create", {
+async function updatePaymentIntentShipping(paymentIntent: string, country: string, postcode: string) {
+    const updatedPricing = await fetch("/api/store/updateShipping", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
-            paymentIntentID: "cdscsd",
+            paymentIntentID: paymentIntent,
             products: cartToDictionary(),
             country: country,
             postcode: postcode
