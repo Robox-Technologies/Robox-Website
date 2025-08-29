@@ -142,8 +142,6 @@ async function handlePasswordStep() {
         // show error messages based on common issues
         if (error.message.includes('Invalid login credentials')) {
             showError('Incorrect password. Please try again.')
-        } else if (error.message.includes('Email not confirmed')) {
-            showError('Please check your email and confirm your account first.')
         } else {
             showError(error.message || 'An error occurred during login')
         }
