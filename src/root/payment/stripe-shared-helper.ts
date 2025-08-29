@@ -4,7 +4,7 @@ const backendExecution = typeof window === 'undefined';
 
 let calculatePostage;
 if (backendExecution) {
-    calculatePostage = (await import('../../../auspost-server-helper')).calculatePostage;
+    calculatePostage = (await import( /* webpackIgnore: true */'../../../auspost-server-helper.js')).calculatePostage;
 }
 
 export async function calculateTotalCost(cart: Record<string, number>, products: Record<string, Product>, shippingInfo: { country: string; postcode: string } | null = null): Promise<{ displayProducts: string; displayShipping: string; displayTotal: string; shipping: number; total: number; shippingSucceeded: boolean }> {
