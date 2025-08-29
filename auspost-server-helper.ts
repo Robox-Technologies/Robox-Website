@@ -25,7 +25,7 @@ export async function calculatePostage(country: string, postcode: string, unitVo
     if (country === domesticCountryCode) {
         // Calculate domestic shipping
         const response = await axios.request({
-            url: "/postage/parcel/international/calculate",
+            url: "/postage/parcel/domestic/calculate",
             baseURL: auspostBaseURL,
             headers: requestHeaders,
 
