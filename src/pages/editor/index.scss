@@ -256,7 +256,7 @@ body {
         cursor: pointer;
     }
 }
-.sideButtons {
+.mainSideButton {
     font-size: 20px;
     padding: 0 15px 0 15px;
     color: white;
@@ -368,10 +368,21 @@ button[calibrating]:hover {
 }
 #console {
     .modal-content {
-        height: 500px;
-        width: 80vw;
+        min-height: 500px;
+        height: 600px;
+        overflow-y: scroll;
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        :first-child
+        {
+            margin-top: auto;
+        }
     }
-    width: unset !important;
+    
+    height: 700px;
+    width: unset !important;    
 
 }
 
