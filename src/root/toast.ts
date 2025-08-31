@@ -28,12 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-export function showToast(
-    type: keyof typeof toastStyles,
-    title: string,
-    message: string,
-    duration: number | 'infinite' = 'infinite'
-) {
+export function showToast(type: keyof typeof toastStyles, title: string, message: string, duration: number | 'infinite' = 'infinite') {
     const toastHolder = document.getElementById('toast-holder');
     const style = toastStyles[type];
     const toast = document.createElement('div');
@@ -43,7 +38,7 @@ export function showToast(
             <div class="toast-header">
                 <i class="toast-icon fa-solid ${style.icon}"></i>
                 <h1 class="toast-title">${title}</h1>
-                <button class="toast-close-button" onclick="this.closest('.toast-container').remove()">
+                <button class="toast-close-button" onclick="closeToast()">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -53,11 +48,14 @@ export function showToast(
             
         </div>
     `;
+    function closeToast() {
+        toast.remove();
+    }
     toastHolder?.appendChild(toast);
 
     if (duration !== 'infinite') {
         setTimeout(() => {
-            toast.remove();
+            closeToast();
         }, duration);
     }
 }
