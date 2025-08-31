@@ -9,12 +9,14 @@ import { RoboxProcessor } from './roboxProcessor.js';
 import { getProductList } from './stripe-server-helper.js';
 import { Product } from '~types/api.js';
 import { TemplateData, TemplatePage } from './types/webpack.js';
+import { ArticleLocation, convertSlateToHtml, getCMSResources } from './cms.js';
 
 
 
 const __dirname = path.resolve();
 const RECACHE_DURATION = 10 * 60 * 1000;
 const pagesDir = path.resolve(__dirname, 'src/pages');
+// Initalise new md processor so we can do the fancy image formatting
 const roboxProcessor = new RoboxProcessor({
     defaultExtension: '.html',
     views: path.join(__dirname, ''),
@@ -31,9 +33,16 @@ const alias = {
     '@types': 'types',
     '@pages': 'src/pages',
 };
+// Map the aliases to absolute since HTML bundler only accepts absolute paths
 const aliasPaths = Object.fromEntries(
     Object.entries(alias).map(([key, value]) => [key, path.join(__dirname, value)])
 );
+// To dynamically link the location to a file
+const CMSLocationMapping: Record<ArticleLocation, string> = {
+    "Student Resources": "student/index.html",
+    "Teacher Resources": "teacher/index.html",
+    "Newsletter": "newsletter/index.html"
+}
 
 
 function findHtmlPages(rootDir: string): string[] {
@@ -120,7 +129,57 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
             images: fs.existsSync(imagesPath) ? fs.readdirSync(imagesPath).map(f => path.parse(f).base) : [],
         };
     }
+
     createPages(storePages, 'src/templates/views/product/product.html', productData);
+
+    const content = await getCMSResources();
+    if (content.length === 0) {
+        console.warn("No articles found in CMS, skipping article pages creation... IS THE CMS RUNNING?");
+    }
+    // Initialising the data and pages so I dont need to check later
+    const articlePages: Record<ArticleLocation, string[]> = {
+        "Newsletter": [],
+        "Teacher Resources": [],
+        "Student Resources": [],
+    };
+    const articleData: Record<ArticleLocation, Record<string, TemplateData>> = {
+        "Newsletter": {},
+        "Teacher Resources": {},
+        "Student Resources": {},
+    };
+
+    for (const article of content) {
+        const articleType = article.location;
+        // Articles contain HTML and slug
+        // but resources do not
+        if (article.type === 'article') {
+            articlePages[articleType].push(`./src/pages/articles/${article.slug}.html`);
+            article["html"] = await convertSlateToHtml(article.content);
+            articleData[articleType][article.slug] = { article };
+        }
+        else {
+            // We dont really need the article as a slug
+            // This is because we just need it to be unique in the case of resources, since the slug is only needed to link it to the article
+            articleData[articleType][article.id] = { article };
+        }
+    }
+
+    // Looping through the CMS locations and attaching them to their respective files
+    for (const [location, locationPath] of Object.entries(CMSLocationMapping)) {
+        const index = dynamicPages.findIndex(article => article.filename === locationPath);
+        // So later on we can have multiple articles per location
+        const locationName = location.replace(/\s+/g, '').toLowerCase();
+        if (index !== -1) {
+            dynamicPages[index].data = {
+                [locationName]: Object.values(articleData[location] || {}),
+            };
+        }
+    }
+    // Create the CMS pages for static rendering purposes
+    for (const [location, pages] of Object.entries(articlePages)) {
+        createPages(pages, 'src/templates/views/articles/article.html', articleData[location] || {});
+    }
+
     const htmlBundlerPluginOptions = {
         entry: dynamicPages,
         js: { filename: 'public/js/[name].[contenthash:8].js' },
@@ -241,6 +300,15 @@ export const createBaseConfig = async (): Promise<{ base: Configuration, product
             clean: true,
             path: path.resolve(__dirname, 'build/website'),
             publicPath: '/',
+        },
+        watchOptions: {
+            ignored: [
+                "**/node_modules/**",
+                "**/build/server/**",
+                //Ignore top level typscript files
+            ],
+            aggregateTimeout: 300,
+            poll: 1000,
         },
     };
 
