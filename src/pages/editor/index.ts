@@ -73,8 +73,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (workspaceId) {
         project = getProject(workspaceId)
     }
-    else window.location.href = "/student"
-    if (!project) window.location.href = "/student"
+    else {
+        showToast("error", "No Project Selected", "Please select a project to edit.", "infinite");
+    }
+    if (!project) {
+        showToast("error", "Project Not Found", "The specified project could not be found.", "infinite");
+    }
 
     // Control + scroll for zoom,
     // Scroll for vertical movement,
