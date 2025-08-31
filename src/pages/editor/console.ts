@@ -2,6 +2,10 @@ export function printToConsole(message: string) {
     const consoleOutput = document.querySelector("#console .modal-content") as HTMLDivElement | null;
     if (consoleOutput) {
         consoleOutput.appendChild(generatePrintElement(message));
+        const atBottom = Math.abs(consoleOutput.scrollHeight - consoleOutput.scrollTop - consoleOutput.clientHeight) < 1;
+        if (atBottom) {
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
     }
 }
 function generatePrintElement(message: string): HTMLPreElement {
