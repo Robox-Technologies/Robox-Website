@@ -42,6 +42,15 @@ export function registerControls(workspace: WorkspaceSvg) {
             stepZoom(workspace, -1);
         });
     }
+    
+    const terminalButton = document.getElementById("console-button");
+
+    const terminal = document.getElementById("console") as HTMLDialogElement | null;
+    if (terminalButton && terminal) {
+        terminalButton.addEventListener("click", () => {
+            terminal.showModal();
+        });
+    }
 
     document.addEventListener('wheel', (event: WheelEvent) => {
         if (!(event.target instanceof Element)) return;

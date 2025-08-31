@@ -355,7 +355,7 @@ button[calibrating]:hover {
         align-items: end;
         gap: 16px;
     }
-    #console {
+    #console-button {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -365,6 +365,14 @@ button[calibrating]:hover {
         border: 3px solid variables.$themeGreen;
     }
     
+}
+#console {
+    .modal-content {
+        height: 500px;
+        width: 80vw;
+    }
+    width: unset !important;
+
 }
 
 #connection-management {

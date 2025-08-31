@@ -48,7 +48,7 @@
         <div class="sideControls">
             <div class="sideButtons">
                 <div>
-                    <button class="uiButtons" id="console">
+                    <button class="uiButtons" id="console-button">
                         <i class="fa-solid fa-terminal"></i>
                     </button>
                     
@@ -107,6 +107,15 @@
         buttons: [
             '<button id="outcome-button" class="button calibrate-button standard-button"><i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
+    }) %>
+    <%~ include('@partials/modal/modal.html', {
+        id: "console",
+        class: "console",
+        title: 'Terminal', 
+        content: [
+            '<div id="console-output"></div>'
+        ],
+        buttons: []
     }) %>
     <%~ include('@partials/modal/modal.html', {
         id: "bootsel-flash",
