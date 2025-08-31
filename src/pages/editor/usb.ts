@@ -11,10 +11,15 @@ ENV_LED = Pin(25, Pin.OUT)
 line = LineSensors()
 left_motor_polarity = right_motor_polarity = -1
 ultrasonic = UltrasonicSensor()
-color_sensor = ColorSensor()
+
 def generatePrint(typ, message):
     jsmessage = {"type": typ, "message": message}
     return json.dumps(jsmessage)
+try:
+    color_sensor = ColorSensor()
+except:
+    generatePrint("error", "Cannot connect to colour sensor, is it on?")
+    exit()
 motors = Motors()
 motor_speed = 60
 `
