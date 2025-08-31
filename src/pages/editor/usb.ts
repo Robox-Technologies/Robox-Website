@@ -1,6 +1,7 @@
 import { pico } from './communication/communicate';
 import * as Blockly from 'blockly/core';
 import { pythonGenerator } from 'blockly/python'
+import { clearConsole, printToConsole } from './console';
 
 const scriptDependency = `
 from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
@@ -59,8 +60,10 @@ export function postBlocklyWSInjection() {
         if (downloadingToPico) {
             connectionManagment.setAttribute("status",  "downloaded")
         }
-        
-
+    })
+    pico.addEventListener("console", (event) => {
+        const picoEvent = event as CustomEvent
+        printToConsole(picoEvent.detail.message)
     })
     pico.addEventListener("error", () => {
         connectionManagment.setAttribute("loading",  "false")
@@ -89,6 +92,7 @@ export function postBlocklyWSInjection() {
         if (connectionManagment.getAttribute("loading") === "true") return
         pico.restart()
         connectionManagment.setAttribute("loading",  "true")
+        clearConsole()
     })
     runButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
@@ -96,6 +100,7 @@ export function postBlocklyWSInjection() {
         connectionManagment.setAttribute("loading",  "false")
         sendCode(ws)
         pico.runCode()
+        printToConsole("Code running on Ro/Box");
 
     })
     settingsButton?.addEventListener("click", (event) => {
@@ -110,7 +115,6 @@ export function postBlocklyWSInjection() {
     })
     pico.addEventListener("error", (event) => {
         console.error("Pico Error: ", event)
-        //TODO: add toasts
     })
     pico.startupConnect()
 
@@ -119,6 +123,7 @@ function sendCode(ws: Blockly.Workspace) {
     const code = pythonGenerator.workspaceToCode(ws);
     const finalCode = `${scriptDependency}\n${code}\nevent_begin()`
     pico.sendCode(finalCode)
+    printToConsole("Code sent to Ro/Box");
 }
 let rotation = 0;
 const degreesPerTooth = 60; // Adjust this value to match one gear tooth visually
