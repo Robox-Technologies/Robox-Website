@@ -31,6 +31,7 @@ const alias = {
     '@partials': 'src/templates/partials',
     '@root': 'src/root',
     '@types': 'types',
+    '@pages': 'src/pages',
 };
 // Map the aliases to absolute since HTML bundler only accepts absolute paths
 const aliasPaths = Object.fromEntries(
