@@ -1,6 +1,7 @@
 import { pico } from './communication/communicate';
 import * as Blockly from 'blockly/core';
 import { pythonGenerator } from 'blockly/python'
+import * as sanitizeHtml from 'sanitize-html';
 import { showToast } from '@root/toast';
 const scriptDependency = `
 from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
@@ -103,7 +104,7 @@ export function postBlocklyWSInjection() {
     pico.addEventListener("error", (event) => {
         const picoEvent = event as CustomEvent
         console.error("Pico Error: ", event)
-        showToast("error", "Pico Error", `An error occurred while communicating with the Pico. Please check your connection and try again. \nError: ${picoEvent.detail.message}`);
+        showToast("error", "Pico Error", `An error occurred while communicating with the Pico. Please check your connection and try again. \nError: ${sanitizeHtml(picoEvent.detail.message)}`);
     })
     pico.startupConnect()
 
