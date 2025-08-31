@@ -1,5 +1,5 @@
 import "@partials/toast/toast.scss";
-
+import * as sanitizeHtml from 'sanitize-html';
 
 const toastStyles = {
     "error": {
@@ -43,7 +43,7 @@ export function showToast(type: keyof typeof toastStyles, title: string, message
                 </button>
             </div>
             <div class="toast-content">
-                ${message}
+                ${sanitizeHtml(message)}
             </div>
             
         </div>
