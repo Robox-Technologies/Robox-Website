@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.dispatchEvent(new Event('open'));
 
         modal.addEventListener('toggle', () => {
-            if (modal.id === "console") return
+            if (modal.id === "console") return;
             if (modal.open) {
                 disableScroll();
             } else {
