@@ -404,7 +404,9 @@ button[calibrating]:hover {
         display: block;
     }
 }
-
+#robox-project-download .fa-download {
+    color: variables.$themeGreen;
+}
 #connection-management[status="running"] {
     background-color: variables.$themeRed;
     #stop-robox-button {

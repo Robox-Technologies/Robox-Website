@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const nameForm = document.getElementById("project-name-form") as HTMLFormElement | null
     const nameInput = document.getElementById("project-name-input") as HTMLInputElement | null
-    const downloadButton = document.getElementById("download-button") as HTMLButtonElement | null
+    const downloadButton = document.getElementById("robox-project-download") as HTMLButtonElement | null
     if (!downloadButton) return;
     if (!nameInput) return;
     if (!nameForm) return;
