@@ -38,7 +38,7 @@ export function showToast(type: keyof typeof toastStyles, title: string, message
             <div class="toast-header">
                 <i class="toast-icon fa-solid ${style.icon}"></i>
                 <h1 class="toast-title">${title}</h1>
-                <button class="toast-close-button" onclick="closeToast()">
+                <button class="toast-close-button" onclick="this.parentElement.parentElement.parentElement.remove()">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -48,14 +48,12 @@ export function showToast(type: keyof typeof toastStyles, title: string, message
             
         </div>
     `;
-    function closeToast() {
-        toast.remove();
-    }
+   
     toastHolder?.appendChild(toast);
 
     if (duration !== 'infinite') {
         setTimeout(() => {
-            closeToast();
+            toast.remove();
         }, duration);
     }
 }
