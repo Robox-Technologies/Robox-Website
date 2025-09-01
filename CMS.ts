@@ -1,6 +1,5 @@
 import { convertLexicalToHTML } from '@payloadcms/richtext-lexical/html'
 
-
 //TODO: Make this function actually typecheck instead of using my bad types
 const CMS_URL = process.env.CMS_URL
 export type ArticleLocation = 'Newsletter' | 'Teacher Resources' | 'Student Resources';
@@ -93,8 +92,10 @@ export function sortItems<T extends ContentItem>(items: T[]): T[] {
 }
 export async function convertSlateToHtml(slateContent): Promise<string> {
     // Convert the Slate content to HTML
-    const HTMLString = convertLexicalToHTML({data: slateContent}).replaceAll("/api/", `${CMS_URL}/api/`);
+    const html = convertLexicalToHTML({
+        data: slateContent,
+    })
     // Replace the CMS URL with the actual URL
 
-    return HTMLString;
+    return html;
 }
