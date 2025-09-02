@@ -3,13 +3,13 @@
 
 
 
-.fa-square-binary {
+.bi-square-binary {
     height: hub.$projectIconSize;
     width: hub.$projectIconSize;
     background-color: white;
     margin-right: hub.$projectIconGap;
 }
-.fa-square-binary > path {
+.bi-square-binary > path {
     color: variables.$themeBlue;
 }
 
@@ -178,7 +178,7 @@ $toolbarWidth: 130px;
 
 $trashcanSize: 30px;
 #delete-modal {
-    .fa-trash-can {
+    .bi-trash-can {
         color: variables.$themeRed;
         font-size: $trashcanSize;
     }
@@ -189,7 +189,7 @@ $renameInputRoundedCorners: 10px;
 $renameInputPadding: 5px;
 $renameContentPadding: 5%;
 #rename-modal {
-    .fa-pencil {
+    .bi-pencil {
         color: variables.$themeBlue;
         font-size: $trashcanSize;
     }

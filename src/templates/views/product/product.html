@@ -36,10 +36,10 @@
                     <% }) %>
                     
                     <button class="carousel-left-button carousel-button-disabled">
-                        <i class="fa-solid fa-angle-left"></i>
+                        <i class="bi bi-angle-left"></i>
                     </button>
                     <button class="carousel-right-button <%= images.length === 1 ? 'carousel-button-disabled' : ''  %>">
-                        <i class="fa-solid fa-angle-right"></i>
+                        <i class="bi bi-angle-right"></i>
                     </button>
                 </div>
             </div>
@@ -58,11 +58,11 @@
 
                 <div class="cart-quantity-button">
                     <button class="decrease-cart-button">
-                        <i class="fa-solid fa-minus"></i>
+                        <i class="bi bi-minus"></i>
                     </button>
                     <input type="number" min="1" value="1" placeholder="1" oninput="this.value = Math.abs(this.value)" class="cart-quantity"></input>
                     <button class="increase-cart-button">
-                        <i class="fa-solid fa-plus"></i>
+                        <i class="bi bi-plus"></i>
                     </button>
                 </div>
                 <button id="add-to-cart">Add to Cart</button>
@@ -80,21 +80,21 @@
         <img id="hero-image-large" alt="Product image of <%= product.name %>" src="@images/product/<%= product.internalName %>/<%= images[0] %>">
         
         <button class="carousel-left-button carousel-button-disabled">
-            <i class="fa-solid fa-angle-left"></i>
+            <i class="bi bi-angle-left"></i>
         </button>
 
         <button class="carousel-right-button <%= images.length === 1 ? 'carousel-button-disabled' : ''  %>">
-            <i class="fa-solid fa-angle-right"></i>
+            <i class="bi bi-angle-right"></i>
         </button>
 
         <button class="close-modal-button">
-            <i class="fa-solid fa-xmark"></i>
+            <i class="bi bi-xmark"></i>
         </button>
     </dialog>
 
     <%~ include('@partials/modal/modal.html', {
         id: "cart-modal",
-        title: '<i class="fa-solid fa-cart-plus"></i> Added to Cart',
+        title: '<i class="bi bi-cart-plus"></i> Added to Cart',
         content: [
             `<div class="cart-item">
                 <img alt="Product image of ${product.name}" class="cart-item-photo" src="@images/product/${product.internalName}/${images[0]}">

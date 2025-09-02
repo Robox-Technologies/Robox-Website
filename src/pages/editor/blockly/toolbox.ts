@@ -18,7 +18,7 @@ export const toolbox = {
         'kind': 'category',
         'name': 'Events',
         "cssConfig": {
-            "icon": "categoryIcon fa fa-flag",
+            "icon": "categoryIcon fa bi-flag",
         },
         'categorystyle': 'events_category',
         'contents': [
@@ -35,7 +35,7 @@ export const toolbox = {
         'kind': 'category',
         'name': 'Logic',
         "cssConfig": {
-            "icon": "categoryIcon fa fa-cog"
+            "icon": "categoryIcon fa bi-cog"
         },
         'categorystyle': 'logic_category',
         'contents': [         
@@ -70,7 +70,7 @@ export const toolbox = {
         'name': 'Control',
         'categorystyle': 'loop_category',
         "cssConfig": {
-            "icon": "categoryIcon fa fa-repeat"
+            "icon": "categoryIcon fa bi-repeat"
         },
         'contents': [
             {
@@ -140,7 +140,7 @@ export const toolbox = {
         'name': 'Math',
         'categorystyle': 'math_category',
         "cssConfig": {
-            "icon": "categoryIcon fa fa-plus"
+            "icon": "categoryIcon fa bi-plus"
         },
         'contents': [
           {
@@ -323,7 +323,7 @@ export const toolbox = {
         'name': 'Lists',
         'categorystyle': 'list_category',
         "cssConfig": {
-            "icon": "categoryIcon fa fa-table-list"
+            "icon": "categoryIcon fa bi-table-list"
         },
         'contents': [
           {
@@ -428,7 +428,7 @@ export const toolbox = {
           "name": "Sensors",
           "categorystyle": "sensor_category",
           "cssConfig": {
-              "icon": "categoryIcon fa fa-eye"
+              "icon": "categoryIcon fa bi-eye"
           },
           "contents": [
               {
@@ -473,7 +473,7 @@ export const toolbox = {
         'name': 'System',
         'categorystyle': 'system_category',
         "cssConfig": {
-            "icon": "categoryIcon fa fa-robot"
+            "icon": "categoryIcon fa bi-robot"
         },
         'contents': [
           {
@@ -532,7 +532,7 @@ export const toolbox = {
   "name": "Motors",
   "categorystyle": "motor_category",
   "cssConfig": {
-    "icon": "categoryIcon fa fa-truck-monster"
+    "icon": "categoryIcon fa bi-truck-monster"
   },
   "contents": [
     {
@@ -626,7 +626,7 @@ export const toolbox = {
         'kind': 'category',
         'name': 'Variables',
         "cssConfig": {
-            "icon": "categoryIcon fa fa-x"
+            "icon": "categoryIcon fa bi-x"
         },
         'categorystyle': 'variable_category',
         'custom': 'VARIABLE',
@@ -635,7 +635,7 @@ export const toolbox = {
         'kind': 'category',
         'name': 'Functions',
         "cssConfig": {
-            "icon": "categoryIcon fa fa-gears"
+            "icon": "categoryIcon fa bi-gears"
         },
         'contents': [
         ],

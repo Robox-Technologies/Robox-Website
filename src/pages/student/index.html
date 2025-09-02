@@ -14,7 +14,7 @@
     <template id="projectCardTemplate">
         <%~ include('@partials/card.html', {
             class: "project-card",
-            title: '<i class="fa-solid fa-square-binary"></i><span class="card-title-text"></span>', 
+            title: '<i class="bi bi-square-binary"></i><span class="card-title-text"></span>', 
             imageSource: "https://placehold.co/1920x1080", 
             descriptions: [
                 "2 hours ago", 
@@ -41,10 +41,10 @@
             imageSource: "https://placehold.co/1920x1080", 
             buttons: [
                 {
-                    content: "<span class='underline-grow'>PDF Build Instructions</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
+                    content: "<span class='underline-grow'>PDF Build Instructions</span> <div class='guide-icon-arrow'><i class='bi bi-chevron-right'></i></div>",
                 },
                 {
-                    content: "<span class='underline-grow'>3D Build Instructions</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
+                    content: "<span class='underline-grow'>3D Build Instructions</span> <div class='guide-icon-arrow'><i class='bi bi-chevron-right'></i></div>",
                 },
             ],
             topRowButton: false,
@@ -53,7 +53,7 @@
     <%~ include('@partials/header-workshop/header-workshop.html') %>
     <%~ include('@partials/modal/modal.html', {
         id: "delete-modal",
-        title: 'Delete Project <i class="fa-solid fa-trash-can"></i>', 
+        title: 'Delete Project <i class="bi bi-trash-can"></i>', 
         content: [
             "<p><span>Are you sure you want to delete <span class='wave-text'><span>p</span><span>r</span><span>o</span><span>j</span><span>e</span><span>c</span><span>t</span></span> </span></p>",
             "<p>it will be deleted forever (a very long time)</p>"
@@ -65,7 +65,7 @@
     }) %>
     <%~ include('@partials/modal/modal.html', {
         id: "edit-modal",
-        title: 'Edit Project <i class="fa-solid fa-pen-to-square"></i>', 
+        title: 'Edit Project <i class="bi bi-pen-to-square"></i>', 
         content: [
             "<p>Change the name of your project</p>",
             '<input type="text" id="project-name" placeholder="Project Name">',
@@ -85,7 +85,7 @@
         
         <div id="dropzone" style="display: none;">
             <div>
-                <i class="fa-solid fa-upload" style="font-size: 48px; margin-bottom: 16px;"></i>
+                <i class="bi bi-upload" style="font-size: 48px; margin-bottom: 16px;"></i>
                 <h2>Drop your .robox file to import!</h2>
             </div>
         </div>
@@ -101,7 +101,7 @@
                         imageSource: `${process.env.CMS_URL}${studentResource.article.thumbnail.url}`, 
                         buttons: [
                             {
-                                content: `<span class='underline-grow'>${studentResource.article.callToAction || 'Read Resource'}</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>`,
+                                content: `<span class='underline-grow'>${studentResource.article.callToAction || 'Read Resource'}</span> <div class='guide-icon-arrow'><i class='bi bi-chevron-right'></i></div>`,
                                 // Slightly weird thing because the slug requires the .html and the file URL does not...
                                 link: `${studentResource.article.type === 'article' ? `/articles/${studentResource.article.slug}.html` : `${process.env.CMS_URL}${studentResource.article.File.url}`}`
                             },
@@ -117,13 +117,13 @@
                     My Projects
                 </h1>
                 <button id="toggle-dropzone" class="button">
-                    <i class="fa-solid fa-download"></i> Import
+                    <i class="bi bi-download"></i> Import
                 </button>
             </div>
             
             <div class="card-holder" id="project-holder">
                 <button id="create-project" class="button">
-                    <i class="fa-solid fa-plus"></i>
+                    <i class="bi bi-plus"></i>
                     <p>
                         New Project
                     </p>
@@ -131,8 +131,8 @@
                 <%~ include('@partials/toolbar/toolbar.html', {
                     id: "project-toolbar",
                     content: [
-                        '<button class="button" id="project-edit"><i class="fa-solid fa-pen-to-square"></i>Edit</button>',
-                        '<button class="button" id="project-delete"><i class="fa-solid fa-trash"></i>Delete</button>',
+                        '<button class="button" id="project-edit"><i class="bi bi-pen-to-square"></i>Edit</button>',
+                        '<button class="button" id="project-delete"><i class="bi bi-trash"></i>Delete</button>',
                     ],
                 }) %>
             

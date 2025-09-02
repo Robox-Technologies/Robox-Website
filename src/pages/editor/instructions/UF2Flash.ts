@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
             flashFailure("no-device");
             return stage1Modal.close();
         }
-        const bootselSpin = autoBootselButton.querySelector(".fa-spinner") as HTMLElement | null;
+        const bootselSpin = autoBootselButton.querySelector(".bi-spinner") as HTMLElement | null;
         if (!bootselSpin) return;
         stage1Modal.setAttribute("loading", "");
         pico.bootsel();
@@ -185,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const failureData = failureText[failure] || failureText["default"];
         outcomeTitle.textContent = failureData.title;
         outcomeText.innerHTML = failureData.text;
-        outcomeButton.innerHTML = `${failureData.button}<i class="fa-solid fa-spinner fa-spin"></i>`;
+        outcomeButton.innerHTML = `${failureData.button}<i class="bi bi-spinner bi-spin"></i>`;
         outcomeModal.showModal();
     }
 
