@@ -14,7 +14,7 @@
     <template id="projectCardTemplate">
         <%~ include('@partials/card.html', {
             class: "project-card",
-            title: '<i class="bi bi-square-binary"></i><span class="card-title-text"></span>', 
+            title: '<i class="bi bi-file-binary"></i><span class="card-title-text"></span>', 
             imageSource: "https://placehold.co/1920x1080", 
             descriptions: [
                 "2 hours ago", 
@@ -53,7 +53,7 @@
     <%~ include('@partials/header-workshop/header-workshop.html') %>
     <%~ include('@partials/modal/modal.html', {
         id: "delete-modal",
-        title: 'Delete Project <i class="bi bi-trash-can"></i>', 
+        title: 'Delete Project <i class="bi bi-trash"></i>', 
         content: [
             "<p><span>Are you sure you want to delete <span class='wave-text'><span>p</span><span>r</span><span>o</span><span>j</span><span>e</span><span>c</span><span>t</span></span> </span></p>",
             "<p>it will be deleted forever (a very long time)</p>"
@@ -65,7 +65,7 @@
     }) %>
     <%~ include('@partials/modal/modal.html', {
         id: "edit-modal",
-        title: 'Edit Project <i class="bi bi-pen-to-square"></i>', 
+        title: 'Edit Project <i class="bi bi-pencil"></i>', 
         content: [
             "<p>Change the name of your project</p>",
             '<input type="text" id="project-name" placeholder="Project Name">',
@@ -131,7 +131,7 @@
                 <%~ include('@partials/toolbar/toolbar.html', {
                     id: "project-toolbar",
                     content: [
-                        '<button class="button" id="project-edit"><i class="bi bi-pen-to-square"></i>Edit</button>',
+                        '<button class="button" id="project-edit"><i class="bi bi-pencil"></i>Edit</button>',
                         '<button class="button" id="project-delete"><i class="bi bi-trash"></i>Delete</button>',
                     ],
                 }) %>

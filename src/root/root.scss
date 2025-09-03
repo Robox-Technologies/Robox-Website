@@ -34,7 +34,16 @@ a {
     text-decoration: none;
     -webkit-text-decoration: none;
 }
+@media (prefers-reduced-motion: reduce){
+    .spinner { animation: none; }
+}
 
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.spinner {
+  animation: spin 1s linear infinite;
+}
 label > a {
     text-decoration: underline;
 }

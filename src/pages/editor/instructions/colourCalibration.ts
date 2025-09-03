@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
             outcomeText.textContent = "Calibration was not successful!\nIt seems that the Ro/Box is not responding to instructions!\nPlease follow the UF2 flashing guide to ensure a fresh and up to date Ro/Box"
         }
         if (outcomeButton.hasAttribute("calibrating")) outcomeButton.removeAttribute("calibrating")
-        outcomeButton.innerHTML = 'Retry<i class="bi bi-spinner bi-spin"></i>'
+        outcomeButton.innerHTML = 'Retry<i class="bi spinner bi-asterisk"></i>'
         if (calibrateModal.hasAttribute("open")) calibrateModal.close()
         if (calibrateOutcomeModal.hasAttribute("open")) calibrateOutcomeModal.close()
         outcomeTitle.textContent = "Ro/Box Failed Calibration"

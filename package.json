@@ -26,7 +26,6 @@
     "@payloadcms/richtext-lexical": "^3.54.0",
     "@slate-serializers/html": "^2.2.3",
     "@stripe/stripe-js": "^7.4.0",
-    "autoprefixer": "^10.4.21",
     "blockly": "^12.1.0",
     "bootstrap-icons": "^1.13.1",
     "css-minimizer-webpack-plugin": "^7.0.2",

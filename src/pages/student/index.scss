@@ -3,13 +3,13 @@
 
 
 
-.bi-square-binary {
+.bi-file-binary {
     height: hub.$projectIconSize;
     width: hub.$projectIconSize;
     background-color: white;
     margin-right: hub.$projectIconGap;
 }
-.bi-square-binary > path {
+.bi-file-binary > path {
     color: variables.$themeBlue;
 }
 
@@ -178,7 +178,7 @@ $toolbarWidth: 130px;
 
 $trashcanSize: 30px;
 #delete-modal {
-    .bi-trash-can {
+    .bi-trash {
         color: variables.$themeRed;
         font-size: $trashcanSize;
     }

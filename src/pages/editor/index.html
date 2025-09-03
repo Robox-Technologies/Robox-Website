@@ -33,22 +33,22 @@
             <%~ include('@partials/toolbar/toolbar.html', {
                 id: "settings-toolbar",
                 content: [
-                    "<button class='button' id='robox-settings-calibrate'><i class='bi bi-eye-dropper'></i>Calibrate Colour</button>",
-                    "<button class='button' id='robox-settings-flash'><i class='bi bi-screwdriver-wrench'></i>Update Firmware</button>",
+                    "<button class='button' id='robox-settings-calibrate'><i class='bi bi-eyedropper'></i>Calibrate Colour</button>",
+                    "<button class='button' id='robox-settings-flash'><i class='bi bi-tools'></i>Update Firmware</button>",
                 ],
             }) %>
         </div>
     </div>
     <div id="blocklyDiv">
         <div id="blocklyCustomTimeControls">
-            <button class="button uiButtons" id="undo"><i class="bi bi-rotate-left"></i></button>
-            <button class="button uiButtons" id="redo"><i class="bi bi-rotate-right"></i></button>
+            <button class="button uiButtons" id="undo"><i class="bi bi-arrow-counterclockwise"></i></button>
+            <button class="button uiButtons" id="redo"><i class="bi bi-arrow-clockwise"></i></button>
         </div>
         
         <div class="sideControls">
             <div class="zoomControls">
                 <button class="uiButtons" id="zoomIn"><i class="bi bi-plus"></i></button>
-                <button class="uiButtons" id="zoomOut"><i class="bi bi-minus"></i></button>
+                <button class="uiButtons" id="zoomOut"><i class="bi bi-dash"></i></button>
             </div>
 
             <div id="connection-management" status="disconnected">
@@ -65,13 +65,13 @@
                     Run Ro/Box
                 </button>
                 <button class="button mainButton" id="loading">
-                    <i class="bi bi-spinner bi-spin"></i>
+                    <i class="bi bi-asterisk spinner"></i>
                 </button>
                 <button class="sideButtons button" id="download">
                     <i class="bi bi-download"></i>
                 </button>
                 <button class="sideButtons button" id="disconnect">
-                    <i class="bi bi-plug-circle-xmark"></i>
+                    <i class="bi bi-x-circle"></i>
                 </button>
                 <button class="sideButtons button" id="console">
                     <i class="bi bi-terminal"></i>
@@ -89,7 +89,7 @@
             "<p>The RO/BOX is not currently in Bootsel mode, would you like us to try and enter it into BOOTSEL mode?</p>",
         ],
         buttons: [
-            '<button id="boot-try" class="button calibrate-button standard-button">Yes<i class="bi bi-spinner bi-spin"></i></button>',
+            '<button id="boot-try" class="button calibrate-button standard-button">Yes<i class="bi bi-asterisk spinner"></i></button>',
         ],
     }) %>
     <%~ include('@partials/modal/modal.html', {
@@ -100,7 +100,7 @@
             "<p id='bootsel-outcome-text'></p>",
         ],
         buttons: [
-            '<button id="outcome-button" class="button calibrate-button standard-button"><i class="bi bi-spinner bi-spin"></i></button>',
+            '<button id="outcome-button" class="button calibrate-button standard-button"><i class="bi bi-asterisk spinner"></i></button>',
         ],
     }) %>
     <%~ include('@partials/modal/modal.html', {
@@ -111,7 +111,7 @@
             "<p>When you are ready, press the 'open' button below, this will open a file browser, please select the 'RPI' drive</p>",
         ],
         buttons: [
-            '<button id="open-file" class="button calibrate-button standard-button">Open<i class="bi bi-spinner bi-spin"></i></button>',
+            '<button id="open-file" class="button calibrate-button standard-button">Open<i class="bi bi-asterisk spinner"></i></button>',
         ],
     }) %>
     <%~ include('@partials/modal/modal.html', {
@@ -122,7 +122,7 @@
             "<p>Press the 'Calibrate' button when you are ready!'</p>",
         ],
         buttons: [
-            '<button id="calibrate-button" class="button calibrate-button standard-button">Calibrate<i class="bi bi-spinner bi-spin"></i></button>',
+            '<button id="calibrate-button" class="button calibrate-button standard-button">Calibrate<i class="bi bi-asterisk spinner"></i></button>',
         ],
     }) %>
     <%~ include('@partials/modal/modal.html', {
@@ -132,7 +132,7 @@
             "<p></p>",
         ],
         buttons: [
-            '<button id="calibrate-outcome-button" class="button standard-button">Retry<i class="bi bi-spinner bi-spin"></i></button>',
+            '<button id="calibrate-outcome-button" class="button standard-button">Retry<i class="bi bi-asterisk spinner"></i></button>',
         ],
     }) %>
 </body>

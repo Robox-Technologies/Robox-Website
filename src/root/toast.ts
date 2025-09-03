@@ -4,19 +4,19 @@ import * as sanitizeHtml from 'sanitize-html';
 const toastStyles = {
     "error": {
         "background-color": "#f44336",
-        "icon": "bi-circle-xmark",
+        "icon": "bi-x-circle",
     },
     "success": {
         "background-color": "#4CAF50",
-        "icon": "bi-circle-check"
+        "icon": "bi-check-circle"
     },
     "info": {
         "background-color": "#2196F3",
-        "icon": "bi-circle-info"
+        "icon": "bi-info-circle"
     },
     "warning": {
         "background-color": "#ff9800",
-        "icon": "bi-circle-exclamation"
+        "icon": "bi-exclamation-circle"
     }
 }
 document.addEventListener("DOMContentLoaded", () => {
@@ -39,7 +39,7 @@ export function showToast(type: keyof typeof toastStyles, title: string, message
                 <i class="toast-icon bi ${style.icon}"></i>
                 <h1 class="toast-title">${title}</h1>
                 <button class="toast-close-button" onclick="closeToast()">
-                    <i class="bi bi-xmark"></i>
+                    <i class="bi bi-x-circle"></i>
                 </button>
             </div>
             <div class="toast-content">
