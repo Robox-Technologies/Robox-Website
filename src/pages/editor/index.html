@@ -46,9 +46,17 @@
         </div>
         
         <div class="sideControls">
-            <div class="zoomControls">
-                <button class="uiButtons" id="zoomIn"><i class="fa-solid fa-plus"></i></button>
-                <button class="uiButtons" id="zoomOut"><i class="fa-solid fa-minus"></i></button>
+            <div class="sideButtons">
+                <div>
+                    <button class="uiButtons" id="console-button">
+                        <i class="fa-solid fa-terminal"></i>
+                    </button>
+                    
+                </div>
+                <div class="zoomControls">
+                    <button class="uiButtons" id="zoomIn"><i class="fa-solid fa-plus"></i></button>
+                    <button class="uiButtons" id="zoomOut"><i class="fa-solid fa-minus"></i></button>
+                </div>
             </div>
 
             <div id="connection-management" status="disconnected">
@@ -67,14 +75,11 @@
                 <button class="button mainButton" id="loading">
                     <i class="fa-solid fa-spinner fa-spin"></i>
                 </button>
-                <button class="sideButtons button" id="download">
+                <button class="mainSideButton button" id="download">
                     <i class="fa-solid fa-download"></i>
                 </button>
-                <button class="sideButtons button" id="disconnect">
+                <button class="mainSideButton button" id="disconnect">
                     <i class="fa-solid fa-plug-circle-xmark"></i>
-                </button>
-                <button class="sideButtons button" id="console">
-                    <i class="fa-solid fa-terminal"></i>
                 </button>
 
             </div>
@@ -102,6 +107,14 @@
         buttons: [
             '<button id="outcome-button" class="button calibrate-button standard-button"><i class="fa-solid fa-spinner fa-spin"></i></button>',
         ],
+    }) %>
+    <%~ include('@partials/modal/modal.html', {
+        id: "console",
+        class: "console",
+        title: 'Terminal', 
+        content: [
+        ],
+        buttons: []
     }) %>
     <%~ include('@partials/modal/modal.html', {
         id: "bootsel-flash",
