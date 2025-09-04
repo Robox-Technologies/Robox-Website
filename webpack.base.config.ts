@@ -9,7 +9,7 @@ import { RoboxProcessor } from './roboxProcessor.js';
 import { getProductList } from './stripe-server-helper.js';
 import { Product } from '~types/api.js';
 import { TemplateData, TemplatePage } from './types/webpack.js';
-import { ArticleLocation, convertSlateToHtml, getCMSResources } from './cms.js';
+import { ArticleLocation, convertSlateToHtml, getCMSResources } from './CMS.js';
 
 
 
@@ -31,6 +31,7 @@ const alias = {
     '@partials': 'src/templates/partials',
     '@root': 'src/root',
     '@types': 'types',
+    '@pages': 'src/pages',
 };
 // Map the aliases to absolute since HTML bundler only accepts absolute paths
 const aliasPaths = Object.fromEntries(

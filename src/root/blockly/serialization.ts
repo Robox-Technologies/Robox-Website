@@ -4,8 +4,7 @@ import type { Workspace, WorkspaceSvg } from 'blockly/core';
 import { Projects, Project } from "~types/projects";
 
 import { workspaceToPng_ } from './screenshot';
-
-
+import { getPythonCode } from '@pages/editor/usb';
 export function getProjects(): Projects {
     const projectsRaw = localStorage.getItem("roboxProjects")
     let projects = Object.create(null);
@@ -86,6 +85,21 @@ export function downloadBlocklyProject(uuid: string) {
     const downloadEl = document.createElement('a');
     downloadEl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(project)));
     downloadEl.setAttribute('download', workspaceName.split(" ").join("-") + '.robox');
+
+    downloadEl.style.display = 'none';
+    document.body.appendChild(downloadEl);
+    downloadEl.click();
+    document.body.removeChild(downloadEl);
+}
+export function downloadPythonProject(ws: Workspace, uuid: string) {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+    
+    const project = getProject(uuid)    
+    if (!project) return
+    const pythonCode = getPythonCode(ws);
+    const downloadEl = document.createElement('a');
+    downloadEl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(pythonCode));
+    downloadEl.setAttribute('download', project.name.split(" ").join("-") + '.py');
 
     downloadEl.style.display = 'none';
     document.body.appendChild(downloadEl);
