@@ -117,13 +117,6 @@ document.addEventListener("DOMContentLoaded", () => {
             downloadPythonProject(workspace, workspaceId)
         })
 
-        const settingsButton = document.getElementById("robox-settings-button")
-        if (settingsButton) {
-            settingsButton.addEventListener("click", () => {
-                showToast("warning", "Browser Incompatibility", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ", 5000);
-            })
-        }
-
     }
     
     const nameForm = document.getElementById("project-name-form") as HTMLFormElement | null
