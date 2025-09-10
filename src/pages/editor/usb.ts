@@ -39,7 +39,6 @@ export function postBlocklyWSInjection() {
     const stopButton = document.getElementById("stop-robox-button")
     const runButton = document.getElementById("run-robox-button")
 
-    const settingsButton = document.getElementById("robox-settings-button")
 
     if (!connectionManagment) return
     if (!terminalButton) return    
@@ -103,16 +102,7 @@ export function postBlocklyWSInjection() {
         printToConsole("Code running on Ro/Box");
 
     })
-    settingsButton?.addEventListener("click", (event) => {
-        //Rotate the cog as an animation
-        const cog = document.querySelector('#robox-settings-button svg') as HTMLElement | null;
-        if (!cog) return
-        rotateOneTooth(cog);
-        const dialog = document.getElementById("settings-toolbar") as HTMLDialogElement | null
-        if (!dialog || dialog.open ) return
-        dialog.show()
-        event.stopPropagation()
-    })
+    
     const stage2Modal = document.querySelector("dialog#bootsel-flash") as HTMLDialogElement | null;
     const stage1Modal = document.querySelector("dialog#bootsel-boot") as HTMLDialogElement | null;
     pico.addEventListener("error", (event) => {
@@ -135,10 +125,4 @@ export function getPythonCode(ws: Blockly.Workspace): string {
     const code = pythonGenerator.workspaceToCode(ws);
     return `${scriptDependency}\n${code}\nevent_begin()`
 }
-let rotation = 0;
-const degreesPerTooth = 60; // Adjust this value to match one gear tooth visually
-function rotateOneTooth(cog: HTMLElement) {
-    rotation += degreesPerTooth;
-    cog.style.transition = 'transform 0.5s ease-out';
-    cog.style.transform = `rotate(${rotation}deg)`;
-}
+

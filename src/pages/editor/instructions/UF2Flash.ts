@@ -3,6 +3,7 @@
 // 1-A. If not then put them in bootsel (either via instructions or automatic)
 // 2. Choosing the UF2 (gonna be latest for now)
 // 3. Actually flashing the pico
+import { showToast } from "@root/toast";
 import { pico } from "../communication/communicate";
 
 type failures = "no-device" | "uf2-web" | "file-failure" | "write-failure" | "success";
@@ -49,12 +50,12 @@ const failureText = {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    const connectionManagment = document.querySelector("#connection-management")
     const outcomeModal = document.querySelector("dialog#bootsel-outcome") as HTMLDialogElement | null;
     const outcomeText = outcomeModal?.querySelector("#bootsel-outcome-text") as HTMLElement | null;
     const outcomeButton = outcomeModal?.querySelector("button#outcome-button") as HTMLButtonElement | null;
     const outcomeTitle = outcomeModal?.querySelector(".modal-title") as HTMLElement | null;
-    if (!outcomeModal || !outcomeText || !outcomeButton || !outcomeTitle) return;
-
+    if (!outcomeModal || !outcomeText || !outcomeButton || !outcomeTitle || !connectionManagment) return;
 
     const stage1Modal = document.querySelector("dialog#bootsel-boot") as HTMLDialogElement | null;
     if (!stage1Modal) return;
@@ -66,6 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const stage2Modal = document.querySelector("dialog#bootsel-flash") as HTMLDialogElement | null;
     const fileOpenButton = stage2Modal?.querySelector("button#open-file") as HTMLButtonElement | null;
     if (!stage2Modal || !fileOpenButton) return;
+    console.log(2)
     fileOpenButton.addEventListener("click", async () => {
         if (stage2Modal.hasAttribute("loading")) return; // Prevent multiple clicks
         // Get the UF2 file from /public/uf2/latest.uf2
@@ -188,8 +190,11 @@ document.addEventListener("DOMContentLoaded", () => {
         outcomeButton.innerHTML = `${failureData.button}<i class="fa-solid fa-spinner fa-spin"></i>`;
         outcomeModal.showModal();
     }
-
     bootselFlashButton.addEventListener("click", async () => {
+        if (!("serial" in navigator)) {
+            showToast("warning", "Browser Incompatibility", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ");
+            return;
+        }
         if (stage1Modal.hasAttribute("open")) {
             stage1Modal.close();
         } else {

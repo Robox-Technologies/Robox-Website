@@ -181,8 +181,24 @@ document.addEventListener("DOMContentLoaded", () => {
             extender.style.transition = `width ${transitionBoilerplate}`;
         }, 1)
     }
-    
+    const settingsButton = document.getElementById("robox-settings-button")
+    if (!settingsButton) return;
+    settingsButton?.addEventListener("click", (event) => {
+        //Rotate the cog as an animation
+        const cog = document.querySelector('#robox-settings-button svg') as HTMLElement | null;
+        if (!cog) return
+        rotateOneTooth(cog);
+        const dialog = document.getElementById("settings-toolbar") as HTMLDialogElement | null
+        if (!dialog || dialog.open ) return
+        dialog.show()
+        event.stopPropagation()
+    })
     workspace.addChangeListener(Blockly.Events.disableOrphans);
 }) 
-
-
+let rotation = 0;
+const degreesPerTooth = 60; // Adjust this value to match one gear tooth visually
+function rotateOneTooth(cog: HTMLElement) {
+    rotation += degreesPerTooth;
+    cog.style.transition = 'transform 0.5s ease-out';
+    cog.style.transform = `rotate(${rotation}deg)`;
+}
