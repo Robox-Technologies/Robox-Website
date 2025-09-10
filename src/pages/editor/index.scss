@@ -492,3 +492,6 @@ $settingsToolbarWidth: 200px;
         font-size: 20px;
     }
 }
+dialog[loading] #open-file::hover {
+    cursor: not-allowed;
+}

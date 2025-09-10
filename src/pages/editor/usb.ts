@@ -101,10 +101,14 @@ export function postBlocklyWSInjection() {
         dialog.show()
         event.stopPropagation()
     })
+    const stage2Modal = document.querySelector("dialog#bootsel-flash") as HTMLDialogElement | null;
+    const stage1Modal = document.querySelector("dialog#bootsel-boot") as HTMLDialogElement | null;
     pico.addEventListener("error", (event) => {
+        if (stage2Modal?.hasAttribute("open") || stage1Modal?.hasAttribute("open")) return; // Don't show error if flashing
+
         const picoEvent = event as CustomEvent
         console.error("Pico Error: ", event)
-        showToast("error", "Pico Error", `An error occurred while communicating with the Pico. Please check your connection and try again. \nError: ${sanitizeHtml(picoEvent.detail.message)}`);
+        showToast("error", "Pico Error", sanitizeHtml(picoEvent.detail.message));
     })
     pico.startupConnect()
 

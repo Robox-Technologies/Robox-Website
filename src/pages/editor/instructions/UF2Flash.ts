@@ -67,6 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const fileOpenButton = stage2Modal?.querySelector("button#open-file") as HTMLButtonElement | null;
     if (!stage2Modal || !fileOpenButton) return;
     fileOpenButton.addEventListener("click", async () => {
+        if (stage2Modal.hasAttribute("loading")) return; // Prevent multiple clicks
         // Get the UF2 file from /public/uf2/latest.uf2
         const response = await fetch("/public/latest.uf2");
         if (!response.ok) {
@@ -96,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         try {
             await writable.write(uf2Buffer);
-            await writable.close();
             // Successfully written the UF2 file
             stage2Modal.removeAttribute("loading");
             flashFailure("success");
