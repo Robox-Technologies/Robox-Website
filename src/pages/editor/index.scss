@@ -364,6 +364,11 @@ button[calibrating]:hover {
         color: variables.$themeGreen;
         border: 3px solid variables.$themeGreen;
     }
+    #console-button:disabled {
+        color: #717171;
+        border: 3px solid #717171;
+
+    }
     
 }
 #console {
@@ -417,6 +422,7 @@ button[calibrating]:hover {
         display: none;
     }
 }
+
 #connection-management[status="disconnected"] {
     background-color: variables.$themeBlue;
     #connect-robox-button {

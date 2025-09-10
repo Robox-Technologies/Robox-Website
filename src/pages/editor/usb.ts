@@ -32,7 +32,7 @@ let downloadingToPico = false
 export function postBlocklyWSInjection() {
     const ws = Blockly.getMainWorkspace()
     const connectionManagment = document.getElementById("connection-management")
-
+    const terminalButton = document.getElementById("console-button");
     const connectButton = document.getElementById("connect-robox-button")
     const downloadButton = document.getElementById("download-robox-button")
     const downloadConnectionButton = document.getElementById("download")
@@ -42,18 +42,20 @@ export function postBlocklyWSInjection() {
     const settingsButton = document.getElementById("robox-settings-button")
 
     if (!connectionManagment) return
-    
+    if (!terminalButton) return    
 
     pico.addEventListener("disconnect", (event) => {
         const picoEvent = event as CustomEvent
         if (!picoEvent.detail.restarting) { //Disconnected
             connectionManagment.setAttribute("status",  "disconnected")
             connectionManagment.setAttribute("loading",  "false")
+            terminalButton.setAttribute("disabled", "");
         }
     })
     pico.addEventListener("connect", () => {
         connectionManagment.setAttribute("status",  "downloaded")
         connectionManagment.setAttribute("loading",  "false")
+        terminalButton.removeAttribute("disabled")
     })
     pico.addEventListener("download", () => {
         connectionManagment.setAttribute("loading",  "false")
