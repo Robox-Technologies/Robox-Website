@@ -5,6 +5,8 @@
     <%~ include('@partials/metadata.html') %>
     <title>Teacher Hub - Ro/Box</title>
     <link href="./index.scss" rel="stylesheet">
+    <link href="@root/hub.scss" rel="stylesheet">
+
 </head>
 
 <body>
@@ -21,15 +23,32 @@
         </div>
     </section>
 
-    <article>
+    <div id="main" class="item-sections">
+        
         <section>
-            <h1>🚧 Under Construction 🚧</h1>
-            <p>
-                Check back later once we have resources!<br>
-                <em>(We're definitely not slacking off 😴)</em>
-            </p>
+            <h1>
+                Lesson Plans
+            </h1> 
+            <div class="card-holder">
+                <% Object.values(teacherresources).forEach(function(studentResource) { %>
+                    <%~ include('@partials/card.html', {
+                        class: "assembly-card",
+                        title: `<span>${studentResource.article.previewTitle}</span>`, 
+                        imageSource: `${process.env.CMS_URL}${studentResource.article.thumbnail.url}`, 
+                        buttons: [
+                            {
+                                content: `<span class='underline-grow'>${studentResource.article.callToAction || 'Read Resource'}</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>`,
+                                // Slightly weird thing because the slug requires the .html and the file URL does not...
+                                link: `${studentResource.article.type === 'article' ? `/articles/${studentResource.article.slug}.html` : `${process.env.CMS_URL}${studentResource.article.File.url}`}`
+                            },
+                        ],
+                        topRowButton: false,
+                    }) %>
+                <% }) %>
+            </div>
         </section>
-    </article>
+        
+    </div>
     
     <%~ include('@partials/footer/footer.html') %>
 </body>

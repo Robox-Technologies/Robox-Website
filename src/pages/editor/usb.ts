@@ -2,6 +2,10 @@ import { pico } from './communication/communicate';
 import * as Blockly from 'blockly/core';
 import { pythonGenerator } from 'blockly/python'
 
+import { clearConsole, printToConsole } from './console';
+import * as sanitizeHtml from 'sanitize-html';
+import { showToast } from '@root/toast';
+
 const scriptDependency = `
 from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
 from machine import Pin, Timer
@@ -11,10 +15,13 @@ ENV_LED = Pin(25, Pin.OUT)
 line = LineSensors()
 left_motor_polarity = right_motor_polarity = -1
 ultrasonic = UltrasonicSensor()
-color_sensor = ColorSensor()
+
 def generatePrint(typ, message):
     jsmessage = {"type": typ, "message": message}
     return json.dumps(jsmessage)
+except Exception:
+    generatePrint("error", "Cannot connect to colour sensor, is it on?")
+    exit()
 motors = Motors()
 motor_speed = 60
 `
@@ -54,15 +61,14 @@ export function postBlocklyWSInjection() {
         if (downloadingToPico) {
             connectionManagment.setAttribute("status",  "downloaded")
         }
-        
-
+    })
+    pico.addEventListener("console", (event) => {
+        const picoEvent = event as CustomEvent
+        printToConsole(picoEvent.detail.message)
     })
     pico.addEventListener("error", () => {
         connectionManagment.setAttribute("loading",  "false")
     })
-    ws.addChangeListener((event) => {
-        if (event.isUiEvent ) return; //Checking if this update changed the blocks
-    });
     connectButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
         pico.request()
@@ -84,6 +90,7 @@ export function postBlocklyWSInjection() {
         if (connectionManagment.getAttribute("loading") === "true") return
         pico.restart()
         connectionManagment.setAttribute("loading",  "true")
+        clearConsole()
     })
     runButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
@@ -91,6 +98,7 @@ export function postBlocklyWSInjection() {
         connectionManagment.setAttribute("loading",  "false")
         sendCode(ws)
         pico.runCode()
+        printToConsole("Code running on Ro/Box");
 
     })
     settingsButton?.addEventListener("click", (event) => {
@@ -104,8 +112,9 @@ export function postBlocklyWSInjection() {
         event.stopPropagation()
     })
     pico.addEventListener("error", (event) => {
+        const picoEvent = event as CustomEvent
         console.error("Pico Error: ", event)
-        //TODO: add toasts
+        showToast("error", "Pico Error", `An error occurred while communicating with the Pico. Please check your connection and try again. \nError: ${sanitizeHtml(picoEvent.detail.message)}`);
     })
     pico.startupConnect()
 
@@ -114,6 +123,11 @@ function sendCode(ws: Blockly.Workspace) {
     const code = pythonGenerator.workspaceToCode(ws);
     const finalCode = `${scriptDependency}\n${code}\nevent_begin()`
     pico.sendCode(finalCode)
+    printToConsole("Code sent to Ro/Box");
+}
+export function getPythonCode(ws: Blockly.Workspace): string {
+    const code = pythonGenerator.workspaceToCode(ws);
+    return `${scriptDependency}\n${code}\nevent_begin()`
 }
 let rotation = 0;
 const degreesPerTooth = 60; // Adjust this value to match one gear tooth visually

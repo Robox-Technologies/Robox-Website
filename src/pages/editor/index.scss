@@ -256,7 +256,7 @@ body {
         cursor: pointer;
     }
 }
-.sideButtons {
+.mainSideButton {
     font-size: 20px;
     padding: 0 15px 0 15px;
     color: white;
@@ -338,7 +338,7 @@ button[calibrating]:hover {
     bottom: variables.$standardGap;
 }
 
-.zoomControls {
+.sideButtons {
     display: flex;
     flex-direction: column;
     align-items: end;
@@ -349,6 +349,41 @@ button[calibrating]:hover {
         pointer-events: auto;
         border-radius: 50%;
     }
+    .zoomControls {
+        display: flex;
+        flex-direction: column;
+        align-items: end;
+        gap: 16px;
+    }
+    #console-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: larger;
+        color: variables.$themeGreen;
+        border: 3px solid variables.$themeGreen;
+    }
+    
+}
+#console {
+    .modal-content {
+        min-height: 500px;
+        height: 600px;
+        overflow-y: scroll;
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        :first-child
+        {
+            margin-top: auto;
+        }
+    }
+    
+    height: 700px;
+    width: unset !important;    
+
 }
 
 #connection-management {
@@ -376,9 +411,6 @@ button[calibrating]:hover {
         display: none;
     }
     #disconnect {
-        display: none;
-    }
-    #console {
         display: none;
     }
     #download {
@@ -409,9 +441,8 @@ button[calibrating]:hover {
     background-color: variables.$themeRed;
     #stop-robox-button {
         display: block;
-    }
-    #console {
-        display: block;
+        width: 100%;
+        border-right: unset;
     }
 }
 $settingsToolbarWidth: 200px;
@@ -460,9 +491,6 @@ $settingsToolbarWidth: 200px;
         display: none;
     }
     #disconnect {
-        display: none;
-    }
-    #console {
         display: none;
     }
     #download {

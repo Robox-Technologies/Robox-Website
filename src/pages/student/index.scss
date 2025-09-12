@@ -1,53 +1,28 @@
 @use '../../root/variables';
-$projectIconSize: 1.2em;
-$projectIconGap: 5px;
-
-$projectCardGap: 30px;
-$projectCardWidth: 250px;
-$cardBorderRadius: 5%;
+@use "@root/hub";
 
 
-#main {
-    padding: variables.$articleMargin;
-}
+
 .fa-square-binary {
-    height: $projectIconSize;
-    width: $projectIconSize;
+    height: hub.$projectIconSize;
+    width: hub.$projectIconSize;
     background-color: white;
-    margin-right: $projectIconGap;
+    margin-right: hub.$projectIconGap;
 }
 .fa-square-binary > path {
     color: variables.$themeBlue;
 }
-.fa-chevron-right {
-    font-size: 12px;
-}
 
-.guide-icon-arrow {
-    height: 12px;
-    width: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-left: $projectIconGap;
-}
 
 .assembly-card > .card-info > .card-buttons {
     flex-direction: column;
 }
-.card-holder {
-    display: flex;
-    width: 100%;
-    align-items: stretch;
-    align-content: center;
-    gap: $projectCardGap; 
-    flex-wrap: wrap;
-}
+
 $hoverCardBorderSize: 3px;
 $hoverCardBorderColor: variables.$themeBlue;
 
 #create-project, .project-card {
-    width: $projectCardWidth;
+    width: hub.$projectCardWidth;
     transition: transform 0.1s ease-out;
     transform-style: preserve-3d;
     will-change: transform;
@@ -114,8 +89,8 @@ $toolbarWidth: 130px;
 }
 
 #create-project {
-    width: $projectCardWidth;
-    border-radius: $cardBorderRadius;
+    width: hub.$projectCardWidth;
+    border-radius: hub.$cardBorderRadius;
     background-color: variables.$themeBlue;
     display: flex;
     justify-content: center;
@@ -151,9 +126,7 @@ $toolbarWidth: 130px;
     justify-content: space-between;
     flex-direction: row;
 }
-.card-button:hover {
-    cursor: pointer;
-}
+
 //Credits too https://stackoverflow.com/questions/62867788/text-underline-animation-in-css-the-simplest-way
 
 .assembly-card > .card-info > .card-buttons > .card-button:hover {
@@ -190,9 +163,7 @@ $toolbarWidth: 130px;
     font-size: 24px;
     color: white;
 }
-.card {
-    background-color: white !important;
-}
+
 
 .hero-title-container {
     background-color: variables.$themeYellow;
@@ -252,13 +223,7 @@ $renameContentPadding: 5%;
     transform: translateY(-2px);
     border: $hoverCardBorderSize solid variables.$themeBlue;
 }
-.card-link {
-    display: flex;
-    align-items: center;
-}
-.card-link:hover {
-    --underline-width: 100%;
-}
+
 .project-card:has(.toolbar-target) {
     border: $hoverCardBorderSize solid variables.$themeGreen;
     transform: translateY(-2px);
