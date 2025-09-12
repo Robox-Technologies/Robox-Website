@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Fees } from "~types/fees";
+import { Fees } from "./types/fees.js";
 import fees from "./src/fees.json" with { type: "json" };
 
 const feesObject: Fees = typeof fees == "string" ? JSON.parse(fees) : fees;

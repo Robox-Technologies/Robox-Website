@@ -1,4 +1,4 @@
-import { Product } from "~types/api";
+import { Product } from "../../../types/api.js";
 
 const backendExecution = typeof window === 'undefined';
 

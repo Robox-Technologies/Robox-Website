@@ -30,7 +30,7 @@ const alias = {
     '@images': 'src/images',
     '@partials': 'src/templates/partials',
     '@root': 'src/root',
-    '@types': 'types',
+    '~types': 'types',
     '@pages': 'src/pages',
 };
 // Map the aliases to absolute since HTML bundler only accepts absolute paths
