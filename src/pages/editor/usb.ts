@@ -19,6 +19,8 @@ ultrasonic = UltrasonicSensor()
 def generatePrint(typ, message):
     jsmessage = {"type": typ, "message": message}
     return json.dumps(jsmessage)
+try:
+    color_sensor = ColorSensor()
 except Exception:
     generatePrint("error", "Cannot connect to colour sensor, is it on?")
     exit()

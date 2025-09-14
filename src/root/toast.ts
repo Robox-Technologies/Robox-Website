@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-export function showToast(type: keyof typeof toastStyles, title: string, message: string, duration: number | 'infinite' = 'infinite') {
+export function showToast(type: keyof typeof toastStyles, title: string, message: string, duration: number) {
     const toastHolder = document.getElementById('toast-holder');
     const style = toastStyles[type];
     const toast = document.createElement('div');

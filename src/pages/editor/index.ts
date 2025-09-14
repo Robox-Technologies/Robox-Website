@@ -74,10 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
         project = getProject(workspaceId)
     }
     else {
-        showToast("error", "No Project Selected", "Please select a project to edit.", "infinite");
+        showToast("error", "No Project Selected", "Please select a project to edit.", 10);
     }
     if (!project) {
-        showToast("error", "Project Not Found", "The specified project could not be found.", "infinite");
+        showToast("error", "Project Not Found", "The specified project could not be found.", 10);
     }
 
     // Control + scroll for zoom,
