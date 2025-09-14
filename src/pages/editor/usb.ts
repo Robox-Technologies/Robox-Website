@@ -24,7 +24,6 @@ try:
     color_sensor = ColorSensor()
 except Exception:
     generatePrint("error", "Cannot connect to colour sensor, is it on?")
-    sys.exit(1) 
 motors = Motors()
 motor_speed = 60
 `
