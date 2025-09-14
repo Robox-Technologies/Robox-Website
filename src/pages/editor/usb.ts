@@ -116,7 +116,7 @@ export function postBlocklyWSInjection() {
     pico.addEventListener("error", (event) => {
         const picoEvent = event as CustomEvent
         console.error("Pico Error: ", event)
-        showToast("error", "Pico Error", `An error occurred while communicating with the Pico. Please check your connection and try again. \nError: ${sanitizeHtml(picoEvent.detail.message)}`, 10);
+        showToast("error", "Pico Error", `An error occurred while communicating with the Pico. Please check your connection and try again. \nError: ${sanitizeHtml(picoEvent.detail.message)}`, 5000);
     })
     pico.startupConnect()
 
