@@ -92,7 +92,6 @@ export function postBlocklyWSInjection() {
         if (connectionManagment.getAttribute("loading") === "true") return
         pico.restart()
         connectionManagment.setAttribute("loading",  "true")
-        clearConsole()
     })
     runButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
