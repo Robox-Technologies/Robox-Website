@@ -11,6 +11,7 @@ from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
 from machine import Pin, Timer
 import time
 import json
+import sys
 ENV_LED = Pin(25, Pin.OUT)
 line = LineSensors()
 left_motor_polarity = right_motor_polarity = -1
@@ -23,7 +24,7 @@ try:
     color_sensor = ColorSensor()
 except Exception:
     generatePrint("error", "Cannot connect to colour sensor, is it on?")
-    exit()
+    sys.exit(1) 
 motors = Motors()
 motor_speed = 60
 `
