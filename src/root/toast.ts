@@ -53,9 +53,7 @@ export function showToast(type: keyof typeof toastStyles, title: string, message
     }
     toastHolder?.appendChild(toast);
 
-    if (duration !== 'infinite') {
-        setTimeout(() => {
-            closeToast();
-        }, duration);
-    }
+    setTimeout(() => {
+        closeToast();
+    }, duration);
 }
