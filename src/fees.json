@@ -1,13 +1,42 @@
 {
-    "shipping": {
-        "maximum": 2330,
-        "penaltyFeePerKg": 500,
-        "weightBrackets": [
-            { "maxWeight": 250, "price": 970 },
-            { "maxWeight": 500, "price": 1115 },
-            { "maxWeight": 1000, "price": 1525 },
-            { "maxWeight": 3000, "price": 1930 },
-            { "maxWeight": 5000, "price": 2330 }
+    "packaging": {
+        "excessPenalty": {
+            "cost": 500,
+            "heightPerTen": 5,
+            "dimensions": {
+                "length": 48.5,
+                "width": 36,
+                "height": 5
+            }
+        },
+        "qtyBrackets": [
+            { 
+                "maxQty": 1,
+                "cost": 165,
+                "dimensions": {
+                    "length": 22.9,
+                    "width": 15.1,
+                    "height": 5
+                } 
+            },
+            { 
+                "maxQty": 3, 
+                "cost": 275,
+                "dimensions": {
+                    "length": 43,
+                    "width": 28.5,
+                    "height": 5
+                }
+            },
+            { 
+                "maxQty": 10, 
+                "cost": 345,
+                "dimensions": {
+                    "length": 48.5,
+                    "width": 36,
+                    "height": 5
+                }
+            }
         ]
     }
 }

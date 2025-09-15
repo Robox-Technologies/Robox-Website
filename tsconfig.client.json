@@ -10,7 +10,7 @@
     "include": [
         "src/**/*",
         "types/**/*"
-    ],
+, "auspost-server-helper.ts"    ],
     "exclude": [
         "node_modules",
         "server.ts",

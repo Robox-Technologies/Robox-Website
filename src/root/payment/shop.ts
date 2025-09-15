@@ -8,7 +8,7 @@ const shippingValue = document.getElementById("shipping-cost") as HTMLParagraphE
 
 
 
-export function renderCart() {
+export async function renderCart() {
     //Get rid of the quantity stuff
     const cart = getCart();
     const products = Object.keys(cart.products).reduce((acc: Record<string, Product>, productId: string) => {
@@ -17,7 +17,7 @@ export function renderCart() {
         return acc;
     }, {});
 
-    const cost = calculateTotalCost(cartToDictionary(), products);
+    const cost = await calculateTotalCost(cartToDictionary(), products);
 
     // Hide checkout button if cost is 0
     const checkoutButton = document.getElementById("checkout");
@@ -28,8 +28,12 @@ export function renderCart() {
             checkoutButton.style.display = "block";
         }
     }
-    if (totalValue && orderValue && shippingValue) {
+
+    if (orderValue) {
         orderValue.textContent = cost.displayProducts;
+    }
+
+    if (totalValue && shippingValue) {
         totalValue.textContent = cost.displayTotal;
         shippingValue.textContent = cost.displayShipping;
     }

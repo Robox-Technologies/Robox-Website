@@ -7,7 +7,7 @@ import { processEmail } from './email.js';
 
 import express from 'express'
 import { Request, Response } from 'express';
-import { PaymentIntentCreationBody, ProductsRequestQuery } from '~types/api.js';
+import { PaymentIntentCreationBody, ShippingUpdateBody, ProductsRequestQuery } from '~types/api.js';
 import { calculateTotalCost } from './src/root/payment/stripe-shared-helper.js';
 
 const paymentRouter = express.Router()
@@ -59,7 +59,7 @@ paymentRouter.post("/create", async (req: Request<object, object, PaymentIntentC
         res.status(400).send({ error: "Products is not defined" });
         return 
     }
-    const verifiedServerCost = calculateTotalCost(products, verifiedProducts);
+    const verifiedServerCost = await calculateTotalCost(products, verifiedProducts);
     const verifiedServerTotal = verifiedServerCost.total
     const verifiedServerShipping = verifiedServerCost.shipping;
     if (expected_price !== verifiedServerTotal) {
@@ -79,7 +79,34 @@ paymentRouter.post("/create", async (req: Request<object, object, PaymentIntentC
                 shipping: JSON.stringify(verifiedServerShipping || {}),
             }
         });
-        res.json({client_secret: paymentIntent.client_secret});
+        res.json({client_secret: paymentIntent.client_secret, paymentIntentID: paymentIntent.id});
+    } catch (err) {
+        console.log(err)
+        res.status(500).send({error: err})
+    }
+})
+const domesticCountryCode = "AU";
+paymentRouter.post("/updateShipping", async (req: Request<object, object, ShippingUpdateBody>, res: Response): Promise<void> => {
+    const body = req.body;
+    if (!(body && body.paymentIntentID && body.products && body.country && (domesticCountryCode != body.country || body.postcode)) ) {
+        res.status(400).send({ error: "One or more values are not defined" });
+        return;
+    }  
+
+    try {
+        const verifiedServerCost = await calculateTotalCost(body.products, verifiedProducts, {
+            country: body.country, postcode: body.postcode
+        });
+
+        if (!verifiedServerCost.shippingSucceeded) {
+            throw new Error("Unable to calculate shipping cost");
+        }
+    
+        stripeAPI.paymentIntents.update(body.paymentIntentID, {
+            amount: verifiedServerCost.total
+        });
+
+        res.json({verifiedServerCost: verifiedServerCost})
     } catch (err) {
         console.log(err)
         res.status(500).send({error: err})

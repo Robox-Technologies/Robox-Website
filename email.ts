@@ -238,7 +238,7 @@ function createCell(document: Document, text: string, className: string): HTMLTa
 async function sendEmail(to: string, subject: string, content: string, plaintext?: string, attachments?: attachments): Promise<void> {
     try {
         await resend.emails.send({
-            from: 'Robox <hello@store.robox.com.au>',
+            from: 'Ro/Box <hello@store.robox.com.au>',
             to: [to],
             subject: subject,
             html: content,
