@@ -364,6 +364,11 @@ button[calibrating]:hover {
         color: variables.$themeGreen;
         border: 3px solid variables.$themeGreen;
     }
+    #console-button:disabled {
+        color: #717171;
+        border: 3px solid #717171;
+
+    }
     
 }
 #console {
@@ -417,6 +422,7 @@ button[calibrating]:hover {
         display: none;
     }
 }
+
 #connection-management[status="disconnected"] {
     background-color: variables.$themeBlue;
     #connect-robox-button {
@@ -436,7 +442,9 @@ button[calibrating]:hover {
         display: block;
     }
 }
-
+#robox-project-download .fa-download {
+    color: variables.$themeGreen;
+}
 #connection-management[status="running"] {
     background-color: variables.$themeRed;
     #stop-robox-button {
@@ -517,4 +525,7 @@ $settingsToolbarWidth: 200px;
         display: inline;
         font-size: 20px;
     }
+}
+dialog[loading] #open-file::hover {
+    cursor: not-allowed;
 }

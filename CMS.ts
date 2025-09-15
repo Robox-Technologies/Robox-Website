@@ -94,7 +94,7 @@ export async function convertSlateToHtml(slateContent): Promise<string> {
     // Convert the Slate content to HTML
     const html = convertLexicalToHTML({
         data: slateContent,
-    })
+    }).replaceAll("/api/", `${CMS_URL}/api/`)
     // Replace the CMS URL with the actual URL
 
     return html;

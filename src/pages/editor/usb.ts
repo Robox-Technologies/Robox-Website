@@ -32,28 +32,29 @@ let downloadingToPico = false
 export function postBlocklyWSInjection() {
     const ws = Blockly.getMainWorkspace()
     const connectionManagment = document.getElementById("connection-management")
-
+    const terminalButton = document.getElementById("console-button");
     const connectButton = document.getElementById("connect-robox-button")
     const downloadButton = document.getElementById("download-robox-button")
     const downloadConnectionButton = document.getElementById("download")
     const stopButton = document.getElementById("stop-robox-button")
     const runButton = document.getElementById("run-robox-button")
 
-    const settingsButton = document.getElementById("robox-settings-button")
 
     if (!connectionManagment) return
-    
+    if (!terminalButton) return    
 
     pico.addEventListener("disconnect", (event) => {
         const picoEvent = event as CustomEvent
         if (!picoEvent.detail.restarting) { //Disconnected
             connectionManagment.setAttribute("status",  "disconnected")
             connectionManagment.setAttribute("loading",  "false")
+            terminalButton.setAttribute("disabled", "");
         }
     })
     pico.addEventListener("connect", () => {
         connectionManagment.setAttribute("status",  "downloaded")
         connectionManagment.setAttribute("loading",  "false")
+        terminalButton.removeAttribute("disabled")
     })
     pico.addEventListener("download", () => {
         connectionManagment.setAttribute("loading",  "false")
@@ -101,20 +102,15 @@ export function postBlocklyWSInjection() {
         printToConsole("Code running on Ro/Box");
 
     })
-    settingsButton?.addEventListener("click", (event) => {
-        //Rotate the cog as an animation
-        const cog = document.querySelector('#robox-settings-button svg') as HTMLElement | null;
-        if (!cog) return
-        rotateOneTooth(cog);
-        const dialog = document.getElementById("settings-toolbar") as HTMLDialogElement | null
-        if (!dialog || dialog.open ) return
-        dialog.show()
-        event.stopPropagation()
-    })
+    
+    const stage2Modal = document.querySelector("dialog#bootsel-flash") as HTMLDialogElement | null;
+    const stage1Modal = document.querySelector("dialog#bootsel-boot") as HTMLDialogElement | null;
     pico.addEventListener("error", (event) => {
+        if (stage2Modal?.hasAttribute("open") || stage1Modal?.hasAttribute("open")) return; // Don't show error if flashing
+
         const picoEvent = event as CustomEvent
         console.error("Pico Error: ", event)
-        showToast("error", "Pico Error", `An error occurred while communicating with the Pico. Please check your connection and try again. \nError: ${sanitizeHtml(picoEvent.detail.message)}`);
+        showToast("error", "Pico Error", sanitizeHtml(picoEvent.detail.message));
     })
     pico.startupConnect()
 
@@ -129,10 +125,4 @@ export function getPythonCode(ws: Blockly.Workspace): string {
     const code = pythonGenerator.workspaceToCode(ws);
     return `${scriptDependency}\n${code}\nevent_begin()`
 }
-let rotation = 0;
-const degreesPerTooth = 60; // Adjust this value to match one gear tooth visually
-function rotateOneTooth(cog: HTMLElement) {
-    rotation += degreesPerTooth;
-    cog.style.transition = 'transform 0.5s ease-out';
-    cog.style.transform = `rotate(${rotation}deg)`;
-}
+

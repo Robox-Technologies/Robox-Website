@@ -47,6 +47,7 @@ export function registerControls(workspace: WorkspaceSvg) {
 
     const terminal = document.getElementById("console") as HTMLDialogElement | null;
     if (terminalButton && terminal) {
+        
         terminalButton.addEventListener("click", () => {
             terminal.showModal();
         });
