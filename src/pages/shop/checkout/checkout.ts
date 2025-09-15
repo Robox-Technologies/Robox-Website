@@ -71,7 +71,10 @@ if (totalCost < 50) {
         addressElement.on("change", async (event) => {
             const country = event.value.address.country;
             const postcode = event.value.address.postal_code;
-            if (!country || !postcode) return;
+            if (!country) {
+                updateShippingObfuscation(true)
+                return
+            };
 
             // Recalculate shipping cost
             shippingPricingValid = false;

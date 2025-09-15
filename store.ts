@@ -85,11 +85,10 @@ paymentRouter.post("/create", async (req: Request<object, object, PaymentIntentC
         res.status(500).send({error: err})
     }
 })
-
+const domesticCountryCode = "AU";
 paymentRouter.post("/updateShipping", async (req: Request<object, object, ShippingUpdateBody>, res: Response): Promise<void> => {
     const body = req.body;
-
-    if (!(body && body.paymentIntentID && body.products && body.country && body.postcode)) {
+    if (!(body && body.paymentIntentID && body.products && body.country && (domesticCountryCode != body.country || body.postcode)) ) {
         res.status(400).send({ error: "One or more values are not defined" });
         return;
     }  
