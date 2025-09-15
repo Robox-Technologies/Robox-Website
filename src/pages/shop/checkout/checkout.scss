@@ -124,6 +124,10 @@ label {
     height: $checkboxSize;
 }
 
+.obfuscated {
+    filter: blur(5px);
+}
+
 @media only screen and (max-width: 900px) {
     #main-content {
         flex-direction: column-reverse;

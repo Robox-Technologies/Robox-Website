@@ -129,13 +129,18 @@ hr {
         margin-bottom: 8px;
     }
 
-    .bulkCallout {
+    .summaryCallout {
         font-size: 12px;
 
         a {
             font-size: inherit;
             text-decoration: underline;
         }
+    }
+
+    .shippingDisclaimer {
+        margin-top: 0;
+        margin-bottom: variables.$standardGap;
     }
 }
 

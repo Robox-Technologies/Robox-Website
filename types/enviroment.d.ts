@@ -5,6 +5,16 @@ declare global {
             STRIPE_SECRET_KEY: string;
             STRIPE_WEBHOOK_SECRET: string;
             FORCE_CACHE: boolean;
+
+            EMAIL_HOST: string;
+            EMAIL_PORT: number;
+            EMAIL_SECURE: boolean;
+            EMAIL_USER: string;
+            EMAIL_PASS: string;
+
+            RESEND_KEY: string;
+            AUSPOST_KEY: string;
+            AUSPOST_ORIGIN_POSTCODE: string;
         }
     }
 }

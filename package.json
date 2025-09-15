@@ -1,4 +1,5 @@
 {
+  "name": "Robox-Website",
   "type": "module",
   "sideEffects": true,
   "scripts": {
@@ -26,6 +27,7 @@
     "@payloadcms/richtext-lexical": "^3.54.0",
     "@slate-serializers/html": "^2.2.3",
     "@stripe/stripe-js": "^7.4.0",
+    "axios": "^1.11.0",
     "blockly": "^12.1.0",
     "css-minimizer-webpack-plugin": "^7.0.2",
     "dayjs": "^1.11.13",
@@ -112,6 +114,7 @@
     "webpack-hot-middleware": "^2.26.1"
   },
   "optionalDependencies": {
+    "sass-embedded-darwin-x64": "^1.91.0",
     "sass-embedded-linux-x64": "^1.89.2",
     "sass-embedded-win32-x64": "^1.89.2"
   }

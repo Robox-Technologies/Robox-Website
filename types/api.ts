@@ -11,13 +11,20 @@ export type Product = {
     displayPrice: string, // Used for display purposes
     item_id: string,
     status: ProductStatus,
-    weight: number
+    weight: number,
+    unitVolume: number // Volume (in Ro/Box kits) used to estimate the packaging volume required.
 }
 export type ProductStatus = "available" | "not-available" | "preorder"
 
 export interface PaymentIntentCreationBody {
     products: Record<string, number>;
     expected_price: number;
+}
+export interface ShippingUpdateBody {
+    paymentIntentID: string;
+    products: Record<string, number>;
+    country: string;
+    postcode: string;
 }
 export interface ProductsRequestQuery {
     id?: string; // Product ID to fetch specific product, or "quantity" for quantity product

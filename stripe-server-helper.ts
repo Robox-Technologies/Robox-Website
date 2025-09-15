@@ -101,7 +101,7 @@ function makeProductObject(product: stripe.Product, price: stripe.Price, banner?
         return undefined;
     }
     const displayStatus = displayStatusMap[status] ?? "Unknown Status";
-
+    
     return {
         name: product.name,
         internalName: product.name.replaceAll(" ", "-").replaceAll("/", "").toLowerCase(), // Use this for filenames
@@ -114,7 +114,8 @@ function makeProductObject(product: stripe.Product, price: stripe.Price, banner?
         item_id: product.id,
         status: status,
         displayStatus: displayStatus,
-        weight: Number(product.metadata.weight ?? defaultWeight)
+        weight: Number(product.metadata.weight ?? defaultWeight),
+        unitVolume: Number(product.metadata.unitVolume ?? 0)
     };
 }
 
