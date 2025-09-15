@@ -270,10 +270,7 @@ class USBCommunication {
                 this.currentReader.releaseLock();
                 await this.currentReadableStreamClosed?.catch(() => {});
             } catch {
-                this.parent.emit({
-                    event: "error",
-                    options: { message: "Could not close Pico reader" }
-                });
+                return
             }
         }
     
@@ -283,10 +280,7 @@ class USBCommunication {
                 this.currentWriter.releaseLock();
                 await this.currentWriterStreamClosed?.catch(() => {});
             } catch {
-                this.parent.emit({
-                    event: "error",
-                    options: { message: "Could not close Pico writer" }
-                });
+                return
             }
         }
     

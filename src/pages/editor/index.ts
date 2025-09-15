@@ -74,10 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
         project = getProject(workspaceId)
     }
     else {
-        showToast("error", "No Project Selected", "Please select a project to edit.", "infinite");
+        showToast("error", "No Project Selected", "Please select a project to edit.", 5000);
     }
     if (!project) {
-        showToast("error", "Project Not Found", "The specified project could not be found.", "infinite");
+        showToast("error", "Project Not Found", "The specified project could not be found.", 5000);
     }
 
     // Control + scroll for zoom,
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
         postBlocklyWSInjection()
     }
     else {
-        showToast("warning", "Browser Incompatibility", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ");
+        showToast("warning", "Browser Incompatibility", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ", 5000);
 
         const connectionManagment = document.getElementById("connection-management")
         const downloadRoboxManagment = document.getElementById("code-download-robox-button")

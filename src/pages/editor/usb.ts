@@ -11,6 +11,7 @@ from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
 from machine import Pin, Timer
 import time
 import json
+import sys
 ENV_LED = Pin(25, Pin.OUT)
 line = LineSensors()
 left_motor_polarity = right_motor_polarity = -1
@@ -19,9 +20,10 @@ ultrasonic = UltrasonicSensor()
 def generatePrint(typ, message):
     jsmessage = {"type": typ, "message": message}
     return json.dumps(jsmessage)
+try:
+    color_sensor = ColorSensor()
 except Exception:
     generatePrint("error", "Cannot connect to colour sensor, is it on?")
-    exit()
 motors = Motors()
 motor_speed = 60
 `
@@ -91,7 +93,6 @@ export function postBlocklyWSInjection() {
         if (connectionManagment.getAttribute("loading") === "true") return
         pico.restart()
         connectionManagment.setAttribute("loading",  "true")
-        clearConsole()
     })
     runButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
@@ -110,7 +111,7 @@ export function postBlocklyWSInjection() {
 
         const picoEvent = event as CustomEvent
         console.error("Pico Error: ", event)
-        showToast("error", "Pico Error", sanitizeHtml(picoEvent.detail.message));
+        showToast("error", "Pico Error", `An error occurred while communicating with the Pico. Please check your connection and try again. \nError: ${sanitizeHtml(picoEvent.detail.message)}`, 5000);
     })
     pico.startupConnect()
 
