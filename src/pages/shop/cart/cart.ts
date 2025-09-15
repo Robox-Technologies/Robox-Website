@@ -4,6 +4,8 @@ import { formatPrice } from "@root/payment/stripe-shared-helper"
 
 import { productThumbnails } from "@root/cache";
 
+
+
 const availableHolder = document.querySelector("#available-section")
 const preorderHolder = document.querySelector("#preorder-section")
 
