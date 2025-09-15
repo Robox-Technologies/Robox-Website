@@ -94,14 +94,17 @@ export function checkPasswordRequirements(password: string): boolean | string {
     const problems: string[] = [] // an array of strings to hold problem descriptions
 
     // if the password equals null or is less than 8 characters long, append "be at least 8 characters long" to the problems array
+    // this is a existence check
     if (!password || password.length < 8) {
         problems.push("be at least 8 characters long");
     }
     // if the password does not contain at least one uppercase letter, append "contain at least one uppercase letter" to the problems array
+    // this is a range check
     if (!/[A-Z]/.test(password)) {
         problems.push('contain at least one uppercase letter');
     }
     // if the password does not contain at least one lowercase letter, append "contain at least one lowercase letter" to the problems array
+    // this is a range check
     if (!/[a-z]/.test(password)) {
         problems.push('contain at least one lowercase letter');
     }
@@ -110,6 +113,7 @@ export function checkPasswordRequirements(password: string): boolean | string {
         problems.push('contain at least one number');
     }
     // if the password does not contain at least one special character, append "contain at least one special character" to the problems array
+    // this is a range check kind of
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
         problems.push('contain at least one special character');
     }
@@ -670,10 +674,12 @@ export async function getClassroomPermissions(classroomId: string, userId: strin
         if (owner === userId) return 'owner';
 
         // check if the user is in the list of teachers
+        // this is a type check
         const teachers: string[] = Array.isArray(classroom?.teachers) ? classroom.teachers : [];
         if (teachers.includes(userId)) return 'teacher';
 
         // check if the user is in the list of students
+        // this is a type check
         const students: string[] = Array.isArray(classroom?.students) ? classroom.students : [];
         if (students.includes(userId)) return 'student';
 
@@ -759,7 +765,7 @@ export async function headerAuth() {
             accountButton.style.display = 'inline-flex'
             mobileLoginButton.style.display = 'none'
             
-            const userData = await getCurrentUserData()
+            const userData = await getCurrentUserData();
             const displayName = userData.display_name
             const firstName = userData?.first_name
             const email = userData?.full_name
