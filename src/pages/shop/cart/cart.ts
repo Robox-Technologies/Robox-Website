@@ -1,10 +1,14 @@
 import { getCart, removeCartItem, setCartItem } from "@root/payment/cart"
 import { renderCart } from "@root/payment/shop"
 import { formatPrice } from "@root/payment/stripe-shared-helper"
+
+import { productThumbnails } from "@root/cache";
+
 const availableHolder = document.querySelector("#available-section")
 const preorderHolder = document.querySelector("#preorder-section")
 
 const cartItemElement: HTMLTemplateElement = document.querySelector("#cart-item")
+
 
 // @ts-expect-error Fetch from HTML
 const localProducts = products;
@@ -52,10 +56,13 @@ function renderPreview() {
         const priceElement = clone.querySelector(".cart-item-text-price") as HTMLSpanElement
         const quantityInput = clone.querySelector(".cart-quantity") as HTMLInputElement
         const imageElement = clone.querySelector(".cart-item-photo") as HTMLImageElement
-        
-        const productImage = document.getElementById(`hidden-${cachedProduct.internalName}`) as HTMLImageElement;
-        imageElement.src = productImage.src;
-        imageElement.alt = productImage.alt;
+        console.log(product, cachedProduct)
+       const thumb = productThumbnails[cachedProduct["internalName"]];
+        if (thumb) {
+            imageElement.src = thumb;
+        } else {
+            console.warn(`No thumbnail found for ${cachedProduct["internalName"]}`);
+        }
         
         titleElement.textContent = name
         priceElement.textContent = `${price}/each`
