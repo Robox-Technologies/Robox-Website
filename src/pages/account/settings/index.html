@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- links to other files -->
     <%~ include('src/templates/partials/metadata.html') %>
     <link href="@root/root.scss" rel="stylesheet">
     <link href="./index.scss" rel="stylesheet">
 </head>
 <body>
+    <!-- use header partial -->
     <%~ include('@partials/header/header.html') %>
+    <!-- container for the whole settings page -->
     <div class="settings-page">
+        <!-- page menu on the side -->
         <div class="side-menu">
             <button class="menu-item active" id="general-button">General</button>
             <button class="menu-item" id="account-button">Account</button>
@@ -17,17 +21,21 @@
             <button class="menu-item" id="advanced-button">Advanced</button>
             <button class="menu-item sign-out" id="logout-button">Sign Out</button>
         </div>
+        <!-- content for the selected setting -->
         <div class="content" id="settingsContent">
             <h1 class="title">Account Settings</h1>
+            <!-- general user information -->
             <div class="general-page-container page-container" style="display: none;">
                 <div class="input-container two-column">
                     <div class="column">
                         <div class="input-group">
                             <label for="firstNameInput" class="input-label">First Name</label>
+                            <!-- text input -->
                             <input class="text-input" type="text" placeholder="" id="first-name-input">
                         </div>
                         <div class="input-group">
                             <label for="School" class="input-label">School</label>
+                            <!-- dropdown -->
                             <select class="dropdown-input">
                                 <option value="smgs"> St Michael's Grammar School</option>
                                 <option value="wesley">Wesley College</option>
@@ -36,6 +44,7 @@
                         </div>
                         <div class="input-group">
                             <label for="School" class="input-label">Pronouns</label>
+                            <!-- another dropdown -->
                             <select class="dropdown-input">
                                 <option value="na">I would prefer not to share.</option>
                                 <option value="he-him">He/Him</option>
@@ -48,10 +57,12 @@
                     <div class="column">
                         <div class="input-group">
                             <label for="lastNameInput" class="input-label">Last Name</label>
+                            <!-- text input for last name -->
                             <input class="text-input" type="text" placeholder="" id="last-name-input">
                         </div>
                         <div class="input-group">
                             <label for="School" class="input-label">Location</label>
+                            <!-- dropdown -->
                             <select class="dropdown-input">
                                 <option value="aus">Australia</option>
                                 <option value="nz">New Zealand</option>
@@ -60,12 +71,14 @@
                         </div>
                         <div class="input-group">
                             <label for="emailInput" class="input-label">Email</label>
+                            <!-- text input for email -->
                             <input class="text-input" type="text" placeholder="" id="email-input">
                         </div>
                     </div>
                 </div>
                 <button class="ctaButton save-settings" id="saveSettingsButton">Save Settings</button>
             </div>
+            <!-- buttons for changing account type -->
             <div class="account-page-container" style="display: none;">
                 <div class="input-container two-column">
                     <div class="column">
@@ -82,15 +95,19 @@
                     </div>
                 </div>
             </div>
+            <!-- appearance settings -->
             <div class="appearance-page-container" style="display: none;">
                 <p>Appearance settings content goes here.</p>
             </div>
+            <!-- notification preferences -->
             <div class="notification-page-container" style="display: none;">
                 <p>Notification settings content goes here.</p>
             </div>
+            <!-- security settings-->
             <div class="security-page-container" style="display: none;">
                 <div class="input-container two-column">
                     <div class="column">
+                        <!-- password input field -->
                         <%~ include('@partials/text-input.html', {
                             containerId: "",
                             inputId: "password-input",
@@ -104,6 +121,7 @@
                         }) %>
                     </div>
                     <div class="column">
+                        <!-- confirm new password -->
                         <%~ include('@partials/text-input.html', {
                             containerId: "",
                             inputId: "confirm-password-input",
@@ -118,10 +136,11 @@
                     </div>
                 </div>
             </div>
+            <!-- delete account button -->
             <div class="advanced-page-container" style="display: none;">
                 <button class="ctaButton primaryButton" id="delete-account-button">Delete Account</button>
 
-                <!-- Delete account confirmation modal -->
+                <!-- pop up partial to confirm deleting the account -->
                 <%~ include('@partials/modal/modal.html', {
                     id: "delete-account-modal",
                     class: "confirmation-modal",
@@ -137,6 +156,7 @@
         </div>
     </div>
 
+    <!-- footer -->
     <%~ include('@partials/footer/footer.html') %>
     <script src="./index.ts"></script>
 </body>
