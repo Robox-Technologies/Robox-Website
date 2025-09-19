@@ -28,11 +28,17 @@
             <div class="general-page-container page-container" style="display: none;">
                 <div class="input-container two-column">
                     <div class="column">
-                        <div class="input-group">
-                            <label for="firstNameInput" class="input-label">First Name</label>
-                            <!-- text input -->
-                            <input class="text-input" type="text" placeholder="" id="first-name-input">
-                        </div>
+                        <%~ include('@partials/text-input.html', {
+                            containerId: "",
+                            inputId: "first-name-input",
+                            class: "",
+                            label: 'First Name',
+                            placeholder: '',
+                            required: false,
+                            autocomplete: 'given-name',
+                            errorId: 'first-name-error',
+                            type: 'text'
+                        }) %>
                         <div class="input-group">
                             <label for="School" class="input-label">School</label>
                             <!-- dropdown -->
@@ -55,11 +61,17 @@
                         </div>
                     </div>
                     <div class="column">
-                        <div class="input-group">
-                            <label for="lastNameInput" class="input-label">Last Name</label>
-                            <!-- text input for last name -->
-                            <input class="text-input" type="text" placeholder="" id="last-name-input">
-                        </div>
+                        <%~ include('@partials/text-input.html', {
+                            containerId: "",
+                            inputId: "last-name-input",
+                            class: "",
+                            label: 'Last Name',
+                            placeholder: '',
+                            required: false,
+                            autocomplete: 'family-name',
+                            errorId: 'last-name-error',
+                            type: 'text'
+                        }) %>
                         <div class="input-group">
                             <label for="School" class="input-label">Location</label>
                             <!-- dropdown -->
@@ -69,11 +81,17 @@
                                 <option value="usa">United States of America</option>
                             </select>
                         </div>
-                        <div class="input-group">
-                            <label for="emailInput" class="input-label">Email</label>
-                            <!-- text input for email -->
-                            <input class="text-input" type="text" placeholder="" id="email-input">
-                        </div>
+                        <%~ include('@partials/text-input.html', {
+                            containerId: "",
+                            inputId: "email-input",
+                            class: "",
+                            label: 'Email',
+                            placeholder: '',
+                            required: false,
+                            autocomplete: 'email',
+                            errorId: 'email-error',
+                            type: 'email'
+                        }) %>
                     </div>
                 </div>
                 <button class="ctaButton save-settings" id="saveSettingsButton">Save Settings</button>
