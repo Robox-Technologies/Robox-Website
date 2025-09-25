@@ -1,11 +1,10 @@
-import { isValidUUID, isValidClassroom, getCurrentUserData, getClassroomPermissions, authCheck, getBasicUserData, getFromDatabase} from "@root/account";
+import { authCheck, getCurrentUserData, Classroom, getFromDatabase } from "@root/account";
+let currentUser: any | null = null;
+let classroom: Classroom | null = null;
+let classroomRole: string | null = null; // 'owner' | 'teacher' | 'student' | null
+let currentPage: string = 'my-class'
 
-let user: any = null;
-let classroom: any = null;
-let studentsData: any[] = [];
-let classroomRole: string | null = null;
-
-function initUI() {
+async function initUI() {
     // Containers
     const titleElement = document.querySelector('h1.title') as HTMLHeadingElement
     // Student Pages
@@ -36,25 +35,26 @@ function initUI() {
     }
 
     function updateButtons() {
-        console.log('Updating buttons based on classroom role:', classroomRole);
         if (!classroomRole) return;
 
+        const url = new URL(window.location.href);
+
         if (classroomRole === 'teacher' || classroomRole === 'owner') {
-            currentPage = 'home';
-            if (myClassButton) myClassButton.style.display = 'none'
-            if (studentSettingsButton) studentSettingsButton.style.display = 'none'
-            if (homeButton) homeButton.style.display = 'block'
-            if (studentsButton) studentsButton.style.display = 'block'
-            if (learningButton) learningButton.style.display = 'block'
-            if (settingsButton) settingsButton.style.display = 'block'
-        } else if (classroomRole === 'student') {
-            currentPage = 'my-class';
-            if (homeButton) homeButton.style.display = 'none'
-            if (studentsButton) studentsButton.style.display = 'none'
-            if (learningButton) learningButton.style.display = 'none'
-            if (settingsButton) settingsButton.style.display = 'none'
-            if (myClassButton) myClassButton.style.display = 'block'
-            if (studentSettingsButton) studentSettingsButton.style.display = 'block'
+            if (!url.searchParams.get("page") || currentPage === 'my-class' || currentPage === 'student-settings') currentPage = 'home';
+            if (myClassButton) myClassButton.style.display = 'none';
+            if (studentSettingsButton) studentSettingsButton.style.display = 'none';
+            if (homeButton) homeButton.style.display = 'block';
+            if (studentsButton) studentsButton.style.display = 'block';
+            if (learningButton) learningButton.style.display = 'block';
+            if (settingsButton) settingsButton.style.display = 'block';
+        } else {
+            if (!url.searchParams.get("page") || currentPage === 'home' || currentPage === 'students' || currentPage === 'learning' || currentPage === 'settings') currentPage = 'my-class';
+            if (homeButton) homeButton.style.display = 'none';
+            if (studentsButton) studentsButton.style.display = 'none';
+            if (learningButton) learningButton.style.display = 'none';
+            if (settingsButton) settingsButton.style.display = 'none';
+            if (myClassButton) myClassButton.style.display = 'block';
+            if (studentSettingsButton) studentSettingsButton.style.display = 'block';
         }
     }
     function switchHighlightedButton(page: keyof typeof buttonMap) {
@@ -109,6 +109,10 @@ function initUI() {
     function loadPage(page: keyof typeof buttonMap) {
         hideAllContainers()
         switchHighlightedButton(page)
+        
+        const url = new URL(window.location.href);
+        url.searchParams.set('page', page);
+        window.history.pushState({}, '', url);
 
         switch (page) {
             case 'my-class':
@@ -209,9 +213,10 @@ async function getClassroomData(id: string) {
     await authCheck();
     const url = new URL(window.location.href);
     const id = url.searchParams.get("id") || "";
-    await getClassroomData(id);
-    const ok = await checkClassroomAccess(id);
+    currentPage = url.searchParams.get("page") || 'my-class';
+    await loadClassroom(id);
+    const ok = checkClassroomAccess();
     if (ok) {
-        initUI();
+        await initUI();
     }
 })();
