@@ -1,0 +1,17 @@
+@use '@root/variables';
+
+.dropdown-input {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 16px;
+    border: 1.4px solid variables.$themeBlue;
+    width: 100%;
+    height: fit-content;
+    align-self: flex-start;
+    align-items: flex-start;
+    text-align: left;
+    display: flex;
+    min-height: 40px;
+    box-sizing: border-box;
+    font-family: 'Nunito', sans-serif;
+}

@@ -1,0 +1,11 @@
+<link href="@partials/dropdown-input/dropdown-input.scss" rel="stylesheet">
+
+<div class="input-container <%= it.class ? it.class : '' %>" id="<%= it.containerId %>">
+  <label for="<%= it.name %>" class="input-label"><%= it.label ? it.label : '' %><p class="required" style="display: <%= it.required ? 'inline' : 'none' %>">*</p></label>
+  <select class="dropdown-input">
+      <% value.forEach(function(opt) { %>
+        <option value="<%= opt.value %>">
+        <%= opt.label %>
+      <% }) %>
+  </select>
+</div>
