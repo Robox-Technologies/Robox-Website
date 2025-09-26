@@ -26,7 +26,7 @@
             <h1 class="title">Account Settings</h1>
             <!-- general user information -->
             <div class="general-page-container page-container" style="display: none;">
-                <div class="input-container two-column">
+                <div class="two-column">
                     <div class="column">
                         <%~ include('@partials/text-input.html', {
                             containerId: "",
@@ -39,26 +39,26 @@
                             errorId: 'first-name-error',
                             type: 'text'
                         }) %>
-                        <div class="input-group">
-                            <label for="School" class="input-label">School</label>
-                            <!-- dropdown -->
-                            <select class="dropdown-input">
-                                <option value="smgs"> St Michael's Grammar School</option>
-                                <option value="wesley">Wesley College</option>
-                                <option value="mgs">Melbourne Grammar School</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label for="School" class="input-label">Pronouns</label>
-                            <!-- another dropdown -->
-                            <select class="dropdown-input">
-                                <option value="na">I would prefer not to share.</option>
-                                <option value="he-him">He/Him</option>
-                                <option value="she-her">She/Her</option>
-                                <option value="they-them">They/Them</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
+                        <%~ include('@partials/dropdown-input/dropdown-input.html', {
+                            containerId: "country-dropdown",
+                            required: false,
+                            label: "Country",
+                            value: [
+                                {label:"Australia", value:"au"},
+                                {label:"New Zealand", value:"nz"},
+                                {label:"United States", value:"us"},
+                                {label:"United Kingdom", value:"gb"},
+                                {label:"Canada", value:"ca"},
+                                {label:"Germany", value:"de"},
+                                {label:"France", value:"fr"},
+                                {label:"Japan", value:"jp"},
+                                {label:"China", value:"cn"},
+                                {label:"India", value:"in"},
+                                {label:"Brazil", value:"br"},
+                                {label:"South Africa", value:"za"},
+                            ],
+                            placeholder: "Select a Country",
+                        }) %>
                     </div>
                     <div class="column">
                         <%~ include('@partials/text-input.html', {
@@ -72,15 +72,6 @@
                             errorId: 'last-name-error',
                             type: 'text'
                         }) %>
-                        <div class="input-group">
-                            <label for="School" class="input-label">Location</label>
-                            <!-- dropdown -->
-                            <select class="dropdown-input">
-                                <option value="aus">Australia</option>
-                                <option value="nz">New Zealand</option>
-                                <option value="usa">United States of America</option>
-                            </select>
-                        </div>
                         <%~ include('@partials/text-input.html', {
                             containerId: "",
                             inputId: "email-input",

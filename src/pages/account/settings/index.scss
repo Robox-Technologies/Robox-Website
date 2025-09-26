@@ -23,6 +23,15 @@
     display: flex;
 }
 
+.input-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    margin-bottom: 8px;
+    position: relative;
+}
+
 .content {
     width: 100%;
     height: fit-content;
