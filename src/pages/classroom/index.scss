@@ -14,7 +14,7 @@ h1.title {
 
 .students-list {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
     background-color: variables.$tone2;
     padding: 20px;
