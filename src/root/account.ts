@@ -208,6 +208,7 @@ export async function signOut(redirectTo: string = '/') {
     } finally {
         // clean up any supabase related items from the browsers local storage
         try {
+            localStorage.removeItem('robox-auth-cache');
             Object.keys(localStorage) // get all keys in local storage
                 .filter(k => k.startsWith('supabase') || k.startsWith('sb-')) // find keys that start with 'supabase' or 'sb-' (these are used by supabase)
                 .forEach(k => localStorage.removeItem(k)); // for each key found, remove it from localStorage
@@ -746,44 +747,56 @@ export async function joinClassroom(classCode: string) {
 
 // updates the website's header to show either a "Login" button or the user's name and an "Account" button
 // this runs on every page load
-// TODO: make the auth state local storage to prevent unnecessary requests and speed up the header update
 export async function headerAuth() {
-    const updateHeaderAuthState = async () => {
-        const loginButton= document.getElementById('header-login-button') as HTMLButtonElement;
-        const accountButton = document.getElementById('header-loggedin-button') as HTMLButtonElement;
-        const usernameElement= document.getElementById('header-username') as HTMLDivElement;
-        const mobileLoginButton = document.getElementById('mobile-header-login-button') as HTMLButtonElement;
-        
-        if (!loginButton || !accountButton || !usernameElement || !mobileLoginButton) {
-            return;
-        }
+    const loginButton = document.getElementById('header-login-button') as HTMLButtonElement;
+    const accountButton = document.getElementById('header-loggedin-button') as HTMLButtonElement;
+    const usernameElement = document.getElementById('header-username') as HTMLDivElement;
+    const mobileLoginButton = document.getElementById('mobile-header-login-button') as HTMLButtonElement;
 
-        // check if the user is logged in
-        if (await isAuthenticated()) {
-            // if logged in, show account info and hide login button
-            loginButton.style.display = 'none'
-            accountButton.style.display = 'inline-flex'
-            mobileLoginButton.style.display = 'none'
-            
-            const userData = await getCurrentUserData();
-            const displayName = userData.display_name
-            const firstName = userData?.first_name
-            const email = userData?.full_name
-            usernameElement.textContent = displayName || firstName || email || 'User'
-        } else {
-            // if not logged in, show login button and hide account info
-            loginButton.style.display = 'inline-flex'
-            accountButton.style.display = 'none'
-            usernameElement.textContent = ''
-
-            mobileLoginButton.style.display = 'inline-flex'
-        }
+    if (!loginButton || !accountButton || !usernameElement || !mobileLoginButton) {
+        return;
     }
 
-    // run this function once the page content has loaded
-    document.addEventListener('DOMContentLoaded', async () => {
-        await updateHeaderAuthState()
-    })
+    const updateHeaderUI = (userData: any) => {
+        if (userData) {
+            loginButton.style.display = 'none';
+            accountButton.style.display = 'inline-flex';
+            mobileLoginButton.style.display = 'none';
+            const displayName = userData.display_name;
+            const firstName = userData?.first_name;
+            const email = userData?.full_name;
+            usernameElement.textContent = displayName || firstName || email || 'User';
+        } else {
+            loginButton.style.display = 'inline-flex';
+            accountButton.style.display = 'none';
+            mobileLoginButton.style.display = 'inline-flex';
+            usernameElement.textContent = '';
+        }
+    };
+
+    const cacheKey = 'robox-auth-cache';
+
+    const cachedData = localStorage.getItem(cacheKey);
+    if (cachedData) {
+        updateHeaderUI(JSON.parse(cachedData));
+    }
+
+    const revalidate = async () => {
+        let freshData = null;
+        if (await isAuthenticated()) {
+            freshData = await getCurrentUserData();
+        }
+
+        if (freshData) {
+            localStorage.setItem(cacheKey, JSON.stringify(freshData));
+        } else {
+            localStorage.removeItem(cacheKey);
+        }
+        
+        updateHeaderUI(freshData);
+    };
+
+    document.addEventListener('DOMContentLoaded', revalidate);
 }
 
 // generates a random integer between a min and max value
