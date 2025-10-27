@@ -44,7 +44,7 @@
     "jsdom": "^26.1.0",
     "juice": "^11.0.1",
     "memory-cache": "^0.2.0",
-    "nodemailer": "^7.0.4",
+    "nodemailer": "^7.0.7",
     "parse5": "^7.3.0",
     "path-to-regexp": "^8.2.0",
     "payload": "^3.52.0",
