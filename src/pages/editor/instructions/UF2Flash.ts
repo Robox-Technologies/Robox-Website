@@ -67,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const stage2Modal = document.querySelector("dialog#bootsel-flash") as HTMLDialogElement | null;
     const fileOpenButton = stage2Modal?.querySelector("button#open-file") as HTMLButtonElement | null;
     if (!stage2Modal || !fileOpenButton) return;
-    console.log(2)
     fileOpenButton.addEventListener("click", async () => {
         if (stage2Modal.hasAttribute("loading")) return; // Prevent multiple clicks
         // Get the UF2 file from /public/uf2/latest.uf2
@@ -124,6 +123,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!bootselSpin) return;
         stage1Modal.setAttribute("loading", "");
         pico.bootsel();
+        // Check if its a windows machine
+        const isWindows = navigator.userAgent.indexOf("Windows") !== -1;
+        if (isWindows) {
+            // On windows the webUSB API cannot access the device if it is not in BOOTSEL mode
+            stage1Modal.removeAttribute("loading");
+            // Move to stage 2
+            stage1Modal.close();
+            return stage2Modal.showModal();
+        }
         setTimeout(async () => { // Set out a 1s delay to firmware check
             if (await detectBOOTSEL()) { // We are in bootsel mode
                 stage1Modal.removeAttribute("loading");
@@ -192,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     bootselFlashButton.addEventListener("click", async () => {
         if (!("serial" in navigator)) {
-            showToast("warning", "Browser Incompatibility", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ");
+            showToast("warning", "Browser Incompatibility", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ", 5000);
             return;
         }
         if (stage1Modal.hasAttribute("open")) {

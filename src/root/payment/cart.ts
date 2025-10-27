@@ -1,6 +1,7 @@
 //TODO: Remake this system (cache the product cost and get rid of weird funky quantity key)
 
 import { Product } from "~types/api"
+import { preloadThumbnails } from '@root/cache';
 
 interface Cart {
     quantity: number;
@@ -86,6 +87,18 @@ export function refreshCart() {
         cartElement.style.display = "none"
     }
 }
+document.addEventListener("DOMContentLoaded", () => {
+    const cartIcon = document.getElementById("cart");
+    let thumbnailsPreloaded = false; // ensure we only preload once
+    console.log("Cart icon found:", cartIcon);
+    cartIcon?.addEventListener("mouseenter", () => {
+        console.log("Preloading thumbnails");
+        if (!thumbnailsPreloaded) {
+            preloadThumbnails();
+            thumbnailsPreloaded = true;
+        }
+    });
+});
 //expects an object of quantity and id
 export function removeCartItem(productId: string): Cart {
     const cart = getCart()
