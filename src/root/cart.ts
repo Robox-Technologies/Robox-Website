@@ -1,7 +1,6 @@
 //TODO: Remake this system (cache the product cost and get rid of weird funky quantity key)
 
 import type { Product } from '~types/api';
-
 interface Cart {
     quantity: number;
     products: Record<string, { quantity: number; data: Product }>;

@@ -38,7 +38,11 @@ a {
 label > a {
     text-decoration: underline;
 }
-
+.fa-solid, .fa-brands, .fa-regular {
+    display: inline-block;
+    width: 1.25em;  /* reserve width */
+    height: 1.25em; /* reserve height */
+}
 * {
     box-sizing: border-box;
 }
