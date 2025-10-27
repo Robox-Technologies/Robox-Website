@@ -23,6 +23,8 @@
     "@blockly/field-colour": "^6.0.3",
     "@blockly/theme-modern": "^7.0.1",
     "@express-rate-limit/tsconfig": "^1.0.2",
+    "@fortawesome/fontawesome-svg-core": "^7.0.1",
+    "@fortawesome/free-solid-svg-icons": "^7.0.1",
     "@payloadcms/next": "^3.54.0",
     "@payloadcms/richtext-lexical": "^3.54.0",
     "@slate-serializers/html": "^2.2.3",

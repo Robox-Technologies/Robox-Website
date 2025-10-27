@@ -20,11 +20,17 @@
                 <div>
                     <p></p>
                 </div>
-                <i class="fa-solid fa-cart-shopping"></i>
+                <i class="fa-solid fa-cart-shopping fa-fw"></i>
             </a>
     
             <button class="hamburger" aria-label="Toggle menu"></button>
         </div>
+        <script>
+            let cart = JSON.parse(localStorage.getItem("cart"));
+            if (cart.products) {
+                document.getElementById("cart").style.display = "flex";
+            }
+        </script>
     </div>
 
     <div class="hamburgerMenu">
