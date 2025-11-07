@@ -29,6 +29,7 @@
     "@payloadcms/richtext-lexical": "^3.54.0",
     "@slate-serializers/html": "^2.2.3",
     "@stripe/stripe-js": "^7.4.0",
+    "@types/web-bluetooth": "^0.0.21",
     "axios": "^1.11.0",
     "blockly": "^12.1.0",
     "css-minimizer-webpack-plugin": "^7.0.2",
