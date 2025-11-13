@@ -382,8 +382,6 @@ button[calibrating]:hover {
 }
 #console {
     .modal-content {
-        min-height: 500px;
-        height: 600px;
         overflow-y: scroll;
         margin-top: auto;
         display: flex;
@@ -394,9 +392,6 @@ button[calibrating]:hover {
             margin-top: auto;
         }
     }
-    
-    height: 700px;
-    width: unset !important;    
 
 }
 
