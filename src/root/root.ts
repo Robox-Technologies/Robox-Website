@@ -26,7 +26,16 @@ import {faGraduationCap} from '@fortawesome/free-solid-svg-icons/faGraduationCap
 import {faAngleRight} from '@fortawesome/free-solid-svg-icons/faAngleRight';
 import {faAngleLeft} from '@fortawesome/free-solid-svg-icons/faAngleLeft';
 import {faCircleInfo} from '@fortawesome/free-solid-svg-icons/faCircleInfo';
-library.add(faTrash, faShoppingCart, faAngleLeft, faCircleInfo, faAngleRight, faGraduationCap, faCompass, faEllipsisVertical, faUpload, faSquareBinary, faPenToSquare, faExclamationCircle, faTerminal, faPlugCircleXmark, faSpinner, faXmark, faRotateRight, faRotateLeft, faDownload, faScrewdriverWrench, faMinus, faPlus, faEyeDropper, faGear, faChevronLeft, faChevronDown);
+import { faFlag } from '@fortawesome/free-solid-svg-icons/faFlag';
+import { faRepeat } from '@fortawesome/free-solid-svg-icons/faRepeat';
+import { faTableList } from '@fortawesome/free-solid-svg-icons/faTableList';
+import {faEye } from '@fortawesome/free-solid-svg-icons/faEye';
+import {faRobot} from '@fortawesome/free-solid-svg-icons/faRobot';
+import {faTruckMonster} from '@fortawesome/free-solid-svg-icons/faTruckMonster';
+import {faX} from '@fortawesome/free-solid-svg-icons/faX';
+import {faGears} from '@fortawesome/free-solid-svg-icons/faGears';
+
+library.add(faX, faGears, faEye, faRobot, faTruckMonster, faRepeat, faTableList, faFlag, faAngleLeft, faTrash, faShoppingCart, faAngleLeft, faCircleInfo, faAngleRight, faGraduationCap, faCompass, faEllipsisVertical, faUpload, faSquareBinary, faPenToSquare, faExclamationCircle, faTerminal, faPlugCircleXmark, faSpinner, faXmark, faRotateRight, faRotateLeft, faDownload, faScrewdriverWrench, faMinus, faPlus, faEyeDropper, faGear, faChevronLeft, faChevronDown);
 dom.watch(); // Replaces <i> tags with SVGs
 refreshCart()
 

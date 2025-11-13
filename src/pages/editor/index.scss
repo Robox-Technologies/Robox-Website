@@ -40,6 +40,15 @@ $downloadButtonSize: 60px;
     transition-property: width, margin-left;
     transition-duration: .5s;
 }
+#blockly-0 {
+    .extender {
+        transition-duration: 0.5s !important;
+    }
+    svg {
+        transition: unset !important;
+        transition-duration: 0.5s !important;
+    }
+}
 
 body {
     min-width: 870px;
