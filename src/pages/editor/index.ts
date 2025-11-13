@@ -163,11 +163,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event.isUiEvent) return;
         saveBlockly(workspaceId, workspace);
     });
-    //Test prints
-    setInterval(() => {
-        printToConsole("Auto-saving project...");
-    }, 5000);
-
     // Extend first category
     const firstCategory = document.querySelector(".blocklyToolboxCategory")
     const icon = firstCategory.querySelector(".categoryIcon") as HTMLElement;
