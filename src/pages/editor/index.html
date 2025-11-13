@@ -22,6 +22,9 @@
         </div>
         
         <div id="buttons">
+            <button id="robox-extension-button" class="button standard-button">
+                <i class="fa-solid fa-boxes-stacked"></i>
+            </button>
             <button id="robox-settings-button" class="button standard-button">
                 <i class="fa-solid fa-gear"></i>
             </button>
@@ -142,6 +145,13 @@
         ],
         buttons: [
             '<button id="calibrate-outcome-button" class="button standard-button">Retry<i class="fa-solid fa-spinner fa-spin"></i></button>',
+        ],
+    }) %>
+    <%~ include('@partials/modal/modal.html', {
+        id: "extension-modal",
+        title: 'Extensions', 
+        content: [
+            "<p></p>",
         ],
     }) %>
 </body>

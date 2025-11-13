@@ -21,7 +21,7 @@ import "./instructions/UF2Flash"
 import "./instructions/colourCalibration"
 
 import { showToast } from '@root/toast';
-import { printToConsole } from './console';
+
 
 
 
@@ -192,6 +192,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!dialog || dialog.open ) return
         dialog.show()
         event.stopPropagation()
+    })
+    const extensionButton = document.getElementById("robox-extension-button")
+    const extensionModal = document.getElementById("extension-modal") as HTMLDialogElement | null
+    if (!extensionButton || !extensionModal) return;
+    extensionButton?.addEventListener("click", () => {
+        extensionModal.showModal()
     })
     workspace.addChangeListener(Blockly.Events.disableOrphans);
 }) 
