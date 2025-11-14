@@ -525,9 +525,18 @@ $settingsToolbarWidth: 200px;
     .modal-content {
         flex-direction: row;
         flex-wrap: wrap;
-        justify-content: flex-start;
+        justify-content: center;
         align-content: flex-start;
         gap: variables.$standardGap;
+    }
+    .card {
+        width: 30%;
+        .card-image {
+            min-width: 100px;
+            object-fit: contain;
+            padding: variables.$standardGap;
+            background-color: variables.$themeBlue;
+        }
     }
 }
 .bootsel[loading] {
