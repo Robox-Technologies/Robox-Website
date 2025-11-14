@@ -193,7 +193,13 @@ function isProtoPollution(key: string): boolean {
     const forbiddenKeys = ["__proto__", "constructor", "prototype"];
     return forbiddenKeys.includes(key);
 }
+export function getProjectExtensions(uuid: string): Extension | null {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
+    const project = getProject(uuid);
+    if (!project) return null;
+    return project.extensions || null;
+}
 function isValidUUID(uuid: string): boolean {
     if (isProtoPollution(uuid)) return false;
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
