@@ -1,4 +1,7 @@
 @use '@root/variables';
+[enabled] > .check svg {
+    visibility: visible;
+}
 .check {
     position: absolute;
     border-radius: 50%;
