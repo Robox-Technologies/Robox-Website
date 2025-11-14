@@ -1,0 +1,14 @@
+@use '@root/variables';
+.check {
+    position: absolute;
+    border-radius: 50%;
+    right: 10px;
+    top: 10px;
+    border: variables.$strokeSize white solid;
+
+    svg {
+        visibility: hidden;
+        padding: 2px;
+        color: white;
+    }
+}

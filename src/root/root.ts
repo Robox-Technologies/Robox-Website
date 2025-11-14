@@ -36,8 +36,9 @@ import {faX} from '@fortawesome/free-solid-svg-icons/faX';
 import {faCircleXmark} from '@fortawesome/free-solid-svg-icons/faCircleXmark';
 import {faGears} from '@fortawesome/free-solid-svg-icons/faGears';
 import { faBoxesStacked } from '@fortawesome/free-solid-svg-icons/faBoxesStacked';
+import { faCheck } from '@fortawesome/free-solid-svg-icons/faCheck';
 
-library.add(faBoxesStacked, faCircleXmark, faX, faGears, faEye, faRobot, faTruckMonster, faRepeat, faTableList, faFlag, faAngleLeft, faTrash, faShoppingCart, faAngleLeft, faCircleInfo, faAngleRight, faGraduationCap, faCompass, faEllipsisVertical, faUpload, faSquareBinary, faPenToSquare, faExclamationCircle, faTerminal, faPlugCircleXmark, faSpinner, faXmark, faRotateRight, faRotateLeft, faDownload, faScrewdriverWrench, faMinus, faPlus, faEyeDropper, faGear, faChevronLeft, faChevronDown);
+library.add(faCheck, faBoxesStacked, faCircleXmark, faX, faGears, faEye, faRobot, faTruckMonster, faRepeat, faTableList, faFlag, faAngleLeft, faTrash, faShoppingCart, faAngleLeft, faCircleInfo, faAngleRight, faGraduationCap, faCompass, faEllipsisVertical, faUpload, faSquareBinary, faPenToSquare, faExclamationCircle, faTerminal, faPlugCircleXmark, faSpinner, faXmark, faRotateRight, faRotateLeft, faDownload, faScrewdriverWrench, faMinus, faPlus, faEyeDropper, faGear, faChevronLeft, faChevronDown);
 dom.watch(); // Replaces <i> tags with SVGs
 refreshCart()
 

@@ -530,12 +530,16 @@ $settingsToolbarWidth: 200px;
         gap: variables.$standardGap;
     }
     .card {
+        flex: 1 1 0;
         width: 30%;
         .card-image {
             min-width: 100px;
             object-fit: contain;
-            padding: variables.$standardGap;
+            padding: 5px;
             background-color: variables.$themeBlue;
+        }
+        .card-description {
+            font-size: small;
         }
     }
 }
