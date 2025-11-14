@@ -1,10 +1,12 @@
 import dayjs from 'dayjs';
 import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
-import { Projects, Project } from "~types/projects";
+import { Projects, Project, Extension } from "~types/projects";
 
 import { workspaceToPng_ } from './screenshot';
 import { getPythonCode } from '@pages/editor/usb';
+
+import { ExtensionType } from '~types/projects';
 export function getProjects(): Projects {
     const projectsRaw = localStorage.getItem("roboxProjects")
     let projects = Object.create(null);
@@ -40,9 +42,17 @@ export function importProject(project: Project): void {
         name: project.name,
         time: dayjs(),
         workspace: project.workspace,
-        thumbnail: project.thumbnail || ""
+        thumbnail: project.thumbnail || "",
+        extensions: project.extensions || getDefaultExtensions(),
     };
     localStorage.setItem("roboxProjects", JSON.stringify(projects));
+}
+function getDefaultExtensions(): Extension {
+    const extensions: Extension = {} as Extension;
+    Object.values(ExtensionType).forEach((ext) => {
+        extensions[ext] = false;
+    });
+    return extensions;
 }
 export function createProject(name: string): string {
     const projects = getProjects()
@@ -50,7 +60,7 @@ export function createProject(name: string): string {
 
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
-    projects[uuid] = { name: name, time: dayjs(), workspace: {}, thumbnail: "" }
+    projects[uuid] = { name: name, time: dayjs(), workspace: {}, thumbnail: "", extensions: getDefaultExtensions() }
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
     return uuid
 }
@@ -137,7 +147,14 @@ export function saveBlocklyCompressed(projectRaw: string) {
     localStorage.setItem("roboxProjects", projectData)
     return projectData
 }
+export function toggleExtension(uuid: string, extension: ExtensionType, enabled: boolean) {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
+    const projects = getProjects()
+    if (!projects[uuid]) throw new Error("Project does not exist")
+    projects[uuid]["extensions"][extension] = enabled
+    localStorage.setItem("roboxProjects", JSON.stringify(projects))
+}
 export function renameProject(uuid: string, newName:string) {
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 

@@ -1,10 +1,10 @@
 import dayjs from "dayjs"
-const enum ExtensionType {
-    SERVO,
-    ADVANCED,
-    DISPLAY,
+export enum ExtensionType {
+    SERVO = "servo",
+    ADVANCED = "advanced",
+    DISPLAY = "display",
 }
-type Extension = {
+export type Extension = {
     [key in ExtensionType]: boolean
 }
 export type Project = {
