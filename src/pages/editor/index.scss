@@ -521,6 +521,15 @@ $settingsToolbarWidth: 200px;
     font-size: 20px;
     cursor: pointer;
 }
+#extension-modal {
+    .modal-content {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-content: flex-start;
+        gap: variables.$standardGap;
+    }
+}
 .bootsel[loading] {
     button.calibrate-button {
         font-size: 0;
