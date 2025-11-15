@@ -8,12 +8,10 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
-// create a client instance to call auth methods supabase stuff
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-// get page elements and put them in variables for easy access
 const titleElement = document.querySelector('h1.title') as HTMLHeadingElement
-const emailInput = document.getElementById('email') as HTMLInputElement
+const emailInput = document.getElementById('email-input') as HTMLInputElement
 const passwordInput = document.getElementById('password') as HTMLInputElement
 const emailContainer = document.querySelector('.email-container') as HTMLDivElement
 const passwordContainer = document.querySelector('.password-container') as HTMLDivElement
@@ -22,15 +20,11 @@ const passwordErrorMsg = document.getElementById('password-error-msg') as HTMLPa
 const loginButton = document.getElementById('login-button') as HTMLButtonElement
 const backButton = document.getElementById('back-button') as HTMLButtonElement
 
-// currentStep can only be 'email' or 'password'
-// userEmail is a plain string to hold the email
 let currentStep: 'email' | 'password' = 'email'
 let userEmail = ''
 
-// check for people who are already logged in get redirected
 authCheck('guest', true)
 
-// show an inline message next to the current input area
 function showError(message: string) {
     if (currentStep === 'email') {
         emailErrorMsg.innerHTML = message
@@ -41,13 +35,11 @@ function showError(message: string) {
     }
 }
 
-// hide all error messages
 function hideError() {
     emailErrorMsg.style.display = 'none'
     passwordErrorMsg.style.display = 'none'
 }
 
-// switch the UI to the password step
 function showPasswordStep() {
     currentStep = 'password'
 
@@ -63,7 +55,6 @@ function showPasswordStep() {
     hideError()
 }
 
-// switch back to the email step when the user wants to change their email
 function showEmailStep() {
     currentStep = 'email'
     
@@ -79,7 +70,6 @@ function showEmailStep() {
     hideError()
 }
 
-// handle the first step where we verify the email exists on the server
 async function handleEmailStep() {
     const email = emailInput.value.trim()
     hideError()
@@ -90,7 +80,6 @@ async function handleEmailStep() {
     }
     
     const emailExists = await isValidEmail(email)
-    // if the email exists, move to the password step
     if (emailExists === true) {
         userEmail = email
         showPasswordStep()
@@ -111,7 +100,6 @@ async function handleEmailStep() {
     }
 }
 
-// attempt sign in with the collected email and the entered password
 async function handlePasswordStep() {
     const password = passwordInput.value
     
@@ -126,7 +114,6 @@ async function handlePasswordStep() {
     loginButton.innerHTML = 'Signing in... <i class="fa-solid fa-spinner fa-spin" style="margin-left: 20px;"></i>'
     
     try {
-        // use supabase to sign in with email and password
         const { data, error } = await supabase.auth.signInWithPassword({
             email: userEmail,
             password: password
@@ -139,7 +126,6 @@ async function handlePasswordStep() {
         window.location.href = '/student'
         
     } catch (error: any) {
-        // show error messages based on common issues
         if (error.message.includes('Invalid login credentials')) {
             showError('Incorrect password. Please try again.')
         } else {
@@ -151,7 +137,6 @@ async function handlePasswordStep() {
     }
 }
 
-// handler that decides which step to run based on the currentStep value
 async function handleLogin() {
     if (currentStep === 'email') {
         await handleEmailStep()
@@ -160,13 +145,11 @@ async function handleLogin() {
     }
 }
 
-// do this when user presses back
 function handleBack() {
     showEmailStep()
     userEmail = ''
 }
 
-// UI events to make the user experience better
 document.addEventListener('DOMContentLoaded', () => {
     loginButton.addEventListener('click', handleLogin)
     
@@ -174,20 +157,17 @@ document.addEventListener('DOMContentLoaded', () => {
         backButton.addEventListener('click', handleBack)
     }
     
-    // on enter key press on the email step, trigger the login action
     emailInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && currentStep === 'email') {
             handleLogin()
         }
     })
-    // on enter key press on the email step, trigger the login action
     passwordInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && currentStep === 'password') {
             handleLogin()
         }
     })
     
-    // hide error messages when user starts typing again
     emailInput.addEventListener('input', hideError)
     passwordInput.addEventListener('input', hideError)
     
