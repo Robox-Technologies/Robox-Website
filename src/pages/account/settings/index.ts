@@ -1,4 +1,5 @@
-import { authCheck, signOut, deleteAccount, getCurrentUserData, writeToDatabase } from '@root/account'
+import { authCheck, signOut, deleteAccount, getCurrentUserData, writeToDatabase,  } from '@root/account'
+import { getEnabledCategories } from 'trace_events'
 
 // containers for different settings pages
 const titleElement = document.querySelector('h1.title') as HTMLHeadingElement
@@ -9,6 +10,7 @@ const notificationPageContainer = document.querySelector('.notification-page-con
 const securityPageContainer = document.querySelector('.security-page-container') as HTMLDivElement
 const advancedPageContainer = document.querySelector('.advanced-page-container') as HTMLDivElement
 const deleteAccountModal = document.getElementById('delete-account-modal') as HTMLDialogElement | null
+const avatarPreview = document.getElementById('avatar-image') as HTMLImageElement | null
 // Buttons
 const generalButton = document.getElementById('general-button') as HTMLButtonElement
 const accountButton = document.getElementById('account-button') as HTMLButtonElement
@@ -19,6 +21,7 @@ const advancedButton = document.getElementById('advanced-button') as HTMLButtonE
 const logOutButton = document.getElementById('logout-button') as HTMLButtonElement
 const deleteAccountButton = document.getElementById('delete-account-button') as HTMLButtonElement
 const deleteAccountModalButton = document.getElementById('confirm-delete-button') as HTMLDivElement
+const refreshAvatarButton = document.getElementById('refresh-avatars-button') as HTMLButtonElement
 // Inputs
 const firstNameInput = document.getElementById('first-name-input') as HTMLInputElement | null
 const lastNameInput = document.getElementById('last-name-input') as HTMLInputElement | null
@@ -170,6 +173,10 @@ function loadPage(page: string) {
 // checks auth and loads the current page, async because authCheck might be async
 async function initializeSettingsPage() {
     await authCheck()
+    const user = await getCurrentUserData()
+    if (user?.avatar_url && avatarPreview) {
+        avatarPreview.src = user.avatar_url
+    }
     loadPage(currentPage)
 }
 
@@ -207,3 +214,59 @@ async function updatePlaceholders() {
     lastNameInput.placeholder = user.last_name || 'Last Name'
     emailInput.placeholder = user.email || 'Email'
 }
+
+function generateAvatarSelection() {
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < rows * cols; i++) {
+        const seed = crypto.randomUUID();
+        const url = base + encodeURIComponent(seed);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'avatar-btn';
+        btn.dataset.url = url;   // what we will store
+        btn.dataset.seed = seed; // handy if you want to store seed too
+
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Pick avatar ' + (i + 1);
+        img.loading = 'lazy';
+
+        btn.appendChild(img);
+        frag.appendChild(btn);
+    }
+
+    container.appendChild(frag);
+}
+
+// Avatar picker 
+const rows = 4, cols = 6;
+const base = 'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=';
+const container = document.getElementById('avatars');
+
+generateAvatarSelection();
+
+// Click handler with event delegation
+container.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement).closest('.avatar-btn');
+    if (!btn) return;
+
+    const newAvatarUrl = btn.dataset.url;
+    if (newAvatarUrl && avatarPreview) {
+        avatarPreview.src = newAvatarUrl;
+    }
+
+    const user = await getCurrentUserData();
+    if (user?.id && newAvatarUrl) {
+        try {
+            await writeToDatabase('profiles', user.id, 'avatar_url', newAvatarUrl, true);
+        } catch (error) {
+            console.error('Failed to save avatar:', error);
+        }
+    }
+});
+
+refreshAvatarButton.addEventListener('click', () => {
+    container.innerHTML = '';
+    generateAvatarSelection();
+});

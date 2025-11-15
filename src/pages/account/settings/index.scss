@@ -73,3 +73,74 @@
         font-size: 18px;
     }
 }
+
+.section-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    margin-left: 12px;
+    margin-top: 24px;
+    font-family: 'Nunito', sans-serif;
+}
+
+// avatar picker
+
+.avatar-picker {
+    width: 100%;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    margin-bottom: 8px;
+    position: relative;
+    border-radius: 12px;
+    background-color: variables.$tone2;
+}
+
+.avatar-preview {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    vertical-align: middle;
+    border: none;
+
+    img {
+        width: 120px;
+        height: 120px;
+        border-radius: 8px;
+        object-fit: cover;
+        background-color: transparent;
+    }
+}
+
+.avatar-columns {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    width: 100%;
+    align-items: center;
+}
+
+.avatar-picker {
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+    }
+    .grid img {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: contain;
+        background: transparent;
+        border-radius: 6px;
+    }
+}
+
+.selection-refresh {
+    margin: 12px;
+}
