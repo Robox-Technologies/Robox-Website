@@ -153,7 +153,9 @@
         content: [
             include('@partials/card.html', {
                 class: "extension-card",
-                title: "Ro/Box Python API",
+                title: "Display Extension",
+                id: "extension-display",
+                attributes: "extension-type=DISPLAY",
                 imageSource: "@images/editor/placeholder.png",
                 absoluteContent: include('@partials/check/check.html'),
                 topRowButton: false,
@@ -163,7 +165,9 @@
             }),
             include('@partials/card.html', {
                 class: "extension-card",
-                title: "Ro/Box Python API",
+                id: "extension-advanced",
+                title: "Advanced Extension",
+                attributes: "extension-type=ADVANCED",
                 imageSource: "@images/editor/placeholder.png",
                 absoluteContent: include('@partials/check/check.html'),
                 topRowButton: false,
@@ -174,6 +178,8 @@
             include('@partials/card.html', {
                 class: "extension-card",
                 title: "Servo Extension",
+                id: "extension-servo",
+                attributes: "extension-type=SERVO",
                 imageSource: "@images/editor/placeholder.png",
                 absoluteContent: include('@partials/check/check.html'),
                 topRowButton: false,

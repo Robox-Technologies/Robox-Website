@@ -1,5 +1,5 @@
 @use '@root/variables';
-[enabled] > .check svg {
+.enabled > .check svg {
     visibility: visible;
 }
 .check {

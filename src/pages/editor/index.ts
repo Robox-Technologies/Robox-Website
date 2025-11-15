@@ -8,8 +8,8 @@ import theme from "./blockly/theme"
 import {toolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
-import { Project } from '~types/projects';
-import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject } from '@root/blockly/serialization';
+import { ExtensionType, Project } from '~types/projects';
+import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject, getProjectExtensions, toggleExtension } from '@root/blockly/serialization';
 import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
 import { postBlocklyWSInjection } from './usb';
@@ -193,18 +193,60 @@ document.addEventListener("DOMContentLoaded", () => {
         dialog.show()
         event.stopPropagation()
     })
+    // Setting up the extension stuff
+    const extensionModal = document.getElementById("extension-modal") as HTMLDialogElement | null;
+    const extensions = extensionModal.querySelectorAll(".card");
     const extensionButton = document.getElementById("robox-extension-button")
-    const extensionModal = document.getElementById("extension-modal") as HTMLDialogElement | null
     if (!extensionButton || !extensionModal) return;
     extensionButton?.addEventListener("click", () => {
+        extensionModalSetup(workspaceId);
         extensionModal.showModal()
     })
+    extensions.forEach((extensionCard) => {
+        extensionCard.addEventListener("click", () => {
+            const extensionType = extensionCard.getAttribute("extension-type");
+            if (isValidExtension(extensionType) === false) return;
+            const extensions = getProjectExtensions(workspaceId);
+            if (!extensions) return;
+            const currentState = extensions[extensionType];
+            toggleExtensionUI(workspaceId, ExtensionType[extensionType], !currentState);
+        })
+    })
+
+    //Preventing orphans
     workspace.addChangeListener(Blockly.Events.disableOrphans);
 }) 
+function extensionModalSetup(uuid: string): null | void {
+    const extensionModal = document.getElementById("extension-modal") as HTMLDialogElement | null;
+    if (!extensionModal) return null;
+    
+    const extensions = getProjectExtensions(uuid);
+    if (!extensions) return null;
+    for (const ext of Object.values(ExtensionType)) {
+        if (ExtensionType[ext] === undefined) continue;
+        toggleExtensionUI(uuid, ext);
+    }
+
+}
+function toggleExtensionUI(uuid: string, extension: ExtensionType) {
+    const extensionToggle = document.querySelector(`#extension-${extension}`) as HTMLElement | null;
+    const enabled = toggleExtension(uuid, extension);
+    if (!extensionToggle) return;
+    if (enabled) {
+        extensionToggle.classList.add("enabled")
+        extensionToggle.classList.remove("disabled")
+    } else {
+        extensionToggle.classList.add("disabled")
+        extensionToggle.classList.remove("enabled")
+    }
+}
 let rotation = 0;
 const degreesPerTooth = 60; // Adjust this value to match one gear tooth visually
 function rotateOneTooth(cog: HTMLElement) {
     rotation += degreesPerTooth;
     cog.style.transition = 'transform 0.5s ease-out';
     cog.style.transform = `rotate(${rotation}deg)`;
+}
+function isValidExtension(ext: string): ext is keyof typeof ExtensionType {
+    return ext in ExtensionType;
 }

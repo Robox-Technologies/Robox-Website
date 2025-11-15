@@ -126,6 +126,9 @@ export async function saveBlockly(uuid: string, workspace: WorkspaceSvg, callbac
         projects[uuid]["time"] = dayjs()
         projects[uuid]["workspace"] = data
         projects[uuid]["thumbnail"] = sanitizeImageDataUrl(thumburi);
+        if (projects[uuid]["extensions"] === undefined) {
+            projects[uuid]["extensions"] = getDefaultExtensions();
+        }
         const projectData = JSON.stringify(projects)
         localStorage.setItem("roboxProjects", projectData)
 
@@ -147,13 +150,14 @@ export function saveBlocklyCompressed(projectRaw: string) {
     localStorage.setItem("roboxProjects", projectData)
     return projectData
 }
-export function toggleExtension(uuid: string, extension: ExtensionType, enabled: boolean) {
+export function toggleExtension(uuid: string, extension: ExtensionType):boolean {
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
     const projects = getProjects()
     if (!projects[uuid]) throw new Error("Project does not exist")
-    projects[uuid]["extensions"][extension] = enabled
+    projects[uuid]["extensions"][extension] = !projects[uuid]["extensions"][extension];
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
+    return projects[uuid]["extensions"][extension];
 }
 export function renameProject(uuid: string, newName:string) {
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
