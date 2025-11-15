@@ -1,0 +1,17 @@
+[
+    {
+        "id": "display",
+        "name": "Display Extension",
+        "description": "Provides blocks for controlling the display."
+    },
+    {
+        "id": "advanced",
+        "name": "Advanced Extension",
+        "description": "Provides advanced programming blocks."
+    },
+    {
+        "id": "servo",
+        "name": "Servo Extension",
+        "description": "Provides blocks for controlling servo motors."
+    }
+]
