@@ -1,5 +1,3 @@
-console.log('Color Input Module Loaded');
-
 const colorInput = document.querySelector('.color-input') as HTMLInputElement;
 const colorError = document.querySelector('.color-error') as HTMLElement;
 
