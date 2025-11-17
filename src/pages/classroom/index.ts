@@ -22,8 +22,7 @@ async function initUI() {
     const studentsButton = document.getElementById('students-button') as HTMLButtonElement | null
     const learningButton = document.getElementById('learning-button') as HTMLButtonElement | null
     const settingsButton = document.getElementById('settings-button') as HTMLButtonElement | null
-
-    let currentPage: string = 'my-class'
+    const saveSettingsButton = document.getElementById('save-classroom-settings-button') as HTMLButtonElement | null
 
     const buttonMap = {
         'my-class': myClassButton,
@@ -91,9 +90,10 @@ async function initUI() {
         if (homePageContainer) homePageContainer.style.display = 'block'
     }
 
-    function studentsPage() {
+    async function studentsPage() {
         if (titleElement) titleElement.textContent = 'Students'
         if (studentsPageContainer) studentsPageContainer.style.display = 'block'
+        await loadStudentCards();
     }
 
     function learningPage() {
@@ -105,6 +105,30 @@ async function initUI() {
         if (titleElement) titleElement.textContent = 'Settings'
         if (teacherSettingsPageContainer) teacherSettingsPageContainer.style.display = 'block'
     }
+
+    saveSettingsButton?.addEventListener('click', async () => {
+        const classroomNameInput = document.getElementById('name-input') as HTMLInputElement | null;
+        const classroomDescriptionInput = document.getElementById('description-input') as HTMLInputElement | null;
+        const classroomYearLevelInput = document.getElementById('year-level-input') as HTMLInputElement | null;
+        const classroomCourseCodeInput = document.getElementById('course-code-input') as HTMLInputElement | null;
+        const classroomLocationInput = document.getElementById('location-input') as HTMLInputElement | null;
+        const classroomLmsInput = document.getElementById('lms-input') as HTMLInputElement | null;
+        const classroomSecurityInput = document.getElementById('security-radio') as HTMLInputElement | null;
+        const classroomFeaturesInput = document.getElementById('features-list') as HTMLInputElement | null;
+        const classroomColorInput = document.getElementById('color-input') as HTMLInputElement | null;
+
+        classroom.name = classroomNameInput?.value || '';
+        classroom.description = classroomDescriptionInput?.value || '';
+        classroom.year_level = classroomYearLevelInput?.value || '';
+        classroom.course_code = classroomCourseCodeInput?.value || '';
+        classroom.location = classroomLocationInput?.value || '';
+        classroom.lms_url = (classroomLmsInput?.value.trim() || '');
+        classroom.security_level = classroomSecurityInput?.value || '1';
+        classroom.features = (classroomFeaturesInput?.value.split(',').map(f => f.trim()) || []);
+        classroom.color = (classroomColorInput?.value || '#ffffff');
+
+        await classroom.save();
+    });
 
     function loadPage(page: keyof typeof buttonMap) {
         hideAllContainers()
@@ -152,61 +176,87 @@ async function updatePlaceholders() {
     document.querySelectorAll('#classroom-name').forEach(el => {
         (el as HTMLElement).textContent = (classroom?.name) || 'My Classroom';
     });
-    try {
-        const user = await getCurrentUserData()
-        const firstNameInput = document.getElementById('first-name-input') as HTMLInputElement | null
-        const lastNameInput = document.getElementById('last-name-input') as HTMLInputElement | null
-        const emailInput = document.getElementById('email-input') as HTMLInputElement | null
-        if (user) {
-            if (firstNameInput) firstNameInput.placeholder = user.first_name || 'First Name'
-            if (lastNameInput) lastNameInput.placeholder = user.last_name || 'Last Name'
-            if (emailInput) emailInput.placeholder = user.email || 'Email'
-        }
-    } catch {
-        // ignore
+    if (currentUser) {
+        const firstNameInput = document.getElementById('first-name-input') as HTMLInputElement | null;
+        const lastNameInput = document.getElementById('last-name-input') as HTMLInputElement | null;
+        const emailInput = document.getElementById('email-input') as HTMLInputElement | null;
+        if (firstNameInput) firstNameInput.placeholder = currentUser.first_name || 'First Name';
+        if (lastNameInput) lastNameInput.placeholder = currentUser.last_name || 'Last Name';
+        if (emailInput) emailInput.placeholder = currentUser.email || 'Email';
+    }
+    if (classroom) {
+        const classroomNameInput = document.getElementById('name-input') as HTMLInputElement | null;
+        const classroomDescriptionInput = document.getElementById('description-input') as HTMLInputElement | null;
+        const classroomYearLevelInput = document.getElementById('year-level-input') as HTMLInputElement | null;
+        const classroomCourseCodeInput = document.getElementById('course-code-input') as HTMLInputElement | null;
+        const classroomLocationInput = document.getElementById('location-input') as HTMLInputElement | null;
+        const classroomLmsInput = document.getElementById('lms-input') as HTMLInputElement | null;
+        const classroomSecurityInput = document.getElementById('security-radio') as HTMLInputElement | null;
+        const classroomFeaturesInput = document.getElementById('features-list') as HTMLInputElement | null;
+        const classroomColorInput = document.getElementById('color-input') as HTMLInputElement | null;
+
+        if (classroomNameInput) classroomNameInput.placeholder = classroom.name || 'Classroom Name';
+        if (classroomDescriptionInput) classroomDescriptionInput.placeholder = classroom.description || 'Classroom Description';
+        if (classroomYearLevelInput) classroomYearLevelInput.placeholder = classroom.year_level || 'Year Level';
+        if (classroomCourseCodeInput) classroomCourseCodeInput.placeholder = classroom.course_code || 'Course Code';
+        if (classroomLocationInput) classroomLocationInput.placeholder = classroom.location || 'Location';
+        if (classroomLmsInput) classroomLmsInput.placeholder = classroom.lms_url || 'LMS URL';
+        if (classroomSecurityInput) classroomSecurityInput.value = String(classroom.security_level);
+        if (classroomFeaturesInput) classroomFeaturesInput.value = (classroom.features && Array.isArray(classroom.features)) ? classroom.features.join(', ') : '';
+        if (classroomColorInput) classroomColorInput.value = classroom.color || '#ffffff';
     }
 }
 
-async function checkClassroomAccess(id: string) {
-    if (!id) {
-        console.error("No classroom ID found in URL parameters.");
-        window.location.href = "/classroom/home";
+function checkClassroomAccess(): boolean {
+    if (!classroom || !currentUser?.id || !classroomRole) {
+        window.location.href = '/classroom/home';
         return false;
     }
-
-    if (!isValidUUID(id)) {
-        console.error("Invalid classroom ID provided in URL parameters: ", id);
-        window.location.href = "/classroom/home";
-        return false;
-    }
-
-    const validClassroom = await isValidClassroom(id);
-    if (validClassroom === false) {
-        console.error("Classroom ID does not match any existing classroom: ", id);
-        window.location.href = "/classroom/home";
-        return false;
-    }
-
-    if (!user.id) {
-        console.error("No current user found.");
-        window.location.href = "/classroom/home";
-        return false;
-    }
-
-    if (classroomRole === null) {
-        console.error("User does not have permission to access this classroom: ", id, classroomRole);
-        window.location.href = "/classroom/home";
-        return false;
-    }
-
     return true;
 }
+async function loadClassroom(id: string) {
+    currentUser = await getCurrentUserData();
+    if (!id) return;
+    classroom = await Classroom.load(id);
+    if (classroom && currentUser?.id) {
+        classroomRole = await classroom.roleForUser(currentUser.id);
+    }
+}
 
-async function getClassroomData(id: string) {
-    user = await getCurrentUserData();
-    classroomRole = await getClassroomPermissions(id, user.id);
-    classroom = await getFromDatabase('classrooms', id);
-    studentsData = await getBasicUserData(classroom?.students || []);
+async function loadStudentCards() {
+    const studentsList = document.querySelector('.students-list') as HTMLDivElement | null;
+    if (!studentsList || !classroom) return;
+
+    studentsList.innerHTML = '';
+
+    for (const student of classroom.students) {
+        const studentCard = await createStudentCard(student);
+        studentsList.appendChild(studentCard);
+    }
+}
+
+async function createStudentCard(student: any): Promise<HTMLElement> {
+    const studentData = await getFromDatabase('profiles', student)
+    const projectTemplate = document.getElementById('studentCardTemplate') as HTMLTemplateElement;
+    if (!projectTemplate) return document.createElement("div");
+
+    const fragment = projectTemplate.content.cloneNode(true) as DocumentFragment;
+    const clone = fragment.querySelector(".card") as HTMLElement;
+    if (!clone) return document.createElement("div");
+
+    const nameEl = clone.querySelector(".student-name");
+    const emailEl = clone.querySelector(".student-email");
+    const avatarEl = clone.querySelector(".student-avatar") as HTMLImageElement | null;
+
+    if (nameEl) nameEl.textContent = studentData.display_name || studentData.first_name || "Unnamed Student";
+    if (emailEl) emailEl.textContent = studentData.email || "";
+    if (avatarEl) {
+        avatarEl.src = studentData.avatar_url;
+    }
+
+    clone.id = studentData.id;
+
+    return clone;
 }
 
 (async () => {
