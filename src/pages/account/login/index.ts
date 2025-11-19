@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { authCheck, isValidEmail } from '@root/account'
+import { authCheck, checkEmailAvailability } from '@root/account'
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY
@@ -79,7 +79,7 @@ async function handleEmailStep() {
         return
     }
     
-    const emailExists = await isValidEmail(email)
+    const emailExists = await checkEmailAvailability(email)
     if (emailExists === true) {
         userEmail = email
         showPasswordStep()
@@ -94,7 +94,6 @@ async function handleEmailStep() {
         return
     }
     else {
-        console.error('Unexpected return type from isValidEmail:', emailExists)
         showError('An unexpected error occurred. Please try again.')
         return
     }

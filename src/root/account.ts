@@ -767,7 +767,7 @@ export async function generateClassCode(classroomId: string): Promise<string | n
     return null;
 }
 
-export async function isValidEmail(email: string): Promise<boolean | string> {
+export async function checkEmailAvailability(email: string): Promise<boolean | string> {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const cleanEmail = email.trim().toLowerCase();
 
@@ -776,20 +776,19 @@ export async function isValidEmail(email: string): Promise<boolean | string> {
     }
 
     try {
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('email')
-            .eq('email', cleanEmail);
+        const res = await fetch('/api/account/email-check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: cleanEmail })
+        });
 
-        if (data && data.length > 0) {
-            return true;
+        if (!res.ok) {
+            console.error('Email check request failed with status', res.status);
+            return 'Unable to validate email';
         }
 
-        if (error) {
-            console.error('Supabase error:', error);
-            return 'Please try again later.';
-        }
-        return false;
+        const data = await res.json();
+        return !!data.exists;
     } catch (err) {
         console.error('Unexpected error during email validation:', err);
         return 'Unable to validate email';
@@ -959,4 +958,11 @@ export class Classroom {
         await this.refresh();
         return true;
     }
+}
+
+// Alert user
+export async function showAlert(message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info', duration: number = 5000) {
+    const alertContainer = document.createElement('div');
+    alertContainer.className = `alert alert-${type}`;
+    alertContainer.textContent = message;
 }
