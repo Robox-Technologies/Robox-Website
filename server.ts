@@ -45,16 +45,16 @@ app.use("/", express.static(websiteDir));
 
 // --- Account functions ---
 
+const supabaseUrl = process.env.SUPABASE_URL
+const supabasePublishableKey = process.env.SUPABASE_PUBLISHABLE_KEY
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabasePublishableKey || !supabaseServiceRoleKey) {
+    console.log("Missing Supabase environment variables");
+}
+
 // Delete account
 app.post('/api/account/delete', async (req, res) => {
-    const supabaseUrl = process.env.SUPABASE_URL
-    const supabasePublishableKey = process.env.SUPABASE_PUBLISHABLE_KEY
-    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !supabasePublishableKey || !supabaseServiceRoleKey) {
-        return res.status(400).json({ error: 'Missing Supabase environment variables' });
-    }
-
     const token = req.headers.authorization?.replace('Bearer ', '')
 
     const adminClient = createClient(
@@ -89,6 +89,123 @@ app.post('/api/account/delete', async (req, res) => {
     await adminClient.from('profiles').delete().eq('id', userId)
     return res.json({ success: true })
 });
+
+// Create account
+app.post('/api/account/create', async (req, res) => {
+    const { email, password, firstName, lastName, userType } = req.body ?? {};
+
+    if (!email || !password || !firstName || !lastName || !userType) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    const fullName = `${firstName} ${lastName}`.trim();
+    const displayName = `${firstName?.trim() ?? ''} ${(lastName?.trim()?.[0] ?? '').toUpperCase()}`.trim();
+
+    try {
+        // Create the auth user
+        const { data: createData, error: createError } = await adminClient.auth.admin.createUser({
+            email,
+            password,
+            user_metadata: {
+                full_name: fullName,
+                display_name: displayName
+            }
+        });
+
+        if (createError) {
+            const msg = createError.message || 'Unknown error';
+            return res.status(400).json({ error: msg });
+        }
+
+        const userId = createData?.user?.id;
+        if (!userId) {
+            return res.status(500).json({ error: 'User created but no user id returned' });
+        }
+
+        // Insert profile row
+        const { error: dbError } = await adminClient
+            .from('profiles')
+            .insert({
+                id: userId,
+                first_name: firstName,
+                last_name: lastName,
+                display_name: displayName,
+                full_name: fullName,
+                email,
+                user_role: userType,
+                created_at: new Date().toISOString()
+            });
+
+        if (dbError) {
+            // rollback auth user if profile insert fails
+            await adminClient.auth.admin.deleteUser(userId).catch(() => undefined);
+            return res.status(500).json({ error: 'Failed to save profile data' });
+        }
+
+        let magicCode = '';
+
+        // Generate magic code to send to user for auto sign in
+        const { data, error } = await adminClient.auth.admin.generateLink({
+            type: 'magiclink',
+            email: email
+        })
+
+        magicCode = data?.properties.hashed_token || '';
+
+        // Return success and suggested redirect for the client
+        const redirect = userType === 'teacher' ? '/classroom/create' :
+                         userType === 'student' ? '/classroom/join' : '/';
+
+        return res.status(201).json({ success: true, userId, magicCode, redirect });
+    } catch (error: any) {
+        const message = error?.message || 'An unexpected error occurred';
+        return res.status(500).json({ error: message });
+    }
+});
+
+app.post('/api/account/email-check', async (req, res) => {
+    // returns true = email exists
+    // returns false = email does not exist
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const { email } = req.body ?? {};
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+
+    if (!emailRegex.test(cleanEmail)) {
+        return res.status(400).json({ error: 'Please enter a valid email address' });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('email')
+            .ilike('email', cleanEmail)
+            .limit(1);
+
+        if (error) {
+            console.error('Supabase error:', error);
+            return res.status(500).json({ error: 'Please try again later.' });
+        }
+
+        if (data && data.length > 0) {
+            return res.json({ exists: true });
+        }
+
+        return res.json({ exists: false });
+    } catch (err) {
+        console.error('Unexpected error during email validation:', err);
+        return res.status(500).json({ error: 'Unable to validate email' });
+    }
+});
+
 
 // 404 for all other routes
 app.use("/public", express.static(websiteDir + "/public", {
