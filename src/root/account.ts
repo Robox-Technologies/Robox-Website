@@ -84,7 +84,7 @@ export function checkPasswordRequirements(password: string): boolean | string {
     if (!/\d/.test(password)) {
         problems.push('contain at least one number');
     }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    if (!/[!@#$%^&*_(),.?":{}|<>]/.test(password)) {
         problems.push('contain at least one special character');
     }
     if (problems.length === 0) {
