@@ -165,7 +165,6 @@ async function handlePersonalInfoStep() {
     const emailExists = await checkEmailAvailability(email)
     
     if (emailExists === false) {
-        userData.fullName = nameGenerator(firstName, lastName)
         userData.email = email
         showPasswordStep()
         return
@@ -221,81 +220,77 @@ async function handlePasswordStep() {
     await createAccount()
 }
 
-function nameGenerator(firstName: string, lastName: string) {
-    const name: string = {
-        fullName: `${firstName.trim()} ${lastName.trim()}`,
-        displayName: `${firstName.trim()} ${lastName.trim().charAt(0)}`
-    }
-    return name
-
-}
-
 async function createAccount() {
     signupButton.disabled = true
     signupButton.innerHTML = 'Nearly there!'
 
-    let userNames: { fullName: string, displayName: string } = nameGenerator(firstNameInput.value, lastNameInput.value)
+    const payload = {
+        email: userData.email,
+        password: userData.password,
+        firstName: firstNameInput.value.trim(),
+        lastName: lastNameInput.value.trim(),
+        userType
+    }
 
     try {
-        const { data, error: authError } = await supabase.auth.signUp({
-            email: userData.email,
-            password: userData.password,
-            options: {
-                data: {
-                    full_name: userNames.fullName,
-                    display_name: userNames.displayName
-                }
-            }
+        const resp = await fetch('/api/account/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
         })
-        
-        if (authError) {
-            throw authError
-        }
-        
-        if (!authError) {
-            const { error: dbError } = await supabase
-                .from('profiles')
-                .insert({
-                    id: data.user.id,
-                    first_name: firstNameInput.value,
-                    last_name: lastNameInput.value,
-                    display_name: userNames.displayName,
-                    full_name: userNames.fullName,
-                    email: userData.email,
-                    user_role: userType,
-                    created_at: new Date()
-                })
-            
-            if (dbError) {
-                console.error('Error saving user data:', dbError)
+
+        const result = await resp.json().catch(() => ({}))
+
+        if (!resp.ok) {
+            const errMsg = (result && (result.error?.message || result.error || result.message)) || 'An error occurred during signup.'
+            if (String(errMsg).includes('User already registered')) {
+                showError('personal-info', 'An account with this email already exists')
+                showPersonalInfoStep()
+            } else if (String(errMsg).includes('Invalid email')) {
+                showError('personal-info', 'Please enter a valid email address')
+                showPersonalInfoStep()
+            } else {
+                showError('password', String(errMsg))
             }
+            return
         }
 
-        if (userType == 'teacher' && !authError) {
-            window.location.href = '/classroom/create'
+        // success path: sign in the new user
+        if (result && result.success) {
+            try {
+                const { error: verifyOtpError } = await supabase.auth.verifyOtp({
+                    token_hash: result.magicCode,
+                    type: 'email',
+                })
+
+                if (verifyOtpError) {
+                    console.error('Auto sign-in failed:', verifyOtpError)
+                    // If sign-in fails
+                    window.location.href = result.redirect || '/account/login'
+                    return
+                }
+
+                // Signed in successfully
+                window.location.href = result.redirect || '/home'
+                return
+            } catch (err) {
+                console.error('Unexpected sign-in error:', err)
+                window.location.href = result.redirect || '/account/login'
+                return
+            }
         }
-        else if (userType == 'student' && !authError) {
-            window.location.href = '/classroom/join'
-        }
-        else {
-            alert('Failed to create account')
-        }
-        
-    } catch (error) {
-        console.error('Signup error:', error)
-        
-        if (error.message.includes('User already registered')) {
-            showError('personal-info', 'An account with this email already exists')
-            showPersonalInfoStep()
-        } else if (error.message.includes('Invalid email')) {
-            showError('personal-info', 'Please enter a valid email address')
-            showPersonalInfoStep()
-        } else {
-            showError('password', error.message || 'An error occurred during signup')
-        }
-        
+        showError('password', 'An error occurred during signup. Please try again later.')
+    } catch (err: any) {
+        console.error('Signup request failed:', err)
+        showError('password', err?.message || 'Unable to create account. Please try again later.')
+    } finally {
         signupButton.disabled = false
-        signupButton.innerHTML = 'Create Account <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>'
+        // restore text for the current step
+        if (currentStep === 'password') {
+            signupButton.innerHTML = 'Create Account <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>'
+        } else {
+            signupButton.innerHTML = 'Continue <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>'
+        }
     }
 }
 

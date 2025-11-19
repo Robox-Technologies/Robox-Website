@@ -90,6 +90,81 @@ app.post('/api/account/delete', async (req, res) => {
     return res.json({ success: true })
 });
 
+// Create account
+app.post('/api/account/create', async (req, res) => {
+    const { email, password, firstName, lastName, userType } = req.body ?? {};
+
+    if (!email || !password || !firstName || !lastName || !userType) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    const fullName = `${firstName} ${lastName}`.trim();
+    const displayName = `${firstName?.trim() ?? ''} ${(lastName?.trim()?.[0] ?? '').toUpperCase()}`.trim();
+
+    try {
+        // Create the auth user
+        const { data: createData, error: createError } = await adminClient.auth.admin.createUser({
+            email,
+            password,
+            user_metadata: {
+                full_name: fullName,
+                display_name: displayName
+            }
+        });
+
+        if (createError) {
+            const msg = createError.message || 'Unknown error';
+            return res.status(400).json({ error: msg });
+        }
+
+        const userId = createData?.user?.id;
+        if (!userId) {
+            return res.status(500).json({ error: 'User created but no user id returned' });
+        }
+
+        // Insert profile row
+        const { error: dbError } = await adminClient
+            .from('profiles')
+            .insert({
+                id: userId,
+                first_name: firstName,
+                last_name: lastName,
+                display_name: displayName,
+                full_name: fullName,
+                email,
+                user_role: userType,
+                created_at: new Date().toISOString()
+            });
+
+        if (dbError) {
+            // rollback auth user if profile insert fails
+            await adminClient.auth.admin.deleteUser(userId).catch(() => undefined);
+            return res.status(500).json({ error: 'Failed to save profile data' });
+        }
+
+        let magicCode = '';
+
+        // Generate magic code to send to user for auto sign in
+        const { data, error } = await adminClient.auth.admin.generateLink({
+            type: 'magiclink',
+            email: email
+        })
+
+        magicCode = data?.properties.hashed_token || '';
+
+        // Return success and suggested redirect for the client
+        const redirect = userType === 'teacher' ? '/classroom/create' :
+                         userType === 'student' ? '/classroom/join' : '/';
+
+        return res.status(201).json({ success: true, userId, magicCode, redirect });
+    } catch (error: any) {
+        const message = error?.message || 'An unexpected error occurred';
+        return res.status(500).json({ error: message });
+    }
+});
+
 app.post('/api/account/email-check', async (req, res) => {
     // returns true = email exists
     // returns false = email does not exist
