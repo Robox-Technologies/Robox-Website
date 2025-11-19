@@ -45,16 +45,16 @@ app.use("/", express.static(websiteDir));
 
 // --- Account functions ---
 
+const supabaseUrl = process.env.SUPABASE_URL
+const supabasePublishableKey = process.env.SUPABASE_PUBLISHABLE_KEY
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+if (!supabaseUrl || !supabasePublishableKey || !supabaseServiceRoleKey) {
+    console.log("Missing Supabase environment variables");
+}
+
 // Delete account
 app.post('/api/account/delete', async (req, res) => {
-    const supabaseUrl = process.env.SUPABASE_URL
-    const supabasePublishableKey = process.env.SUPABASE_PUBLISHABLE_KEY
-    const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !supabasePublishableKey || !supabaseServiceRoleKey) {
-        return res.status(400).json({ error: 'Missing Supabase environment variables' });
-    }
-
     const token = req.headers.authorization?.replace('Bearer ', '')
 
     const adminClient = createClient(
@@ -89,6 +89,48 @@ app.post('/api/account/delete', async (req, res) => {
     await adminClient.from('profiles').delete().eq('id', userId)
     return res.json({ success: true })
 });
+
+app.post('/api/account/email-check', async (req, res) => {
+    // returns true = email exists
+    // returns false = email does not exist
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const { email } = req.body ?? {};
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+
+    if (!emailRegex.test(cleanEmail)) {
+        return res.status(400).json({ error: 'Please enter a valid email address' });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    try {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('email')
+            .ilike('email', cleanEmail)
+            .limit(1);
+
+        if (error) {
+            console.error('Supabase error:', error);
+            return res.status(500).json({ error: 'Please try again later.' });
+        }
+
+        if (data && data.length > 0) {
+            return res.json({ exists: true });
+        }
+
+        return res.json({ exists: false });
+    } catch (err) {
+        console.error('Unexpected error during email validation:', err);
+        return res.status(500).json({ error: 'Unable to validate email' });
+    }
+});
+
 
 // 404 for all other routes
 app.use("/public", express.static(websiteDir + "/public", {
