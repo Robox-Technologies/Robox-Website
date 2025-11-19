@@ -38,36 +38,62 @@
                 <!-- Personal Info Step -->
                 <div class="personal-info-container" style="display: none;">
                     <div class="name-input-container" style="column-count: 2; column-width: 100%; gap: 12px;">
-                        <div class="input-container">
-                            <label for="first-name" class="input-label">First Name</label>
-                            <input type="text" id="first-name" name="first-name" placeholder="John" class="text-input" autocomplete="given-name">
-                            <p id="first-name-error-msg" class="error" style="display: none;"></p>
-                        </div>
-                        <div class="input-container">
-                            <label for="last-name" class="input-label">Last Name</label>
-                            <input type="text" id="last-name" name="last-name" placeholder="Doe" class="text-input" autocomplete="family-name">
-                            <p id="last-name-error-msg" class="error" style="display: none;"></p>
-                        </div>
+                        <%~ include('@partials/text-input/text-input.html', {
+                            class: "input-container",
+                            inputId: "first-name",
+                            label: 'First Name',
+                            placeholder: 'John',
+                            required: false,
+                            autocomplete: 'given-name',
+                            errorId: 'first-name-error-msg',
+                            type: 'text'
+                        }) %>
+                        <%~ include('@partials/text-input/text-input.html', {
+                            class: "input-container",
+                            inputId: "last-name",
+                            label: 'Last Name',
+                            placeholder: 'Doe',
+                            required: false,
+                            autocomplete: 'family-name',
+                            errorId: 'last-name-error-msg',
+                            type: 'text'
+                        }) %>
                     </div>
-                    <div class="input-container">
-                        <label for="email" class="input-label">Email</label>
-                        <input type="email" id="email" name="email" placeholder="me@myemail.com" class="text-input" autocomplete="email">
-                        <p id="email-error-msg" class="error" style="display: none;"></p>
-                    </div>
+
+                    <%~ include('@partials/text-input/text-input.html', {
+                        class: "email-container",
+                        inputId: "email",
+                        label: 'Email',
+                        placeholder: 'me@myemail.com',
+                        required: false,
+                        autocomplete: 'email',
+                        errorId: 'email-error-msg',
+                        type: 'email'
+                    }) %>
                 </div>
 
                 <!-- Password Step -->
                 <div class="password-container" style="display: none;">
-                    <div class="input-container">
-                        <label for="password" class="input-label">Password</label>
-                        <input type="password" id="password" name="password" placeholder="Create a password" class="text-input" autocomplete="new-password">
-                        <p id="password-error-msg" class="error" style="display: none;"></p>
-                    </div>
-                    <div class="input-container">
-                        <label for="confirm-password" class="input-label">Confirm Password</label>
-                        <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password" class="text-input" autocomplete="new-password">
-                        <p id="confirm-password-error-msg" class="error" style="display: none;"></p>
-                    </div>
+                    <%~ include('@partials/text-input/text-input.html', {
+                        class: "input-container",
+                        inputId: "password",
+                        label: 'Password',
+                        placeholder: 'Create a password',
+                        required: false,
+                        autocomplete: 'new-password',
+                        errorId: 'password-error-msg',
+                        type: 'password'
+                    }) %>
+                    <%~ include('@partials/text-input/text-input.html', {
+                        class: "input-container",
+                        inputId: "confirm-password",
+                        label: 'Confirm Password',
+                        placeholder: 'Confirm your password',
+                        required: false,
+                        autocomplete: 'new-password',
+                        errorId: 'confirm-password-error-msg',
+                        type: 'password'
+                    }) %>
                 </div>
 
                 <button id="signup-button" class="ctaButton primaryButton" style="display: block; margin: 25px auto 0 auto;">
