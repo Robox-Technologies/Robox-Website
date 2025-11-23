@@ -206,6 +206,51 @@ app.post('/api/account/email-check', async (req, res) => {
     }
 });
 
+// user settings
+// get user settings
+app.post('/api/account/user/info', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+        return res.status(401).json({ error: 'Missing authorization token' });
+    }
+
+    const userClient = createClient(
+        supabaseUrl, supabasePublishableKey,
+        {
+            global: {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        }
+    );
+
+    // Verify the user using the token
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
+
+    if (userError || !user?.id) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    // Fetch profile data for the verified user
+    const { data: profileData, error: profileError } = await adminClient
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+    if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        return res.status(500).json({ error: 'Failed to fetch user settings' });
+    }
+
+    return res.json({ success: true, data: profileData });
+});
+
+// update user settings
 
 // 404 for all other routes
 app.use("/public", express.static(websiteDir + "/public", {

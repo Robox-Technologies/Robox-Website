@@ -105,26 +105,23 @@ export function checkPasswordRequirements(password: string): boolean | string {
 
 export async function getCurrentUserData() {
     try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        if (sessionError) {
-            console.error('Failed to get session:', sessionError)
-            return null
+        const { data: sessionData } = await supabase.auth.getSession()
+        const token = sessionData?.session?.access_token ?? null
+    
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (token) headers.Authorization = `Bearer ${token}`
+    
+        const resp = await fetch('/api/account/user/info', {
+            method: 'POST',
+            headers
+        })
+    
+        const result = await resp.json().catch(() => ({}))
+    
+        if (!resp.ok) {
+            return false
         }
-        if (!session?.user?.id) {
-            console.warn('No user ID found in session')
-            return null
-        }
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-
-        if (error) {
-            console.error('Failed to get user data:', error)
-            return null
-        }
-        return data
+        return result.data || {}
     } catch (error) {
         console.error('Failed to get user data:', error)
         return null
