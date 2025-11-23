@@ -76,7 +76,7 @@
                 <div class="password-container" style="display: none;">
                     <%~ include('@partials/text-input/text-input.html', {
                         class: "input-container",
-                        inputId: "password",
+                        inputId: "password-input",
                         label: 'Password',
                         placeholder: 'Create a password',
                         required: false,
@@ -94,6 +94,7 @@
                         errorId: 'confirm-password-error-msg',
                         type: 'password'
                     }) %>
+                    <%~ include('@partials/password-checklist/password-checklist.html') %>
                 </div>
 
                 <button id="signup-button" class="ctaButton primaryButton" style="display: none; margin: 25px auto 0 auto;">
