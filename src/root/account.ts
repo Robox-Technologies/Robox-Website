@@ -20,10 +20,6 @@ export async function authCheck(role: string = 'user', redirect: boolean = true)
         return false
     }
 
-    if (!session) {
-        return false
-    }
-
     let userRole: 'student' | 'teacher' | null = null;
     if (role === 'student' || role === 'teacher') {
         if (session) {
@@ -37,7 +33,7 @@ export async function authCheck(role: string = 'user', redirect: boolean = true)
                 return true
             }
             if (redirect) {
-                window.location.href = '/login'
+                window.location.href = '/account/login'
             }
             return false
         case 'user':
