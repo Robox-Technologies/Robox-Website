@@ -134,24 +134,38 @@ function loadPage(page: string) {
     hideAllContainers()
     switchHighlightedButton(page)
 
+    const params = new URLSearchParams(window.location.search)
+
     switch (page) {
         case 'general':
             generalPage()
+            params.set('page', 'general')
+            window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
             break
         case 'account':
             accountPage()
+            params.set('page', 'account')
+            window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
             break
         case 'appearance':
-            appearancePage()
+            appearancePage()            
+            params.set('page', 'appearance')
+            window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
             break
         case 'notification':
             notificationPage()
+            params.set('page', 'notification')
+            window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
             break
         case 'security':
             securityPage()
+            params.set('page', 'security')
+            window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
             break
         case 'advanced':
             advancedPage()
+            params.set('page', 'advanced')
+            window.history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`)
             break
     }
 
@@ -163,6 +177,11 @@ async function initializeSettingsPage() {
     const user = await getCurrentUserData()
     if (user?.avatar_url && avatarPreview) {
         avatarPreview.src = user.avatar_url
+    }
+    const params = new URLSearchParams(window.location.search)
+    const pageParam = params.get('page')
+    if (pageParam && Object.keys(buttonMap).includes(pageParam)) {
+        currentPage = pageParam
     }
     loadPage(currentPage)
 }
