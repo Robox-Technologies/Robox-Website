@@ -25,6 +25,7 @@ const passwordInput = document.getElementById('password') as HTMLInputElement
 const confirmPasswordInput = document.getElementById('confirm-password') as HTMLInputElement
 const signupButton = document.getElementById('signup-button') as HTMLButtonElement
 const backButton = document.getElementById('back-button') as HTMLButtonElement
+const signupTitle = document.getElementById('signup-title') as HTMLHeadingElement
 // Error Messages 
 const userTypeErrorMsg = document.getElementById('user-type-error-msg') as HTMLParagraphElement
 const firstNameErrorMsg = document.getElementById('first-name-error-msg') as HTMLParagraphElement
@@ -352,6 +353,14 @@ isAuthenticated().then(authenticated => {
     firstNameInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && currentStep === 'personal-info') {
             handleSignup()
+        }
+    })
+
+    firstNameInput.addEventListener('input', () => {
+        if (firstNameInput.value.trim()) {
+            signupTitle.textContent = `Hi ${firstNameInput.value.trim()}!`
+        } else {
+            signupTitle.textContent = 'Sign Up'
         }
     })
 
