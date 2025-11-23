@@ -20,7 +20,7 @@
 
     --article-margin-standard: 64px;
     --article-margin-small: 32px;
-    
+
     --standard-gap: 32px;
     --border-radius: 20px;
 
@@ -28,4 +28,9 @@
     --button-padding: 5%;
     --button-font-size: 15px;
     --button-radius: 10px;
+}
+@layer components {
+    .button-standard {
+        @apply bg-color-primary text-color-tone4 font-semibold;
+    }
 }

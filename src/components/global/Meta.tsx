@@ -4,7 +4,7 @@ export default function Meta({ title }: { title: string }) {
         <>
 
             <meta charSet="utf-8"/>
-            <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+            <meta httpEquiv="X-UA-Compatible" content="IE=edge"/>
             <link rel="icon" type="image/png" href="@images/favicon.png" sizes="72x72"/>
 
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -26,7 +26,7 @@ export default function Meta({ title }: { title: string }) {
             <meta property="og:image:height" content="1079"/>
             <meta property="og:image:type" content="image/jpg"/>
             <meta property="og:title" content="Ro/Box - Robotics for Everyone"/>
-            <title>{title} | Ro/Box</title>
+            <title>{title}</title>
         </>
     );
 }
