@@ -92,6 +92,7 @@ function showUserTypeStep() {
     personalInfoContainer.style.display = 'none'
     passwordContainer.style.display = 'none'
     backButton.style.display = 'none'
+    signupButton.style.display = 'none'
     
     signupButton.innerHTML = 'Continue <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>'
     
@@ -105,6 +106,7 @@ function showPersonalInfoStep() {
     personalInfoContainer.style.display = 'block'
     passwordContainer.style.display = 'none'
     backButton.style.display = 'inline-flex'
+    signupButton.style.display = 'block'
     
     signupButton.innerHTML = 'Continue <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>'
     
@@ -321,27 +323,26 @@ function handleBack() {
 
 function selectUserType(type: 'student' | 'teacher') {
     userType = type
-    
+
     studentButton.classList.remove('selected')
     teacherButton.classList.remove('selected')
-    
+
     if (type === 'student') {
         studentButton.classList.add('selected')
     } else {
         teacherButton.classList.add('selected')
     }
-    
+
     hideAllErrors()
+    signupButton.style.display = 'inline-flex'
+    showPersonalInfoStep()
 }
 
 isAuthenticated().then(authenticated => {
     if (authenticated) {
         window.location.href = '/home'
     }
-})
 
-
-document.addEventListener('DOMContentLoaded', () => {
     signupButton.addEventListener('click', handleSignup)
     backButton.addEventListener('click', handleBack)
     
