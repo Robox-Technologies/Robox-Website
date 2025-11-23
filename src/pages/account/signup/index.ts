@@ -357,6 +357,10 @@ isAuthenticated().then(authenticated => {
     })
 
     firstNameInput.addEventListener('input', () => {
+        const cursorStart = firstNameInput.selectionStart
+        firstNameInput.value = firstNameInput.value.replace(/\b\w/g, c => c.toUpperCase())
+        if (cursorStart !== null) firstNameInput.setSelectionRange(cursorStart, cursorStart)
+
         if (firstNameInput.value.trim()) {
             signupTitle.textContent = `Hi ${firstNameInput.value.trim()}!`
         } else {
@@ -389,7 +393,12 @@ isAuthenticated().then(authenticated => {
     })
     
     firstNameInput.addEventListener('input', hideAllErrors)
-    lastNameInput.addEventListener('input', hideAllErrors)
+    lastNameInput.addEventListener('input', () => {
+        const cursorStart = lastNameInput.selectionStart
+        lastNameInput.value = lastNameInput.value.replace(/\b\w/g, c => c.toUpperCase())
+        if (cursorStart !== null) lastNameInput.setSelectionRange(cursorStart, cursorStart)
+        hideAllErrors()
+    })
     emailInput.addEventListener('input', hideAllErrors)
     passwordInput.addEventListener('input', hideAllErrors)
     confirmPasswordInput.addEventListener('input', hideAllErrors)
