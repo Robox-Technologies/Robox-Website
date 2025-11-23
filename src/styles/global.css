@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+
+
+    /* Colors */
+    --color-drop-shadow: #26363B;
+
+    --color-tone1: #F8F8F8;
+    --color-tone2: #EFEFEF;
+    --color-tone3: #717171;
+    --color-tone4: #000000;
+
+    --color-primary: #F8F8F8;
+    --color-secondary: #C6C6C6;
+
+    /* Layout */
+    --stroke-size: 3px;
+    --header-height: 56px;
+
+    --article-margin-standard: 64px;
+    --article-margin-small: 32px;
+    
+    --standard-gap: 32px;
+    --border-radius: 20px;
+
+    /* Buttons */
+    --button-padding: 5%;
+    --button-font-size: 15px;
+    --button-radius: 10px;
+}
