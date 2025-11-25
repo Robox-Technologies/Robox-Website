@@ -23,7 +23,7 @@ const backButton = document.getElementById('back-button') as HTMLButtonElement
 let currentStep: 'email' | 'password' = 'email'
 let userEmail = ''
 
-authCheck('guest', true)
+authCheck('user', true)
 
 function showError(message: string) {
     if (currentStep === 'email') {
