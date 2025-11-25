@@ -270,7 +270,8 @@ app.use((_, res) => {
     res.status(404).sendFile(path404);
 });
 
+const port = Number(process.env.PORT) || 3000;
 
-app.listen(3000, function () {
-    console.log('Ro/Box website listening on port 3000!\n');
+app.listen(port, () => {
+    console.log(`Ro/Box website listening on port ${port}!\n`);
 });
