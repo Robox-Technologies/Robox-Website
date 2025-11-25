@@ -21,10 +21,11 @@ const teacherButton = document.getElementById('teacher-button') as HTMLButtonEle
 const firstNameInput = document.getElementById('first-name') as HTMLInputElement
 const lastNameInput = document.getElementById('last-name') as HTMLInputElement
 const emailInput = document.getElementById('email') as HTMLInputElement
-const passwordInput = document.getElementById('password') as HTMLInputElement
+const passwordInput = document.getElementById('password-input') as HTMLInputElement
 const confirmPasswordInput = document.getElementById('confirm-password') as HTMLInputElement
 const signupButton = document.getElementById('signup-button') as HTMLButtonElement
 const backButton = document.getElementById('back-button') as HTMLButtonElement
+const signupTitle = document.getElementById('signup-title') as HTMLHeadingElement
 // Error Messages 
 const userTypeErrorMsg = document.getElementById('user-type-error-msg') as HTMLParagraphElement
 const firstNameErrorMsg = document.getElementById('first-name-error-msg') as HTMLParagraphElement
@@ -92,6 +93,7 @@ function showUserTypeStep() {
     personalInfoContainer.style.display = 'none'
     passwordContainer.style.display = 'none'
     backButton.style.display = 'none'
+    signupButton.style.display = 'none'
     
     signupButton.innerHTML = 'Continue <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>'
     
@@ -105,6 +107,7 @@ function showPersonalInfoStep() {
     personalInfoContainer.style.display = 'block'
     passwordContainer.style.display = 'none'
     backButton.style.display = 'inline-flex'
+    signupButton.style.display = 'block'
     
     signupButton.innerHTML = 'Continue <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>'
     
@@ -321,27 +324,26 @@ function handleBack() {
 
 function selectUserType(type: 'student' | 'teacher') {
     userType = type
-    
+
     studentButton.classList.remove('selected')
     teacherButton.classList.remove('selected')
-    
+
     if (type === 'student') {
         studentButton.classList.add('selected')
     } else {
         teacherButton.classList.add('selected')
     }
-    
+
     hideAllErrors()
+    signupButton.style.display = 'inline-flex'
+    showPersonalInfoStep()
 }
 
 isAuthenticated().then(authenticated => {
     if (authenticated) {
         window.location.href = '/home'
     }
-})
 
-
-document.addEventListener('DOMContentLoaded', () => {
     signupButton.addEventListener('click', handleSignup)
     backButton.addEventListener('click', handleBack)
     
@@ -351,6 +353,18 @@ document.addEventListener('DOMContentLoaded', () => {
     firstNameInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && currentStep === 'personal-info') {
             handleSignup()
+        }
+    })
+
+    firstNameInput.addEventListener('input', () => {
+        const cursorStart = firstNameInput.selectionStart
+        firstNameInput.value = firstNameInput.value.replace(/\b\w/g, c => c.toUpperCase())
+        if (cursorStart !== null) firstNameInput.setSelectionRange(cursorStart, cursorStart)
+
+        if (firstNameInput.value.trim()) {
+            signupTitle.textContent = `Hi ${firstNameInput.value.trim()}!`
+        } else {
+            signupTitle.textContent = 'Sign Up'
         }
     })
 
@@ -379,7 +393,12 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     
     firstNameInput.addEventListener('input', hideAllErrors)
-    lastNameInput.addEventListener('input', hideAllErrors)
+    lastNameInput.addEventListener('input', () => {
+        const cursorStart = lastNameInput.selectionStart
+        lastNameInput.value = lastNameInput.value.replace(/\b\w/g, c => c.toUpperCase())
+        if (cursorStart !== null) lastNameInput.setSelectionRange(cursorStart, cursorStart)
+        hideAllErrors()
+    })
     emailInput.addEventListener('input', hideAllErrors)
     passwordInput.addEventListener('input', hideAllErrors)
     confirmPasswordInput.addEventListener('input', hideAllErrors)
