@@ -208,8 +208,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (isValidExtension(extensionType) === false) return;
             const extensions = getProjectExtensions(workspaceId);
             if (!extensions) return;
-            const currentState = extensions[extensionType];
-            toggleExtensionUI(workspaceId, ExtensionType[extensionType], !currentState);
+            toggleExtension(workspaceId, ExtensionType[extensionType]);
+            toggleExtensionUI(workspaceId, ExtensionType[extensionType]);
         })
     })
 
@@ -223,14 +223,13 @@ function extensionModalSetup(uuid: string): null | void {
     const extensions = getProjectExtensions(uuid);
     if (!extensions) return null;
     for (const ext of Object.values(ExtensionType)) {
-        if (ExtensionType[ext] === undefined) continue;
         toggleExtensionUI(uuid, ext);
     }
 
 }
 function toggleExtensionUI(uuid: string, extension: ExtensionType) {
     const extensionToggle = document.querySelector(`#extension-${extension}`) as HTMLElement | null;
-    const enabled = toggleExtension(uuid, extension);
+    const enabled = getProjectExtensions(uuid)?.[extension];
     if (!extensionToggle) return;
     if (enabled) {
         extensionToggle.classList.add("enabled")
