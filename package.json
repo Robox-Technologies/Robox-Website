@@ -11,6 +11,9 @@
   "dependencies": {
     "@astrojs/check": "^0.9.5",
     "@astrojs/react": "^4.4.2",
+    "@fortawesome/fontawesome-svg-core": "^7.1.0",
+    "@fortawesome/free-solid-svg-icons": "^7.1.0",
+    "@fortawesome/react-fontawesome": "^3.1.1",
     "@tailwindcss/vite": "^4.1.17",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.3",
