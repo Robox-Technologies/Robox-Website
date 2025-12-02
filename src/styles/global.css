@@ -2,7 +2,11 @@
 
 @theme {
 
-
+    --color-blue: #2588C7;
+    --color-green: #91CC31;
+    --color-yellow: #FFCD44;
+    --color-red: #FF6166;
+    --color-black:#405C64;
     /* Colors */
     --color-drop-shadow: #26363B;
 
