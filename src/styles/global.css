@@ -31,6 +31,9 @@
 }
 @layer components {
     .button-standard {
-        @apply bg-color-primary text-color-tone4 font-semibold;
+        @apply bg-primary text-tone4 font-semibold;
     }
+}
+* {
+    box-sizing: border-box;
 }
