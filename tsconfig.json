@@ -10,6 +10,8 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "react",
+    "moduleResolution": "bundler",
+    "module": "ESNext",
     "baseUrl": "./",
     "paths": {
       "@components/*": ["src/components/*"],
