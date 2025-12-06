@@ -16,6 +16,7 @@ Blockly.Msg.LISTS_COLOR = "#F9844A"
 Blockly.Msg.SENSOR_COLOR = "#FFCD44";
 Blockly.Msg.SYSTEM_COLOR = "#90BE6D";
 Blockly.Msg.MOTOR_COLOR = "#43AA8B";
+Blockly.Msg.SERVO_COLOR = "#277DA1";
 
 Blockly.Msg.VARIABLES_COLOR = "#4D908E";
 Blockly.Msg.PROCEDURES_COLOR = "#577590";
@@ -68,6 +69,9 @@ export default Blockly.Theme.defineTheme('Robox', {
         "procedure_category": {
             'colour': '%{BKY_PROCEDURES_COLOR}'
         },
+        "servo_category": {
+            'colour': '%{BKY_SERVO_COLOR}'
+        },
     },
     blockStyles: {
         'logic_blocks': {
@@ -102,7 +106,11 @@ export default Blockly.Theme.defineTheme('Robox', {
         "procedure_blocks": {
             'colourPrimary': '%{BKY_PROCEDURES_COLOR}'
         },
-        
+        "servo_blocks": {
+            'colourPrimary': '%{BKY_SERVO_COLOR}'
+        },
+
+
     },
 
 
