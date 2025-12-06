@@ -1,5 +1,5 @@
 import * as Blockly from 'blockly/core';
-const servos = [
+const servo = [
     {
         "type": "servo_set_angle",
         "message0": "set servo angle to %1°",
@@ -12,7 +12,7 @@ const servos = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "style": "movement_blocks",
+        "style": "servo_blocks",
         "tooltip": "Sets the servo to the specified angle (0–180°)",
         "helpUrl": "",
         "inputsInline": true
@@ -29,7 +29,7 @@ const servos = [
         ],
         "previousStatement": null,
         "nextStatement": null,
-        "style": "movement_blocks",
+        "style": "servo_blocks",
         "tooltip": "Rotates the servo relative to its current position",
         "helpUrl": "",
         "inputsInline": true
@@ -38,10 +38,10 @@ const servos = [
         "type": "servo_get_angle",
         "message0": "current servo angle",
         "output": "Number",
-        "style": "sensor_blocks",
+        "style": "servo_blocks",
         "tooltip": "Returns the last known angle of the servo",
         "helpUrl": "",
         "inputsInline": true
     }
 ];
-Blockly.defineBlocksWithJsonArray(servos);
+Blockly.defineBlocksWithJsonArray(servo);

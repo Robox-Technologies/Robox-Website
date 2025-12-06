@@ -15,13 +15,6 @@ import {registerFieldColour} from '@blockly/field-colour';
 import { postBlocklyWSInjection } from './usb';
 import { registerControls } from './controls';
 
-import { servoCategory } from './blockly/extensions/servo';
-
-const extensionCategories = {
-    [ExtensionType.SERVO]: servoCategory,
-    [ExtensionType.ADVANCED]: {},
-    [ExtensionType.DISPLAY]: {},
-};
 
 registerFieldColour();
 
@@ -217,8 +210,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (isValidExtension(extensionType) === false) return;
             const extensions = getProjectExtensions(workspaceId);
             if (!extensions) return;
-            toggleExtension(workspaceId, ExtensionType[extensionType]);
-            toggleExtensionUI(workspaceId, ExtensionType[extensionType]);
+            const enabled = toggleExtension(workspaceId, ExtensionType[extensionType]);
+            toggleExtensionUI(workspaceId, ExtensionType[extensionType], enabled);
         })
     })
 
@@ -232,13 +225,12 @@ function extensionModalSetup(uuid: string): null | void {
     const extensions = getProjectExtensions(uuid);
     if (!extensions) return null;
     for (const ext of Object.values(ExtensionType)) {
-        toggleExtensionUI(uuid, ext);
+        toggleExtensionUI(uuid, ext, extensions[ext]);
     }
 
 }
-function toggleExtensionUI(uuid: string, extension: ExtensionType) {
-    const extensionToggle = document.querySelector(`#extension-${extension}`) as HTMLElement | null;
-    const enabled = getProjectExtensions(uuid)?.[extension];
+function toggleExtensionUI(uuid: string, extension: ExtensionType, enabled: boolean): void {
+    const extensionToggle = document.querySelector(`#extension-${extension.toLowerCase()}`) as HTMLElement | null;
     if (!extensionToggle) return;
     if (enabled) {
         extensionToggle.classList.add("enabled")
@@ -256,7 +248,7 @@ function rotateOneTooth(cog: HTMLElement) {
     cog.style.transform = `rotate(${rotation}deg)`;
 }
 function isValidExtension(ext: string): ext is keyof typeof ExtensionType {
-    return ext in ExtensionType;
+    return ext.toUpperCase() in ExtensionType;
 }
 function toggleExtension(uuid: string, extension: ExtensionType):boolean {
     const projects = JSON.parse(localStorage.getItem("roboxProjects") || "{}") as Record<string, Project>;
@@ -270,17 +262,29 @@ function toggleExtension(uuid: string, extension: ExtensionType):boolean {
     return projects[uuid]["extensions"][extension];
 }
 function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
-    const newToolbox = structuredClone(toolbox) 
-    for (const [extension, enabled] of Object.entries(extensions)) {
-        if (enabled) {
-            newToolbox.contents.push(extensionCategories[ExtensionType[extension]]);
-        }
-    }
     const workspace = Blockly.getMainWorkspace();
-    // Check if the workspace is of type Blockly.WorkspaceSvg
+    // Assert that workspace is workspaceSVG
     if (!(workspace instanceof Blockly.WorkspaceSvg)) {
         console.error("Workspace is not of type Blockly.WorkspaceSvg");
         return;
     }
-    workspace.updateToolbox(newToolbox);
+    const toolbox = workspace.getToolbox();
+    // Assert that toolbox is Toolbox
+    if (!(toolbox instanceof Blockly.Toolbox)) {
+        console.error("Toolbox is not of type Blockly.Toolbox");
+        return;
+    }
+    const categories = toolbox.getToolboxItems()
+    const categoriesInfo = categories.map(item => "toolboxItemDef_" in item ? item["toolboxItemDef_"] : null).filter(def => def !== null) as (Blockly.utils.toolbox.StaticCategoryInfo)[];
+    for (const extension of Object.values(ExtensionType)) {
+        const categoryIndex = categoriesInfo.findIndex(category => category.name && category.name.toUpperCase() === extension);
+        if (categoryIndex === -1) continue; // Category not found
+        if (extensions[extension]) {
+            if (categories[categoryIndex] instanceof Blockly.ToolboxCategory) categories[categoryIndex].show()
+        } else {
+            if (categories[categoryIndex] instanceof Blockly.ToolboxCategory) categories[categoryIndex].hide()
+        }
+    }
+    
+
 }

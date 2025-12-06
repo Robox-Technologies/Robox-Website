@@ -642,6 +642,31 @@ export const toolbox = {
         'categorystyle': 'procedure_category',
         'custom': 'PROCEDURE',
       },
+      {
+        'kind': 'sep',
+      },
+      {
+    'kind': 'category',
+    'name': 'Servo',
+    "cssConfig": {
+        "icon": "categoryIcon fa fa-arrows-rotate"
+    },
+    'categorystyle': 'servo_category',
+    'contents': [
+        {
+            'kind': 'block',
+            'type': 'servo_set_angle'
+        },
+        {
+            'kind': 'block',
+            'type': 'servo_rotate'
+        },
+        {
+            'kind': 'block',
+            'type': 'servo_get_angle'
+        }
+    ]
+},
     ],
   };
   
