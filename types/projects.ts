@@ -1,8 +1,6 @@
 import dayjs from "dayjs"
 export enum ExtensionType {
     SERVO = "SERVO",
-    ADVANCED = "ADVANCED",
-    DISPLAY = "DISPLAY",
 }
 export type Extension = {
     [key in ExtensionType]: boolean
