@@ -150,15 +150,6 @@ export function saveBlocklyCompressed(projectRaw: string) {
     localStorage.setItem("roboxProjects", projectData)
     return projectData
 }
-export function toggleExtension(uuid: string, extension: ExtensionType):boolean {
-    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
-
-    const projects = getProjects()
-    if (!projects[uuid]) throw new Error("Project does not exist")
-    projects[uuid]["extensions"][extension] = !projects[uuid]["extensions"][extension];
-    localStorage.setItem("roboxProjects", JSON.stringify(projects))
-    return projects[uuid]["extensions"][extension];
-}
 export function renameProject(uuid: string, newName:string) {
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 

@@ -9,11 +9,19 @@ import {toolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
 import { ExtensionType, Project } from '~types/projects';
-import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject, getProjectExtensions, toggleExtension } from '@root/blockly/serialization';
+import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject, getProjectExtensions } from '@root/blockly/serialization';
 import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
 import { postBlocklyWSInjection } from './usb';
 import { registerControls } from './controls';
+
+import { servoCategory } from './blockly/extensions/servo';
+
+const extensionCategories = {
+    [ExtensionType.SERVO]: servoCategory,
+    [ExtensionType.ADVANCED]: {},
+    [ExtensionType.DISPLAY]: {},
+};
 
 registerFieldColour();
 
@@ -21,6 +29,7 @@ import "./instructions/UF2Flash"
 import "./instructions/colourCalibration"
 
 import { showToast } from '@root/toast';
+
 
 
 
@@ -248,4 +257,30 @@ function rotateOneTooth(cog: HTMLElement) {
 }
 function isValidExtension(ext: string): ext is keyof typeof ExtensionType {
     return ext in ExtensionType;
+}
+function toggleExtension(uuid: string, extension: ExtensionType):boolean {
+    const projects = JSON.parse(localStorage.getItem("roboxProjects") || "{}") as Record<string, Project>;
+    if (!projects[uuid]) {
+        console.error(`Project with UUID ${uuid} not found.`);
+        return false;
+    }
+    projects[uuid]["extensions"][extension] = !projects[uuid]["extensions"][extension];
+    localStorage.setItem("roboxProjects", JSON.stringify(projects));
+    setExtensionToolbox(projects[uuid]["extensions"]);
+    return projects[uuid]["extensions"][extension];
+}
+function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
+    const newToolbox = structuredClone(toolbox) 
+    for (const [extension, enabled] of Object.entries(extensions)) {
+        if (enabled) {
+            newToolbox.contents.push(extensionCategories[ExtensionType[extension]]);
+        }
+    }
+    const workspace = Blockly.getMainWorkspace();
+    // Check if the workspace is of type Blockly.WorkspaceSvg
+    if (!(workspace instanceof Blockly.WorkspaceSvg)) {
+        console.error("Workspace is not of type Blockly.WorkspaceSvg");
+        return;
+    }
+    workspace.updateToolbox(newToolbox);
 }
