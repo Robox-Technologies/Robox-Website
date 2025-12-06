@@ -251,6 +251,12 @@ function isValidExtension(ext: string): ext is keyof typeof ExtensionType {
     return ext.toUpperCase() in ExtensionType;
 }
 function toggleExtension(uuid: string, extension: ExtensionType):boolean {
+    if (checkIfExtensionBlocksExist(extension)) {
+        showToast("error", "Cannot Disable Extension", `Please remove all blocks from the ${extension} extension before disabling it.`, 5000);
+        return true; // Still enabled
+    }
+
+
     const projects = JSON.parse(localStorage.getItem("roboxProjects") || "{}") as Record<string, Project>;
     if (!projects[uuid]) {
         console.error(`Project with UUID ${uuid} not found.`);
@@ -260,6 +266,16 @@ function toggleExtension(uuid: string, extension: ExtensionType):boolean {
     localStorage.setItem("roboxProjects", JSON.stringify(projects));
     setExtensionToolbox(projects[uuid]["extensions"]);
     return projects[uuid]["extensions"][extension];
+}
+function checkIfExtensionBlocksExist(extension: ExtensionType): boolean {
+    const workspace = Blockly.getMainWorkspace();
+    const allBlocks = workspace.getAllBlocks(false);
+    for (const block of allBlocks) {
+        if (block.type.startsWith(extension.toLowerCase())) {
+            return true;
+        }
+    }
+    return false;
 }
 function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
     const workspace = Blockly.getMainWorkspace();
