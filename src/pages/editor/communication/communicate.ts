@@ -13,7 +13,7 @@ const COMMANDS = {
 }
 
 type picoMessage = {
-    type: "console" | "confirmation" | "error" | "online",
+    type: "console" | "confirmation" | "error",
     message: string,
 }
 
@@ -32,7 +32,6 @@ type EventPayload = { event: 'calibrated'; options: picoOptions } |
                     { event: 'downloaded'; options: object } | 
                     { event: 'firmware'; options: firmwareOptions } | 
                     { event: 'confirmation'; options: picoOptions } | 
-                    { event: 'online'; options: picoOptions } | 
                     { event: 'error'; options: picoOptions } | 
                     { event: 'connect'; options: object } | 
                     { event: 'disconnect'; options: disconnectOptions }
@@ -88,9 +87,6 @@ export class Pico extends EventTarget {
         if (type === "confirmation") {
             this.firmware = true //The firmware check was successful!
         }
-        if (type === "online") {
-            this.connect(null) //Reconnect after going online
-        }
         this.emit({"event": type, "options": { message: payload.message }})
     }
     write(command: string): Promise<void> {
@@ -137,15 +133,9 @@ export class Pico extends EventTarget {
     }
     async connect(port: SerialPort | BluetoothDevice): Promise<void> {
         try {
-            if (this.restarting && this.communication instanceof BluetoothCommunication) {
-                this.restarting = false //Bluetooth devices do not need to reconnect after a restart
-                this.firmwareCheck()
-            }
-            else {
-                await this.communication.connect(port)
-                if (this.restarting) this.restarting = false
-                this.firmwareCheck()
-            }
+            await this.communication.connect(port)
+            if (this.restarting) this.restarting = false
+            this.firmwareCheck()
         }
         catch (e) {
             this.emit({ event: 'error', options: { message: e } })
@@ -398,41 +388,45 @@ class BluetoothCommunication implements Communication {
         return Promise.resolve()
     }
     private valueChanged(event: Event): void {
-        if ("characteristicvaluechanged" !== event.type) return
-        const target = event.target
-        if (!target || !('value' in target) || typeof target.value === "undefined") return;
+        if (event.type !== "characteristicvaluechanged") return;
+
+        const target = event.target 
+        if (!target || !("value" in target) || typeof target.value === "undefined") return;
+
         const rawValue = target.value;
         if (!rawValue || !(rawValue instanceof DataView)) return;
-        const value = this.decoder.decode(rawValue);
-        let consoleMessages : picoMessage[] = [] //The console messages SHOULD be sent full JSON, but sometimes that does not happen
-        try {
-            if (typeof value !== "string") return
-            consoleMessages = [JSON.parse(value)]
-            this.buffer = ''
-        } catch {
-            this.buffer += value
-            const bufferMessages = this.buffer.split("\n")
-            let index = 0
-            for (const bufferMessage of bufferMessages) { //Every JSON object is delimited by a new line, so even if the message is split if you loop over it you can join them together!
-                try {
-                    if (typeof bufferMessage !== "string") {
-                        this.parent.emit({ event: 'error', options: { message: "Received non-string message from pico!" } })
-                        return
-                    }
-                    consoleMessages.push(JSON.parse(bufferMessage))
-                    
-                } catch {
-                    break; //Not yet a full JSON message
-                }
-                index += 1
+
+        const value = this.decoder.decode(rawValue); // decode BLE bytes
+        if (typeof value !== "string") return;
+
+        // Append the new chunk to the buffer
+        this.buffer += value;
+
+        const consoleMessages: picoMessage[] = [];
+        const jsonRegex = /\{[^}]*\}/g; // simple JSON object matcher
+        let match: RegExpExecArray | null;
+        let lastIndex = 0;
+
+        // Extract all complete JSON objects
+        while ((match = jsonRegex.exec(this.buffer)) !== null) {
+            try {
+                const jsonString = match[0];
+                const message: picoMessage = JSON.parse(jsonString);
+                consoleMessages.push(message);
+                lastIndex = jsonRegex.lastIndex;
+            } catch {
+                // Incomplete or invalid JSON — keep it in buffer
+                break;
             }
-            bufferMessages.splice(0, index)
-            this.buffer = bufferMessages.join("\n").trim() //Join the rest of the messages together
         }
+
+        // Remove consumed part of buffer
+        this.buffer = this.buffer.slice(lastIndex);
+
+        // Send messages to parent
         for (const message of consoleMessages) {
-            this.parent.read(message)
+            this.parent.read(message);
         }
-        consoleMessages = []
     }
     async read(): Promise<void> {
         this.characteristic?.addEventListener('characteristicvaluechanged', this.valueChanged.bind(this));
@@ -445,6 +439,7 @@ class BluetoothCommunication implements Communication {
             await this.characteristic?.writeValue(data);
             await new Promise(resolve => setTimeout(resolve, WRITE_TIMEOUT));
         }
+        return Promise.resolve()
         //Write the newline character at the end
     }
     async write(messages: string | string[]): Promise<void> {
@@ -461,6 +456,7 @@ class BluetoothCommunication implements Communication {
         }
         catch (e) {
             console.error("Write failed:", e);
+            this.parent.emit({ event: 'error', options: { message: e } })
             return Promise.reject("Could not write to pico!")
         }
     }
