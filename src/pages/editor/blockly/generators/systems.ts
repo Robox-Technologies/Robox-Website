@@ -29,6 +29,6 @@ pythonGenerator.forBlock['sleep'] = function (block, generator) {
 };
 pythonGenerator.forBlock['print'] = function (block, generator) {
     const value_time = generator.valueToCode(block, 'string', Order.ATOMIC);
-    const code = `print(generatePrint("console", ${value_time}))\n`;
+    const code = `print(generatePrint("console", ${value_time}))\nuart.write(generatePrint("console", ${value_time}))\n`;
     return code;
 };

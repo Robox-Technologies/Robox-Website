@@ -7,12 +7,14 @@ import * as sanitizeHtml from 'sanitize-html';
 import { showToast } from '@root/toast';
 
 const scriptDependency = `
+uart = UART(0, baudrate=9600, tx=Pin(0), rx=Pin(1))
 from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
-from machine import Pin, Timer
+from machine import Pin, Timer, UART
 import time
 import json
 import sys
 ENV_LED = Pin(25, Pin.OUT)
+uart = UART(0, baudrate=9600, tx=Pin(0), rx=Pin(1))
 line = LineSensors()
 left_motor_polarity = right_motor_polarity = -1
 ultrasonic = UltrasonicSensor()
