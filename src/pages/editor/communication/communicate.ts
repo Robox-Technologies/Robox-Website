@@ -44,7 +44,7 @@ interface Communication {
     initialize(): void;
 }
 
-const WRITE_TIMEOUT = 5;
+const WRITE_TIMEOUT = 2;
 export class Pico extends EventTarget {
     communication: Communication
     firmwareVersion: number
