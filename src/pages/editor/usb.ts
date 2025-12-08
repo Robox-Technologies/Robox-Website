@@ -2,12 +2,11 @@ import { pico } from './communication/communicate';
 import * as Blockly from 'blockly/core';
 import { pythonGenerator } from 'blockly/python'
 
-import { clearConsole, printToConsole } from './console';
+import { printToConsole } from './console';
 import * as sanitizeHtml from 'sanitize-html';
 import { showToast } from '@root/toast';
 
 const scriptDependency = `
-uart = UART(0, baudrate=9600, tx=Pin(0), rx=Pin(1))
 from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
 from machine import Pin, Timer, UART
 import time
@@ -96,11 +95,11 @@ export function postBlocklyWSInjection() {
         pico.restart()
         connectionManagment.setAttribute("loading",  "true")
     })
-    runButton?.addEventListener("click", () => {
+    runButton?.addEventListener("click", async () => {
         if (connectionManagment.getAttribute("loading") === "true") return
         connectionManagment.setAttribute("status",  "running")
         connectionManagment.setAttribute("loading",  "false")
-        sendCode(ws)
+        await sendCode(ws)
         pico.runCode()
         printToConsole("Code running on Ro/Box");
 
@@ -117,10 +116,10 @@ export function postBlocklyWSInjection() {
     })
 
 }
-function sendCode(ws: Blockly.Workspace) {
+async function sendCode(ws: Blockly.Workspace) {
     const code = pythonGenerator.workspaceToCode(ws);
     const finalCode = `${scriptDependency}\n${code}\nevent_begin()`
-    pico.sendCode(finalCode)
+    await pico.sendCode(finalCode)
     printToConsole("Code sent to Ro/Box");
 }
 export function getPythonCode(ws: Blockly.Workspace): string {
