@@ -31,8 +31,9 @@ motor_speed = 60
 
 let downloadingToPico = false
 
-
 export function postBlocklyWSInjection() {
+    let sameCode = false;
+
     const ws = Blockly.getMainWorkspace()
     const connectionManagment = document.getElementById("connection-management")
     const terminalButton = document.getElementById("console-button");
@@ -68,6 +69,10 @@ export function postBlocklyWSInjection() {
     })
     pico.addEventListener("console", (event) => {
         const picoEvent = event as CustomEvent
+        if (sameCode && picoEvent.detail.message.trim() === "Starting the program") {
+            connectionManagment.setAttribute("status",  "running")
+            connectionManagment.setAttribute("loading",  "false")
+        }
         printToConsole(picoEvent.detail.message)
     })
     pico.addEventListener("error", () => {
@@ -98,8 +103,9 @@ export function postBlocklyWSInjection() {
     runButton?.addEventListener("click", async () => {
         if (connectionManagment.getAttribute("loading") === "true") return
         connectionManagment.setAttribute("status",  "running")
-        connectionManagment.setAttribute("loading",  "false")
-        await sendCode(ws)
+        connectionManagment.setAttribute("loading",  "true")
+        if (!sameCode) await sendCode(ws)
+        sameCode = true
         pico.runCode()
         printToConsole("Code running on Ro/Box");
 
@@ -115,6 +121,11 @@ export function postBlocklyWSInjection() {
         showToast("error", "Pico Error", `An error occurred while communicating with the Pico. Please check your connection and try again. \nError: ${sanitizeHtml(picoEvent.detail.message)}`, 5000);
     })
 
+    ws.addChangeListener((event) => {
+        if (event.isUiEvent) return;
+        sameCode = false;
+    })
+
 }
 async function sendCode(ws: Blockly.Workspace) {
     const code = pythonGenerator.workspaceToCode(ws);
@@ -126,4 +137,3 @@ export function getPythonCode(ws: Blockly.Workspace): string {
     const code = pythonGenerator.workspaceToCode(ws);
     return `${scriptDependency}\n${code}\nevent_begin()`
 }
-
