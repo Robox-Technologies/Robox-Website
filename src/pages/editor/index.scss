@@ -528,9 +528,10 @@ $settingsToolbarWidth: 200px;
         align-content: flex-start;
         gap: variables.$standardGap;
     }
-    .card {
-        flex: 1 1 0;
+    .card { 
+        flex: 0 0 30%;
         width: 30%;
+
         .card-image {
             min-width: 100px;
             object-fit: contain;
