@@ -4,7 +4,7 @@
 import { pythonGenerator, Order } from 'blockly/python'
 
 
-const COLOR_DEFINITIONS: Record<string, string> = {
+const hexToName: Record<string, string> = {
     "#ff0000": "red",
     "#ffa500": "orange",
     "#ffff00": "yellow",

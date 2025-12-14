@@ -8,12 +8,13 @@ import theme from "./blockly/theme"
 import {toolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
-import { Project } from '~types/projects';
-import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject } from '@root/blockly/serialization';
+import { ExtensionType, Project } from '~types/projects';
+import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject, getProjectExtensions } from '@root/blockly/serialization';
 import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
 import { postBlocklyWSInjection } from './usb';
 import { registerControls } from './controls';
+
 
 registerFieldColour();
 
@@ -21,6 +22,8 @@ import "./instructions/UF2Flash"
 import "./instructions/colourCalibration"
 
 import { showToast } from '@root/toast';
+
+
 
 
 
@@ -162,7 +165,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event.isUiEvent) return;
         saveBlockly(workspaceId, workspace);
     });
-
     // Extend first category
     const firstCategory = document.querySelector(".blocklyToolboxCategory")
     const icon = firstCategory.querySelector(".categoryIcon") as HTMLElement;
@@ -193,12 +195,112 @@ document.addEventListener("DOMContentLoaded", () => {
         dialog.show()
         event.stopPropagation()
     })
+    // Setting up the extension stuff
+    const extensionModal = document.getElementById("extension-modal") as HTMLDialogElement | null;
+    const extensions = extensionModal.querySelectorAll(".card");
+    const extensionButton = document.getElementById("robox-extension-button")
+    if (!extensionButton || !extensionModal) return;
+    extensionButton?.addEventListener("click", () => {
+        extensionModalSetup(workspaceId);
+        extensionModal.showModal()
+    })
+    extensions.forEach((extensionCard) => {
+        extensionCard.addEventListener("click", () => {
+            const extensionType = extensionCard.getAttribute("extension-type");
+            if (isValidExtension(extensionType) === false) return;
+            const extensions = getProjectExtensions(workspaceId);
+            if (!extensions) return;
+            const enabled = toggleExtension(workspaceId, ExtensionType[extensionType]);
+            toggleExtensionUI(workspaceId, ExtensionType[extensionType], enabled);
+        })
+    })
+
+    //Preventing orphans
     workspace.addChangeListener(Blockly.Events.disableOrphans);
 }) 
+function extensionModalSetup(uuid: string): null | void {
+    const extensionModal = document.getElementById("extension-modal") as HTMLDialogElement | null;
+    if (!extensionModal) return null;
+    
+    const extensions = getProjectExtensions(uuid);
+    if (!extensions) return null;
+    for (const ext of Object.values(ExtensionType)) {
+        toggleExtensionUI(uuid, ext, extensions[ext]);
+    }
+
+}
+function toggleExtensionUI(uuid: string, extension: ExtensionType, enabled: boolean): void {
+    const extensionToggle = document.querySelector(`#extension-${extension.toLowerCase()}`) as HTMLElement | null;
+    if (!extensionToggle) return;
+    if (enabled) {
+        extensionToggle.classList.add("enabled")
+        extensionToggle.classList.remove("disabled")
+    } else {
+        extensionToggle.classList.add("disabled")
+        extensionToggle.classList.remove("enabled")
+    }
+}
 let rotation = 0;
 const degreesPerTooth = 60; // Adjust this value to match one gear tooth visually
 function rotateOneTooth(cog: HTMLElement) {
     rotation += degreesPerTooth;
     cog.style.transition = 'transform 0.5s ease-out';
     cog.style.transform = `rotate(${rotation}deg)`;
+}
+function isValidExtension(ext: string): ext is keyof typeof ExtensionType {
+    return ext.toUpperCase() in ExtensionType;
+}
+function toggleExtension(uuid: string, extension: ExtensionType):boolean {
+    if (checkIfExtensionBlocksExist(extension)) {
+        showToast("error", "Cannot Disable Extension", `Please remove all blocks from the ${extension} extension before disabling it.`, 5000);
+        return true; // Still enabled
+    }
+
+
+    const projects = JSON.parse(localStorage.getItem("roboxProjects") || "{}") as Record<string, Project>;
+    if (!projects[uuid]) {
+        console.error(`Project with UUID ${uuid} not found.`);
+        return false;
+    }
+    projects[uuid]["extensions"][extension] = !projects[uuid]["extensions"][extension];
+    localStorage.setItem("roboxProjects", JSON.stringify(projects));
+    setExtensionToolbox(projects[uuid]["extensions"]);
+    return projects[uuid]["extensions"][extension];
+}
+function checkIfExtensionBlocksExist(extension: ExtensionType): boolean {
+    const workspace = Blockly.getMainWorkspace();
+    const allBlocks = workspace.getAllBlocks(false);
+    for (const block of allBlocks) {
+        if (block.type.startsWith(extension.toLowerCase())) {
+            return true;
+        }
+    }
+    return false;
+}
+function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
+    const workspace = Blockly.getMainWorkspace();
+    // Assert that workspace is workspaceSVG
+    if (!(workspace instanceof Blockly.WorkspaceSvg)) {
+        console.error("Workspace is not of type Blockly.WorkspaceSvg");
+        return;
+    }
+    const toolbox = workspace.getToolbox();
+    // Assert that toolbox is Toolbox
+    if (!(toolbox instanceof Blockly.Toolbox)) {
+        console.error("Toolbox is not of type Blockly.Toolbox");
+        return;
+    }
+    const categories = toolbox.getToolboxItems()
+    const categoriesInfo = categories.map(item => "toolboxItemDef_" in item ? item["toolboxItemDef_"] : null).filter(def => def !== null) as (Blockly.utils.toolbox.StaticCategoryInfo)[];
+    for (const extension of Object.values(ExtensionType)) {
+        const categoryIndex = categoriesInfo.findIndex(category => category.name && category.name.toUpperCase() === extension);
+        if (categoryIndex === -1) continue; // Category not found
+        if (extensions[extension]) {
+            if (categories[categoryIndex] instanceof Blockly.ToolboxCategory) categories[categoryIndex].show()
+        } else {
+            if (categories[categoryIndex] instanceof Blockly.ToolboxCategory) categories[categoryIndex].hide()
+        }
+    }
+    
+
 }
