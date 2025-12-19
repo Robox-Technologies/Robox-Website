@@ -286,6 +286,10 @@ function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
         console.error("Workspace is not of type Blockly.WorkspaceSvg");
         return;
     }
+    if (!extensions) {
+        console.error("Extensions object is null or undefined");
+        return;
+    }
     //Create a new toolbox with the extensions categories added
     const newToolbox = structuredClone(toolbox)
     for (const ext of Object.values(ExtensionType)) {
