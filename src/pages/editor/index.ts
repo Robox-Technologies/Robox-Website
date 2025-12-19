@@ -5,7 +5,7 @@ import { ContinuousMetrics } from '@blockly/continuous-toolbox';
 
 import theme from "./blockly/theme"
 
-import {toolbox} from "./blockly/toolbox"
+import {toolbox, ExtensionToolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
 import { ExtensionType, Project } from '~types/projects';
@@ -23,8 +23,7 @@ import "./instructions/colourCalibration"
 
 import { showToast } from '@root/toast';
 
-
-
+  
 
 
 const blocks = require.context("./blockly/blocks", false, /\.ts$/);
@@ -214,6 +213,9 @@ document.addEventListener("DOMContentLoaded", () => {
             toggleExtensionUI(workspaceId, ExtensionType[extensionType], enabled);
         })
     })
+    if (workspaceId) {
+        setExtensionToolbox(getProjectExtensions(workspaceId));
+    }
 
     //Preventing orphans
     workspace.addChangeListener(Blockly.Events.disableOrphans);
@@ -284,23 +286,22 @@ function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
         console.error("Workspace is not of type Blockly.WorkspaceSvg");
         return;
     }
-    const toolbox = workspace.getToolbox();
-    // Assert that toolbox is Toolbox
-    if (!(toolbox instanceof Blockly.Toolbox)) {
-        console.error("Toolbox is not of type Blockly.Toolbox");
+    if (!extensions) {
+        console.error("Extensions object is null or undefined");
         return;
     }
-    const categories = toolbox.getToolboxItems()
-    const categoriesInfo = categories.map(item => "toolboxItemDef_" in item ? item["toolboxItemDef_"] : null).filter(def => def !== null) as (Blockly.utils.toolbox.StaticCategoryInfo)[];
-    for (const extension of Object.values(ExtensionType)) {
-        const categoryIndex = categoriesInfo.findIndex(category => category.name && category.name.toUpperCase() === extension);
-        if (categoryIndex === -1) continue; // Category not found
-        if (extensions[extension]) {
-            if (categories[categoryIndex] instanceof Blockly.ToolboxCategory) categories[categoryIndex].show()
-        } else {
-            if (categories[categoryIndex] instanceof Blockly.ToolboxCategory) categories[categoryIndex].hide()
+    //Create a new toolbox with the extensions categories added
+    const newToolbox = structuredClone(toolbox)
+    for (const ext of Object.values(ExtensionType)) {
+        if (extensions[ext]) {
+            const extToolbox = ExtensionToolbox[ext];
+            if (extToolbox) {
+                newToolbox.contents.push(extToolbox);
+            }
         }
     }
-    
+    workspace.updateToolbox(newToolbox);
+    //Refresh the continuous toolbox
+    workspace.getToolbox().refreshSelection();
 
 }
