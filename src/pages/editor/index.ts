@@ -295,7 +295,7 @@ function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
         }
     }
     workspace.updateToolbox(newToolbox);
-    //Refresh the continous toolbox
+    //Refresh the continuous toolbox
     workspace.getToolbox().refreshSelection();
 
 }
