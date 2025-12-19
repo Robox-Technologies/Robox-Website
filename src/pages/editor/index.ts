@@ -213,7 +213,9 @@ document.addEventListener("DOMContentLoaded", () => {
             toggleExtensionUI(workspaceId, ExtensionType[extensionType], enabled);
         })
     })
-    setExtensionToolbox(getProjectExtensions(workspaceId));
+    if (workspaceId) {
+        setExtensionToolbox(getProjectExtensions(workspaceId));
+    }
 
     //Preventing orphans
     workspace.addChangeListener(Blockly.Events.disableOrphans);
