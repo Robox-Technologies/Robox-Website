@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { ExtensionType } from "~types/projects";
+
 /*
 This toolbox contains nearly every single built-in block that Blockly offers,
 in addition to the custom block 'add_text' this sample app adds.
@@ -11,6 +13,32 @@ You probably don't need every single block, and should consider either rewriting
 your toolbox from scratch, or carefully choosing whether you need each block
 listed here.
 */
+
+const servo = {
+    'kind': 'category',
+    'name': 'Servo',
+    "cssConfig": {
+        "icon": "categoryIcon fa fa-arrows-rotate"
+    },
+    'categorystyle': 'servo_category',
+    'contents': [
+        {
+            'kind': 'block',
+            'type': 'servo_set_angle'
+        },
+        {
+            'kind': 'block',
+            'type': 'servo_rotate'
+        },
+        {
+            'kind': 'block',
+            'type': 'servo_get_angle'
+        }
+    ]
+};
+export const ExtensionToolbox = {
+    [ExtensionType.SERVO]: servo,
+}
 export const toolbox = {
     'kind': 'categoryToolbox',
     'contents': [
@@ -645,28 +673,6 @@ export const toolbox = {
       {
         'kind': 'sep',
       },
-      {
-    'kind': 'category',
-    'name': 'Servo',
-    "cssConfig": {
-        "icon": "categoryIcon fa fa-arrows-rotate"
-    },
-    'categorystyle': 'servo_category',
-    'contents': [
-        {
-            'kind': 'block',
-            'type': 'servo_set_angle'
-        },
-        {
-            'kind': 'block',
-            'type': 'servo_rotate'
-        },
-        {
-            'kind': 'block',
-            'type': 'servo_get_angle'
-        }
-    ]
-},
     ],
   };
   
