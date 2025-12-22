@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if ("serial" in navigator) {
-        postBlocklyWSInjection()
+        postBlocklyWSInjection(workspaceId);
     }
     else {
         showToast("warning", "Browser Incompatibility", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ", 5000);
