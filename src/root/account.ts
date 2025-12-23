@@ -685,13 +685,26 @@ export async function headerAuth() {
     addEventListener('DOMContentLoaded', async () => {
         const image = document.getElementById('header-avatar') as HTMLImageElement;
         await revalidate();
-        image.src = cachedData.avatar_url || '/img/default-avatar.png';
+        const parsedCache = cachedData ? JSON.parse(cachedData) : null;
+        image.src = parsedCache?.avatar_url || '/img/default-avatar.png';
         updateHeaderAvatar();
     });
 }
 
-function updateHeaderAvatar(url: String) {
-    
+function updateHeaderAvatar(url?: string) {
+    const image = document.getElementById('header-avatar') as HTMLImageElement | null;
+    if (!image) return;
+
+    getCurrentUserData()
+        .then(userData => {
+            const fallbackUrl = url?.trim() ? url : userData?.avatar_url;
+            const seed = userData?.id || 'default';
+            image.src = fallbackUrl || `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}`;
+        })
+        .catch(error => {
+            console.warn('Failed to refresh header avatar:', error);
+            image.src = url || 'https://api.dicebear.com/9.x/bottts/svg?seed=robox';
+        });
 }
 
 function genRandomInt(min, max) {

@@ -170,6 +170,13 @@ header {
     }
 }
 
+#header-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10%;
+    object-fit: cover;
+}
+
 @media (max-width: $hamburgerThreshold) {
     .header {
         .hamburger {
