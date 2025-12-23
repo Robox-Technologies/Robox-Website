@@ -1,4 +1,5 @@
 import { authCheck, signOut, deleteAccount, getCurrentUserData, writeToDatabase, updateHeaderAvatar } from '@root/account'
+import { showNotification } from '@partials/notification/notification'
 
 const titleElement = document.querySelector('h1.title') as HTMLHeadingElement
 const generalPageContainer = document.querySelector('.general-page-container') as HTMLDivElement
@@ -90,6 +91,7 @@ async function accountPage() {
                 currentUserRole = 'student'
                 studentRoleButton.classList.add('selected')
                 teacherRoleButton?.classList.remove('selected')
+                showNotification('Role changed to student', 'success', 'bottom', 5)
             } catch (e) {
                 console.error('Failed to set role student', e)
             }
@@ -103,6 +105,7 @@ async function accountPage() {
                 currentUserRole = 'teacher'
                 teacherRoleButton.classList.add('selected')
                 studentRoleButton?.classList.remove('selected')
+                showNotification('Role changed to teacher', 'success', 'bottom', 5)
             } catch (e) {
                 console.error('Failed to set role teacher', e)
             }
@@ -258,9 +261,10 @@ container.addEventListener('click', async (e) => {
         try {
             await writeToDatabase('profiles', user.id, 'avatar_url', newAvatarUrl, true);
         } catch (error) {
-            console.error('Failed to save avatar:', error);
+            showNotification('Failed to save avatar', 'error', 'bottom', 5)
         }
     }
+    showNotification('Avatar updated successfully', 'success', 'bottom', 5)
     updateHeaderAvatar(newAvatarUrl);
 });
 
