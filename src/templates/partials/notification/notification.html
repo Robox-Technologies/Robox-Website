@@ -1,0 +1,8 @@
+<link href="@partials/notification/notification.scss" rel="stylesheet">
+<div class="notification-container <%= it.class ? it.class : '' %> <%= it.location ? it.location : '' %> <%= it.status ? it.status : '' %>" id="notification<%= it.id ? (" " + it.id) : '' %>" style="display: <%= it.display ? 'block' : 'none' %>;">
+    <p class="notification-message"><%= it.message ? it.message : '' %></p>
+    <!-- <button class="notification-close-button" id="<%= it.closeButtonId ? it.closeButtonId : '' %>">
+        <i class="fa-solid fa-xmark"></i>
+    </button> -->
+</div>
+<script src="@partials/notification/notification.ts"></script> 

@@ -1,0 +1,62 @@
+@use '@root/variables';
+
+.notification-container {
+    width: 100%;
+    padding: 2px 8px;
+    margin: 8px;
+    width: calc(100% - 48px);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    font-family: 'Nunito', sans-serif;
+    font-weight: bold;
+    font-size: 24px;
+    color: variables.$primary;
+    text-align: center;
+    background-color: variables.$tone2;
+    transition: opacity 0.5s ease;
+
+    // color variants
+    &.success {
+        background-color: variables.$themeGreen;
+    }
+
+    &.error {
+        background-color: variables.$themeRed;
+    }
+
+    &.info {
+        background-color: variables.$themeBlue;
+    }
+
+    // location variants
+    &.top {
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+    }
+
+    &.bottom {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+    }
+
+    .notification-icon {
+        font-size: 24px;
+    }
+
+    .notification-message {
+        flex: 1;
+    }
+
+    p {
+        font-size: 24px;
+        padding: 2px;
+        margin: 0;
+    }
+}
