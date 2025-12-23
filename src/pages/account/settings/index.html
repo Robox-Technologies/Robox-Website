@@ -6,8 +6,12 @@
     <link href="./index.scss" rel="stylesheet">
 </head>
 <body>
+    <!-- Header Partial -->
     <%~ include('@partials/header/header.html') %>
+
+    <!-- Main Page Content -->
     <div class="page-content settings-page">
+        <!-- Side Navigation Menu -->
         <div class="side-menu">
             <button class="menu-item active" id="general-button">General</button>
             <button class="menu-item" id="account-button">Account</button>
@@ -17,25 +21,23 @@
             <button class="menu-item" id="advanced-button">Advanced</button>
             <button class="menu-item sign-out" id="logout-button">Sign Out</button>
         </div>
+
+        <!-- Settings Content Area -->
         <div class="content" id="settingsContent">
             <h1 class="title">Account Settings</h1>
+
+            <!-- General Settings Panel -->
             <div class="general-page-container page-container" style="display: none;">
                 <div class="two-column">
                     <div class="column">
                         <%~ include('@partials/text-input/text-input.html', {
-                            containerId: "",
                             inputId: "first-name-input",
-                            class: "",
                             label: 'First Name',
-                            placeholder: '',
-                            required: false,
                             autocomplete: 'given-name',
-                            errorId: 'first-name-error',
-                            type: 'text'
+                            errorId: 'first-name-error'
                         }) %>
                         <%~ include('@partials/dropdown-input/dropdown-input.html', {
                             containerId: "country-dropdown",
-                            required: false,
                             label: "Country",
                             value: [
                                 {label:"Australia", value:"au"},
@@ -56,23 +58,14 @@
                     </div>
                     <div class="column">
                         <%~ include('@partials/text-input/text-input.html', {
-                            containerId: "",
                             inputId: "last-name-input",
-                            class: "",
                             label: 'Last Name',
-                            placeholder: '',
-                            required: false,
                             autocomplete: 'family-name',
-                            errorId: 'last-name-error',
-                            type: 'text'
+                            errorId: 'last-name-error'
                         }) %>
                         <%~ include('@partials/text-input/text-input.html', {
-                            containerId: "",
                             inputId: "email-input",
-                            class: "",
                             label: 'Email',
-                            placeholder: '',
-                            required: false,
                             autocomplete: 'email',
                             errorId: 'email-error',
                             type: 'email'
@@ -81,6 +74,8 @@
                 </div>
                 <button class="ctaButton save-settings" id="saveSettingsButton">Save Settings</button>
             </div>
+
+            <!-- Account Settings Panel -->
             <div class="account-page-container" style="display: none;">
                 <div class="input-container two-column">
                     <div class="column">
@@ -96,6 +91,7 @@
                         </button>
                     </div>
                 </div>
+                <!-- Avatar Picker -->
                 <div class="avatar-picker">
                     <h3 class="section-title">Choose your Avatar</h3>
                     <div class="avatar-columns">
@@ -103,8 +99,7 @@
                             <img id="avatar-image" alt="Avatar Preview">
                         </div>
                         <div class="avatar-selection">
-                            <div class="grid" id="avatars">
-                            </div>
+                            <div class="grid" id="avatars"></div>
                             <div>
                                 <button class="selection-refresh ctaButton" id="refresh-avatars-button">Refresh Avatars</button>
                             </div>
@@ -113,36 +108,36 @@
                     <button id="change-avatar-button" class="ctaButton">Change Avatar</button>
                 </div>
             </div>
+
+            <!-- Appearance Settings Panel -->
             <div class="appearance-page-container" style="display: none;">
                 <p>Appearance settings content goes here.</p>
             </div>
+
+            <!-- Notification Settings Panel -->
             <div class="notification-page-container" style="display: none;">
                 <p>Notification settings content goes here.</p>
             </div>
+
+            <!-- Security Settings Panel -->
             <div class="security-page-container" style="display: none;">
-                <div class="input-container two-column">
+                <h2 class="subsection">Change Password</h2>
+                <div class="two-column">
                     <div class="column">
                         <%~ include('@partials/text-input/text-input.html', {
-                            containerId: "",
                             inputId: "password-input",
-                            class: "",
                             label: 'New Password',
-                            placeholder: '',
-                            required: false,
                             autocomplete: 'new-password',
                             errorId: 'password-error',
                             type: 'password',
                             eye: true
                         }) %>
+                        <%~ include('@partials/password-checklist/password-checklist.html') %>
                     </div>
                     <div class="column">
                         <%~ include('@partials/text-input/text-input.html', {
-                            containerId: "",
                             inputId: "confirm-password-input",
-                            class: "",
                             label: 'Confirm Password',
-                            placeholder: '',
-                            required: false,
                             autocomplete: 'new-password',
                             errorId: 'confirm-password-error',
                             type: 'password',
@@ -150,7 +145,10 @@
                         }) %>
                     </div>
                 </div>
+                <button class="ctaButton primaryButton" id="update-password-button">Update Password</button>
             </div>
+
+            <!-- Advanced Settings Panel -->
             <div class="advanced-page-container" style="display: none;">
                 <button class="ctaButton primaryButton" id="delete-account-button">Delete Account</button>
                 <%~ include('@partials/modal/modal.html', {
@@ -167,7 +165,12 @@
             </div>
         </div>
     </div>
+
+    <!-- Notification and Footer Partials -->
+    <%~ include('@partials/notification/notification.html', {}) %>
     <%~ include('@partials/footer/footer.html') %>
+
+    <!-- Page-specific script -->
     <script src="./index.ts"></script>
 </body>
 </html>
