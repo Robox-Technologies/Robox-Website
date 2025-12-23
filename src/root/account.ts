@@ -691,7 +691,7 @@ export async function headerAuth() {
     });
 }
 
-function updateHeaderAvatar(url?: string) {
+export function updateHeaderAvatar(url?: string) {
     const image = document.getElementById('header-avatar') as HTMLImageElement | null;
     if (!image) return;
 

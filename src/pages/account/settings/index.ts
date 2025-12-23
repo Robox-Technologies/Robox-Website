@@ -1,4 +1,4 @@
-import { authCheck, signOut, deleteAccount, getCurrentUserData, writeToDatabase } from '@root/account'
+import { authCheck, signOut, deleteAccount, getCurrentUserData, writeToDatabase, updateHeaderAvatar } from '@root/account'
 
 const titleElement = document.querySelector('h1.title') as HTMLHeadingElement
 const generalPageContainer = document.querySelector('.general-page-container') as HTMLDivElement
@@ -261,6 +261,7 @@ container.addEventListener('click', async (e) => {
             console.error('Failed to save avatar:', error);
         }
     }
+    updateHeaderAvatar(newAvatarUrl);
 });
 
 refreshAvatarButton.addEventListener('click', () => {
