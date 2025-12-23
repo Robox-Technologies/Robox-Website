@@ -43,47 +43,62 @@
     width: 100%;
 }
 
-.user-type-button {
-    width: 100%;
-    padding: 20px;
-    border: 2px solid variables.$tone3;
-    border-radius: 8px;
-    background-color: variables.$tone1;
-    color: variables.$themeBlack;
-    font-size: 20px;
-    font-family: 'Nunito', sans-serif;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover {
-        border-color: variables.$themeBlue;
-        background-color: rgba(variables.$themeBlue, 0.05);
-    }
-
-    &.selected {
-        border-color: variables.$themeBlue;
-        background-color: rgba(variables.$themeBlue, 0.1);
-        color: variables.$themeBlue;
-    }
-
-    i {
-        margin-right: 4px;
-        font-size: 18px;
-    }
-}
-
 .section-title {
-    font-size: 24px;
-    font-weight: bold;
     margin-bottom: 12px;
     margin-left: 12px;
     margin-top: 24px;
-    font-family: 'Nunito', sans-serif;
+    @include variables.headingFont;
+}
+
+// role picker
+.role-picker {
+    
+    .role-buttons {
+        display: flex;
+        flex-direction: row;
+        padding: 0 12px 12px 12px;
+        gap: 12px;
+
+        .column {
+            flex: 1;
+            display: flex;
+
+            .user-type-button {
+                width: 100%;
+                padding: 20px;
+                border: 2px solid variables.$tone3;
+                border-radius: 8px;
+                background-color: variables.$tone1;
+                color: variables.$themeBlack;
+                font-size: 20px;
+                font-family: 'Nunito', sans-serif;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                &:hover {
+                    border-color: variables.$themeBlue;
+                    background-color: rgba(variables.$themeBlue, 0.05);
+                }
+
+                &.selected {
+                    border-color: variables.$themeBlue;
+                    background-color: rgba(variables.$themeBlue, 0.1);
+                    color: variables.$themeBlue;
+                }
+
+                i {
+                    margin-right: 4px;
+                    font-size: 18px;
+                }
+            }
+        }
+    }
 }
 
 // avatar picker
+
 div.avatar-preview {
     width: 100%;
     height: 100%;
