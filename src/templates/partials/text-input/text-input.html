@@ -1,7 +1,16 @@
 <link href="@partials/text-input/text-input.scss" rel="stylesheet">
 
-<div class="input-container <%= it.class ? it.class : '' %>">
+<div class="input-container <%= it.class ? it.class : '' %> <%= it.visible ? '' : 'style="display: none;"' %>">
     <label for="<%= it.inputId %>" class="input-label <%= it.labelClass %>"><%= it.label ? it.label : '' %><p class="required" style="display: <%= it.required ? 'inline' : 'none' %>">*</p></label>
-    <input type="<%= it.type ? it.type : 'text' %>" id="<%= it.inputId %>" placeholder="<%= it.placeholder %>" class="text-input" <%= it.autocomplete ? `autocomplete=${it.autocomplete}` : '' %>>
+    <div class="input-wrapper">
+        <input type="<%= it.type ? it.type : 'text' %>" id="<%= it.inputId %>" placeholder="<%= it.placeholder %>" class="text-input" <%= it.autocomplete ? `autocomplete=${it.autocomplete}` : '' %>>
+        <% if (it.eye) { %>
+            <button type="button" class="toggle-visibility"><div class="eye-slash-icon"><i class="fa-solid fa-eye-slash"></i></div><div class="eye-icon" style="display: inline;"><i class="fa-solid fa-eye" ></i></div></button>
+        <% } %>
+    </div>
     <p id="<%= it.errorId %>" class="error" style="display: none;"></p>
 </div>
+
+<% if (it.eye) { %>
+    <script src="@partials/text-input/text-input.ts"></script>
+<% } %>

@@ -8,10 +8,49 @@
     width: 100%;
     height: fit-content;
     align-self: flex-start;
-    align-items: flex-start;
+    align-items: center;
     text-align: left;
     display: flex;
     min-height: 40px;
     box-sizing: border-box;
     font-family: 'Nunito', sans-serif;
+}
+
+.input-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-visibility {
+    position: absolute;
+    top: 50%;
+    right: 0.8rem;
+    height: 100%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    color: variables.$themeBlack;
+    font-size: 1rem;
+    height: 100%;
+    display: flex;
+}
+
+.toggle-visibility i {
+    pointer-events: none;
+    transition: color 150ms ease, transform 150ms ease;
+}
+
+.toggle-visibility:hover i {
+    color: variables.$themeBlue;
+    transform: scale(1.1);
+}
+
+.hidden {
+    display: none !important;
 }
