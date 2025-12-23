@@ -125,13 +125,14 @@
                         <%~ include('@partials/text-input/text-input.html', {
                             containerId: "",
                             inputId: "password-input",
-                            class: "myNewAwesomePassword",
+                            class: "",
                             label: 'New Password',
                             placeholder: '',
                             required: false,
                             autocomplete: 'new-password',
                             errorId: 'password-error',
-                            type: 'password'
+                            type: 'password',
+                            eye: true
                         }) %>
                     </div>
                     <div class="column">
@@ -144,7 +145,8 @@
                             required: false,
                             autocomplete: 'new-password',
                             errorId: 'confirm-password-error',
-                            type: 'password'
+                            type: 'password',
+                            eye: true
                         }) %>
                     </div>
                 </div>

@@ -27,7 +27,8 @@
                     required: false,
                     autocomplete: 'email',
                     errorId: 'email-error-msg',
-                    type: 'email'
+                    type: 'email',
+                    eye: false
                 }) %>
                 <%~ include('@partials/text-input/text-input.html', {
                     class: "password-container",
@@ -37,7 +38,9 @@
                     required: false,
                     autocomplete: 'current-password',
                     errorId: 'password-error-msg',
-                    type: 'password'
+                    type: 'password',
+                    eye: true,
+                    visible: false
                 }) %>
                 <button id="login-button" class="ctaButton primaryButton" style="display: block; margin: 25px auto 0 auto;">
                     Continue
