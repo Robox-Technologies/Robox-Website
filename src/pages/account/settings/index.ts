@@ -238,7 +238,7 @@ function generateAvatarSelection() {
     container.appendChild(frag);
 }
 
-const rows = 4, cols = 6;
+const rows = 5, cols = 4;
 const base = 'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=';
 const container = document.getElementById('avatars');
 

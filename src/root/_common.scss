@@ -117,6 +117,39 @@ article {
     color: variables.$themeBlue;
 }
 
+.tile-section {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    margin-bottom: 8px;
+    position: relative;
+    border-radius: 12px;
+    background-color: variables.$tone2;
+
+    .section-title {
+        width: 100%;
+        margin-top: 8px;
+        margin-left: 16px;
+        text-align: left;
+        @include variables.subheadingFont;
+        font-weight: bold;
+        margin-bottom: 1px;
+    }
+
+    .section-subtitle {
+        width: 100%;
+        @include variables.bodyFont;
+        margin-top: 4px;
+        margin-left: 16px;
+        color: variables.$tone3;
+        font-size: 14px;
+        text-align: left;
+    }
+}
+
 @media screen and (max-width: 1000px) {
     .articleSection {
         align-items: center;
