@@ -11,7 +11,7 @@ import { Project } from "~types/projects";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime.js";
 import { toggleToolbar, moveToolbar } from "@partials/toolbar/toolbar";
-import { syncCloudProjects, getCurrentUserData, getFromDatabase, removeClassroomFromProfile, Classroom } from "@root/account";
+import { getCurrentUserData, getFromDatabase, removeClassroomFromProfile } from "@root/account";
 
 dayjs.extend(relativeTime);
 
@@ -28,6 +28,39 @@ async function userDataPromise() {
 	return userData;
 };
 
+interface CloudProject {
+    id: string;
+    name: string;
+    owner: string;
+    last_updated?: string;
+    cloud_sync?: boolean;
+    thumbnail?: string;
+}
+
+async function fetchUserProjects(): Promise<CloudProject[]> {
+    try {
+        const { supabase } = await import('@root/account');
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) return [];
+
+        const response = await fetch('/api/account/projects', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) return [];
+        const result = await response.json();
+        return result.projects || [];
+    } catch (error) {
+        console.warn('Failed to fetch user projects:', error);
+        return [];
+    }
+}
+
 async function applyProjects() {
     const projectCards = document.querySelectorAll(".project-card");
     projectCards.forEach((card) => {
@@ -35,7 +68,6 @@ async function applyProjects() {
     });
 
     const currentUserId = userData?.id as string | undefined;
-    await syncCloudProjects(currentUserId);
 
     const projectContainer = document.getElementById("project-holder");
     const projectCloudTemplate = document.getElementById("cloudProjectCardTemplate") as HTMLTemplateElement;
@@ -43,25 +75,62 @@ async function applyProjects() {
     const toolbarModal = document.getElementById("project-toolbar") as HTMLDialogElement;
     if (!projectContainer || !projectCloudTemplate || !projectLocalTemplate || !toolbarModal) return;
 
+    // Fetch all cloud projects at once from the server
+    const cloudProjects = currentUserId ? await fetchUserProjects() : [];
+    const cloudProjectMap = new Map<string, CloudProject>();
+    for (const project of cloudProjects) {
+        cloudProjectMap.set(project.id, project);
+    }
+
+    // Sync cloud projects to local storage
     const projects = getProjects();
-    const projectIds = Object.keys(projects);
-    const sortedByTime = projectIds.sort((a, b) =>
-        dayjs(projects[b].time).diff(dayjs(projects[a].time))
+    let changed = false;
+    for (const project of cloudProjects) {
+        if (!projects[project.id]) {
+            projects[project.id] = {
+                name: project.name || 'unnamed project',
+                time: dayjs(project.last_updated || new Date().toISOString()),
+                workspace: {},
+                thumbnail: project.thumbnail || ''
+            };
+            changed = true;
+        }
+    }
+    if (changed) {
+        localStorage.setItem("roboxProjects", JSON.stringify(projects));
+    }
+
+    const projectsToShow: string[] = [];
+    if (currentUserId) {
+        for (const project of cloudProjects) {
+            if (project.owner === currentUserId) {
+                projectsToShow.push(project.id);
+            }
+        }
+    } else {
+        projectsToShow.push(...Object.keys(projects));
+    }
+
+    const sortedByTime = projectsToShow.sort((a, b) =>
+        dayjs(projects[b]?.time).diff(dayjs(projects[a]?.time))
     );
+
     for (const uuid of sortedByTime) {
         const project = projects[uuid];
-        const cloudProject = await getFromDatabase('projects', uuid) as (Project & { owner?: string; time?: number; last_updated?: number }) | null;
+        if (!project) continue;
 
-        let isSynced = false;
+        const cloudProject = cloudProjectMap.get(uuid);
+
+        // Determine if this project is cloud synced (has cloud_sync flag true)
+        const isCloudSynced = cloudProject?.cloud_sync === true;
+
+        // Update time from cloud if available
         if (cloudProject) {
-            if (!currentUserId) continue;
-            if (!cloudProject.owner || cloudProject.owner !== currentUserId) continue;
-            const newTime = cloudProject.last_updated ?? cloudProject.time;
-            if (typeof newTime === 'number') project.time = dayjs(newTime);
-            isSynced = true;
+            const newTime = cloudProject.last_updated;
+            if (newTime) project.time = dayjs(newTime);
         }
 
-        const card = createProjectCard(uuid, project, isSynced);
+        const card = createProjectCard(uuid, project, isCloudSynced);
         card.addEventListener("click", (event: MouseEvent) => {
             const item = event.target as HTMLElement | null;
             if (!item) return;
