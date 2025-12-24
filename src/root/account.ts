@@ -648,9 +648,9 @@ export async function headerAuth() {
             loginButton.style.display = 'none';
             accountButton.style.display = 'inline-flex';
             mobileLoginButton.style.display = 'none';
-            const displayName = userData.display_name;
-            const firstName = userData?.first_name;
-            const email = userData?.full_name;
+            const displayName = userData.display_name as string | undefined;
+            const firstName = userData?.first_name as string | undefined;
+            const email = userData?.full_name as string | undefined;
             usernameElement.textContent = displayName || firstName || email || 'User';
         } else {
             loginButton.style.display = 'inline-flex';
@@ -661,6 +661,7 @@ export async function headerAuth() {
     };
 
     const cacheKey = 'robox-auth-cache';
+    const avatarCacheKey = 'robox-avatar-cache';
 
     const cachedData = localStorage.getItem(cacheKey);
     if (cachedData) {
@@ -675,8 +676,12 @@ export async function headerAuth() {
 
         if (freshData) {
             localStorage.setItem(cacheKey, JSON.stringify(freshData));
+            if (freshData.avatar_url) {
+                await cacheAvatarImage(freshData.avatar_url);
+            }
         } else {
             localStorage.removeItem(cacheKey);
+            localStorage.removeItem(avatarCacheKey);
         }
         
         updateHeaderUI(freshData);
@@ -684,26 +689,68 @@ export async function headerAuth() {
 
     addEventListener('DOMContentLoaded', async () => {
         const image = document.getElementById('header-avatar') as HTMLImageElement;
+        
+        const cachedAvatar = localStorage.getItem(avatarCacheKey);
+        if (cachedAvatar) {
+            image.src = cachedAvatar;
+        }
+        
         await revalidate();
-        const parsedCache = cachedData ? JSON.parse(cachedData) : null;
-        image.src = parsedCache?.avatar_url || '/img/default-avatar.png';
         updateHeaderAvatar();
     });
+}
+
+async function cacheAvatarImage(url: string): Promise<string | null> {
+    const avatarCacheKey = 'robox-avatar-cache';
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64 = reader.result as string;
+                localStorage.setItem(avatarCacheKey, base64);
+                resolve(base64);
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+        });
+    } catch {
+        return null;
+    }
 }
 
 export function updateHeaderAvatar(url?: string) {
     const image = document.getElementById('header-avatar') as HTMLImageElement | null;
     if (!image) return;
 
+    const avatarCacheKey = 'robox-avatar-cache';
+    
+    const cachedAvatar = localStorage.getItem(avatarCacheKey);
+    if (cachedAvatar && !url) {
+        image.src = cachedAvatar;
+    }
+
     getCurrentUserData()
-        .then(userData => {
+        .then(async userData => {
             const fallbackUrl = url?.trim() ? url : userData?.avatar_url;
             const seed = userData?.id || 'default';
-            image.src = fallbackUrl || `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}`;
+            const finalUrl = fallbackUrl || `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}`;
+            
+            if (finalUrl) {
+                const cachedBase64 = await cacheAvatarImage(finalUrl);
+                if (cachedBase64) {
+                    image.src = cachedBase64;
+                    return;
+                }
+            }
+            
+            image.src = finalUrl;
         })
         .catch(error => {
             console.warn('Failed to refresh header avatar:', error);
-            image.src = url || 'https://api.dicebear.com/9.x/bottts/svg?seed=robox';
+            const fallback = cachedAvatar || 'https://api.dicebear.com/9.x/bottts/svg?seed=robox';
+            image.src = fallback;
         });
 }
 
