@@ -3,13 +3,14 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import paymentRouter from "./store.js";
 import rateLimit from "express-rate-limit";
+import {getCMSRedirects} from "./CMS.js";
 import { createClient } from '@supabase/supabase-js'
 import 'dotenv/config'
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+const redirects = await getCMSRedirects();
 
 
 app.set("trust proxy", 1) // Trust the first proxy (if behind one, e.g., in production)
@@ -40,7 +41,14 @@ app.use(express.json());
 
 const websiteDir = path.resolve(__dirname, '../website');
 const path404 = path.join(websiteDir, '404.html');
-
+app.get("/api/redirect/:slug", async (req, res) => {
+    const { slug } = req.params;
+    const redirect = redirects.find((r) => r.slug === slug);
+    if (!redirect) {
+        return res.status(404).json({ error: "Redirect not found" });
+    }
+    res.redirect(`${process.env.CMS_URL}${redirect.destination.url}`);
+});
 app.use("/", express.static(websiteDir));
 
 // --- Account functions ---
@@ -270,7 +278,7 @@ app.use((_, res) => {
     res.status(404).sendFile(path404);
 });
 
-const port = Number(process.env.PORT) || 3000;
+const port = Number(process.env.WEBSITE_PORT) || 3000;
 
 app.listen(port, () => {
     console.log(`Ro/Box website listening on port ${port}!\n`);

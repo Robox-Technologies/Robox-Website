@@ -5,9 +5,20 @@ declare global {
             STRIPE_SECRET_KEY: string;
             STRIPE_WEBHOOK_SECRET: string;
             FORCE_CACHE: boolean;
+            
             SUPABASE_URL: string;
             SUPABASE_PUBLISHABLE_KEY: string;
             SUPABASE_SERVICE_ROLE_KEY: string;
+
+            EMAIL_HOST: string;
+            EMAIL_PORT: number;
+            EMAIL_SECURE: boolean;
+            EMAIL_USER: string;
+            EMAIL_PASS: string;
+
+            RESEND_KEY: string;
+            AUSPOST_KEY: string;
+            AUSPOST_ORIGIN_POSTCODE: string;
         }
     }
 }

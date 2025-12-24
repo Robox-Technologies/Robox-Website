@@ -1,11 +1,12 @@
 import dayjs from 'dayjs';
 import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
-import { Projects, Project } from "~types/projects";
+import { Projects, Project, Extension } from "~types/projects";
 import { uploadNewProject, getCurrentUserData, authCheck, updateProjectData, isSyncedProject, deleteCloudProject, writeToDatabase, getFromDatabase } from '@root/account';
 import { workspaceToPng_ } from './screenshot';
+import { getPythonCode } from '@pages/editor/usb';
 
-
+import { ExtensionType } from '~types/projects';
 export function getProjects(): Projects {
     const projectsRaw = localStorage.getItem("roboxProjects")
     let projects = Object.create(null);
@@ -41,9 +42,17 @@ export function importProject(project: Project): void {
         name: project.name,
         time: dayjs(),
         workspace: project.workspace,
-        thumbnail: project.thumbnail || ""
+        thumbnail: project.thumbnail || "",
+        extensions: project.extensions || getDefaultExtensions(),
     };
     localStorage.setItem("roboxProjects", JSON.stringify(projects));
+}
+function getDefaultExtensions(): Extension {
+    const extensions: Extension = {} as Extension;
+    Object.values(ExtensionType).forEach((ext) => {
+        extensions[ext] = false;
+    });
+    return extensions;
 }
 export async function createProject(name: string): Promise<string> {
     const projects = getProjects()
@@ -58,7 +67,7 @@ export async function createProject(name: string): Promise<string> {
         await uploadNewProject(uuid, currentUser?.id, name)
     }
 
-    projects[uuid] = { name: name, time: dayjs(), workspace: {}, thumbnail: "" }
+    projects[uuid] = { name: name, time: dayjs(), workspace: {}, thumbnail: "", extensions: getDefaultExtensions() }
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
     return uuid
 }
@@ -129,6 +138,21 @@ export function downloadBlocklyProject(uuid: string) {
     downloadEl.click();
     document.body.removeChild(downloadEl);
 }
+export function downloadPythonProject(ws: Workspace, uuid: string) {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+    
+    const project = getProject(uuid)    
+    if (!project) return
+    const pythonCode = getPythonCode(ws);
+    const downloadEl = document.createElement('a');
+    downloadEl.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(pythonCode));
+    downloadEl.setAttribute('download', project.name.split(" ").join("-") + '.py');
+
+    downloadEl.style.display = 'none';
+    document.body.appendChild(downloadEl);
+    downloadEl.click();
+    document.body.removeChild(downloadEl);
+}
 export async function saveBlockly(uuid: string, workspace: WorkspaceSvg, callback: ((project: string) => void) | null = null) {
     const blockly = await import('blockly/core');
     workspaceToPng_(workspace, (thumburi: string) => {
@@ -139,6 +163,9 @@ export async function saveBlockly(uuid: string, workspace: WorkspaceSvg, callbac
         projects[uuid]["time"] = dayjs()
         projects[uuid]["workspace"] = data
         projects[uuid]["thumbnail"] = sanitizeImageDataUrl(thumburi);
+        if (projects[uuid]["extensions"] === undefined) {
+            projects[uuid]["extensions"] = getDefaultExtensions();
+        }
         const projectData = JSON.stringify(projects)
         localStorage.setItem("roboxProjects", projectData)
 
@@ -173,7 +200,6 @@ export function saveBlocklyCompressed(projectRaw: string) {
     localStorage.setItem("roboxProjects", projectData)
     return projectData
 }
-
 export async function renameProject(uuid: string, newName: string) {
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
@@ -224,7 +250,13 @@ function isProtoPollution(key: string): boolean {
     const forbiddenKeys = ["__proto__", "constructor", "prototype"];
     return forbiddenKeys.includes(key);
 }
+export function getProjectExtensions(uuid: string): Extension | null {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
+    const project = getProject(uuid);
+    if (!project) return null;
+    return project.extensions || null;
+}
 function isValidUUID(uuid: string): boolean {
     if (isProtoPollution(uuid)) return false;
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

@@ -14,11 +14,6 @@
         <%~ include('@partials/header/header.html') %>
 
         <!-- We use this to fetch the image urls -->
-        <div class="hiddenImages">
-            <% Object.values(products).forEach(function(product, index) { %>
-                <img alt="Product image for <%~ product.name %>" id="hidden-<%~ product.internalName %>" src="@images/product/<%~ product.internalName %>/thumbnail.jpg">
-            <% }) %>
-        </div>
 
         <article class="content">
             <a class="navigation" href="/shop"><i class="fa-solid fa-chevron-left"></i> Shop</a>
@@ -40,7 +35,7 @@
                         <div class="cart-item-holder"></div>
                     </section>
                 </div>
-                <%~ include('@partials/shopSummary.html', { checkoutButton: true }) %>
+                <%~ include('@partials/shopSummary.html', { cartMode: true }) %>
             </div>
         </article>
         

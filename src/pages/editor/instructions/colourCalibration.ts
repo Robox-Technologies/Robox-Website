@@ -23,9 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!connectionManagment) return
     //The actual opening of the modal
     settingsButton.addEventListener("click", () => {
+        outcomeButton.style.display = "block"
         if (connectionManagment.getAttribute("status") === "disconnected") {
             outcomeText.textContent = "The Ro/Box does not seem to be connected, please try to connect to it before starting the calibration process"
-            outcomeButton.textContent = "Close!"
+            outcomeButton.style.display = "none"
             outcomeTitle.textContent = "Ro/Box not connected!"
             calibrateOutcomeModal.showModal()
         }

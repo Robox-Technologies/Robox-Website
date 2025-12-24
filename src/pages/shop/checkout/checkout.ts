@@ -1,6 +1,6 @@
 import { getCart, stripePublishableKey } from "@root/payment/cart";
 import { Appearance, loadStripe } from '@stripe/stripe-js';
-import { Product } from "~types/api";
+import { Product } from "~types/api.js";
 import "@root/payment/shop";
 import { calculateTotalCost, cartToDictionary } from "@root/payment/stripe-shared-helper";
 
@@ -11,7 +11,7 @@ const cartProducts = Object.keys(cart["products"]).reduce((acc: Record<string, P
     return acc;
 }, {});
 
-const totalCost = calculateTotalCost(cartToDictionary(), cartProducts).total;
+const totalCost = (await calculateTotalCost(cartToDictionary(), cartProducts)).total;
 
 const appearance: Appearance = {
     theme: "flat",
@@ -25,7 +25,14 @@ const submitButton = document.getElementById("submit") as HTMLButtonElement;
 const paymentLoader = document.getElementById("paymentLoader") as HTMLDivElement;
 const form = document.getElementById('payment-form') as HTMLFormElement;
 const messageContainer = document.getElementById('error-message') as HTMLParagraphElement;
+
+const totalValue = document.getElementById("total-value") as HTMLParagraphElement;
+const shippingValue = document.getElementById("shipping-cost") as HTMLParagraphElement;
+
 let paymentProcessing = false;
+let shippingPricingValid = false;
+
+updateShippingObfuscation(true);
 
 // Don't accept payments below 50c (min charge amount)
 if (totalCost < 50) {
@@ -35,23 +42,21 @@ if (totalCost < 50) {
     const stripePromise = loadStripe(stripePublishableKey);
     const clientSecretPromise = getPaymentIntent();
     const paymentPromises = Promise.all([stripePromise, clientSecretPromise]);
-
-    paymentPromises.then((values) => {
-        const [stripe, clientSecret] = values
     
-        if (!clientSecret) {
+    paymentPromises.then((values) => {
+        const [stripe, { client_secret, paymentIntentID }] = values
+        if (!client_secret) {
             checkoutErrored();
             return;
         }
     
         const options = {
-            clientSecret: clientSecret,
+            clientSecret: client_secret,
             appearance: appearance
         };
         const elements = stripe.elements(options)
         const addressElement = elements.create('address', {
-            mode: "shipping",
-            allowedCountries: ['AU']
+            mode: "shipping"
         });
         addressElement.mount('#address-element');
         const paymentElement = elements.create('payment');
@@ -62,6 +67,34 @@ if (totalCost < 50) {
             document.getElementById("email-label").style.display = "block"
             document.getElementById("stripe-content").style.justifyContent = "flex-start"
         })
+
+        addressElement.on("change", async (event) => {
+            const country = event.value.address.country;
+            const postcode = event.value.address.postal_code;
+            if (!country) {
+                updateShippingObfuscation(true)
+                return
+            };
+
+            // Recalculate shipping cost
+            shippingPricingValid = false;
+            updateSubmitButton();
+
+            const newCosts = await updatePaymentIntentShipping(paymentIntentID, country, postcode);
+
+            if (newCosts) {
+                // Pricing updated successfully
+                totalValue.textContent = newCosts.displayTotal;
+                shippingValue.textContent = newCosts.displayShipping;
+                shippingPricingValid = true;
+
+                updateSubmitButton();
+                updateShippingObfuscation(false);
+            } else {
+                // Price update unsuccessful
+                updateShippingObfuscation(true);
+            }
+        });
     
         document.getElementById("termsConsent").addEventListener("click", () => {
             updateSubmitButton();
@@ -115,7 +148,35 @@ async function getPaymentIntent() {
         })
     });
 
-    return (await clientSecret.json()).client_secret;
+    return (await clientSecret.json());
+}
+
+async function updateShippingObfuscation(obfuscate: boolean) {
+    if (obfuscate) {
+        shippingValue.textContent = "AU$0.00";
+        shippingValue.classList.add("obfuscated");
+    } else {
+        shippingValue.classList.remove("obfuscated");
+    }
+}
+
+async function updatePaymentIntentShipping(paymentIntent: string, country: string, postcode: string) {
+    const updatedPricing = await fetch("/api/store/updateShipping", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            paymentIntentID: paymentIntent,
+            products: cartToDictionary(),
+            country: country,
+            postcode: postcode
+        })
+    });
+
+    if (updatedPricing.ok) {
+        return (await updatedPricing.json()).verifiedServerCost;
+    } else {
+        return undefined;
+    }
 }
 
 function checkoutErrored() {
@@ -126,7 +187,7 @@ function checkoutErrored() {
 
 function updateSubmitButton() {
     const formValid = form.checkValidity();
-    submitButton.disabled = !formValid || paymentProcessing;
+    submitButton.disabled = !formValid || paymentProcessing || !shippingPricingValid;
 
     paymentLoader.style.display = paymentProcessing ? "block" : "none";
 }

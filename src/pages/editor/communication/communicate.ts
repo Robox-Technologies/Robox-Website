@@ -103,7 +103,7 @@ export class Pico extends EventTarget {
                 this.emit({"event": "error", "options": {"message": "The firmware on the Pico is out of date! Please update it."}})
             } 
             else if (!this.firmware && !this.responded) {
-                this.emit({"event": "error", "options": {"message": "The Pico did not respond to the firmware check! Please try resetting it."}})
+                this.emit({"event": "error", "options": {"message": "Ro/Box did not respond to the firmware check! Please try disconnecting and reconnecting it. If this issue persists, try reflashing the Ro/Box."}})
             }
         }, 1000);
     }
@@ -143,9 +143,6 @@ export class Pico extends EventTarget {
         if (connected) {
             if (this.restarting) this.restarting = false
             this.firmwareCheck()
-        }
-        else {
-            this.emit({"event": "error", "options": {"message": "Could not connect to the Pico! Try resetting it?"}})
         }
     }
     startupConnect() { //Check if the Pico is already connected to the website on startup
@@ -273,10 +270,7 @@ class USBCommunication {
                 this.currentReader.releaseLock();
                 await this.currentReadableStreamClosed?.catch(() => {});
             } catch {
-                this.parent.emit({
-                    event: "error",
-                    options: { message: "Could not close Pico reader" }
-                });
+                return
             }
         }
     
@@ -286,10 +280,7 @@ class USBCommunication {
                 this.currentWriter.releaseLock();
                 await this.currentWriterStreamClosed?.catch(() => {});
             } catch {
-                this.parent.emit({
-                    event: "error",
-                    options: { message: "Could not close Pico writer" }
-                });
+                return
             }
         }
     

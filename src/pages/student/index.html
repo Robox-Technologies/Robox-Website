@@ -7,6 +7,7 @@
     <script src="./index.ts"></script>
     <link href="./index.scss" rel="stylesheet">
     <link href="@root/root.scss" rel="stylesheet">
+    <link href="@root/hub.scss" rel="stylesheet">
 </head>
 
 <body>
@@ -52,22 +53,24 @@
         </div>
         <section>
             <h1>
-                Assembly Guides
+                Resources for Students
             </h1> 
             <div class="card-holder">
-                <%~ include('@partials/card.html', {
-                    class: "assembly-card",
-                    title: '<span>Assembly Guide</span>', 
-                    imageSource: "@images/student-hub/assembly-guide.png", 
-                    buttons: [
-                        {
-                            content: "<span class='underline-grow'>PDF Build Instructions</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>",
-                            link: `/public/latest.pdf?v=${Date.now()}`
-                        },
-
-                    ],
-                    topRowButton: false,
-                }) %>
+                <% Object.values(studentresources).forEach(function(studentResource) { %>
+                    <%~ include('@partials/card.html', {
+                        class: "assembly-card",
+                        title: `<span>${studentResource.article.previewTitle}</span>`, 
+                        imageSource: `${process.env.CMS_URL}${studentResource.article.thumbnail.url}`, 
+                        buttons: [
+                            {
+                                content: `<span class='underline-grow'>${studentResource.article.callToAction || 'Read Resource'}</span> <div class='guide-icon-arrow'><i class='fa-solid fa-chevron-right'></i></div>`,
+                                // Slightly weird thing because the slug requires the .html and the file URL does not...
+                                link: `${studentResource.article.type === 'article' ? `/articles/${studentResource.article.slug}.html` : `${process.env.CMS_URL}${studentResource.article.File.url}`}`
+                            },
+                        ],
+                        topRowButton: false,
+                    }) %>
+                <% }) %>
             </div>
         </section>
         <section id="projects">

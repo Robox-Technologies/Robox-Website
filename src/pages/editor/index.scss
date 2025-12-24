@@ -40,6 +40,15 @@ $downloadButtonSize: 60px;
     transition-property: width, margin-left;
     transition-duration: .5s;
 }
+#blockly-0 {
+    .extender {
+        transition-duration: 0.5s !important;
+    }
+    svg {
+        transition: unset !important;
+        transition-duration: 0.5s !important;
+    }
+}
 
 body {
     min-width: 870px;
@@ -256,7 +265,7 @@ body {
         cursor: pointer;
     }
 }
-.sideButtons {
+.mainSideButton {
     font-size: 20px;
     padding: 0 15px 0 15px;
     color: white;
@@ -338,7 +347,7 @@ button[calibrating]:hover {
     bottom: variables.$standardGap;
 }
 
-.zoomControls {
+.sideButtons {
     display: flex;
     flex-direction: column;
     align-items: end;
@@ -349,6 +358,40 @@ button[calibrating]:hover {
         pointer-events: auto;
         border-radius: 50%;
     }
+    .zoomControls {
+        display: flex;
+        flex-direction: column;
+        align-items: end;
+        gap: 16px;
+    }
+    #console-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: larger;
+        color: variables.$themeGreen;
+        border: 3px solid variables.$themeGreen;
+    }
+    #console-button:disabled {
+        color: #717171;
+        border: 3px solid #717171;
+    }
+    
+}
+#console {
+    .modal-content {
+        overflow-y: scroll;
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        :first-child
+        {
+            margin-top: auto;
+        }
+    }
+
 }
 
 #connection-management {
@@ -378,13 +421,11 @@ button[calibrating]:hover {
     #disconnect {
         display: none;
     }
-    #console {
-        display: none;
-    }
     #download {
         display: none;
     }
 }
+
 #connection-management[status="disconnected"] {
     background-color: variables.$themeBlue;
     #connect-robox-button {
@@ -404,14 +445,15 @@ button[calibrating]:hover {
         display: block;
     }
 }
-
+#robox-project-download .fa-download {
+    color: variables.$themeGreen;
+}
 #connection-management[status="running"] {
     background-color: variables.$themeRed;
     #stop-robox-button {
         display: block;
-    }
-    #console {
-        display: block;
+        width: 100%;
+        border-right: unset;
     }
 }
 $settingsToolbarWidth: 200px;
@@ -462,9 +504,6 @@ $settingsToolbarWidth: 200px;
     #disconnect {
         display: none;
     }
-    #console {
-        display: none;
-    }
     #download {
         display: none;
     }
@@ -477,9 +516,36 @@ $settingsToolbarWidth: 200px;
     }
 
 }
-#robox-settings-button {
+#robox-settings-button, #robox-extension-button {
     font-size: 20px;
     cursor: pointer;
+}
+#extension-modal {
+    .modal-content {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-content: flex-start;
+        gap: variables.$standardGap;
+    }
+    .card { 
+        flex: 0 0 30%;
+        width: 30%;
+
+        .card-image {
+            min-width: 100px;
+            object-fit: contain;
+            padding: 5px;
+            background-color: variables.$themeBlue;
+        }
+        .card-description {
+            font-size: small;
+        }
+    }
+    .card:hover {
+        cursor: pointer;
+        transform: translateY(-2px);
+    }
 }
 .bootsel[loading] {
     button.calibrate-button {
@@ -489,4 +555,13 @@ $settingsToolbarWidth: 200px;
         display: inline;
         font-size: 20px;
     }
+}
+dialog[loading] #open-file::hover {
+    cursor: not-allowed;
+}
+.extension-card img {
+    pointer-events: none;      /* optional if you really need it */
+    user-select: none;         /* <- prevents selection */
+    -webkit-user-drag: none;   /* <- prevents dragging ghost image */
+    draggable: false;          /* HTML attribute alternative */
 }

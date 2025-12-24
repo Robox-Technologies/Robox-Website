@@ -9,6 +9,9 @@
                 <p class="value" id="order-value"></p>
             </div>
 
+            <% if (it.cartMode) { %>
+            <p class="summaryCallout shippingDisclaimer">Shipping calculated at checkout.</p>
+            <% } else { %>
             <div class="breakdown-row">
                 <p class="label">Shipping:</p>
                 <p class="value" id="shipping-cost"></p>
@@ -20,17 +23,18 @@
                 <p class="label total-row">Order Total:</p>
                 <p class="value total-row" id="total-value"></p>
             </div>
+            <% } %>
         </div>
 
-        <% if (it.checkoutButton) { %>
+        <% if (it.cartMode) { %>
             <a class="continue" href="/shop/">Continue Shopping</a>
 
             <a id="checkout" class="ctaButton pill" href="/shop/checkout">Checkout</a>
         <% } %>
 
-        <p class="bulkCallout">
-            Large or international order?
-            Email us at <a href="mailto:hello@robox.com.au">hello@robox.com.au</a> for invoicing.
+        <p class="summaryCallout">
+            Bulk order?
+            Please email us at <a href="mailto:hello@robox.com.au">hello@robox.com.au</a> for invoicing.
         </p>
     </div>
 </div>

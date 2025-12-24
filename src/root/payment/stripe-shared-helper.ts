@@ -1,46 +1,41 @@
-import { Product } from "~types/api";
-import { Fees } from "~types/fees";
-import fees from "../../fees.json" with { type: "json" };
+import { Product } from "../../../types/api.js";
 
-const feesObject: Fees = typeof fees == "string" ? JSON.parse(fees) : fees;
-const feesShipping = feesObject.shipping;
+const backendExecution = typeof window === 'undefined';
 
-export function calculateTotalCost(cart: Record<string, number>, products: Record<string, Product>): { displayProducts: string; displayShipping: string; displayTotal: string; shipping: number; total: number } {
+let calculatePostage;
+if (backendExecution) {
+    calculatePostage = (await import( /* webpackIgnore: true */'../../../auspost-server-helper.js')).calculatePostage;
+}
+
+export async function calculateTotalCost(cart: Record<string, number>, products: Record<string, Product>, shippingInfo: { country: string; postcode: string } | null = null): Promise<{ displayProducts: string; displayShipping: string; displayTotal: string; shipping: number; total: number; shippingSucceeded: boolean }> {
     let totalCost = 0;
     let totalWeight = 0;
+    let totalUnitVolume = 0;
     for (const [productId, quantity] of Object.entries(cart)) {
         const product = products[productId];
         if (!product) continue;
 
         totalCost += product.price * quantity;
         totalWeight += product.weight * quantity;
+        totalUnitVolume += product.unitVolume * quantity;
     }
-
-    /*
-    Shipping calculations.
-    The total weight is used to search for the appropriate flat-rate bracket.
-    If the weight exceeds 5kg (5000g), we will default to the highest bracket and round up the excess weight to the nearest kg.
-    The excess weight is used for the per-kg excess fee, which is a roughly the average per-kg excess.
-
-    Example: A regular parcel of weight 6.1 kg.
-    Basic charge: $23.30.
-    Distance charge: $6 per kg (in excess of 5kg) rounded up to the nearest kg = $6 x 2 = $12.
-    Total charge: $23.30 + $12 = $35.30
-
-    Sources: 
-    https://auspost.com.au/content/dam/auspost_corp/media/documents/mypost-business-postage-rates-guide.pdf
-    https://auspost.com.au/content/dam/auspost_corp/media/documents/post-guides/post-charges-guide-ms11.pdf
-    */
     
-    let shippingCost = totalWeight > 0 ? feesShipping.weightBrackets.find((element) => totalWeight < element.maxWeight)?.price : 0;
+    let shippingCost = 0;
+    let shippingSucceeded = false;
+    if (shippingInfo) {
+        try {
+            if (backendExecution && calculatePostage) {
+                // Running on server
+                shippingCost = await calculatePostage(shippingInfo.country, shippingInfo.postcode, totalUnitVolume, totalWeight);
+            } else {
+                // Running from web - as this is not required as of yet, this will be populated in the future
+                throw new Error("Client-side postage calculations are not yet available.");
+            }
 
-    if (shippingCost == null || shippingCost == undefined) {
-        // Over 5kg - add per kg penalty.
-        shippingCost = feesShipping.maximum;
-
-        // Rounds up to the nearest kg and adds to total
-        const weightExcess = Math.ceil(Math.max(totalWeight/1000 - 5, 0));
-        shippingCost += weightExcess * feesShipping.penaltyFeePerKg;
+            shippingSucceeded = true;
+        } catch (error) {
+            console.log("Problem occured when fetching shipping information: ", error);
+        }
     }
 
     const finalCost = totalCost + shippingCost; 
@@ -49,7 +44,8 @@ export function calculateTotalCost(cart: Record<string, number>, products: Recor
         displayShipping: formatPrice(shippingCost, true),
         displayTotal: formatPrice(totalCost + shippingCost, true),
         shipping: shippingCost,
-        total: finalCost
+        total: finalCost,
+        shippingSucceeded: shippingSucceeded
     };
 }
 

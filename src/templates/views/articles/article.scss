@@ -1,0 +1,41 @@
+@use "@root/variables";
+.article {
+    padding: 20px;
+}
+.icon {
+    color: variables.$themeRed;
+}
+.article-header {
+    .article-author {
+        font-size: 1.2em;
+        color: #868686;
+        span.author-name {
+            color: variables.$themeBlack;
+            font-weight: bolder;
+        }
+    }
+    .article-title {
+        margin-bottom: 0.83em;
+    }
+    .date {
+        color: variables.$themeBlack;
+    }
+    hr {
+        background-color: variables.$themeRed;
+    }
+}
+#main .content {
+    max-width: 800px;
+    font-family: 'Nunito', sans-serif;
+    color: variables.$themeBlack;
+    hr {
+        background-color: variables.$themeBlack;
+    }
+    img {
+        max-width: 50%;
+        height: auto;
+    }
+    a {
+        color: variables.$themeBlue;
+    }
+}

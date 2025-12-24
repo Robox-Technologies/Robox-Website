@@ -25,6 +25,7 @@ $maxTextWidth: 200px;
 .card {
     background-color: $backgroundColor;
     display: flex;
+    position: relative;
     width: $cardWidth;
     background-color: #F5F5F5;
     flex-direction: column;
