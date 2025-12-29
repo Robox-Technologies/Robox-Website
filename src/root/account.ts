@@ -318,34 +318,41 @@ function normaliseSnapshot(pd: any): { blocks: any; variables?: any[] } | null {
 }
 
 export async function loadProjectData(uuid: string): Promise<import('blockly').WorkspaceSvg | null> {
-    if (!isValidUUID(uuid)) return null;
-
-    const raw = await getFromDatabase<string>('projects', uuid, 'project_data');
-    const pd = typeof raw === 'string' ? JSON.parse(raw) : raw;
-    if (!pd) return null;
-
-    const snapshot = normaliseSnapshot(pd);
-    if (!snapshot?.blocks) {
-        console.error('No workspace snapshot in project_data');
+    if (!isValidUUID(uuid)) {
+        console.warn('Invalid project UUID for loadProjectData:', uuid);
         return null;
     }
 
     try {
-        const blockly = await import('blockly/core');
-        const ws = blockly.getMainWorkspace?.() || blockly.common?.getMainWorkspace?.();
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
 
-        if (ws && blockly.serialization?.workspaces?.load) {
-            try {
-                ws.clear();
-                const loadPayload = snapshot.blocks?.blocks ? { blocks: snapshot.blocks } : snapshot;
-                blockly.serialization.workspaces.load(loadPayload, ws);
-            } catch (e) {
-                console.warn('Failed to deserialize workspace snapshot', e);
-            }
+        if (!token) {
+            console.error('No active session found for loading project data.');
+            return null;
         }
 
-        return ws ?? null;
-    } catch {
+        const response = await fetch(`/api/projects/${uuid}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            console.error(`Failed to fetch project data for ${uuid}. Status: ${response.status}`);
+            return null;
+        }
+
+        const { project } = await response.json();
+
+        if (!project) {
+            console.warn(`No project_data found for project ${uuid}`);
+            return null;
+        }
+
+        return project
+    } catch (error) {
+        console.error('Error loading project data:', error);
         return null;
     }
 }
