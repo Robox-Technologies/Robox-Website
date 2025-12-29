@@ -43,8 +43,13 @@ import { faChalkboardTeacher } from '@fortawesome/free-solid-svg-icons/faChalkbo
 import { faUserGraduate } from '@fortawesome/free-solid-svg-icons/faUserGraduate';
 import { faRightToBracket } from '@fortawesome/free-solid-svg-icons/faRightToBracket';
 import { faCircleCheck } from '@fortawesome/free-solid-svg-icons/faCircleCheck';
+import { faArrowRight } from '@fortawesome/free-solid-svg-icons/faArrowRight';
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons/faEnvelope';
+import { faQrcode } from '@fortawesome/free-solid-svg-icons/faQrcode';
+import { faHashtag } from '@fortawesome/free-solid-svg-icons/faHashtag';
 
-library.add(faCheck, faArrowsRotate, faBoxesStacked, faCircleXmark, faX, faGears, faEye, faRobot, faTruckMonster, faRepeat, faTableList, faFlag, faAngleLeft, faTrash, faShoppingCart, faAngleLeft, faCircleInfo, faAngleRight, faGraduationCap, faCompass, faEllipsisVertical, faUpload, faSquareBinary, faPenToSquare, faExclamationCircle, faTerminal, faPlugCircleXmark, faSpinner, faXmark, faRotateRight, faRotateLeft, faDownload, faScrewdriverWrench, faMinus, faPlus, faEyeDropper, faGear, faChevronLeft, faChevronDown, faCloudArrowUp, faChalkboardTeacher, faUserGraduate, faRightToBracket, faCircleCheck);
+library.add(faCheck, faArrowsRotate, faBoxesStacked, faCircleXmark, faX, faGears, faEye, faRobot, faTruckMonster, faRepeat, faTableList, faFlag, faAngleLeft, faTrash, faShoppingCart, faAngleLeft, faCircleInfo, faAngleRight, faGraduationCap, faCompass, faEllipsisVertical, faUpload, faSquareBinary, faPenToSquare, faExclamationCircle, faTerminal, faPlugCircleXmark, faSpinner, faXmark, faRotateRight, faRotateLeft, faDownload, faScrewdriverWrench, faMinus, faPlus, faEyeDropper, faGear, faChevronLeft, faChevronDown, faCloudArrowUp, faChalkboardTeacher, faUserGraduate, faRightToBracket, faArrowRight, faArrowLeft, faEnvelope, faQrcode, faHashtag, faCircleCheck);
 dom.watch(); // Replaces <i> tags with SVGs
 
 import { headerAuth } from "./account";

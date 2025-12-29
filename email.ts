@@ -37,12 +37,101 @@ const partialDOMs = Object.fromEntries(partialNames.map((name) => {
     return [name, Array.from(partialDOM) as Node[]];
 }));
 
+export async function sendAccountEmail(to: string, templateName: 'reset-password' | 'verify-email' | 'welcome' | 'account-deleted', options: { code?: string; magicLink?: string; name?: string } ): Promise<void> {
+    // Fetch email template
+    const emailTemplate = new JSDOM(await loadTemplate(`./src/templates/email/account/${templateName}/${templateName}.html`));
+    const document = emailTemplate.window.document;
+
+    // Inject css
+    const emailStyle = document.createElement("style");
+    emailStyle.textContent = fs.readFileSync("./src/templates/email/nunitoFont.css", "utf-8");
+    emailStyle.textContent += fs.readFileSync("./src/templates/email/email.css", "utf-8");
+    emailStyle.media = "all"
+    document.head.appendChild(emailStyle);
+
+    // Inject partials
+    for (const partialName of partialNames) {
+        try {
+            const partialMarker = document.getElementById(partialName);
+            let partialDOM = partialDOMs[partialName];
+            if (!partialMarker || !partialDOM) continue;
+            
+            // Clone elements
+            partialDOM = partialDOM.map((child) => child.cloneNode(true));
+            
+            partialMarker.replaceWith(...partialDOM);
+        } catch (error) {
+            console.error(`Error injecting partial '${partialName}' in email: `, error);
+        }
+    }
+
+    // Inject images
+    const images = document.querySelectorAll("img");
+    for (const image of images) {
+        image.src = `https://robox.com.au/public/email/${image.src}`;
+    }
+
+    const nameElements = document.querySelectorAll("#name");
+    const magicLinkElements = document.querySelectorAll("#magic-link");
+    const codeElements = document.querySelectorAll("#otp-code");
+
+    nameElements.forEach((nameElement) => {
+        if (options.name) {
+            nameElement.textContent = options.name;
+        }
+    });
+
+    magicLinkElements.forEach((magicLinkElement) => {
+        if (
+            magicLinkElement instanceof emailTemplate.window.HTMLAnchorElement &&
+            options.magicLink
+        ) {
+            magicLinkElement.href = options.magicLink;
+        }
+    });
+
+    codeElements.forEach((codeElement) => {
+        if (options.code) {
+            codeElement.textContent = options.code;
+        }
+    });
+
+    // Capture body inside table
+    const containerTable = document.createElement("table");
+    const containerRow = document.createElement("tr");
+    const containerCell = document.createElement("td");
+    const container = document.createElement("div");
+    containerCell.setAttribute("align", "center");
+    container.classList.add("email-container");
+
+    container.append(...document.body.children);
+    containerCell.appendChild(container);
+    containerRow.appendChild(containerCell);
+    containerTable.appendChild(containerRow);
+    document.body.replaceChildren(containerTable);
+
+    // Create plaintext fallback
+    let plaintext = fs.readFileSync(`./src/templates/email/account/${templateName}/${templateName}.txt`, "utf-8");
+    const signature = fs.readFileSync(`./src/templates/email/partials/signature.txt`, "utf-8");
+    plaintext = plaintext.replaceAll("{{signature}}", signature);
+    if (options.code) plaintext = plaintext.replaceAll("{{code}}", options.code);
+    if (options.magicLink) plaintext = plaintext.replaceAll("{{magic_link}}", options.magicLink);
+    if (options.name) plaintext = plaintext.replaceAll("{{name}}", options.name);
+
+    // Inline CSS styles using juice
+    const juicedContent = juice(document.documentElement.outerHTML, {
+        preserveImportant: true
+    });
+    
+    return sendEmail(to, 'accounts', document.title, juicedContent, plaintext);
+}
+
 export async function processEmail(paymentIntent: Stripe.PaymentIntent, verifiedProducts: Record<string, Product>, success: boolean): Promise<void> {
     const [to, products] = processPaymentIntent(paymentIntent, verifiedProducts);
 
     // Fetch email template
     const templateName = success ? "success" : "failure";
-    const emailTemplate = new JSDOM(await loadTemplate(`./src/templates/email/${templateName}.html`));
+    const emailTemplate = new JSDOM(await loadTemplate(`./src/templates/email/${templateName}/${templateName}.html`));
     const document = emailTemplate.window.document;
 
     // Inject css
@@ -128,45 +217,65 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
     containerTable.appendChild(containerRow);
     document.body.replaceChildren(containerTable);
 
-    // Create plaintext fallback
-    const plaintext = generateTxtEmail(templateName, orderId, date, total, customerName, shipping, products, address, billing);
+    const data = {id: orderId, date, total, name: customerName, shipping, products, address, billing};
+    const plaintext = generateTxtEmail('payment', templateName, data);
 
     // Inline CSS styles using juice
     const juicedContent = juice(document.documentElement.outerHTML, {
         preserveImportant: true
     });
     
-    return sendEmail(to, document.title, juicedContent, plaintext);
+    return sendEmail(to, 'hello', document.title, juicedContent, plaintext);
 }
 
-function generateTxtEmail(templateName: string, orderId: string, date: string, total: string, customerName: string, shipping: string, products: ProductEmail, address: string, billing: string): string {
-    let plaintext = fs.readFileSync(`./src/templates/email/${templateName}.txt`, "utf-8");
-
-    const summary = fs.readFileSync(`./src/templates/email/partials/summary.txt`, "utf-8");
-    const signature = fs.readFileSync(`./src/templates/email/partials/signature.txt`, "utf-8");
-    plaintext = plaintext.replaceAll("{{summary}}", summary);
-    plaintext = plaintext.replaceAll("{{signature}}", signature);
-
-    plaintext = plaintext.replaceAll("{{name}}", customerName);
-    plaintext = plaintext.replaceAll("{{order_id}}", orderId);
-    plaintext = plaintext.replaceAll("{{date}}", date);
-
-    plaintext = plaintext.replaceAll("{{total}}", total);
-    plaintext = plaintext.replaceAll("{{shipping}}", shipping);
-    plaintext = plaintext.replaceAll("{{address}}", address.replaceAll("<br>", "\n"));
-    plaintext = plaintext.replaceAll("{{billing}}", billing.replaceAll("<br>", "\n"));
-
-    const productEntries = Object.entries(products);
-    const lastProduct = productEntries[productEntries.length-1][0];
-
-    let items = "";
-    for (const [productId, { quantity, price }] of productEntries) {
-        const isLastProduct = productId == lastProduct;
-        items += `${productId} × ${quantity}: ${formatPrice(price, true)}${isLastProduct ? "" : "\n"}`;
+function generateTxtEmail(type: string, templateName: string, data: Record<string, any>): string {
+    // Try to read the template file, fallback to empty string if not found
+    let plaintext = "";
+    try {
+        plaintext = fs.readFileSync(`./src/templates/email/${type}/${templateName}/${templateName}.txt`, "utf-8");
+    } catch (e) {
+        console.error(`Could not read template: ./src/templates/email/${type}/${templateName}/${templateName}.txt`, e);
+        return "";
     }
-    plaintext = plaintext.replaceAll("{{items}}", items);
-    
-    return plaintext
+
+    // Load partials if referenced in template
+    const partials = ["summary", "signature"];
+    for (const partial of partials) {
+        if (plaintext.includes(`{{${partial}}}`)) {
+            try {
+                const partialContent = fs.readFileSync(`./src/templates/email/partials/${partial}.txt`, "utf-8");
+                plaintext = plaintext.replaceAll(`{{${partial}}}`, partialContent);
+            } catch (e) {
+                console.error(`Could not read partial: ./src/templates/email/partials/${partial}.txt`, e);
+                plaintext = plaintext.replaceAll(`{{${partial}}}`, "");
+            }
+        }
+    }
+
+    // Replace all keys in data
+    for (const [key, value] of Object.entries(data)) {
+        let replacement: string;
+        if (key === "products" && typeof value === "object" && value !== null) {
+            // Special handling for products
+            const productEntries = Object.entries(value);
+            if (productEntries.length) {
+                const items = productEntries.map(([productId, { quantity, price }]: any) => {
+                    return `${productId} × ${quantity}: ${formatPrice(price, true)}`;
+                }).join("\n");
+                replacement = items;
+            } else {
+                replacement = "";
+            }
+        } else if (typeof value === "string") {
+            // Replace <br> with newlines for address/billing/etc
+            replacement = value.replaceAll?.("<br>", "\n") ?? value;
+        } else {
+            replacement = String(value);
+        }
+        plaintext = plaintext.replaceAll(`{{${key}}}`, replacement);
+    }
+
+    return plaintext;
 }
 
 function processPaymentIntent (paymentIntent: Stripe.PaymentIntent, verifiedProducts: Record<string, Product>): [string, ProductEmail] {
@@ -235,10 +344,10 @@ function createCell(document: Document, text: string, className: string): HTMLTa
     return td;
 }
 
-async function sendEmail(to: string, subject: string, content: string, plaintext?: string, attachments?: attachments): Promise<void> {
+async function sendEmail(to: string, from: string, subject: string, content: string, plaintext?: string, attachments?: attachments): Promise<void> {
     try {
-        await resend.emails.send({
-            from: 'Ro/Box <hello@store.robox.com.au>',
+        const response = await resend.emails.send({
+            from: `Ro/Box <${from}@${process.env.EMAIL_DOMAIN || "resend.dev"}>`,
             to: [to],
             subject: subject,
             html: content,
@@ -246,9 +355,15 @@ async function sendEmail(to: string, subject: string, content: string, plaintext
             attachments: attachments ?? [],
         });
 
+        if (response.error) {
+            console.error(`Resend API error:`, response.error);
+            throw new Error(`Resend API error: ${response.error.message || response.error}`);
+        }
+
         console.log(`Email sent successfully to ${to}`);
     } catch (error) {
         console.error(`Failed to send email to ${to}:`, error);
+        throw error;
     }
 }
 
