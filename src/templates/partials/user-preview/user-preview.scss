@@ -1,0 +1,31 @@
+@use '@root/variables';
+
+
+.user-preview-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background-color: variables.$tone2;
+    padding: 10px;
+    border-radius: 8px;
+    width: 100%;
+    height: fit-content;
+    margin-bottom: 8px;
+}
+.user-avatar {
+    width: 100%;
+    height: 100%;
+    max-width: 100px;
+    border-radius: 5%;
+    object-fit: cover;
+}
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+.user-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: variables.$themeBlack;
+    margin: 0;
+}
