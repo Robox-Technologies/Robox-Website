@@ -18,7 +18,7 @@ const newPasswordContainer = document.querySelector('.new-password-container') a
 // Inputs and Buttons
 const emailInput = document.getElementById('email-input') as HTMLInputElement
 const codeInput = document.getElementById('code-input') as HTMLInputElement
-const newPasswordInput = document.getElementById('new-password-input') as HTMLInputElement
+const newPasswordInput = document.getElementById('password-input') as HTMLInputElement
 const confirmPasswordInput = document.getElementById('confirm-password-input') as HTMLInputElement
 const continueButton = document.getElementById('login-button') as HTMLButtonElement
 const backButton = document.getElementById('back-button') as HTMLButtonElement
