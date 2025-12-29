@@ -285,7 +285,7 @@ export async function appendToDatabase<T>(tableName: string, objectId: string, c
 
 // --- Project Management --- //
 
-export async function updateProjectData(project_id: string, project_data: string | object): Promise<void> {
+export async function updateProjectData(project_id: string, updateData: Record<string, any>): Promise<void> {
     try {
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
@@ -295,9 +295,19 @@ export async function updateProjectData(project_id: string, project_data: string
             return;
         }
 
-        const payload = {
-            project_data: typeof project_data === 'string' ? JSON.parse(project_data) : project_data
-        };
+        // The payload is now the updateData object itself.
+        // It can contain any key-value pairs for updating the project.
+        const payload = updateData;
+
+        // If project_data is a string, parse it.
+        if (typeof payload.project_data === 'string') {
+            try {
+                payload.project_data = JSON.parse(payload.project_data);
+            } catch (e) {
+                console.error('Failed to parse project_data string:', e);
+                throw new Error('Invalid project_data JSON string');
+            }
+        }
 
         const response = await fetch(`/api/projects/${project_id}`, {
             method: 'PATCH',
