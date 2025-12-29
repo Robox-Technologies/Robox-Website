@@ -28,15 +28,15 @@ const emailErrorMsg = document.getElementById('email-error-msg') as HTMLParagrap
 const codeErrorMsg = document.getElementById('code-error-msg') as HTMLParagraphElement
 const newPasswordErrorMsg = document.getElementById('new-password-error-msg') as HTMLParagraphElement
 const confirmPasswordErrorMsg = document.getElementById('confirm-password-error-msg') as HTMLParagraphElement
-
+// User Preview partial
+const userPreviewAvatar = document.getElementById('user-avatar') as HTMLImageElement
+const userPreviewName = document.getElementById('user-name') as HTMLParagraphElement
+const userPreviewEmail = document.getElementById('user-email') as HTMLParagraphElement
+const userPreviewContainer = document.querySelector('.user-preview-container') as HTMLDivElement
 
 type Step = 'email' | 'code' | 'new-password'
 let currentStep: Step = 'email'
-let userData = {
-    fullName: '',
-    email: '',
-    password: ''
-}
+let userData
 const currentUserData = await getCurrentUserData()
 if (currentUserData) {
     userData = currentUserData
@@ -109,7 +109,13 @@ function showCodeStep() {
     hideAllErrors()
 }
 
-function showNewPasswordStep() {
+async function showNewPasswordStep() {
+
+    const currentUserData = await getCurrentUserData()
+    if (currentUserData) {
+        userData = currentUserData
+    }
+
     currentStep = 'new-password'
     
     titleElement.textContent = 'Create New Password'
@@ -120,6 +126,11 @@ function showNewPasswordStep() {
     
     infoTextElement.textContent = `Create a new, strong password for your account associated with ${userData.email}.`
     continueButton.innerHTML = 'Reset Password'
+    
+    userPreviewAvatar.src = userData.avatar_url || 'https://api.dicebear.com/9.x/bottts-neutral/svg?seed=Riley&backgroundColor=d81b60,1e88e5&eyes=eva,frame1,frame2,glow,happy,hearts,robocop,round,roundFrame01,roundFrame02,sensor,shade01'
+    userPreviewName.textContent = userData.full_name || 'User'
+    userPreviewEmail.textContent = userData.email
+    userPreviewContainer.style.display = 'flex'
     
     newPasswordInput.focus()
     hideAllErrors()
