@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <%~ include('src/templates/partials/metadata.html') %>
+    <link href="@root/root.scss" rel="stylesheet">
+    <link href="./index.scss" rel="stylesheet">
+</head>
+<body>
+    <%~ include('@partials/header/header.html') %>
+    <div class="background">
+        <div class="login-bg">
+            <img src="@images/login/blueprint.webp" class="login-bg media">
+            <div class="login-dialog">
+
+                <button id="back-button" class="pill-button back-button" style="margin-bottom: 12px; display: none; align-self: flex-start;">
+                    <i class="fa-solid fa-arrow-left" style="padding-right: 4px;"></i> Back
+                </button>
+
+                <h1 class="title">
+                    Reset Password
+                </h1>
+                <p class="info-text" id="info-text">
+                    Enter your email address below and we'll send you a link to reset your password.
+                </p>
+
+                <div class="email-container" style="display: none;">
+                    <%~ include('@partials/text-input/text-input.html', {
+                        class: "email-container",
+                        inputId: "email-input",
+                        label: 'Email',
+                        placeholder: 'me@myemail.com',
+                        required: false,
+                        autocomplete: 'email',
+                        errorId: 'email-error-msg',
+                        type: 'email',
+                        eye: false
+                    }) %>
+                </div>
+
+                <div class="code-container" style="display: none;">
+                    <%~ include('@partials/text-input/text-input.html', {
+                        class: "code-container",
+                        inputId: "code-input",
+                        label: 'Code',
+                        placeholder: '123456',
+                        required: false,
+                        autocomplete: 'one-time-code',
+                        errorId: 'code-error-msg',
+                        type: 'email',
+                        eye: false
+                    }) %>
+                </div>
+
+                <div class="new-password-container" style="display: none;">
+                    <%~ include('@partials/text-input/text-input.html', {
+                        class: "new-password-container",
+                        inputId: "new-password-input password-input",
+                        label: 'New Password',
+                        placeholder: 'Enter your new password',
+                        required: false,
+                        autocomplete: 'new-password',
+                        errorId: 'new-password-error-msg',
+                        type: 'password',
+                        eye: true
+                    }) %>
+
+                    <%~ include('@partials/text-input/text-input.html', {
+                        class: "new-password-confirm-container",
+                        inputId: "confirm-password-input",
+                        label: 'Confirm Password',
+                        placeholder: 'Confirm your new password',
+                        required: false,
+                        autocomplete: 'new-password',
+                        errorId: 'confirm-password-error-msg',
+                        type: 'password',
+                        eye: true
+                    }) %>
+
+                    <%~ include('@partials/password-checklist/password-checklist.html') %>
+                </div>
+                <button id="login-button" class="ctaButton primaryButton" style="display: block; margin: 25px auto 0 auto;">
+                    Continue
+                    <i class="fa-solid fa-arrow-right" style="margin-left: 5px !important;"></i>
+                </button>
+                <hr class="divider">
+                <div class="signup-prompt">
+                Don't need to reset your password? <a href="/account/login" target="_self">Log in</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="./index.ts"></script>
+</body>
+</html>
