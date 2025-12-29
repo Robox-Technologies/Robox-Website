@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import paymentRouter from "./store.js";
+import { sendAccountEmail } from './email.js';
 import rateLimit from "express-rate-limit";
 import {getCMSRedirects} from "./CMS.js";
 import { createClient } from '@supabase/supabase-js'
@@ -259,6 +260,76 @@ app.post('/api/account/user/info', async (req, res) => {
 });
 
 // update user settings
+
+
+
+// Password reset
+// send password reset email
+app.post('/api/account/reset-password/send', async (req, res) => {
+    const { email } = req.body ?? {};
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    // Check if user exists
+    const { data: existingUser, error: userError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+    // dont notify user if email doesn't exist
+    if (userError || !existingUser) {
+        return res.json({ success: true });
+    }
+
+    // generate magic link with OTP
+    const { data, error } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email,
+        options: {
+        redirectTo: `https://${process.env.WEBSITE_URL}`
+        }
+    });
+
+    // dont notify user if email doesn't exist
+    if (error) {
+        return res.json({ success: true });
+    }
+
+    // fetch user's name
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name')
+        .eq('email', email)
+        .single();
+
+    const userName = profile?.first_name || '';
+
+    if (error) {
+        return res.json({ success: true });
+    }
+
+    if (error) {
+        console.error('Failed to generate reset link:', error);
+        return res.status(500).json({ error: 'Failed to generate reset link' });
+    }
+
+    const otp = data.properties?.email_otp
+    const actionLink = data.properties?.action_link + '/account/reset-password'
+
+        // Send email with OTP and action link
+        try {
+            await sendAccountEmail(email, 'reset-password', {'name': userName, 'code': otp || '', 'magicLink': actionLink || '', });
+        } catch (emailError) {
+            console.error('Failed to send password reset email:', emailError);
+            return res.status(500).json({ error: 'Failed to send reset email' });
+        }
+    
+});
 
 // 404 for all other routes
 app.use("/public", express.static(websiteDir + "/public", {
