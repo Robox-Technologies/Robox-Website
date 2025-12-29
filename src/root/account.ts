@@ -285,32 +285,43 @@ export async function appendToDatabase<T>(tableName: string, objectId: string, c
 
 // --- Project Management --- //
 
-interface Project {
-    id: string;
-    owner: string;
-    name: string;
-    workspace: object;
-    thumbnail: string;
-    time: Dayjs;
-    extensions: object;
-}
-
 export async function updateProjectData(project_id: string, project_data: string | object): Promise<void> {
-    const now = new Date().toISOString();
-    let payload: string;
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
 
-    if (typeof project_data === 'string') {
-        payload = project_data;
-    } else {
-        console.warn('updateProjectData not JSON string');
-        payload = JSON.stringify(project_data);
+        if (!token) {
+            console.error('No active session found for updating project data.');
+            return;
+        }
+
+        const payload = {
+            project_data: typeof project_data === 'string' ? JSON.parse(project_data) : project_data
+        };
+
+        const response = await fetch(`/api/projects/${project_id}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+            console.error(`Failed to update project data for ${project_id}. Status: ${response.status}`, errorData.error);
+            throw new Error(`Failed to update project: ${errorData.error}`);
+        }
+
+    } catch (error) {
+        console.error('Error updating project data:', error);
+        // Re-throwing allows the caller to handle the error if needed
+        throw error;
     }
-
-    await writeToDatabase('projects', project_id, 'project_data', payload, true);
-    await writeToDatabase('projects', project_id, 'last_updated', now, true);
 }
 
-export async function loadProjectData(uuid: string): Promise<import('blockly').WorkspaceSvg | null> {
+export async function loadProjectData(uuid: string): Promise<Record<string, unknown> | null> {
     if (!isValidUUID(uuid)) {
         console.warn('Invalid project UUID for loadProjectData:', uuid);
         return null;
