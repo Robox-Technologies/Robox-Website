@@ -205,6 +205,101 @@ body {
     padding-right: 12px;
     font-size: 16px;
 }
+.cloud-toggle {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 35px;
+    margin: 0 50px;
+
+    label {
+        display: block;
+        position: absolute;
+        top: 50%;
+        right: 0;
+        left: 0;
+        width: 72px;
+        height: 35px;
+        margin: 0 auto;
+        background-color: variables.$themeBlue;
+        border-radius: 8px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        transition: 0.3s ease background-color;
+        overflow: hidden;
+    }
+
+    #cloud, #local {
+        position: absolute;
+        width: 30px;
+        background-color: transparent;
+        border-radius: 0;
+    }
+
+    #cloud {
+        top: 2px;
+        left: 4px;
+        height: 30px;
+        color: variables.$tone1;
+        transform: scale(0.9);
+        transition: 0.3s ease top, 0.3s ease left, 0.3s ease transform, 0.3s ease background-color;
+        z-index: 1;
+
+        > svg {
+            transform: scale(0.7);
+        }
+    }
+
+    #local {
+        bottom: 60px;
+        right: 4px;
+        height: 24px;
+        transition: 0.3s ease bottom;
+        color: variables.$tone2;
+
+        > svg {
+            transform: scale(0.9);
+        }
+
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 4px;
+            width: 30px;
+            height: 24px;
+            color: variables.$tone2;
+            border-radius: 0;
+            margin-top: 4px;
+            transition: 0.3s ease background-color;
+            transform: scale(0.9);
+        }
+    }
+
+    input#cloud-sync-checkbox {
+        display: none;
+
+        &:checked + label {
+            background-color: variables.$tone3;
+
+            #cloud {
+                top: 3px;
+                left: 64px;
+                transform: scale(0.3);
+                background-color: transparent;
+            }
+
+            #local {
+                bottom: 8px;
+
+                &::before {
+                    background-color: transparent;
+                }
+            }
+        }
+    }
+}
+
 
 #project-name-form {
     @include variables.dropShadowSmaller;    
