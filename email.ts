@@ -37,6 +37,95 @@ const partialDOMs = Object.fromEntries(partialNames.map((name) => {
     return [name, Array.from(partialDOM) as Node[]];
 }));
 
+export async function sendAccountEmail(to: string, templateName: 'reset-password' | 'verify-email' | 'welcome' | 'account-deleted', options: { code?: string; magicLink?: string; name?: string } ): Promise<void> {
+    // Fetch email template
+    const emailTemplate = new JSDOM(await loadTemplate(`./src/templates/email/account/${templateName}/${templateName}.html`));
+    const document = emailTemplate.window.document;
+
+    // Inject css
+    const emailStyle = document.createElement("style");
+    emailStyle.textContent = fs.readFileSync("./src/templates/email/nunitoFont.css", "utf-8");
+    emailStyle.textContent += fs.readFileSync("./src/templates/email/email.css", "utf-8");
+    emailStyle.media = "all"
+    document.head.appendChild(emailStyle);
+
+    // Inject partials
+    for (const partialName of partialNames) {
+        try {
+            const partialMarker = document.getElementById(partialName);
+            let partialDOM = partialDOMs[partialName];
+            if (!partialMarker || !partialDOM) continue;
+            
+            // Clone elements
+            partialDOM = partialDOM.map((child) => child.cloneNode(true));
+            
+            partialMarker.replaceWith(...partialDOM);
+        } catch (error) {
+            console.error(`Error injecting partial '${partialName}' in email: `, error);
+        }
+    }
+
+    // Inject images
+    const images = document.querySelectorAll("img");
+    for (const image of images) {
+        image.src = `https://robox.com.au/public/email/${image.src}`;
+    }
+
+    const nameElements = document.querySelectorAll("#name");
+    const magicLinkElements = document.querySelectorAll("#magic-link");
+    const codeElements = document.querySelectorAll("#otp-code");
+
+    nameElements.forEach((nameElement) => {
+        if (options.name) {
+            nameElement.textContent = options.name;
+        }
+    });
+
+    magicLinkElements.forEach((magicLinkElement) => {
+        if (
+            magicLinkElement instanceof emailTemplate.window.HTMLAnchorElement &&
+            options.magicLink
+        ) {
+            magicLinkElement.href = options.magicLink;
+        }
+    });
+
+    codeElements.forEach((codeElement) => {
+        if (options.code) {
+            codeElement.textContent = options.code;
+        }
+    });
+
+    // Capture body inside table
+    const containerTable = document.createElement("table");
+    const containerRow = document.createElement("tr");
+    const containerCell = document.createElement("td");
+    const container = document.createElement("div");
+    containerCell.setAttribute("align", "center");
+    container.classList.add("email-container");
+
+    container.append(...document.body.children);
+    containerCell.appendChild(container);
+    containerRow.appendChild(containerCell);
+    containerTable.appendChild(containerRow);
+    document.body.replaceChildren(containerTable);
+
+    // Create plaintext fallback
+    let plaintext = fs.readFileSync(`./src/templates/email/account/${templateName}/${templateName}.txt`, "utf-8");
+    const signature = fs.readFileSync(`./src/templates/email/partials/signature.txt`, "utf-8");
+    plaintext = plaintext.replaceAll("{{signature}}", signature);
+    if (options.code) plaintext = plaintext.replaceAll("{{code}}", options.code);
+    if (options.magicLink) plaintext = plaintext.replaceAll("{{magic_link}}", options.magicLink);
+    if (options.name) plaintext = plaintext.replaceAll("{{name}}", options.name);
+
+    // Inline CSS styles using juice
+    const juicedContent = juice(document.documentElement.outerHTML, {
+        preserveImportant: true
+    });
+    
+    return sendEmail(to, 'accounts', document.title, juicedContent, plaintext);
+}
+
 export async function processEmail(paymentIntent: Stripe.PaymentIntent, verifiedProducts: Record<string, Product>, success: boolean): Promise<void> {
     const [to, products] = processPaymentIntent(paymentIntent, verifiedProducts);
 
