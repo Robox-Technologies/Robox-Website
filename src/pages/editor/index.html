@@ -157,6 +157,28 @@
         ],
     }) %>
     <%~ include('@partials/modal/modal.html', {
+        id: "login-to-sync-modal",
+        title: 'Login to Sync', 
+        content: [
+            "<p>You need to be logged in to enable cloud sync. Would you like to log in now?</p>",
+        ],
+        buttons: [
+            '<button id="login-to-sync-confirm" class="button standard-button">Login</button>',
+            '<button id="login-to-sync-cancel" class="button standard-button">Cancel</button>',
+        ],
+    }) %>
+    <%~ include('@partials/modal/modal.html', {
+        id: "confirm-disable-sync-modal",
+        title: 'Disable Cloud Sync', 
+        content: [
+            "<p>Are you sure you want to disable cloud sync? Your project will only be saved locally on this device and will not be accessible from other devices.</p>",
+        ],
+        buttons: [
+            '<button id="confirm-disable-sync-button" class="button standard-button">Disable</button>',
+            '<button id="confirm-disable-sync-cancel" class="button standard-button">Cancel</button>',
+        ],
+    }) %>
+    <%~ include('@partials/modal/modal.html', {
         id: "extension-modal",
         title: 'Extensions', 
         content: [
