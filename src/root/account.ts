@@ -1,7 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 import 'blockly/blocks';
 import { getProjects } from '@root/blockly/serialization';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
+import { PostgrestError } from '@supabase/supabase-js';
+
+// --- Supabase Initialization --- //
 
 const supabaseUrl = process.env.SUPABASE_URL
 const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY
@@ -11,6 +14,8 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
+
+// --- Authentication & Session Management --- //
 
 export async function authCheck(role: string = 'user', redirect: boolean = true):Promise<boolean | null> {
     const { data: { session }, error } = await supabase.auth.getSession()
@@ -65,66 +70,7 @@ export async function authCheck(role: string = 'user', redirect: boolean = true)
     }
 }
 
-export function checkPasswordRequirements(password: string): boolean | string {
-    const problems: string[] = []
-
-    if (!password || password.length < 8) {
-        problems.push("be at least 8 characters long");
-    }
-    if (!/[A-Z]/.test(password)) {
-        problems.push('contain at least one uppercase letter');
-    }
-    if (!/[a-z]/.test(password)) {
-        problems.push('contain at least one lowercase letter');
-    }
-    if (!/\d/.test(password)) {
-        problems.push('contain at least one number');
-    }
-    if (!/[!@#$%^&*_(),.?":{}|<>]/.test(password)) {
-        problems.push('contain at least one special character');
-    }
-    if (problems.length === 0) {
-        return true;
-    }
-    let sentence: string = 'Password must ';
-    if (problems.length === 1) {
-        sentence += problems[0];
-    } else if (problems.length === 2) {
-        sentence += problems.join(' and ');
-    } else {
-        const last = problems.pop();
-        sentence += problems.join(', ') + ', and ' + last;
-    }
-    
-    return sentence + '.';
-}
-
-export async function getCurrentUserData() {
-    try {
-        const { data: sessionData } = await supabase.auth.getSession()
-        const token = sessionData?.session?.access_token ?? null
-    
-        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-        if (token) headers.Authorization = `Bearer ${token}`
-    
-        const resp = await fetch('/api/account/user/info', {
-            method: 'POST',
-            headers
-        })
-    
-        const result = await resp.json().catch(() => ({}))
-    
-        if (!resp.ok) {
-            return false
-        }
-        return result.data || {}
-    } catch (error) {
-        console.error('Failed to get user data:', error)
-        return null
-    }
-}
-
-export async function isAuthenticated() {
+export async function isAuthenticated(): Promise<boolean> {
     try {
         const { data: { session } } = await supabase.auth.getSession()
         return !!session
@@ -134,7 +80,7 @@ export async function isAuthenticated() {
     }
 }
 
-export async function signIn(email: string, password: string) {
+export async function signIn(email: string, password: string): Promise<void> {
     try {
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         
@@ -149,7 +95,7 @@ export async function signIn(email: string, password: string) {
     }
 }
 
-export async function signOut(redirectTo: string = '/') {
+export async function signOut(redirectTo: string = '/'): Promise<boolean> {
     let success: boolean = true;
     try {
         const { error } = await supabase.auth.signOut();
@@ -174,8 +120,7 @@ export async function signOut(redirectTo: string = '/') {
     return success;
 }
 
-// Deletion is handled via server API because it requires SERVICE_ROLE_KEY
-export async function deleteAccount() {
+export async function deleteAccount(): Promise<void> {
     const { data: { session } } = await supabase.auth.getSession()
     const token = session?.access_token
     if (!token) {
@@ -199,7 +144,77 @@ export async function deleteAccount() {
     }
 }
 
-export async function getFromDatabase(tableName: string, objectId: string, column?: string) {
+// --- User Data & Profile Management --- //
+
+export async function getCurrentUserData(): Promise<Record<string, unknown> | null | false> {
+    try {
+        const { data: sessionData } = await supabase.auth.getSession()
+        const token = sessionData?.session?.access_token ?? null
+    
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (token) headers.Authorization = `Bearer ${token}`
+    
+        const resp = await fetch('/api/account/user/info', {
+            method: 'POST',
+            headers
+        })
+    
+        const result = await resp.json().catch(() => ({}))
+    
+        if (!resp.ok) {
+            return false
+        }
+        return result.data || {}
+    } catch (error) {
+        console.error('Failed to get user data:', error)
+        return null
+    }
+}
+
+export async function getBasicUserData(users: string[] | string): Promise<{ id: string, display_name: string, user_role: string, avatar_url: string }[]> {
+    const userIds = Array.isArray(users) ? users : [users];
+    const results = await Promise.all(userIds.map(async id => {
+        const [display_name, user_role, avatar_url] = await Promise.all([
+            getFromDatabase('profiles', id, 'display_name'),
+            getFromDatabase('profiles', id, 'user_role'),
+            getFromDatabase('profiles', id, 'avatar_url')
+        ]);
+        return { id, display_name, user_role, avatar_url };
+    }));
+    return results;
+}
+
+export async function checkEmailAvailability(email: string): Promise<boolean | string> {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!emailRegex.test(cleanEmail)) {
+        return 'Please enter a valid email address';
+    }
+
+    try {
+        const res = await fetch('/api/account/email-check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: cleanEmail })
+        });
+
+        if (!res.ok) {
+            console.error('Email check request failed with status', res.status);
+            return 'Unable to validate email';
+        }
+
+        const data = await res.json();
+        return !!data.exists;
+    } catch (err) {
+        console.error('Unexpected error during email validation:', err);
+        return 'Unable to validate email';
+    }
+}
+
+// --- Generic Database Helpers --- //
+
+export async function getFromDatabase<T>(tableName: string, objectId: string, column?: string): Promise<T | null> {
     try {
         const selectOption = column && column.trim().length > 0 ? column : '*';
         const { data, error } = await supabase
@@ -213,16 +228,17 @@ export async function getFromDatabase(tableName: string, objectId: string, colum
         }
 
         if (!data || data.length === 0) return null;
-        return column ? data[0][column] : data[0];
+        const result = data[0];
+        return column ? result[column] : result;
     } catch (error) {
         console.error('Failed to retrieve data from database:', error)
         throw error
     }
 }
 
-export async function writeToDatabase(tableName: string, objectId: string, column: string, value: any, overwrite: boolean = true) {
+export async function writeToDatabase<T>(tableName: string, objectId: string, column: string, value: T, overwrite: boolean = true): Promise<Record<string, unknown> | null> {
     try {
-        let data, error;
+        let data: Record<string, unknown>[] | null, error: PostgrestError | null;
         if (overwrite) {
             ({ data, error } = await supabase
                 .from(tableName)
@@ -246,66 +262,40 @@ export async function writeToDatabase(tableName: string, objectId: string, colum
     }
 }
 
-export async function appendToDatabase(tableName: string, objectId: string, column: string, value: any, add: boolean = true) {
-	const current = await getFromDatabase(tableName, objectId, column);
-	const arr: any[] = Array.isArray(current) ? [...current] : [];
+export async function appendToDatabase<T>(tableName: string, objectId: string, column: string, value: T, add: boolean = true): Promise<Record<string, unknown> | T[] | null> {
+    const current = await getFromDatabase<T[]>(tableName, objectId, column);
+    const arr: T[] = Array.isArray(current) ? [...current] : [];
 
-	let updated: any[] = arr;
+    let updated: T[] = arr;
 
-	if (add) {
-		if (value !== undefined && value !== null && !arr.includes(value)) {
-			updated = [...arr, value];
-		}
-	} else {
-		updated = arr.filter(v => v !== value);
-	}
-
-	if (updated === arr) {
-		return current;
-	}
-
-	return await writeToDatabase(tableName, objectId, column, updated, true);
-}
-
-export async function removeClassroomFromProfile(classroomId: string, userId: string) {
-    try {
-        const tryAgain = await getFromDatabase('classrooms', classroomId) as any;
-        if (!tryAgain) {
-            console.warn(`Classroom with ID ${classroomId} not found, removing from profile.`);
-            await appendToDatabase('profiles', userId, 'classrooms', classroomId, false);
+    if (add) {
+        if (value !== undefined && value !== null && !arr.includes(value)) {
+            updated = [...arr, value];
         }
-        return true;
-    } catch (error) {
-        console.error(`Failed to remove classroom ${classroomId} from profile ${userId}:`, error);
-        return false;
+    } else {
+        updated = arr.filter(v => v !== value);
     }
+
+    if (updated === arr) {
+        return current;
+    }
+
+    return await writeToDatabase(tableName, objectId, column, updated, true);
 }
 
-export async function getBasicUserData(users: string[] | string): Promise<{ id: string, display_name: string, user_role: string, avatar_url: string }[]> {
-    const userIds = Array.isArray(users) ? users : [users];
-    const results = await Promise.all(userIds.map(async id => {
-        const [display_name, user_role, avatar_url] = await Promise.all([
-            getFromDatabase('profiles', id, 'display_name'),
-            getFromDatabase('profiles', id, 'user_role'),
-            getFromDatabase('profiles', id, 'avatar_url')
-        ]);
-        return { id, display_name, user_role, avatar_url };
-    }));
-    return results;
+// --- Project Management --- //
+
+interface Project {
+    id: string;
+    owner: string;
+    name: string;
+    workspace: object;
+    thumbnail: string;
+    time: Dayjs;
+    extensions: object;
 }
 
-function isProtoPollution(key: string): boolean {
-    const forbiddenKeys = ["__proto__", "constructor", "prototype"];
-    return forbiddenKeys.includes(key);
-}
-
-export function isValidUUID(uuid: string): boolean {
-    if (isProtoPollution(uuid)) return false;
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
-}
-
-export async function updateProjectData(project_id: string, project_data: any) {
+export async function updateProjectData(project_id: string, project_data: string | object): Promise<void> {
     const now = new Date().toISOString();
     let payload: string;
 
@@ -313,23 +303,24 @@ export async function updateProjectData(project_id: string, project_data: any) {
         payload = project_data;
     } else {
         console.warn('updateProjectData not JSON string');
+        payload = JSON.stringify(project_data);
     }
 
     await writeToDatabase('projects', project_id, 'project_data', payload, true);
     await writeToDatabase('projects', project_id, 'last_updated', now, true);
 }
 
-function normaliseSnapshot(pd) {
+function normaliseSnapshot(pd: any): { blocks: any; variables?: any[] } | null {
     if (pd?.workspace) return pd.workspace;
     if (pd?.blocks?.blocks) return { blocks: pd.blocks.blocks, variables: pd.blocks.variables ?? [] };
     if (pd?.blocks?.languageVersion || pd?.blocks?.blocks) return { blocks: pd.blocks };
     return null;
 }
 
-export async function loadProjectData(uuid: string) {
+export async function loadProjectData(uuid: string): Promise<import('blockly').WorkspaceSvg | null> {
     if (!isValidUUID(uuid)) return null;
 
-    const raw = await getFromDatabase('projects', uuid, 'project_data');
+    const raw = await getFromDatabase<string>('projects', uuid, 'project_data');
     const pd = typeof raw === 'string' ? JSON.parse(raw) : raw;
     if (!pd) return null;
 
@@ -364,11 +355,11 @@ export async function isSyncedProject(uuid: string): Promise<boolean> {
         console.warn('Invalid UUID:', uuid);
         return false;
     }
-    const cloudSync = await getFromDatabase('projects', uuid, 'cloud_sync');
+    const cloudSync = await getFromDatabase<boolean>('projects', uuid, 'cloud_sync');
     return !!cloudSync;
 }
 
-export async function deleteCloudProject(uuid: string) {
+export async function deleteCloudProject(uuid: string): Promise<void> {
     if (!isValidUUID(uuid)) {
         console.warn('Invalid UUID:', uuid);
         return;
@@ -388,7 +379,7 @@ export async function deleteCloudProject(uuid: string) {
     }
 }
 
-export async function syncCloudProjects(userId?: string) {
+export async function syncCloudProjects(userId?: string): Promise<void> {
     try {
         if (!userId) return;
         const remoteIds = await findUserProjects(userId);
@@ -397,28 +388,22 @@ export async function syncCloudProjects(userId?: string) {
         let changed = false;
         for (const id of remoteIds) {
             if (!projects[id]) {
-                const remoteProject = await getFromDatabase('projects', id);
-                const name = (remoteProject && (remoteProject as any).name) ?? 'unnamed project';
-                const last_updated = (remoteProject && (remoteProject as any).last_updated) ?? new Date().toISOString();
+                const remoteProject = await getFromDatabase<any>('projects', id);
+                const name = (remoteProject && remoteProject.name) ?? 'unnamed project';
+                const last_updated = (remoteProject && remoteProject.last_updated) ?? new Date().toISOString();
 
                 const projectDataRaw = remoteProject?.project_data;
                 let projectDataParsed: any = null;
                 try { projectDataParsed = JSON.parse(projectDataRaw); } catch {}
 
-                const placeholder: {
-                    id: string;
-                    owner: string;
-                    name: string;
-                    workspace: object;
-                    thumbnail: string;
-                    time: dayjs.Dayjs;
-                } = {
+                const placeholder: Project = {
                     id,
                     owner: userId,
                     name,
                     workspace: {},
                     thumbnail: projectDataParsed?.thumbnail || '',
-                    time: dayjs(last_updated)
+                    time: dayjs(last_updated),
+                    extensions: {}
                 };
 
                 projects[id] = placeholder;
@@ -433,7 +418,7 @@ export async function syncCloudProjects(userId?: string) {
     }
 }
 
-export async function uploadNewProject(projectId: string, userId: string, name: string) {
+export async function uploadNewProject(projectId: string, userId: string, name: string): Promise<Record<string, unknown> | null> {
     const defaultProjectName: string = 'unnamed project'
 
     name = name || defaultProjectName;
@@ -463,7 +448,7 @@ export async function uploadNewProject(projectId: string, userId: string, name: 
     }
 }
 
-export async function getProjectSyncStatus(uuid: string) {
+export async function getProjectSyncStatus(uuid: string): Promise<boolean> {
     if (!isValidUUID(uuid)) {
         return false;
     }
@@ -494,7 +479,41 @@ export async function findUserProjects(userId: string): Promise<string[]> {
     }
 }
 
-export async function createClassroom(data): Promise<string | null> {
+// --- Classroom Management --- //
+
+export interface ClassroomCreationData {
+    name: string;
+    description?: string | null;
+    year_level?: string | null;
+    course_code?: string | null;
+    location?: string | null;
+    lms_url?: string | null;
+    security?: number;
+    features?: string[];
+}
+
+interface ClassroomRow {
+    id: string;
+    owner: string;
+    name: string;
+    students?: string[];
+    teachers?: string[];
+    created_at?: string;
+    avatar_url?: string | null;
+    year_level?: string | null;
+    course_code?: string | null;
+    location?: string | null;
+    lms_url?: string | null;
+    security?: number;
+    features?: string[];
+    class_code?: number | null;
+    school?: string | null;
+    description?: string | null;
+    status?: string | null;
+    color?: string | null;
+}
+
+export async function createClassroom(data: ClassroomCreationData): Promise<string | null> {
     const { data: { session } } = await supabase.auth.getSession();
     const ownerId = session?.user?.id;
     if (!ownerId) {
@@ -543,6 +562,20 @@ export async function createClassroom(data): Promise<string | null> {
     return classroomId;
 }
 
+export async function removeClassroomFromProfile(classroomId: string, userId: string): Promise<boolean> {
+    try {
+        const tryAgain = await getFromDatabase('classrooms', classroomId);
+        if (!tryAgain) {
+            console.warn(`Classroom with ID ${classroomId} not found, removing from profile.`);
+            await appendToDatabase('profiles', userId, 'classrooms', classroomId, false);
+        }
+        return true;
+    } catch (error) {
+        console.error(`Failed to remove classroom ${classroomId} from profile ${userId}:`, error);
+        return false;
+    }
+}
+
 export async function isValidClassroom(classroomId: string): Promise<boolean | null> {
     if (!isValidUUID(classroomId)) {
         console.warn('Invalid classroom ID:', classroomId);
@@ -566,10 +599,10 @@ export async function getClassroomPermissions(classroomId: string, userId: strin
         return null;
     }
     try {
-        const classroom: any = await getFromDatabase('classrooms', classroomId);
+        const classroom = await getFromDatabase<ClassroomRow>('classrooms', classroomId);
         if (!classroom) return null;
 
-        const owner = classroom?.owner as string | undefined;
+        const owner = classroom?.owner;
         if (owner === userId) return 'owner';
 
         const teachers: string[] = Array.isArray(classroom?.teachers) ? classroom.teachers : [];
@@ -598,7 +631,7 @@ export async function findClassroomByCode(classCode: string): Promise<any | null
     return data;
 }
 
-export async function joinClassroom(classCode: string) {
+export async function joinClassroom(classCode: string): Promise<any | null> {
     if (!classCode || classCode.length !== 8) {
         console.warn('Invalid class code:', classCode);
         return null;
@@ -611,7 +644,8 @@ export async function joinClassroom(classCode: string) {
             return null;
         }
 
-        const userId = (await getCurrentUserData())?.id;
+        const userData = await getCurrentUserData();
+        const userId = userData ? (userData.id as string) : null;
         if (!userId) {
             console.error('No authenticated user found');
             return null;
@@ -633,134 +667,7 @@ export async function joinClassroom(classCode: string) {
     }
 }
 
-export async function headerAuth() {
-    const loginButton = document.getElementById('header-login-button') as HTMLButtonElement;
-    const accountButton = document.getElementById('header-loggedin-button') as HTMLButtonElement;
-    const usernameElement = document.getElementById('header-username') as HTMLDivElement;
-    const mobileLoginButton = document.getElementById('mobile-header-login-button') as HTMLButtonElement;
-
-    if (!loginButton || !accountButton || !usernameElement || !mobileLoginButton) {
-        return;
-    }
-
-    const updateHeaderUI = (userData: any) => {
-        if (userData) {
-            loginButton.style.display = 'none';
-            accountButton.style.display = 'inline-flex';
-            mobileLoginButton.style.display = 'none';
-            const displayName = userData.display_name as string | undefined;
-            const firstName = userData?.first_name as string | undefined;
-            const email = userData?.full_name as string | undefined;
-            usernameElement.textContent = displayName || firstName || email || 'User';
-        } else {
-            loginButton.style.display = 'inline-flex';
-            accountButton.style.display = 'none';
-            mobileLoginButton.style.display = 'inline-flex';
-            usernameElement.textContent = '';
-        }
-    };
-
-    const cacheKey = 'robox-auth-cache';
-    const avatarCacheKey = 'robox-avatar-cache';
-
-    const cachedData = localStorage.getItem(cacheKey);
-    if (cachedData) {
-        updateHeaderUI(JSON.parse(cachedData));
-    }
-
-    const revalidate = async () => {
-        let freshData = null;
-        if (await isAuthenticated()) {
-            freshData = await getCurrentUserData();
-        }
-
-        if (freshData) {
-            localStorage.setItem(cacheKey, JSON.stringify(freshData));
-            if (freshData.avatar_url) {
-                await cacheAvatarImage(freshData.avatar_url);
-            }
-        } else {
-            localStorage.removeItem(cacheKey);
-            localStorage.removeItem(avatarCacheKey);
-        }
-        
-        updateHeaderUI(freshData);
-    };
-
-    addEventListener('DOMContentLoaded', async () => {
-        const image = document.getElementById('header-avatar') as HTMLImageElement;
-        
-        const cachedAvatar = localStorage.getItem(avatarCacheKey);
-        if (cachedAvatar) {
-            image.src = cachedAvatar;
-        }
-        
-        await revalidate();
-        updateHeaderAvatar();
-    });
-}
-
-async function cacheAvatarImage(url: string): Promise<string | null> {
-    const avatarCacheKey = 'robox-avatar-cache';
-    try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64 = reader.result as string;
-                localStorage.setItem(avatarCacheKey, base64);
-                resolve(base64);
-            };
-            reader.onerror = () => resolve(null);
-            reader.readAsDataURL(blob);
-        });
-    } catch {
-        return null;
-    }
-}
-
-export function updateHeaderAvatar(url?: string) {
-    const image = document.getElementById('header-avatar') as HTMLImageElement | null;
-    if (!image) return;
-
-    const avatarCacheKey = 'robox-avatar-cache';
-    
-    const cachedAvatar = localStorage.getItem(avatarCacheKey);
-    if (cachedAvatar && !url) {
-        image.src = cachedAvatar;
-    }
-
-    getCurrentUserData()
-        .then(async userData => {
-            const fallbackUrl = url?.trim() ? url : userData?.avatar_url;
-            const seed = userData?.id || 'default';
-            const finalUrl = fallbackUrl || `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}`;
-            
-            if (finalUrl) {
-                const cachedBase64 = await cacheAvatarImage(finalUrl);
-                if (cachedBase64) {
-                    image.src = cachedBase64;
-                    return;
-                }
-            }
-            
-            image.src = finalUrl;
-        })
-        .catch(error => {
-            console.warn('Failed to refresh header avatar:', error);
-            const fallback = cachedAvatar || 'https://api.dicebear.com/9.x/bottts/svg?seed=robox';
-            image.src = fallback;
-        });
-}
-
-function genRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-export async function validateClassroom(id): Promise<boolean> {
+export async function validateClassroom(id: string): Promise<boolean> {
     if (!isValidUUID(id)) {
         console.warn('Invalid classroom ID format:', id);
         return false;
@@ -820,118 +727,58 @@ export async function generateClassCode(classroomId: string): Promise<string | n
     return null;
 }
 
-export async function checkEmailAvailability(email: string): Promise<boolean | string> {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const cleanEmail = email.trim().toLowerCase();
-
-    if (!emailRegex.test(cleanEmail)) {
-        return 'Please enter a valid email address';
-    }
-
-    try {
-        const res = await fetch('/api/account/email-check', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: cleanEmail })
-        });
-
-        if (!res.ok) {
-            console.error('Email check request failed with status', res.status);
-            return 'Unable to validate email';
-        }
-
-        const data = await res.json();
-        return !!data.exists;
-    } catch (err) {
-        console.error('Unexpected error during email validation:', err);
-        return 'Unable to validate email';
-    }
-}
-
-export interface ClassroomCreationData {
-    name: string;
-    description?: string | null;
-    year_level?: string | null;
-    course_code?: string | null;
-    location?: string | null;
-    lms_url?: string | null;
-    security?: number;
-    features?: string[];
-}
-
-interface ClassroomRow {
-    id: string;
-    owner: string;
-    name: string;
-    students?: string[];
-    teachers?: string[];
-    created_at?: string;
-    avatar_url?: string | null;
-    year_level?: string | null;
-    course_code?: string | null;
-    location?: string | null;
-    lms_url?: string | null;
-    security?: number;
-    features?: string[];
-    class_code?: number | null;
-    school?: string | null;
-    description?: string | null;
-    status?: string | null;
-    color?: string | null;
-}
-
 export class Classroom {
     constructor(public id: string, public owner: string, private data: ClassroomRow) {}
 
-    get name() { return this.data.name; }
+    get name(): string { return this.data.name; }
     set name(value: string) {
         this.data.name = value;
         writeToDatabase('classrooms', this.id, 'name', value, true)
             .catch(err => console.error('Failed to set classroom name:', err));
     }
-    get description() { return this.data.description; }
+    get description(): string | null | undefined { return this.data.description; }
     set description(value: string | null | undefined) {
         this.data.description = value;
         writeToDatabase('classrooms', this.id, 'description', value, true)
             .catch(err => console.error('Failed to set classroom description:', err));
     }
-    get year_level() { return this.data.year_level; }
+    get year_level(): string | null | undefined { return this.data.year_level; }
     set year_level(value: string | null | undefined) {
         this.data.year_level = value;
         writeToDatabase('classrooms', this.id, 'year_level', value, true)
             .catch(err => console.error('Failed to set classroom year_level:', err));
     }
-    get course_code() { return this.data.course_code; }
+    get course_code(): string | null | undefined { return this.data.course_code; }
     set course_code(value: string | null | undefined) {
         this.data.course_code = value;
         writeToDatabase('classrooms', this.id, 'course_code', value, true)
             .catch(err => console.error('Failed to set classroom course_code:', err));
     }
-    get location() { return this.data.location; }
+    get location(): string | null | undefined { return this.data.location; }
     set location(value: string | null | undefined) {
         this.data.location = value;
         writeToDatabase('classrooms', this.id, 'location', value, true)
             .catch(err => console.error('Failed to set classroom location:', err));
     }
-    get lms_url() { return this.data.lms_url; }
+    get lms_url(): string | null | undefined { return this.data.lms_url; }
     set lms_url(value: string | null | undefined) {
         this.data.lms_url = value;
         writeToDatabase('classrooms', this.id, 'lms_url', value, true)
             .catch(err => console.error('Failed to set classroom lms_url:', err));
     }
-    get security_level() { return this.data.security; }
-    set security_level(value: number) {
+    get security_level(): number | undefined { return this.data.security; }
+    set security_level(value: number | undefined) {
         this.data.security = value;
         writeToDatabase('classrooms', this.id, 'security', value, true)
             .catch(err => console.error('Failed to set classroom security:', err));
     }
-    get features() { return this.data.features; }
-    set features(value: string[]) {
+    get features(): string[] | undefined { return this.data.features; }
+    set features(value: string[] | undefined) {
         this.data.features = value;
         writeToDatabase('classrooms', this.id, 'features', value, true)
             .catch(err => console.error('Failed to set classroom features:', err));
     }
-    get color() { return this.data.color; }
+    get color(): string | null | undefined { return this.data.color; }
     set color(value: string | null | undefined) {
         this.data.color = value;
         writeToDatabase('classrooms', this.id, 'color', value, true)
@@ -945,13 +792,13 @@ export class Classroom {
     static async create(payload: ClassroomCreationData): Promise<Classroom | null> {
         const id = await createClassroom(payload);
         if (!id) return null;
-        const row = await getFromDatabase('classrooms', id);
+        const row = await getFromDatabase<ClassroomRow>('classrooms', id);
         return row ? new Classroom(id, row.owner, row) : null;
     }
 
     static async load(id: string): Promise<Classroom | null> {
         if (!isValidUUID(id)) return null;
-        const row = await getFromDatabase('classrooms', id) as ClassroomRow | null;
+        const row = await getFromDatabase<ClassroomRow | null>('classrooms', id);
         if (!row) return null;
         return new Classroom(id, row.owner, row);
     }
@@ -959,18 +806,19 @@ export class Classroom {
     static async byCode(code: string): Promise<Classroom | null> {
         const foundClassroom = await findClassroomByCode(code);
         if (!foundClassroom) return null;
-        const row = await getFromDatabase('classrooms', foundClassroom.id) as ClassroomRow | null;
+        const row = await getFromDatabase<ClassroomRow | null>('classrooms', foundClassroom.id);
         return row ? new Classroom(row.id, row.owner, row) : null;
     }
 
     async save(): Promise<boolean> {
         try {
-            const remoteData = await getFromDatabase('classrooms', this.id) as ClassroomRow | null;
+            const remoteData = await getFromDatabase<ClassroomRow | null>('classrooms', this.id);
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { id, created_at, owner, ...updateData } = this.data;
             
             const promises = Object.entries(updateData)
-                .filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(remoteData[key]))
+                .filter(([key, value]) => remoteData && JSON.stringify(value) !== JSON.stringify(remoteData[key as keyof ClassroomRow]))
                 .map(([key, value]) =>
                     writeToDatabase('classrooms', this.id, key, value, true)
                 );
@@ -986,7 +834,7 @@ export class Classroom {
     }
 
     async refresh(): Promise<void> {
-        const row = await getFromDatabase('classrooms', this.id);
+        const row = await getFromDatabase<ClassroomRow>('classrooms', this.id);
         if (row) this.data = row;
     }
 
@@ -1013,9 +861,185 @@ export class Classroom {
     }
 }
 
-// Alert user
-export async function showAlert(message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info', duration: number = 5000) {
+// --- UI & Frontend Helpers --- //
+
+export async function headerAuth(): Promise<void> {
+    const loginButton = document.getElementById('header-login-button') as HTMLButtonElement;
+    const accountButton = document.getElementById('header-loggedin-button') as HTMLButtonElement;
+    const usernameElement = document.getElementById('header-username') as HTMLDivElement;
+    const mobileLoginButton = document.getElementById('mobile-header-login-button') as HTMLButtonElement;
+
+    if (!loginButton || !accountButton || !usernameElement || !mobileLoginButton) {
+        return;
+    }
+
+    const updateHeaderUI = (userData: any) => {
+        if (userData) {
+            loginButton.style.display = 'none';
+            accountButton.style.display = 'inline-flex';
+            mobileLoginButton.style.display = 'none';
+            const displayName = userData.display_name as string | undefined;
+            const firstName = userData?.first_name as string | undefined;
+            const email = userData?.full_name as string | undefined;
+            usernameElement.textContent = displayName || firstName || email || 'User';
+        } else {
+            loginButton.style.display = 'inline-flex';
+            accountButton.style.display = 'none';
+            mobileLoginButton.style.display = 'inline-flex';
+            usernameElement.textContent = '';
+        }
+    };
+
+    const cacheKey = 'robox-auth-cache';
+    const avatarCacheKey = 'robox-avatar-cache';
+
+    const cachedData = localStorage.getItem(cacheKey);
+    if (cachedData) {
+        updateHeaderUI(JSON.parse(cachedData));
+    }
+
+    const revalidate = async () => {
+        let freshData = null;
+        if (await isAuthenticated()) {
+            freshData = await getCurrentUserData();
+        }
+
+        if (freshData) {
+            localStorage.setItem(cacheKey, JSON.stringify(freshData));
+            if (freshData.avatar_url) {
+                await cacheAvatarImage(freshData.avatar_url as string);
+            }
+        } else {
+            localStorage.removeItem(cacheKey);
+            localStorage.removeItem(avatarCacheKey);
+        }
+        
+        updateHeaderUI(freshData);
+    };
+
+    addEventListener('DOMContentLoaded', async () => {
+        const image = document.getElementById('header-avatar') as HTMLImageElement;
+        
+        const cachedAvatar = localStorage.getItem(avatarCacheKey);
+        if (cachedAvatar) {
+            image.src = cachedAvatar;
+        }
+        
+        await revalidate();
+        updateHeaderAvatar();
+    });
+}
+
+async function cacheAvatarImage(url: string): Promise<string | null> {
+    const avatarCacheKey = 'robox-avatar-cache';
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64 = reader.result as string;
+                localStorage.setItem(avatarCacheKey, base64);
+                resolve(base64);
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+        });
+    } catch {
+        return null;
+    }
+}
+
+export function updateHeaderAvatar(url?: string): void {
+    const image = document.getElementById('header-avatar') as HTMLImageElement | null;
+    if (!image) return;
+
+    const avatarCacheKey = 'robox-avatar-cache';
+    
+    const cachedAvatar = localStorage.getItem(avatarCacheKey);
+    if (cachedAvatar && !url) {
+        image.src = cachedAvatar;
+    }
+
+    getCurrentUserData()
+        .then(async userData => {
+            const fallbackUrl = url?.trim() ? url : userData?.avatar_url as string;
+            const seed = userData?.id || 'default';
+            const finalUrl = fallbackUrl || `https://api.dicebear.com/9.x/bottts/svg?seed=${seed}`;
+            
+            if (finalUrl) {
+                const cachedBase64 = await cacheAvatarImage(finalUrl);
+                if (cachedBase64) {
+                    image.src = cachedBase64;
+                    return;
+                }
+            }
+            
+            image.src = finalUrl;
+        })
+        .catch(error => {
+            console.warn('Failed to refresh header avatar:', error);
+            const fallback = cachedAvatar || 'https://api.dicebear.com/9.x/bottts/svg?seed=robox';
+            image.src = fallback;
+        });
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function showAlert(message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info', duration: number = 5000): Promise<void> {
     const alertContainer = document.createElement('div');
     alertContainer.className = `alert alert-${type}`;
     alertContainer.textContent = message;
+}
+
+export function checkPasswordRequirements(password: string): boolean | string {
+    const problems: string[] = []
+
+    if (!password || password.length < 8) {
+        problems.push("be at least 8 characters long");
+    }
+    if (!/[A-Z]/.test(password)) {
+        problems.push('contain at least one uppercase letter');
+    }
+    if (!/[a-z]/.test(password)) {
+        problems.push('contain at least one lowercase letter');
+    }
+    if (!/\d/.test(password)) {
+        problems.push('contain at least one number');
+    }
+    if (!/[!@#$%^&*_(),.?":{}|<>]/.test(password)) {
+        problems.push('contain at least one special character');
+    }
+    if (problems.length === 0) {
+        return true;
+    }
+    let sentence: string = 'Password must ';
+    if (problems.length === 1) {
+        sentence += problems[0];
+    } else if (problems.length === 2) {
+        sentence += problems.join(' and ');
+    } else {
+        const last = problems.pop();
+        sentence += problems.join(', ') + ', and ' + last;
+    }
+    
+    return sentence + '.';
+}
+
+// --- General Utilities --- //
+
+function isProtoPollution(key: string): boolean {
+    const forbiddenKeys = ["__proto__", "constructor", "prototype"];
+    return forbiddenKeys.includes(key);
+}
+
+export function isValidUUID(uuid: string): boolean {
+    if (isProtoPollution(uuid)) return false;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(uuid);
+}
+
+function genRandomInt(min: number, max: number): number {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
