@@ -310,13 +310,6 @@ export async function updateProjectData(project_id: string, project_data: string
     await writeToDatabase('projects', project_id, 'last_updated', now, true);
 }
 
-function normaliseSnapshot(pd: any): { blocks: any; variables?: any[] } | null {
-    if (pd?.workspace) return pd.workspace;
-    if (pd?.blocks?.blocks) return { blocks: pd.blocks.blocks, variables: pd.blocks.variables ?? [] };
-    if (pd?.blocks?.languageVersion || pd?.blocks?.blocks) return { blocks: pd.blocks };
-    return null;
-}
-
 export async function loadProjectData(uuid: string): Promise<import('blockly').WorkspaceSvg | null> {
     if (!isValidUUID(uuid)) {
         console.warn('Invalid project UUID for loadProjectData:', uuid);
