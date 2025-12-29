@@ -281,6 +281,63 @@ app.get('/api/account/projects', async (req, res) => {
     }
 });
 
+// Fetch a single project by ID for the authenticated user
+app.get('/api/projects/:id', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    const { id: projectId } = req.params;
+
+    if (!token) {
+        return res.status(401).json({ error: 'Missing authorization token' });
+    }
+
+    if (!projectId) {
+        return res.status(400).json({ error: 'Missing project ID' });
+    }
+
+    const userClient = createClient(
+        supabaseUrl, supabasePublishableKey,
+        {
+            global: {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        }
+    );
+
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
+
+    if (userError || !user?.id) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    try {
+        const { data: project, error: projectError } = await adminClient
+            .from('projects')
+            .select('*')
+            .eq('id', projectId)
+            .eq('owner', user.id)
+            .single();
+
+        if (projectError) {
+            console.error('Error fetching project:', projectError);
+            // .single() returns an error if no rows are found, so we can treat this as a 404
+            return res.status(404).json({ error: 'Project not found or you do not have permission to access it' });
+        }
+
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found or you do not have permission to access it' });
+        }
+
+        return res.json({ success: true, project });
+    } catch (error) {
+        console.error('Unexpected error fetching project:', error);
+        return res.status(500).json({ error: 'An unexpected error occurred' });
+    }
+});
+
 // user settings
 // get user settings
 app.post('/api/account/user/info', async (req, res) => {
