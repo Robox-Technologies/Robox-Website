@@ -131,7 +131,7 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
 
     // Fetch email template
     const templateName = success ? "success" : "failure";
-    const emailTemplate = new JSDOM(await loadTemplate(`./src/templates/email/${templateName}.html`));
+    const emailTemplate = new JSDOM(await loadTemplate(`./src/templates/email/${templateName}/${templateName}.html`));
     const document = emailTemplate.window.document;
 
     // Inject css
