@@ -338,6 +338,74 @@ app.get('/api/projects/:id', async (req, res) => {
     }
 });
 
+// Update a project by ID for the authenticated user
+app.patch('/api/projects/:id', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    const { id: projectId } = req.params;
+    const updates = req.body;
+
+    if (!token) {
+        return res.status(401).json({ error: 'Missing authorization token' });
+    }
+
+    if (!projectId) {
+        return res.status(400).json({ error: 'Missing project ID' });
+    }
+
+    if (!updates || Object.keys(updates).length === 0) {
+        return res.status(400).json({ error: 'No update data provided' });
+    }
+
+    console.log(`Updating project ${projectId} with data:`, updates);
+
+    const userClient = createClient(
+        supabaseUrl, supabasePublishableKey,
+        {
+            global: {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        }
+    );
+
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
+
+    if (userError || !user?.id) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    // Prevent updating restricted fields
+    delete updates.id;
+    delete updates.owner;
+
+    // Set last_updated timestamp
+    updates.last_updated = new Date().toISOString();
+
+    const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    try {
+        const { data: updatedProject, error: updateError } = await adminClient
+            .from('projects')
+            .update(updates)
+            .eq('id', projectId)
+            .eq('owner', user.id)
+            .select()
+            .single();
+
+        if (updateError) {
+            console.error('Error updating project:', updateError);
+            // .single() will error if no row is found, which implies project not found or not owned by user
+            return res.status(404).json({ error: 'Project not found or you do not have permission to update it' });
+        }
+
+        return res.json({ success: true, project: updatedProject });
+    } catch (error) {
+        console.error('Unexpected error updating project:', error);
+        return res.status(500).json({ error: 'An unexpected error occurred' });
+    }
+});
+
 // user settings
 // get user settings
 app.post('/api/account/user/info', async (req, res) => {
