@@ -272,3 +272,46 @@ refreshAvatarButton.addEventListener('click', () => {
     container.innerHTML = '';
     generateAvatarSelection();
 });
+
+// Mobile menu toggle functionality
+const mobileMenuToggle = document.getElementById('mobile-menu-toggle') as HTMLButtonElement | null
+const sideMenu = document.getElementById('side-menu') as HTMLDivElement | null
+
+if (mobileMenuToggle && sideMenu) {
+    mobileMenuToggle.addEventListener('click', () => {
+        sideMenu.classList.toggle('open')
+        const icon = mobileMenuToggle.querySelector('i')
+        if (icon) {
+            icon.classList.toggle('fa-bars')
+            icon.classList.toggle('fa-times')
+        }
+    })
+
+    // Close menu when clicking a menu item on mobile
+    sideMenu.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sideMenu.classList.remove('open')
+                const icon = mobileMenuToggle.querySelector('i')
+                if (icon) {
+                    icon.classList.remove('fa-times')
+                    icon.classList.add('fa-bars')
+                }
+            }
+        })
+    })
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768 && 
+            !sideMenu.contains(e.target as Node) && 
+            !mobileMenuToggle.contains(e.target as Node)) {
+            sideMenu.classList.remove('open')
+            const icon = mobileMenuToggle.querySelector('i')
+            if (icon) {
+                icon.classList.remove('fa-times')
+                icon.classList.add('fa-bars')
+            }
+        }
+    })
+}
