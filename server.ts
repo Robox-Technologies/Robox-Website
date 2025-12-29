@@ -214,6 +214,73 @@ app.post('/api/account/email-check', async (req, res) => {
     }
 });
 
+// Fetch all projects for the authenticated user
+app.get('/api/account/projects', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+        return res.status(401).json({ error: 'Missing authorization token' });
+    }
+
+    const userClient = createClient(
+        supabaseUrl, supabasePublishableKey,
+        {
+            global: {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        }
+    );
+
+    const { data: { user }, error: userError } = await userClient.auth.getUser();
+
+    if (userError || !user?.id) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey);
+
+    try {
+        const { data: projects, error: projectsError } = await adminClient
+            .from('projects')
+            .select('id, name, owner, last_updated, cloud_sync, project_data')
+            .eq('owner', user.id)
+            .is('deleted', null);
+
+        if (projectsError) {
+            console.error('Error fetching projects:', projectsError);
+            return res.status(500).json({ error: 'Failed to fetch projects' });
+        }
+
+        // Parse project_data for each project to extract thumbnail
+        const projectsWithThumbnails = (projects || []).map(project => {
+            let thumbnail = '';
+            if (project.project_data) {
+                try {
+                    const parsed = typeof project.project_data === 'string' 
+                        ? JSON.parse(project.project_data) 
+                        : project.project_data;
+                    thumbnail = parsed?.thumbnail || '';
+                } catch { /* ignore parse errors */ }
+            }
+            return {
+                id: project.id,
+                name: project.name,
+                owner: project.owner,
+                last_updated: project.last_updated,
+                cloud_sync: project.cloud_sync,
+                thumbnail
+            };
+        });
+
+        return res.json({ success: true, projects: projectsWithThumbnails });
+    } catch (error) {
+        console.error('Unexpected error fetching projects:', error);
+        return res.status(500).json({ error: 'An unexpected error occurred' });
+    }
+});
+
 // user settings
 // get user settings
 app.post('/api/account/user/info', async (req, res) => {
