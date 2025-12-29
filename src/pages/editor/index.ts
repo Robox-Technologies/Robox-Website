@@ -22,9 +22,7 @@ import "./instructions/UF2Flash"
 import "./instructions/colourCalibration"
 
 import { showToast } from '@root/toast';
-
-  
-
+import { isAuthenticated, loadProjectData, updateProjectData } from '@root/account';
 
 const blocks = require.context("./blockly/blocks", false, /\.ts$/);
 const generators = require.context("./blockly/generators", false, /\.ts$/);
@@ -305,3 +303,75 @@ function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
     workspace.getToolbox().refreshSelection();
 
 }
+
+// Cloud sync checkbox
+document.addEventListener("DOMContentLoaded", async () => {
+    const cloudSyncCheckbox = document.getElementById("cloud-sync-checkbox") as HTMLInputElement | null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const workspaceId = urlParams.get('id');
+
+    if (!cloudSyncCheckbox || !workspaceId) return;
+
+    const loggedIn = await isAuthenticated();
+    const projectData = await loadProjectData(workspaceId);
+
+    if (loggedIn && projectData?.cloud_sync) {
+        cloudSyncCheckbox.checked = false;
+    } else {
+        cloudSyncCheckbox.checked = true;
+    }
+
+    cloudSyncCheckbox.addEventListener("change", async () => {
+        const isCurrentlyChecked = cloudSyncCheckbox.checked;
+
+        console.log("Cloud sync checkbox clicked. Currently checked:", isCurrentlyChecked);
+        console.log("User logged in:", loggedIn);
+        console.log("Workspace ID:", workspaceId);
+
+
+        if (!loggedIn) {
+            if (!isCurrentlyChecked) {
+                cloudSyncCheckbox.checked = true; // Revert the change
+                const loginModal = document.getElementById("login-to-sync-modal") as HTMLDialogElement | null;
+                loginModal?.showModal();
+            }
+            return;
+        }
+
+        if (isCurrentlyChecked) { // Trying to disable sync (now inverted)
+            cloudSyncCheckbox.checked = false; // Revert the change until confirmed
+            const confirmModal = document.getElementById("confirm-disable-sync-modal") as HTMLDialogElement | null;
+            confirmModal?.showModal();
+        } else { // Trying to enable sync (now inverted)
+            await updateProjectData(workspaceId, { cloud_sync: true });
+            showToast("success", "Cloud Sync Enabled", "Your project will now be saved to the cloud.", 3000);
+        }
+    });
+
+    const confirmDisableButton = document.getElementById("confirm-disable-sync-button");
+    const cancelDisableButton = document.querySelector("#confirm-disable-sync-cancel") as HTMLDialogElement | null;
+    const confirmModal = document.querySelector("#confirm-disable-sync-modal") as HTMLDialogElement | null;
+
+    confirmDisableButton?.addEventListener("click", async () => {
+        cloudSyncCheckbox.checked = true;
+        await updateProjectData(workspaceId, { cloud_sync: false });
+        confirmModal?.close();
+        showToast("info", "Cloud Sync Disabled", "Your project will no longer be saved to the cloud.", 3000);
+    });
+
+    cancelDisableButton?.addEventListener("click", () => {
+        confirmModal?.close();
+    });
+
+    const loginButton = document.getElementById("login-to-sync-confirm");
+    const cancelLoginButton = document.getElementById("login-to-sync-cancel");
+    const loginModal = document.getElementById("login-to-sync-modal") as HTMLDialogElement | null;
+
+    loginButton?.addEventListener("click", () => {
+        window.location.href = '/account/login';
+    });
+
+    cancelLoginButton?.addEventListener("click", () => {
+        loginModal?.close();
+    });
+});
