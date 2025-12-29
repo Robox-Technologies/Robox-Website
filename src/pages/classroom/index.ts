@@ -1,4 +1,4 @@
-import { authCheck, getCurrentUserData, Classroom, getFromDatabase } from "@root/account";
+import { authCheck, getCurrentUserData, getFromDatabase } from "@root/account";
 let currentUser: any | null = null;
 let classroom: Classroom | null = null;
 let classroomRole: string | null = null; // 'owner' | 'teacher' | 'student' | null
