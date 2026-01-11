@@ -17,3 +17,7 @@ pythonGenerator.forBlock['servo_get_angle'] = function () {
     const code = 'servo.angle';
     return [code, Order.ATOMIC];
 }
+pythonGenerator.forBlock['servo_angle'] = function () {
+    const angle = this.getFieldValue('ANGLE') || '0';
+    return [angle, Order.ATOMIC];
+}
