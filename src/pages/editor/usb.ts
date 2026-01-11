@@ -6,9 +6,6 @@ import { printToConsole } from './console';
 import * as sanitizeHtml from 'sanitize-html';
 import { showToast } from '@root/toast';
 import { getPreambleScript } from './blockly/preamble';
-import { getProjectExtensions } from '@root/blockly/serialization';
-import { ExtensionType } from '~types/projects';
-import { ExtensionScripts } from './blockly/preamble';
 
 
 let downloadingToPico = false

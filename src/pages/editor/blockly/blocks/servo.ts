@@ -8,7 +8,7 @@ const servo = [
             {
                 "type": "input_value",
                 "name": "ANGLE",
-
+                "check": "Number"
             }
         ],
         "previousStatement": null,
@@ -25,7 +25,7 @@ const servo = [
             {
                 "type": "input_value",
                 "name": "ANGLE",
-
+                "check": "Number"
             }
         ],
         "previousStatement": null,
