@@ -5,7 +5,7 @@ import { pythonGenerator } from 'blockly/python'
 import { printToConsole } from './console';
 import * as sanitizeHtml from 'sanitize-html';
 import { showToast } from '@root/toast';
-import { mainScript } from './blockly/preamble';
+import { getPreambleScript } from './blockly/preamble';
 import { getProjectExtensions } from '@root/blockly/serialization';
 import { ExtensionType } from '~types/projects';
 import { ExtensionScripts } from './blockly/preamble';
@@ -101,22 +101,9 @@ export function postBlocklyWSInjection(uuid: string) {
 }
 function sendCode(ws: Blockly.Workspace, uuid: string) {
     const code = pythonGenerator.workspaceToCode(ws);
-    const extensions = getProjectExtensions(uuid);
-    let baseScript = mainScript;
-    for (const ext of Object.values(ExtensionType)) {
-            if (extensions[ext]) {
-                const script = ExtensionScripts[ext];
-                if (script) {
-                    baseScript += `\n${script}`;
-                }
-            }
-    }
-    const finalCode = `${baseScript}\n${code}\nevent_begin()`
+    const preamble = getPreambleScript(uuid);
+    const finalCode = `${preamble}\n${code}\nevent_begin()`
     pico.sendCode(finalCode)
     printToConsole("Code sent to Ro/Box");
-}
-export function getPythonCode(ws: Blockly.Workspace): string {
-    const code = pythonGenerator.workspaceToCode(ws);
-    return `${mainScript}\n${code}\nevent_begin()`
 }
 

@@ -1,3 +1,4 @@
+import { getProjectExtensions } from "@root/blockly/serialization"
 import { ExtensionType } from "~types/projects"
 
 
@@ -28,4 +29,14 @@ servo = Servo()
 `
 export const ExtensionScripts = {
     [ExtensionType.SERVO]: servoScript,
+}
+export function getPreambleScript(uuid: string) {
+    const userExtensions = getProjectExtensions(uuid)
+    let script = mainScript
+    for (const ext of Object.keys(userExtensions)) {
+        if (ext in ExtensionScripts) {
+            script += ExtensionScripts[ext]
+        }
+    }
+    return script
 }
