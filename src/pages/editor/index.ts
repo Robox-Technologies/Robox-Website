@@ -298,6 +298,7 @@ function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
         if (extensions[ext]) {
             const extToolbox = ExtensionToolbox[ext];
             if (extToolbox) {
+                //@ts-expect-error Blockly for some reason requires the custom type to be present... but this is not a custom category
                 newToolbox.contents.push(extToolbox);
             }
         }
