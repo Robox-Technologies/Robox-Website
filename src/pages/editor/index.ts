@@ -12,10 +12,12 @@ import { ExtensionType, Project } from '~types/projects';
 import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject, getProjectExtensions } from '@root/blockly/serialization';
 import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
+import { registerFieldAngle } from '@blockly/field-angle';
 import { postBlocklyWSInjection } from './usb';
 import { registerControls } from './controls';
 
 
+registerFieldAngle();
 registerFieldColour();
 
 import "./instructions/UF2Flash"
