@@ -10,7 +10,7 @@ pythonGenerator.forBlock['servo_rotate'] = function () {
     const value_angle = this.getInputTargetBlock('ANGLE') ?
     pythonGenerator.valueToCode(this, 'ANGLE', Order.NONE) : '0';
     //TODO: Check angle limits (and give wraparound warning)
-    const code = `servo.rotate_by_angle(servo.angle + ${value_angle})\n`;
+    const code = `servo.rotate_by_angle(${value_angle})\n`;
     return code;
 }
 pythonGenerator.forBlock['servo_get_angle'] = function () {
