@@ -27,7 +27,6 @@ import { showToast } from '@root/toast';
 
   
 
-
 const blocks = require.context("./blockly/blocks", false, /\.ts$/);
 const generators = require.context("./blockly/generators", false, /\.ts$/);
 
