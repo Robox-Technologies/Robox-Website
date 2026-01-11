@@ -23,18 +23,36 @@ const servo = {
     'categorystyle': 'servo_category',
     'contents': [
         {
-            'kind': 'block',
-            'type': 'servo_set_angle'
+          'kind': 'block',
+          'type': 'servo_angle'
         },
         {
             'kind': 'block',
-            'type': 'servo_rotate'
+            'type': 'servo_set_angle',
+            "inputs": {
+                'ANGLE': {
+                    'shadow': {
+                        'type': 'servo_angle',
+                    }
+                }
+            }
+        },
+        {
+            'kind': 'block',
+            'type': 'servo_rotate',
+            "inputs": {
+                'ANGLE': {
+                    'shadow': {
+                        'type': 'servo_angle',
+                    }
+                }
+            }
         },
         {
             'kind': 'block',
             'type': 'servo_get_angle'
         }
-    ]
+    ],
 };
 export const ExtensionToolbox = {
     [ExtensionType.SERVO]: servo,

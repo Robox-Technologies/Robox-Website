@@ -2,36 +2,16 @@ import { pico } from './communication/communicate';
 import * as Blockly from 'blockly/core';
 import { pythonGenerator } from 'blockly/python'
 
-import { clearConsole, printToConsole } from './console';
+import { printToConsole } from './console';
 import * as sanitizeHtml from 'sanitize-html';
 import { showToast } from '@root/toast';
+import { getPreambleScript } from './blockly/preamble';
 
-const scriptDependency = `
-from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
-from machine import Pin, Timer
-import time
-import json
-import sys
-ENV_LED = Pin(25, Pin.OUT)
-line = LineSensors()
-left_motor_polarity = right_motor_polarity = -1
-ultrasonic = UltrasonicSensor()
-
-def generatePrint(typ, message):
-    jsmessage = {"type": typ, "message": message}
-    return json.dumps(jsmessage)
-try:
-    color_sensor = ColorSensor()
-except Exception:
-    generatePrint("error", "Cannot connect to colour sensor, is it on?")
-motors = Motors()
-motor_speed = 60
-`
 
 let downloadingToPico = false
 
 
-export function postBlocklyWSInjection() {
+export function postBlocklyWSInjection(uuid: string) {
     const ws = Blockly.getMainWorkspace()
     const connectionManagment = document.getElementById("connection-management")
     const terminalButton = document.getElementById("console-button");
@@ -79,7 +59,7 @@ export function postBlocklyWSInjection() {
     });
     downloadButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
-        sendCode(ws)
+        sendCode(ws, uuid)
         connectionManagment.setAttribute("loading",  "true")
 
     })
@@ -87,7 +67,7 @@ export function postBlocklyWSInjection() {
         if (connectionManagment.getAttribute("loading") === "true") return
         downloadingToPico = true
         connectionManagment.setAttribute("loading",  "true")
-        sendCode(ws)
+        sendCode(ws, uuid)
     })
     stopButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
@@ -98,7 +78,7 @@ export function postBlocklyWSInjection() {
         if (connectionManagment.getAttribute("loading") === "true") return
         connectionManagment.setAttribute("status",  "running")
         connectionManagment.setAttribute("loading",  "false")
-        sendCode(ws)
+        sendCode(ws, uuid)
         pico.runCode()
         printToConsole("Code running on Ro/Box");
 
@@ -116,14 +96,11 @@ export function postBlocklyWSInjection() {
     pico.startupConnect()
 
 }
-function sendCode(ws: Blockly.Workspace) {
+function sendCode(ws: Blockly.Workspace, uuid: string) {
     const code = pythonGenerator.workspaceToCode(ws);
-    const finalCode = `${scriptDependency}\n${code}\nevent_begin()`
+    const preamble = getPreambleScript(uuid);
+    const finalCode = `${preamble}\n${code}\nevent_begin()`
     pico.sendCode(finalCode)
     printToConsole("Code sent to Ro/Box");
-}
-export function getPythonCode(ws: Blockly.Workspace): string {
-    const code = pythonGenerator.workspaceToCode(ws);
-    return `${scriptDependency}\n${code}\nevent_begin()`
 }
 
