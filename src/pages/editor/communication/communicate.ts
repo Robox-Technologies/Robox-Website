@@ -34,7 +34,8 @@ type EventPayload = { event: 'calibrated'; options: picoOptions } |
                     { event: 'confirmation'; options: picoOptions } | 
                     { event: 'error'; options: picoOptions } | 
                     { event: 'connect'; options: object } | 
-                    { event: 'disconnect'; options: disconnectOptions }
+                    { event: 'disconnect'; options: disconnectOptions } |
+                    { event: 'revert'; options: object };
 interface Communication {
     request(): void;
     connect(port: SerialPort | BluetoothDevice): Promise<void>;
@@ -306,7 +307,10 @@ class USBCommunication implements Communication {
             });
             await this.parent.connect(port);
         }
-        catch {
+        catch(e) {
+            if (e instanceof DOMException && e.name === 'NotFoundError') {
+                return this.parent.emit({ event: 'revert', options: {} })
+            }
             this.parent.emit({ event: 'error', options: { message: 'Could not request pico! Make sure you have it connected via USB.' } })
         }
     }
@@ -372,6 +376,9 @@ class BluetoothCommunication implements Communication {
             await this.parent.connect(device);
         }
         catch (e) {
+            if (e instanceof DOMException && e.name === 'NotFoundError') {
+                return this.parent.emit({ event: 'revert', options: {} })
+            }
             this.parent.emit({ event: 'error', options: { message: e } })
         }
     }
@@ -486,6 +493,6 @@ class BluetoothCommunication implements Communication {
         }
     }
 }
-const pico = new Pico("Bluetooth")
+const pico = new Pico("USB")
 pico.initialize();
 export { pico }

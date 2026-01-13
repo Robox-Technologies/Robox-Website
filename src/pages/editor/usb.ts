@@ -46,7 +46,9 @@ export function postBlocklyWSInjection() {
 
     if (!connectionManagment) return
     if (!terminalButton) return    
-
+    pico.addEventListener("revert", () => {
+        connectionManagment.setAttribute("loading",  "false")
+    })
     pico.addEventListener("disconnect", (event) => {
         const picoEvent = event as CustomEvent
         if (!picoEvent.detail.restarting) { //Disconnected
