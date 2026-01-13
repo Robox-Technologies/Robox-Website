@@ -106,9 +106,13 @@ export function postBlocklyWSInjection(uuid: string) {
 
 }
 async function sendCode(ws: Blockly.Workspace, uuid: string) {
+    const finalCode = getPythonCode(ws, uuid);
+    await pico.sendCode(finalCode)
+    printToConsole("Code sent to Ro/Box");
+}
+export function getPythonCode(ws: Blockly.Workspace, uuid: string): string {
     const code = pythonGenerator.workspaceToCode(ws);
     const preamble = getPreambleScript(uuid);
     const finalCode = `${preamble}\n${code}\nevent_begin()`
-    await pico.sendCode(finalCode)
-    printToConsole("Code sent to Ro/Box");
+    return finalCode
 }
