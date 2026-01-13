@@ -565,3 +565,16 @@ dialog[loading] #open-file::hover {
     -webkit-user-drag: none;   /* <- prevents dragging ghost image */
     draggable: false;          /* HTML attribute alternative */
 }
+#connect-robox-modal {
+    .connection-methods {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: variables.$standardGap;
+        button {
+            background-color: #717171;
+            width: 150px;
+            height: 150px;
+        }
+    }
+}

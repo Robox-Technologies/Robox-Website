@@ -148,6 +148,29 @@
         ],
     }) %>
     <%~ include('@partials/modal/modal.html', {
+        title: 'Connect to Ro/Box', 
+        id: "connect-robox-modal",
+        content: [
+            `<div>
+                <h2>Please choose a connection method for your Ro/Box.</h2>
+                <p class="note">Please note that Ro/Box V1 does not support Bluetooth</p>
+                <div class="connection-methods">
+                    <button id="connect-robox-usb" class="button standard-button connection-method">
+                        <i class="fa-brands fa-usb"></i>
+                        <span>Connect with USB</span>
+                    </button>
+                    <button id="connect-robox-bluetooth" class="button standard-button connection-method">
+                        <i class="fa-brands fa-bluetooth-b"></i>
+                        <span>Connect with Bluetooth</span>
+                    </button>
+                </div>
+            </div>`,
+        ],
+        buttons: [
+            '<button id="firmware-update-button" class="button standard-button">Update<i class="fa-solid fa-spinner fa-spin"></i></button>',
+        ],
+    }) %>
+    <%~ include('@partials/modal/modal.html', {
         id: "extension-modal",
         title: 'Extensions', 
         content: [

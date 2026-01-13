@@ -20,9 +20,8 @@ export function postBlocklyWSInjection(uuid: string) {
     const stopButton = document.getElementById("stop-robox-button")
     const runButton = document.getElementById("run-robox-button")
 
-
-    if (!connectionManagment) return
-    if (!terminalButton) return    
+    const connectModal: HTMLDialogElement | null = document.querySelector("dialog#connect-robox-modal")
+    if (!connectionManagment || !connectModal || !terminalButton) return
     pico.addEventListener("revert", () => {
         connectionManagment.setAttribute("loading",  "false")
     })
@@ -58,9 +57,7 @@ export function postBlocklyWSInjection(uuid: string) {
         connectionManagment.setAttribute("loading",  "false")
     })
     connectButton?.addEventListener("click", () => {
-        if (connectionManagment.getAttribute("loading") === "true") return
-        pico.request()
-        connectionManagment.setAttribute("loading",  "true")
+        connectModal.showModal()
     });
     downloadButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
