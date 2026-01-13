@@ -14,7 +14,7 @@ if (passwordInput) {
         const hasUppercase = /[A-Z]/.test(value)
         const hasLowercase = /[a-z]/.test(value)
         const hasNumber = /\d/.test(value)
-        const hasSpecial = /[!@#$%^&*(),.?":{}|<>]_/.test(value)
+        const hasSpecial = /[!@#$%^&*(),.?":{}|<>_]/.test(value)
 
         const requirements = [
             { id: 'password-length', element: document.getElementById('password-length'), satisfied: value.length >= lengthRequirement },
