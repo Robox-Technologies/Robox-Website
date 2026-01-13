@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@blockly/continuous-toolbox": "^7.0.1",
+    "@blockly/field-angle": "^6.0.7",
     "@blockly/field-colour": "^6.0.3",
     "@blockly/theme-modern": "^7.0.1",
     "@express-rate-limit/tsconfig": "^1.0.2",

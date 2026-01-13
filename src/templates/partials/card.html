@@ -1,5 +1,5 @@
 <!-- eslint-disable @html-eslint/no-duplicate-id -->
-<div class="card <%= it.class %>" id="<%= it.id ?? "" %>">
+<div class="card <%= it.class %>" id="<%= it.id ?? "" %>" <%= it.attributes ?? "" %>>
     <% if (it.goober) { %>
         <div class="goober <%= it.gooberClass %>">
             <img src="<%= it.goober %>" class="shape" alt="Decorative shape">

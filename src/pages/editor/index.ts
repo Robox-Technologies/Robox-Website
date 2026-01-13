@@ -5,16 +5,19 @@ import { ContinuousMetrics } from '@blockly/continuous-toolbox';
 
 import theme from "./blockly/theme"
 
-import {toolbox} from "./blockly/toolbox"
+import {toolbox, ExtensionToolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
-import { Project } from '~types/projects';
-import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject } from '@root/blockly/serialization';
+import { ExtensionType, Project } from '~types/projects';
+import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject, getProjectExtensions } from '@root/blockly/serialization';
 import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
+import { registerFieldAngle } from '@blockly/field-angle';
 import { postBlocklyWSInjection } from './usb';
 import { registerControls } from './controls';
 
+
+registerFieldAngle();
 registerFieldColour();
 
 import "./instructions/UF2Flash"
@@ -22,7 +25,7 @@ import "./instructions/colourCalibration"
 
 import { showToast } from '@root/toast';
 
-
+  
 
 const blocks = require.context("./blockly/blocks", false, /\.ts$/);
 const generators = require.context("./blockly/generators", false, /\.ts$/);
@@ -102,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if ("serial" in navigator) {
-        postBlocklyWSInjection()
+        postBlocklyWSInjection(workspaceId);
     }
     else {
         showToast("warning", "Browser Incompatibility", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ", 5000);
@@ -162,7 +165,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event.isUiEvent) return;
         saveBlockly(workspaceId, workspace);
     });
-
     // Extend first category
     const firstCategory = document.querySelector(".blocklyToolboxCategory")
     const icon = firstCategory.querySelector(".categoryIcon") as HTMLElement;
@@ -193,12 +195,115 @@ document.addEventListener("DOMContentLoaded", () => {
         dialog.show()
         event.stopPropagation()
     })
+    // Setting up the extension stuff
+    const extensionModal = document.getElementById("extension-modal") as HTMLDialogElement | null;
+    const extensions = extensionModal.querySelectorAll(".card");
+    const extensionButton = document.getElementById("robox-extension-button")
+    if (!extensionButton || !extensionModal) return;
+    extensionButton?.addEventListener("click", () => {
+        extensionModalSetup(workspaceId);
+        extensionModal.showModal()
+    })
+    extensions.forEach((extensionCard) => {
+        extensionCard.addEventListener("click", () => {
+            const extensionType = extensionCard.getAttribute("extension-type");
+            if (isValidExtension(extensionType) === false) return;
+            const extensions = getProjectExtensions(workspaceId);
+            if (!extensions) return;
+            const enabled = toggleExtension(workspaceId, ExtensionType[extensionType]);
+            toggleExtensionUI(workspaceId, ExtensionType[extensionType], enabled);
+        })
+    })
+    if (workspaceId) {
+        setExtensionToolbox(getProjectExtensions(workspaceId));
+    }
+
+    //Preventing orphans
     workspace.addChangeListener(Blockly.Events.disableOrphans);
 }) 
+function extensionModalSetup(uuid: string): null | void {
+    const extensionModal = document.getElementById("extension-modal") as HTMLDialogElement | null;
+    if (!extensionModal) return null;
+    
+    const extensions = getProjectExtensions(uuid);
+    if (!extensions) return null;
+    for (const ext of Object.values(ExtensionType)) {
+        toggleExtensionUI(uuid, ext, extensions[ext]);
+    }
+
+}
+function toggleExtensionUI(uuid: string, extension: ExtensionType, enabled: boolean): void {
+    const extensionToggle = document.querySelector(`#extension-${extension.toLowerCase()}`) as HTMLElement | null;
+    if (!extensionToggle) return;
+    if (enabled) {
+        extensionToggle.classList.add("enabled")
+        extensionToggle.classList.remove("disabled")
+    } else {
+        extensionToggle.classList.add("disabled")
+        extensionToggle.classList.remove("enabled")
+    }
+}
 let rotation = 0;
 const degreesPerTooth = 60; // Adjust this value to match one gear tooth visually
 function rotateOneTooth(cog: HTMLElement) {
     rotation += degreesPerTooth;
     cog.style.transition = 'transform 0.5s ease-out';
     cog.style.transform = `rotate(${rotation}deg)`;
+}
+function isValidExtension(ext: string): ext is keyof typeof ExtensionType {
+    return ext.toUpperCase() in ExtensionType;
+}
+function toggleExtension(uuid: string, extension: ExtensionType):boolean {
+    if (checkIfExtensionBlocksExist(extension)) {
+        showToast("error", "Cannot Disable Extension", `Please remove all blocks from the ${extension} extension before disabling it.`, 5000);
+        return true; // Still enabled
+    }
+
+
+    const projects = JSON.parse(localStorage.getItem("roboxProjects") || "{}") as Record<string, Project>;
+    if (!projects[uuid]) {
+        console.error(`Project with UUID ${uuid} not found.`);
+        return false;
+    }
+    projects[uuid]["extensions"][extension] = !projects[uuid]["extensions"][extension];
+    localStorage.setItem("roboxProjects", JSON.stringify(projects));
+    setExtensionToolbox(projects[uuid]["extensions"]);
+    return projects[uuid]["extensions"][extension];
+}
+function checkIfExtensionBlocksExist(extension: ExtensionType): boolean {
+    const workspace = Blockly.getMainWorkspace();
+    const allBlocks = workspace.getAllBlocks(false);
+    for (const block of allBlocks) {
+        if (block.type.startsWith(extension.toLowerCase())) {
+            return true;
+        }
+    }
+    return false;
+}
+function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
+    const workspace = Blockly.getMainWorkspace();
+    // Assert that workspace is workspaceSVG
+    if (!(workspace instanceof Blockly.WorkspaceSvg)) {
+        console.error("Workspace is not of type Blockly.WorkspaceSvg");
+        return;
+    }
+    if (!extensions) {
+        console.error("Extensions object is null or undefined");
+        return;
+    }
+    //Create a new toolbox with the extensions categories added
+    const newToolbox = structuredClone(toolbox)
+    for (const ext of Object.values(ExtensionType)) {
+        if (extensions[ext]) {
+            const extToolbox = ExtensionToolbox[ext];
+            if (extToolbox) {
+                //@ts-expect-error Blockly for some reason requires the custom type to be present... but this is not a custom category
+                newToolbox.contents.push(extToolbox);
+            }
+        }
+    }
+    workspace.updateToolbox(newToolbox);
+    //Refresh the continuous toolbox
+    workspace.getToolbox().refreshSelection();
+
 }

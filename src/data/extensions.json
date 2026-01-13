@@ -1,0 +1,7 @@
+[
+    {
+        "id": "SERVO",
+        "name": "Servo Extension",
+        "description": "Provides blocks for controlling servo motors."
+    }
+]
