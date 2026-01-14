@@ -22,7 +22,7 @@ type disconnectOptions = {
     restarting: boolean,
 }
 type firmwareOptions = {
-    upToDate: boolean;
+    firmwareVersion?: string;
 }
 type picoOptions = {
     message: string
@@ -49,21 +49,22 @@ interface Communication {
 }
 
 const WRITE_TIMEOUT = 2;
+const CURRENT_FIRMWARE_VERSION = "1.0.0";
 export class Pico extends EventTarget {
     communication: Communication | null
-    firmwareVersion: number
+    firmwareVersion: string
     restarting: boolean
     firmware: boolean
     responded: boolean
     method: Methods | null
-    constructor(firmwareVersion=1) {
+    constructor() {
         super()
         this.method = null
         this.communication = null
         this.restarting = false
         this.firmware = false
         this.responded = false
-        this.firmwareVersion = firmwareVersion
+        this.firmwareVersion = "0.0.0";
     }
     emit(payload: EventPayload) {
         this.dispatchEvent(new CustomEvent(payload.event, {detail: payload.options}));
@@ -105,9 +106,9 @@ export class Pico extends EventTarget {
     firmwareCheck() {
         this.write(COMMANDS.FIRMWARECHECK)
         setTimeout(() => {
-            this.emit({"event": "firmware", "options": {upToDate: this.firmware}})
-            if (!this.firmware && this.responded) {
-                this.emit({"event": "error", "options": {"message": "The firmware on the Pico is out of date! Please update it."}})
+            this.emit({"event": "firmware", "options": {"firmwareVersion": this.firmwareVersion}})
+            if (!this.firmware && this.responded || this.responded && this.firmwareVersion !== CURRENT_FIRMWARE_VERSION) {
+                this.emit({"event": "error", "options": {"message": `The firmware running on the Ro/Box (${this.firmwareVersion}) is out of date! Please update it.`}})
             }
             else if (!this.firmware && !this.responded) {
                 this.emit({"event": "error", "options": {"message": "Ro/Box did not respond to the firmware check! Please try disconnecting and reconnecting it. If this issue persists, try reflashing the Ro/Box."}})
