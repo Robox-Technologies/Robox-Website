@@ -20,6 +20,9 @@ export function postBlocklyWSInjection(uuid: string) {
     const stopButton = document.getElementById("stop-robox-button")
     const runButton = document.getElementById("run-robox-button")
 
+    const connectWithUSBButton = document.getElementById("connect-robox-usb")
+    const connectWithBluetoothButton = document.getElementById("connect-robox-bluetooth")
+
     const connectModal: HTMLDialogElement | null = document.querySelector("dialog#connect-robox-modal")
     if (!connectionManagment || !connectModal || !terminalButton) return
     pico.addEventListener("revert", () => {
@@ -56,9 +59,27 @@ export function postBlocklyWSInjection(uuid: string) {
     pico.addEventListener("error", () => {
         connectionManagment.setAttribute("loading",  "false")
     })
+
     connectButton?.addEventListener("click", () => {
+        // Show the two buttons to connect to Ro/Box (USB or Bluetooth)
         connectModal.showModal()
     });
+    connectWithUSBButton?.addEventListener("click", async () => {
+        connectModal.close()
+        if (connectionManagment.getAttribute("loading") === "true") return
+        connectionManagment.setAttribute("loading",  "true")
+        await pico.setCommunicationMethod("USB")
+        pico.request()
+    })
+    connectWithBluetoothButton?.addEventListener("click", async () => {
+        connectModal.close()
+        if (connectionManagment.getAttribute("loading") === "true") return
+        connectionManagment.setAttribute("loading",  "true")
+        await pico.setCommunicationMethod("Bluetooth")
+        pico.request()
+    })
+
+
     downloadButton?.addEventListener("click", () => {
         if (connectionManagment.getAttribute("loading") === "true") return
         sendCode(ws, uuid)
@@ -108,6 +129,7 @@ async function sendCode(ws: Blockly.Workspace, uuid: string) {
     printToConsole("Code sent to Ro/Box");
 }
 export function getPythonCode(ws: Blockly.Workspace, uuid: string): string {
+    
     const code = pythonGenerator.workspaceToCode(ws);
     const preamble = getPreambleScript(uuid);
     const finalCode = `${preamble}\n${code}\nevent_begin()`

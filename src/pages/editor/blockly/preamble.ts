@@ -27,6 +27,7 @@ motor_speed = 60
 const servoScript = `
 servo = Servo()
 `
+const 
 export const ExtensionScripts = {
     [ExtensionType.SERVO]: servoScript,
 }

@@ -36,6 +36,7 @@ type EventPayload = { event: 'calibrated'; options: picoOptions } |
                     { event: 'connect'; options: object } | 
                     { event: 'disconnect'; options: disconnectOptions } |
                     { event: 'revert'; options: object };
+type Methods = "USB" | "Bluetooth"
 interface Communication {
     destroyed: boolean;
     request(): void;
@@ -54,8 +55,10 @@ export class Pico extends EventTarget {
     restarting: boolean
     firmware: boolean
     responded: boolean
+    method: Methods | null
     constructor(firmwareVersion=1) {
         super()
+        this.method = null
         this.communication = null
         this.restarting = false
         this.firmware = false
@@ -148,6 +151,7 @@ export class Pico extends EventTarget {
             await this.communication.destroy()
         }
 
+        this.method = method
         this.responded = false
         this.firmware = false
         this.restarting = false
@@ -376,6 +380,7 @@ class USBCommunication implements Communication {
 const UART_SERVICE = 0xFFE0
 const UART_CHARACTERISTIC = 0xFFE1
 const CHUNK_SIZE = 20
+
 class BluetoothCommunication implements Communication {
     destroyed: boolean = false;
 
@@ -423,6 +428,7 @@ class BluetoothCommunication implements Communication {
         this.read();
         return Promise.resolve()
     }
+    private readonly valueChangedBound = this.valueChanged.bind(this);
     private valueChanged(event: Event): void {
         if (this.destroyed) return;
         if (event.type !== "characteristicvaluechanged") return;
@@ -466,7 +472,7 @@ class BluetoothCommunication implements Communication {
         }
     }
     async read(): Promise<void> {
-        this.characteristic?.addEventListener('characteristicvaluechanged', this.valueChanged);
+        this.characteristic?.addEventListener('characteristicvaluechanged', this.valueChangedBound);
     }
     private async chunkedWrite(message: string): Promise<void> {
         message += '\n' //Add newline at the end
@@ -506,7 +512,7 @@ class BluetoothCommunication implements Communication {
         try {
             if (this.characteristic) {
                 await this.characteristic.stopNotifications();
-                this.characteristic.removeEventListener('characteristicvaluechanged', this.valueChanged);
+                this.characteristic.removeEventListener('characteristicvaluechanged', this.valueChangedBound);
             }
             if (this.server && this.server.connected) {
                 this.server.disconnect();
