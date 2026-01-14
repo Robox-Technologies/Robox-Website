@@ -355,16 +355,17 @@ class USBCommunication implements Communication {
     initialize(): void {
         navigator.serial.addEventListener('connect', this.initPorts);
         navigator.serial.addEventListener('disconnect', this.initPorts);
-
-        navigator.serial.getPorts().then(ports => {
-            for (const port of ports) {
-                const portInfo = port.getInfo()
-                if (portInfo.usbVendorId === piVendorId) {
-                    this.parent.connect(port)
-                    break;
-                }
-            }
-        });
+        // Commenting this for now since I think it would be annoying for users if they have 2 roboxes connected
+        // This is an edge case but this also can break some user flow
+        // navigator.serial.getPorts().then(ports => {
+        //     for (const port of ports) {
+        //         const portInfo = port.getInfo()
+        //         if (portInfo.usbVendorId === piVendorId) {
+        //             this.parent.connect(port)
+        //             break;
+        //         }
+        //     }
+        // });
     }
     async destroy(): Promise<void> {
         //These are first since disconnect (restarting) may emit events we don't want after destroy
