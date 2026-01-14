@@ -37,9 +37,11 @@ type EventPayload = { event: 'calibrated'; options: picoOptions } |
                     { event: 'disconnect'; options: disconnectOptions } |
                     { event: 'revert'; options: object };
 interface Communication {
+    destroyed: boolean;
     request(): void;
     connect(port: SerialPort | BluetoothDevice): Promise<void>;
     disconnect(): Promise<void>;
+    destroy(): Promise<void>;
     write(string: string): Promise<void>;
     read(): void;
     initialize(): void;
@@ -47,15 +49,14 @@ interface Communication {
 
 const WRITE_TIMEOUT = 2;
 export class Pico extends EventTarget {
-    communication: Communication
+    communication: Communication | null
     firmwareVersion: number
     restarting: boolean
     firmware: boolean
     responded: boolean
-    constructor(method: "USB" | "Bluetooth", firmwareVersion=1) {
+    constructor(firmwareVersion=1) {
         super()
-        if (method === "USB") this.communication = new USBCommunication(this)
-        else this.communication = new BluetoothCommunication(this)
+        this.communication = null
         this.restarting = false
         this.firmware = false
         this.responded = false
@@ -142,8 +143,23 @@ export class Pico extends EventTarget {
             this.emit({ event: 'error', options: { message: e } })
         }
     }
+    async setCommunicationMethod(method: "USB" | "Bluetooth"): Promise<void> {
+        if (this.communication) {
+            await this.communication.destroy()
+        }
+
+        this.responded = false
+        this.firmware = false
+        this.restarting = false
+        
+        if (method === "USB") this.communication = new USBCommunication(this)
+        else if (method === "Bluetooth") this.communication = new BluetoothCommunication(this)
+        this.initialize()
+    }
 }
 class USBCommunication implements Communication {
+    destroyed: boolean = false;
+
     baudRate: number
     port: SerialPort | null
     textEncoder: TextEncoderStream
@@ -166,7 +182,7 @@ class USBCommunication implements Communication {
     async read(): Promise<void> {
         let error_string = ''
         try {
-            while (true) { //Forever loop for reading the pico
+            while (!this.destroyed) { //Forever loop for reading the pico
                 const { value, done } = await this.currentReader.read()
                 if (done) {
                     this.currentReader.releaseLock(); //Disconnects the serial port since the port is released
@@ -209,11 +225,14 @@ class USBCommunication implements Communication {
         try {
             if (typeof messages === "object") { 
                 for (const message of messages) {
+                    if (this.destroyed) break;
                     await this.currentWriter.write(`${message}\n`)
                     await new Promise(resolve => setTimeout(resolve, WRITE_TIMEOUT));
                 }                
             }
             else {
+                if (this.destroyed) return;
+
                 await this.currentWriter.write(`${messages}\n`)
             }
             return Promise.resolve()
@@ -343,11 +362,23 @@ class USBCommunication implements Communication {
             }
         });
     }
+    async destroy(): Promise<void> {
+        //These are first since disconnect (restarting) may emit events we don't want after destroy
+        navigator.serial.removeEventListener('connect', this.initPorts);
+        navigator.serial.removeEventListener('disconnect', this.initPorts);
+        await this.disconnect();
+        this.destroyed = true;
+        this.port = null;
+        this.currentReader = null;
+        this.currentWriter = null;
+    }
 }
 const UART_SERVICE = 0xFFE0
 const UART_CHARACTERISTIC = 0xFFE1
 const CHUNK_SIZE = 20
 class BluetoothCommunication implements Communication {
+    destroyed: boolean = false;
+
     device: BluetoothDevice | null
     server: BluetoothRemoteGATTServer | null
     characteristic: BluetoothRemoteGATTCharacteristic | null
@@ -393,6 +424,7 @@ class BluetoothCommunication implements Communication {
         return Promise.resolve()
     }
     private valueChanged(event: Event): void {
+        if (this.destroyed) return;
         if (event.type !== "characteristicvaluechanged") return;
 
         const target = event.target 
@@ -434,7 +466,7 @@ class BluetoothCommunication implements Communication {
         }
     }
     async read(): Promise<void> {
-        this.characteristic?.addEventListener('characteristicvaluechanged', this.valueChanged.bind(this));
+        this.characteristic?.addEventListener('characteristicvaluechanged', this.valueChanged);
     }
     private async chunkedWrite(message: string): Promise<void> {
         message += '\n' //Add newline at the end
@@ -451,10 +483,12 @@ class BluetoothCommunication implements Communication {
         try {
             if (typeof messages === "object") { 
                 for (const message of messages) {
+                    if (this.destroyed) break;
                     await this.chunkedWrite(message);
                 }                
             }
             else {
+                if (this.destroyed) return;
                 await this.chunkedWrite(messages);
             }
             return Promise.resolve()
@@ -490,7 +524,10 @@ class BluetoothCommunication implements Communication {
             );
         }
     }
+    async destroy(): Promise<void> {
+        await this.disconnect();
+        this.destroyed = true;
+    }
 }
-const pico = new Pico("USB")
-pico.initialize();
+const pico = new Pico()
 export { pico }
