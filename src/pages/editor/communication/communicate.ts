@@ -314,27 +314,25 @@ class USBCommunication implements Communication {
             this.parent.emit({ event: 'error', options: { message: 'Could not request pico! Make sure you have it connected via USB.' } })
         }
     }
-    initialize(): void {
-        navigator.serial.addEventListener('connect', async (event) => {
-            if (!event.target) return
-            if ('getInfo' in event.target) {
-                const port = event.target as SerialPort;
-                const portInfo = port.getInfo()
-                if (portInfo.usbVendorId === piVendorId) {
+    private async initPorts(event: Event): Promise<void> {
+        if (!event.target) return
+        if ('getInfo' in event.target) {
+            const port = event.target as SerialPort;
+            const portInfo = port.getInfo()
+            if (portInfo.usbVendorId === piVendorId) {
+                if (event.type === 'connect') {
                     await this.parent.connect(port)
                 }
-            } 
-        });
-        navigator.serial.addEventListener('disconnect', async (event) => {
-            if (!event.target) return
-            if ('getInfo' in event.target) {
-                const port = event.target as SerialPort;
-                const portInfo = port.getInfo()
-                if (portInfo.usbVendorId === piVendorId) {
+                else if (event.type === 'disconnect') {
                     await this.parent.disconnect()
                 }
             }
-        });
+        } 
+    }
+    initialize(): void {
+        navigator.serial.addEventListener('connect', this.initPorts);
+        navigator.serial.addEventListener('disconnect', this.initPorts);
+
         navigator.serial.getPorts().then(ports => {
             for (const port of ports) {
                 const portInfo = port.getInfo()
