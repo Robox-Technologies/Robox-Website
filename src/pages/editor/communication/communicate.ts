@@ -80,7 +80,7 @@ export class Pico extends EventTarget {
             this.emit({ event: 'disconnect', options: { error: false, restarting: this.restarting } })
         }
         catch (e) {
-            console.error("Pico Disconnect Error: ", e)
+            console.error("Ro/Box Disconnect Error: ", e)
             this.emit({ event: 'error', options: { message: e } })
         }
     }
@@ -205,7 +205,7 @@ class USBCommunication implements Communication {
                     errorloop: for (const errorMessage of rawErrorMessages) { //Every JSON object is delimited by a new line, so even if the message is split if you loop over it you can join them together!
                         try {
                             if (typeof errorMessage !== "string") {
-                                return Promise.reject("Received non-string message from pico!")
+                                return Promise.reject("Received non-string message from the Ro/Box!")
                             }
                             consoleMessages.push(JSON.parse(errorMessage))
                             
@@ -243,7 +243,7 @@ class USBCommunication implements Communication {
             return Promise.resolve()
         }
         catch {
-            return Promise.reject("Could not write to pico!")
+            return Promise.reject("Could not write to Ro/Box!")
         }
     }
     async connect(port: SerialPort): Promise<void> {
@@ -254,8 +254,9 @@ class USBCommunication implements Communication {
         }
         try {
             await this.port.open({ baudRate: this.baudRate });
-        } catch {
-            return Promise.reject("We are unable to open the port on the pico! Try resetting it?");
+        } catch(e) {
+            console.error("Error opening port:", e);
+            return Promise.reject("We are unable to open the port on the Ro/Box! Try resetting it? This could also be caused by another application using the Ro/Box.");
         }
     
         if (!this.port.writable || !this.port.readable) {
@@ -263,7 +264,6 @@ class USBCommunication implements Communication {
         }
         this.textEncoder = new TextEncoderStream();
         this.textDecoder = new TextDecoderStream();
-        // Pipe them AFTER creation
         this.currentWriterStreamClosed = this.textEncoder.readable.pipeTo(this.port.writable);
         this.currentReadableStreamClosed = this.port.readable.pipeTo(this.textDecoder.writable);
     
@@ -312,15 +312,13 @@ class USBCommunication implements Communication {
 
             this.textEncoder = new TextEncoderStream();
             this.textDecoder = new TextDecoderStream();
-            this.currentWriter = this.textEncoder.writable.getWriter();
-            this.currentReader = this.textDecoder.readable.getReader();
         }
         catch (e) {
             console.error("Disconnect failed:", e);
             throw new Error(
                 e instanceof Error
                     ? e.message
-                    : String(e || "Could not disconnect from pico!")
+                    : String(e || "Could not disconnect from Ro/Box!")
             );
         }
     }
@@ -335,7 +333,7 @@ class USBCommunication implements Communication {
             if (e instanceof DOMException && e.name === 'NotFoundError') {
                 return this.parent.emit({ event: 'revert', options: {} })
             }
-            this.parent.emit({ event: 'error', options: { message: 'Could not request pico! Make sure you have it connected via USB.' } })
+            this.parent.emit({ event: 'error', options: { message: 'Could not request Ro/Box! Make sure you have it connected via USB.' } })
         }
     }
     private async initPorts(event: Event): Promise<void> {
@@ -509,7 +507,7 @@ class BluetoothCommunication implements Communication {
         catch (e) {
             console.error("Write failed:", e);
             this.parent.emit({ event: 'error', options: { message: e } })
-            return Promise.reject("Could not write to pico!")
+            return Promise.reject("Could not write to Ro/Box!")
         }
     }
 
@@ -545,7 +543,7 @@ class BluetoothCommunication implements Communication {
             throw new Error(
                 e instanceof Error
                     ? e.message
-                    : String(e || "Could not disconnect from pico!")
+                    : String(e || "Could not disconnect from Ro/Box!")
             );
         }
     }

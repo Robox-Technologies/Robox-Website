@@ -113,8 +113,8 @@ export function postBlocklyWSInjection(uuid: string) {
         if (stage2Modal?.hasAttribute("open") || stage1Modal?.hasAttribute("open")) return; // Don't show error if flashing
 
         const picoEvent = event as CustomEvent
-        console.error("Pico Error: ", event)
-        showToast("error", "Pico Error", `An error occurred while communicating with the Pico. Please check your connection and try again. \nError: ${sanitizeHtml(picoEvent.detail.message)}`, 5000);
+        console.error("Ro/Box Error: ", event)
+        showToast("error", "Ro/Box Error", `An error occurred while communicating with the Ro/Box. Please check your connection and try again. \nError: ${sanitizeHtml(picoEvent.detail.message)}`, 5000);
     })
 
     ws.addChangeListener((event) => {
