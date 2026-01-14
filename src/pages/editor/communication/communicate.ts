@@ -146,7 +146,7 @@ export class Pico extends EventTarget {
             this.emit({ event: 'error', options: { message: e } })
         }
     }
-    async setCommunicationMethod(method: "USB" | "Bluetooth"): Promise<void> {
+    async setCommunicationMethod(method: "USB" | "Bluetooth" | null): Promise<void> {
         if (this.communication) {
             await this.communication.destroy()
         }
@@ -232,7 +232,7 @@ class USBCommunication implements Communication {
                     if (this.destroyed) break;
                     await this.currentWriter.write(`${message}\n`)
                     await new Promise(resolve => setTimeout(resolve, WRITE_TIMEOUT));
-                }                
+                }            
             }
             else {
                 if (this.destroyed) return;
@@ -425,7 +425,12 @@ class BluetoothCommunication implements Communication {
         if (!this.server || !this.characteristic) {
             return this.parent.emit({ event: 'error', options: { message: 'Could not connect to Ro/Box! Try resetting it?' } })
         }
+        // The event only exists while connected (so cannot go in initialize)
+        this.device.addEventListener('gattserverdisconnected', () => console.log("Disconnected"));
+        this.device.addEventListener('gattserverdisconnected', this.initPortsBound);
+
         this.read();
+
         return Promise.resolve()
     }
     private readonly valueChangedBound = this.valueChanged.bind(this);
@@ -505,12 +510,24 @@ class BluetoothCommunication implements Communication {
             return Promise.reject("Could not write to pico!")
         }
     }
+
     initialize(): void {
         return;
     }
+    private readonly initPortsBound = this.initPorts.bind(this);
+    private initPorts(event: Event): void {
+        if (!event.target) return
+        const device = event.target as BluetoothDevice;
+        if (device.name && device.name.startsWith("RoBox")) {
+            if (event.type === 'gattserverdisconnected') {
+                this.parent.disconnect()
+            }
+        }
+    }
     async disconnect(): Promise<void> {
         try {
-            if (this.characteristic) {
+            this.device?.removeEventListener('gattserverdisconnected', this.initPortsBound);
+            if (this.server && this.server.connected && this.characteristic) {
                 await this.characteristic.stopNotifications();
                 this.characteristic.removeEventListener('characteristicvaluechanged', this.valueChangedBound);
             }
@@ -531,6 +548,7 @@ class BluetoothCommunication implements Communication {
         }
     }
     async destroy(): Promise<void> {
+        this.device?.removeEventListener('gattserverdisconnected', this.initPortsBound);
         await this.disconnect();
         this.destroyed = true;
     }
