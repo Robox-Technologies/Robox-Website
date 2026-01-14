@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pico.addEventListener("calibrated", () => {
         calibrated = true //Successful calibration!
 
-        outcomeText.textContent = "Calibration was a success!\nThe calibration settings have been saved to the Ro/Box's Pico."
+        outcomeText.textContent = "Calibration was a success!\nThe calibration settings have been saved to the Ro/Box"
         outcomeButton.textContent = "Done"
         outcomeTitle.textContent = "Ro/Box Calibrated!"
         // Close whatever modal is already open
@@ -85,14 +85,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (failed) {
             pico.restart()
             pico.addEventListener("connect", ()=> {
-                pico.calibrate()
+                pico.colorCalibrate()
                 setTimeout(() => {
                     if (!calibrated && !calibrateOutcomeModal?.hasAttribute("open")) failedCalibration()
                 }, 1000)
             }, {once: true})
         }
         else {
-            pico.calibrate()
+            pico.colorCalibrate()
             setTimeout(() => {
                 if (!calibrated && !calibrateOutcomeModal?.hasAttribute("open")) failedCalibration()    
             }, 1000)    
