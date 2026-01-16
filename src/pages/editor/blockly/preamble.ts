@@ -3,6 +3,7 @@ import { ExtensionType } from "~types/projects"
 
 
 export const mainScript = `
+from __main__ import current_comm
 from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor, Servo
 from machine import Pin, Timer
 import time
