@@ -1,12 +1,11 @@
 import dayjs from 'dayjs';
 import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
-import { Projects, Project, UserExtensions, extensionKeys } from "~types/projects";
+import { Projects, Project, UserExtensions, extensionKeys, UserSensors } from "~types/projects";
 
 import { workspaceToPng_ } from './screenshot';
 import { getPythonCode } from '@pages/editor/usb';
 
-import { Extension } from '~types/projects';
 export function getProjects(): Projects {
     const projectsRaw = localStorage.getItem("roboxProjects")
     let projects = Object.create(null);
@@ -44,6 +43,7 @@ export function importProject(project: Project): void {
         workspace: project.workspace,
         thumbnail: project.thumbnail || "",
         extensions: project.extensions || getDefaultExtensions(),
+        sensors: project.sensors || [],
     };
     localStorage.setItem("roboxProjects", JSON.stringify(projects));
 }
@@ -60,7 +60,7 @@ export function createProject(name: string): string {
 
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
-    projects[uuid] = { name: name, time: dayjs(), workspace: {}, thumbnail: "", extensions: getDefaultExtensions() }
+    projects[uuid] = { name: name, time: dayjs(), workspace: {}, thumbnail: "", extensions: getDefaultExtensions(), sensors: [] }
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
     return uuid
 }
@@ -73,6 +73,44 @@ export function getProject(uuid: string, projects: Projects | null = null): Proj
     if (Object.keys(projects).length === 0) return null
     if (projects[uuid] === undefined) return null
     return projects[uuid]
+}
+// Helpers for user pins
+export function getUserSensors(uuid: string): UserSensors | null {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
+    const project = getProject(uuid)
+    if (!project) return null
+
+    return project.sensors
+}
+export function createUserSensor(uuid: string, sensorType: string, pins: {[key: string]: number}): void {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
+    const projects = getProjects()
+    const project = getProject(uuid, projects)
+    if (!project) return
+
+    const newSensor: {type: string, pins: {[key: string]: number}} = {
+        type: sensorType,
+        pins: pins
+    }
+    if (!project.sensors) {
+        project.sensors = []
+    }
+    project.sensors.push(newSensor)
+    projects[uuid] = project
+    localStorage.setItem("roboxProjects", JSON.stringify(projects))
+}
+export function deleteUserSensor(uuid: string, sensorIndex: number): void {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
+    const projects = getProjects()
+    const project = getProject(uuid, projects)
+    if (!project || !project.sensors) return
+
+    project.sensors.splice(sensorIndex, 1)
+    projects[uuid] = project
+    localStorage.setItem("roboxProjects", JSON.stringify(projects))
 }
 export async function loadBlockly(uuid: string, workspace: Workspace) {
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
