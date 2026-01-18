@@ -64,11 +64,6 @@ const extraSensors = {
     },
     'categorystyle': 'extra_sensors_category',
     'contents': [
-        {
-            'kind': 'button',
-            'type': 'Manage Extra Sensors',
-            'callbackKey': 'MANAGE_EXTRA_SENSORS',
-        },
     ],
 };
 export const ExtensionToolbox: Record<Extension, object> = {

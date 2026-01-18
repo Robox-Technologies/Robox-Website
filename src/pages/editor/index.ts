@@ -25,6 +25,7 @@ import "./modals/colourCalibration"
 
 import { showToast } from '@root/toast';
 import { addExtensions } from './modals/extensions';
+import { setupManageSensors } from './modals/manageSensors';
 
   
 
@@ -222,6 +223,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (workspaceId) {
         setExtensionToolbox(getProjectExtensions(workspaceId));
     }
+    // Setup the manage sensors stuff
+    setupManageSensors();
 
 
     //Preventing orphans
@@ -240,13 +243,21 @@ function extensionModalSetup(uuid: string): null | void {
 }
 function toggleExtensionUI(uuid: string, extension: Extension, enabled: boolean): void {
     const extensionToggle = document.querySelector(`.card[extension-type="${extension}"]`) as HTMLElement | null;
-    if (!extensionToggle) return;
+    const manageSensorsButton = document.getElementById("robox-manage-sensors")
+    if (!extensionToggle || !manageSensorsButton) return;
+
     if (enabled) {
         extensionToggle.classList.add("enabled")
         extensionToggle.classList.remove("disabled")
+        if (extension === "EXTRA_SENSORS") {
+            manageSensorsButton.style.visibility = "visible";
+        }
     } else {
         extensionToggle.classList.add("disabled")
         extensionToggle.classList.remove("enabled")
+        if (extension === "EXTRA_SENSORS") {
+            manageSensorsButton.style.visibility = "hidden";
+        }
     }
 }
 let rotation = 0;

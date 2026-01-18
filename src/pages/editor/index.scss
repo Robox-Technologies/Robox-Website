@@ -565,3 +565,10 @@ dialog[loading] #open-file::hover {
     -webkit-user-drag: none;   /* <- prevents dragging ghost image */
     draggable: false;          /* HTML attribute alternative */
 }
+#robox-manage-sensors {
+    visibility: hidden;
+
+}
+#robox-manage-sensors:hover {
+    cursor: pointer;
+}
