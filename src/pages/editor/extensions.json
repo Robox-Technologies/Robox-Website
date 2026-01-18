@@ -1,0 +1,12 @@
+{
+    "SERVO": {
+        "name": "Servo Motor",
+        "description": "Adds support for controlling servo motors in your projects.",
+        "image": ""
+    },
+    "EXTRA_SENSORS": {
+        "name": "Extra Sensors",
+        "description": "Includes additional sensors like temperature and humidity sensors.",
+        "image": ""
+    }
+}

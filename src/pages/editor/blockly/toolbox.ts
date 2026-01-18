@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ExtensionType } from "~types/projects";
+import { Extension } from "~types/projects";
+
+
 
 /*
 This toolbox contains nearly every single built-in block that Blockly offers,
@@ -54,8 +56,24 @@ const servo = {
         }
     ],
 };
-export const ExtensionToolbox = {
-    [ExtensionType.SERVO]: servo,
+const extraSensors = {
+    'kind': 'category',
+    'name': 'Extra Sensors',
+    "cssConfig": {
+        "icon": "categoryIcon fa fa-microchip"
+    },
+    'categorystyle': 'extra_sensors_category',
+    'contents': [
+        {
+            'kind': 'button',
+            'type': 'Manage Extra Sensors',
+            'callbackKey': 'MANAGE_EXTRA_SENSORS',
+        },
+    ],
+};
+export const ExtensionToolbox: Record<Extension, object> = {
+    "SERVO": servo,
+    "EXTRA_SENSORS": extraSensors,
 }
 export const toolbox = {
     'kind': 'categoryToolbox',

@@ -8,7 +8,7 @@ import theme from "./blockly/theme"
 import {toolbox, ExtensionToolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
-import { ExtensionType, Project } from '~types/projects';
+import { Extension, extensionKeys, Project, UserExtensions } from '~types/projects';
 import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject, getProjectExtensions } from '@root/blockly/serialization';
 import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
@@ -20,10 +20,11 @@ import { registerControls } from './controls';
 registerFieldAngle();
 registerFieldColour();
 
-import "./instructions/UF2Flash"
-import "./instructions/colourCalibration"
+import "./modals/UF2Flash"
+import "./modals/colourCalibration"
 
 import { showToast } from '@root/toast';
+import { addExtensions } from './modals/extensions';
 
   
 
@@ -195,7 +196,11 @@ document.addEventListener("DOMContentLoaded", () => {
         dialog.show()
         event.stopPropagation()
     })
+
     // Setting up the extension stuff
+    // Adding the extension cards to the modal
+    addExtensions();
+    // The extension modal and its functionality
     const extensionModal = document.getElementById("extension-modal") as HTMLDialogElement | null;
     const extensions = extensionModal.querySelectorAll(".card");
     const extensionButton = document.getElementById("robox-extension-button")
@@ -210,13 +215,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (isValidExtension(extensionType) === false) return;
             const extensions = getProjectExtensions(workspaceId);
             if (!extensions) return;
-            const enabled = toggleExtension(workspaceId, ExtensionType[extensionType]);
-            toggleExtensionUI(workspaceId, ExtensionType[extensionType], enabled);
+            const enabled = toggleExtension(workspaceId, extensionType);
+            toggleExtensionUI(workspaceId, extensionType, enabled);
         })
     })
     if (workspaceId) {
         setExtensionToolbox(getProjectExtensions(workspaceId));
     }
+
 
     //Preventing orphans
     workspace.addChangeListener(Blockly.Events.disableOrphans);
@@ -227,13 +233,13 @@ function extensionModalSetup(uuid: string): null | void {
     
     const extensions = getProjectExtensions(uuid);
     if (!extensions) return null;
-    for (const ext of Object.values(ExtensionType)) {
+    for (const ext of extensionKeys) {
         toggleExtensionUI(uuid, ext, extensions[ext]);
     }
 
 }
-function toggleExtensionUI(uuid: string, extension: ExtensionType, enabled: boolean): void {
-    const extensionToggle = document.querySelector(`#extension-${extension.toLowerCase()}`) as HTMLElement | null;
+function toggleExtensionUI(uuid: string, extension: Extension, enabled: boolean): void {
+    const extensionToggle = document.querySelector(`.card[extension-type="${extension}"]`) as HTMLElement | null;
     if (!extensionToggle) return;
     if (enabled) {
         extensionToggle.classList.add("enabled")
@@ -250,10 +256,10 @@ function rotateOneTooth(cog: HTMLElement) {
     cog.style.transition = 'transform 0.5s ease-out';
     cog.style.transform = `rotate(${rotation}deg)`;
 }
-function isValidExtension(ext: string): ext is keyof typeof ExtensionType {
-    return ext.toUpperCase() in ExtensionType;
+function isValidExtension(ext: string): ext is Extension {
+    return extensionKeys.includes(ext as Extension);
 }
-function toggleExtension(uuid: string, extension: ExtensionType):boolean {
+function toggleExtension(uuid: string, extension: Extension):boolean {
     if (checkIfExtensionBlocksExist(extension)) {
         showToast("error", "Cannot Disable Extension", `Please remove all blocks from the ${extension} extension before disabling it.`, 5000);
         return true; // Still enabled
@@ -270,7 +276,7 @@ function toggleExtension(uuid: string, extension: ExtensionType):boolean {
     setExtensionToolbox(projects[uuid]["extensions"]);
     return projects[uuid]["extensions"][extension];
 }
-function checkIfExtensionBlocksExist(extension: ExtensionType): boolean {
+function checkIfExtensionBlocksExist(extension: Extension): boolean {
     const workspace = Blockly.getMainWorkspace();
     const allBlocks = workspace.getAllBlocks(false);
     for (const block of allBlocks) {
@@ -280,7 +286,7 @@ function checkIfExtensionBlocksExist(extension: ExtensionType): boolean {
     }
     return false;
 }
-function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
+function setExtensionToolbox(extensions: UserExtensions | null): void {
     const workspace = Blockly.getMainWorkspace();
     // Assert that workspace is workspaceSVG
     if (!(workspace instanceof Blockly.WorkspaceSvg)) {
@@ -293,7 +299,7 @@ function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
     }
     //Create a new toolbox with the extensions categories added
     const newToolbox = structuredClone(toolbox)
-    for (const ext of Object.values(ExtensionType)) {
+    for (const ext of extensionKeys) {
         if (extensions[ext]) {
             const extToolbox = ExtensionToolbox[ext];
             if (extToolbox) {

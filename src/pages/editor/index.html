@@ -151,19 +151,21 @@
         id: "extension-modal",
         title: 'Extensions', 
         content: [
-            include('@partials/card.html', {
+            
+        ],
+    }) %>
+    <template id="extension-toggle-template">
+        <%~ include('@partials/card.html', {
                 class: "extension-card",
-                title: "Servo Extension",
-                id: "extension-servo",
-                attributes: "extension-type=SERVO",
+                title: "",
                 imageSource: "@images/editor/placeholder.png",
                 absoluteContent: include('@partials/check/check.html'),
                 topRowButton: false,
                 descriptions: [
-                    "Servo extension for Ro/Box, used in the Claw, Pen Holder and other accessories.",
+                    "",
                 ],
             }),
-        ],
-    }) %>
+        %>
+    </template>
 </body>
 </html>

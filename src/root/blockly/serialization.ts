@@ -1,12 +1,12 @@
 import dayjs from 'dayjs';
 import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
-import { Projects, Project, Extension } from "~types/projects";
+import { Projects, Project, UserExtensions, extensionKeys } from "~types/projects";
 
 import { workspaceToPng_ } from './screenshot';
 import { getPythonCode } from '@pages/editor/usb';
 
-import { ExtensionType } from '~types/projects';
+import { Extension } from '~types/projects';
 export function getProjects(): Projects {
     const projectsRaw = localStorage.getItem("roboxProjects")
     let projects = Object.create(null);
@@ -47,9 +47,9 @@ export function importProject(project: Project): void {
     };
     localStorage.setItem("roboxProjects", JSON.stringify(projects));
 }
-function getDefaultExtensions(): Extension {
-    const extensions: Extension = {} as Extension;
-    Object.values(ExtensionType).forEach((ext) => {
+function getDefaultExtensions(): UserExtensions {
+    const extensions: UserExtensions = {} as UserExtensions;
+    Object.values(extensionKeys).forEach((ext) => {
         extensions[ext] = false;
     });
     return extensions;
@@ -188,7 +188,7 @@ function isProtoPollution(key: string): boolean {
     const forbiddenKeys = ["__proto__", "constructor", "prototype"];
     return forbiddenKeys.includes(key);
 }
-export function getProjectExtensions(uuid: string): Extension | null {
+export function getProjectExtensions(uuid: string): UserExtensions | null {
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
     const project = getProject(uuid);
