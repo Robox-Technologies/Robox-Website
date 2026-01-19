@@ -191,7 +191,15 @@
                     </form>
                 </div>
                 <div class="card sensor-card" editing>
-                    <img class="card-image" src="@images/editor/placeholder.png" alt="Sensor Image">
+                    <div id="sensor-card-buttons">
+                        <button id="edit-sensor-button" class="button standard-button">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button id="delete-sensor-button" class="button standard-button">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                    <img class="card-image" alt="Sensor Image">
                     <form class="card-info sensor-card-form">
                         <div>
                             <label for="sensor-name-input">Sensor Name:</label>

@@ -602,6 +602,9 @@ dialog[loading] #open-file::hover {
 .create-sensor-card, .sensor-card {
     flex: 0 0 30%;
     width: 30%;
+    img {
+        background-color: variables.$tone3 !important;
+    }
     .sensor-card-form {
         display: flex;
         flex-direction: column;
@@ -675,5 +678,24 @@ dialog[loading] #open-file::hover {
     }
     option {
         direction: rtl;
+    }
+}
+.sensor-card #sensor-card-buttons {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    button {
+        font-size: larger;
+    }
+    #edit-sensor-button {
+        color: variables.$themeBlue;
+    }
+    #delete-sensor-button {
+        color: variables.$themeRed;
+    }
+    #edit-sensor-button:hover, #delete-sensor-button:hover {
+        cursor: pointer;
     }
 }
