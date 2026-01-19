@@ -529,8 +529,8 @@ $settingsToolbarWidth: 200px;
         gap: variables.$standardGap;
     }
     .card { 
-        flex: 0 0 30%;
-        width: 30%;
+        flex: 0 0 40%;
+        width: 40%;
 
         .card-image {
             min-width: 100px;
@@ -600,8 +600,8 @@ dialog[loading] #open-file::hover {
     cursor: unset !important;
 }
 .create-sensor-card, .sensor-card {
-    flex: 0 0 30%;
-    width: 30%;
+    flex: 0 0 40%;
+    width: 40%;
     img {
         background-color: variables.$tone3 !important;
     }
@@ -622,6 +622,7 @@ dialog[loading] #open-file::hover {
     }
     label {
         text-align: left !important;
+        font-size: large !important;
     }
     input {
         width: 50% !important;
@@ -647,7 +648,7 @@ dialog[loading] #open-file::hover {
                 text-align: left;
             }
             input {
-                width: 75px !important;
+                width: 100px !important;
             }
             display: flex;
             flex-direction: row;
@@ -661,6 +662,9 @@ dialog[loading] #open-file::hover {
 // Make the inputs not look like inputs when not editing
 .sensor-card:not([editing]) {
     color: variables.$themeBlack;
+    label {
+        pointer-events: none;
+    }
     input {
         pointer-events: none;
         border-color: rgba(0, 0, 0, 0);

@@ -21,6 +21,7 @@ export function setupManageSensors(uuid: string) {
 function populateSensors(uuid: string) {
     const sensorCreateCardTemplate = document.querySelector("#sensor-card-create-template") as HTMLTemplateElement | null;
     const sensorContainer = document.querySelector("#manage-sensors-container") as HTMLElement | null;
+
     const sensorOptions = generateSelectOptions();
     if (!sensorCreateCardTemplate || !sensorContainer) return;
     // Wipe existing cards
@@ -38,20 +39,24 @@ function populateSensors(uuid: string) {
     for (const userSensor of userSensors) {
         const sensorCard = sensorCardTemplate.content.firstElementChild.cloneNode(true) as HTMLElement | null;
         if (!sensorCard) return;
+        const sensorForm = sensorCard.querySelector("form") as HTMLFormElement | null;
         const nameInput = sensorCard.querySelector(".sensor-name-input") as HTMLInputElement | null;
         const typeSelect = sensorCard.querySelector(".sensor-type-select") as HTMLSelectElement | null;
-        if (!nameInput || !typeSelect) return;
+        if (!nameInput || !typeSelect || !sensorForm) return;
         if (!userSensor.name || !userSensor.pins || !userSensor.type) return;
         for (const option of sensorOptions) {
             typeSelect.appendChild(option);
         }
         typeSelect.value = userSensor.type;
         nameInput.value = userSensor.name;
+
         const pinElements = generatePinElement(userSensor.type);
         populatePinElement(pinElements, userSensor.pins);
+        sensorForm.appendChild(pinElements);
         sensorContainer.appendChild(sensorCard);
     }
 }
+function 
 function populatePinElement(pinElement: HTMLElement, userPins: UserSensorPins): void {
     const pinInputEl = pinElement.querySelector("input") as HTMLInputElement | null;
     if (!pinInputEl) return;
