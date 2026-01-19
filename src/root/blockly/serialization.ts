@@ -1,10 +1,11 @@
 import dayjs from 'dayjs';
 import DOMPurify from "dompurify";
 import type { Workspace, WorkspaceSvg } from 'blockly/core';
-import { Projects, Project, UserExtensions, extensionKeys, UserSensors } from "~types/projects";
+import { Projects, Project, UserExtensions, extensionKeys, UserSensors, Sensor } from "~types/projects";
 
 import { workspaceToPng_ } from './screenshot';
 import { getPythonCode } from '@pages/editor/usb';
+import type { UserSensor } from '~types/projects';
 
 export function getProjects(): Projects {
     const projectsRaw = localStorage.getItem("roboxProjects")
@@ -83,15 +84,15 @@ export function getUserSensors(uuid: string): UserSensors | null {
 
     return project.sensors
 }
-export function createUserSensor(uuid: string, sensorType: string, pins: {[key: string]: number}): void {
+export function createUserSensor(uuid: string, name: string, sensorType: Sensor, pins: {[key: string]: number}): void {
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
-
     const projects = getProjects()
     const project = getProject(uuid, projects)
     if (!project) return
 
-    const newSensor: {type: string, pins: {[key: string]: number}} = {
+    const newSensor: UserSensor = {
         type: sensorType,
+        name: name,
         pins: pins
     }
     if (!project.sensors) {

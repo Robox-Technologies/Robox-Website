@@ -224,14 +224,11 @@ document.addEventListener("DOMContentLoaded", () => {
         setExtensionToolbox(getProjectExtensions(workspaceId));
     }
     // Setup the manage sensors stuff
-    setupManageSensors();
+    setupManageSensors(workspaceId);
 
 
     //Preventing orphans
     workspace.addChangeListener(Blockly.Events.disableOrphans);
-    document.querySelector(".sensor-card img").addEventListener("click", (event) => {
-        document.querySelector(".sensor-card").toggleAttribute("editing");
-    })
 }) 
 function extensionModalSetup(uuid: string): null | void {
     const extensionModal = document.getElementById("extension-modal") as HTMLDialogElement | null;

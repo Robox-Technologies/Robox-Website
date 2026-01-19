@@ -10,16 +10,20 @@ export type Sensor = Extract<keyof typeof parsedSensors, string>
 function keysOf<T extends object>(obj: T): Extract<keyof T, string>[] {
     return Object.keys(obj) as Extract<keyof T, string>[]
 }
-
+export type SensorSchema = {
+    name: string,
+    pins: Record<string, {name: string, available_pins: number[]}>
+}
 export const extensionKeys = keysOf(parsedExtensions)
 export const sensorKeys = keysOf(parsedSensors)
 export type UserExtensions = {
     [key in Extension]?: boolean
 }
-type UserSensorPins = {
+export type UserSensorPins = {
     [key: string]: number
 }
-type UserSensor = {
+export type UserSensor = {
+    name: string,
     type: Sensor,
     pins: UserSensorPins
 }

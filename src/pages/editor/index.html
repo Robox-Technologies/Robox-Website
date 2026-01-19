@@ -163,76 +163,60 @@
         content: [
             "<h2 id='empty-manage-sensors-message'>No extra sensors have been added yet. Click 'Create Sensor' to add your first sensor!</h2>",
             `<div id='manage-sensors-container'>
-                <div class="card create-sensor-card ">
-                    <img class="card-image" src="@images/editor/placeholder.png" alt="Sensor Image">
-                    <form class="card-info sensor-card-form">
-                        <div>
-                            <label for="sensor-name-input">Sensor Name:</label>
-                            <input type="text" class="sensor-name-input" placeholder="Sensor Name">
-                        </div>
-                        <div>
-                            <label for="sensor-type-select">Sensor Type:</label>
-                            <select class="sensor-type-select">
-                                <option value="" disabled selected>Select Sensor Type</option>
-                                <option value="ultrasonic">Ultrasonic</option>
-                            </select>
-                        </div>
-                        <div class="sensor-pins">
-                            <div>
-                                <label for="sensor-pin-select">Trigger Pin:</label>
-                                <input type="number" class="sensor-pin-select" min="0" max="40" placeholder="0">
-                            </div>
-                            <div>
-                                <label for="sensor-unit-input">Echo Pin:</label>
-                                <input type="number" class="sensor-unit-input" min="0" max="40" placeholder="0">
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-                <div class="card sensor-card" editing>
-                    <div id="sensor-card-buttons">
-                        <button id="edit-sensor-button" class="button standard-button">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
-                        <button id="delete-sensor-button" class="button standard-button">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                    <img class="card-image" alt="Sensor Image">
-                    <form class="card-info sensor-card-form">
-                        <div>
-                            <label for="sensor-name-input">Sensor Name:</label>
-                            <input value="testing" type="text" class="sensor-name-input" placeholder="Sensor Name">
-                        </div>
-                        <div>
-                            <label for="sensor-type-select">Sensor Type:</label>
-                            <select class="sensor-type-select">
-                                <option value="" disabled>Select Sensor Type</option>
-                                <option selected value="ultrasonic">Ultrasonic</option>
-                            </select>
-                        </div>
-                        <div class="sensor-pins">
-                            <div>
-                                <label for="sensor-pin-select">Trigger Pin:</label>
-                                <input value="2" type="number" class="sensor-pin-select" min="0" max="40" placeholder="0">
-                            </div>
-                            <div>
-                                <label for="sensor-unit-input">Echo Pin:</label>
-                                <input value="1" type="number" class="sensor-unit-input" min="0" max="40" placeholder="0">
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
+                
+                
             </div>`,
         ],
         buttons: [
             '<button id="manage-sensors-create-button" class="button standard-button">Create Sensor</button>',
         ],
     }) %>
-    <template id="sensor-card-template">
+    <template id="sensor-card-create-template">
+        <div class="card create-sensor-card ">
+            <img class="card-image" src="@images/editor/placeholder.png" alt="Sensor Image">
+            <form class="card-info sensor-card-form">
+                <div>
+                    <label for="sensor-name-input">Sensor Name:</label>
+                    <input type="text" class="sensor-name-input" placeholder="Sensor Name">
+                </div>
+                <div>
+                    <label for="sensor-type-select">Sensor Type:</label>
+                    <select class="sensor-type-select">
+                        <option value="" disabled selected>Select Sensor Type</option>
+                    </select>
+                </div>
+                <div class="sensor-pins">
+                </div>
 
+            </form>
+        </div>
+    </template>
+    <template id="sensor-card-template">
+        <div class="card sensor-card">
+            <div class="sensor-card-buttons">
+                <button class="button standard-button edit-sensor-button">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button class="button standard-button delete-sensor-button">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+            <img class="card-image" alt="Sensor Image">
+            <form class="card-info sensor-card-form">
+                <div>
+                    <label for="sensor-name-input">Sensor Name:</label>
+                    <input required type="text" class="sensor-name-input" placeholder="Sensor Name">
+                </div>
+                <div>
+                    <label for="sensor-type-select">Sensor Type:</label>
+                    <select required class="sensor-type-select">
+                        <option value="" disabled selected>Select Sensor Type</option>
+                    </select>
+                </div>
+                <!-- Adding the pin container below -->
+
+            </form>
+        </div>
     </template>
     <template id="extension-toggle-template">
         <%~ include('@partials/card.html', {

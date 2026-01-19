@@ -680,7 +680,7 @@ dialog[loading] #open-file::hover {
         direction: rtl;
     }
 }
-.sensor-card #sensor-card-buttons {
+.sensor-card .sensor-card-buttons {
     position: absolute;
     top: 20px;
     right: 20px;
@@ -689,13 +689,13 @@ dialog[loading] #open-file::hover {
     button {
         font-size: larger;
     }
-    #edit-sensor-button {
+    .edit-sensor-button {
         color: variables.$themeBlue;
     }
-    #delete-sensor-button {
+    .delete-sensor-button {
         color: variables.$themeRed;
     }
-    #edit-sensor-button:hover, #delete-sensor-button:hover {
+    .edit-sensor-button:hover, .delete-sensor-button:hover {
         cursor: pointer;
     }
 }
