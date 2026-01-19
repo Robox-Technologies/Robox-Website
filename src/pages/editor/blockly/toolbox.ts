@@ -63,7 +63,7 @@ const extraSensors = {
         "icon": "categoryIcon fa fa-microchip"
     },
     'categorystyle': 'extra_sensors_category',
-    'contents': [
+    'contents': [ 
     ],
 };
 export const ExtensionToolbox: Record<Extension, object> = {

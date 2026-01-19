@@ -520,7 +520,7 @@ $settingsToolbarWidth: 200px;
     font-size: 20px;
     cursor: pointer;
 }
-#extension-modal {
+#extension-modal, #manage-sensors-modal {
     .modal-content {
         flex-direction: row;
         flex-wrap: wrap;
@@ -559,11 +559,10 @@ $settingsToolbarWidth: 200px;
 dialog[loading] #open-file::hover {
     cursor: not-allowed;
 }
-.extension-card img {
-    pointer-events: none;      /* optional if you really need it */
-    user-select: none;         /* <- prevents selection */
-    -webkit-user-drag: none;   /* <- prevents dragging ghost image */
-    draggable: false;          /* HTML attribute alternative */
+.extension-card img, .sensor-card img {
+    user-select: none;      
+    -webkit-user-drag: none;
+    draggable: false;
 }
 #robox-manage-sensors {
     visibility: hidden;
@@ -571,4 +570,110 @@ dialog[loading] #open-file::hover {
 }
 #robox-manage-sensors:hover {
     cursor: pointer;
+}
+#manage-sensors-create-button {
+    background-color: variables.$themeGreen;
+}
+#empty-manage-sensors-message {
+    display: none;
+}
+#manage-sensors-modal:has(#manage-sensors-container:empty) {
+    .modal-content {
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        flex-wrap: nowrap;
+    }
+    #empty-manage-sensors-message {
+        display: block;
+    }
+
+}
+#manage-sensors-modal #manage-sensors-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: variables.$standardGap;
+    flex-direction: row;
+}
+.sensor-card:hover {
+    transform: unset !important;
+    cursor: unset !important;
+}
+.create-sensor-card, .sensor-card {
+    flex: 0 0 30%;
+    width: 30%;
+    .sensor-card-form {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 0;
+        > div:not(.sensor-pins) {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+    }
+    select {
+        width: 50% !important;
+    }
+    label {
+        text-align: left !important;
+    }
+    input {
+        width: 50% !important;
+        font-size: large;
+    }
+    .card-image {
+        min-width: 100px;
+        object-fit: contain;
+        padding: 5px;
+        background-color: variables.$themeBlue;
+        background-color: gray;
+        width: 100%;
+        aspect-ratio: 16/9;
+    }
+    .card-description {
+        font-size: small;
+    }
+    .sensor-card-form > .sensor-pins {
+        div {
+            label {
+                font-size: large;
+                flex: 1;
+                text-align: left;
+            }
+            input {
+                width: 75px !important;
+            }
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+        display: flex;
+        flex-direction: column;
+    }
+}
+// Make the inputs not look like inputs when not editing
+.sensor-card:not([editing]) {
+    color: variables.$themeBlack;
+    input {
+        pointer-events: none;
+        border-color: rgba(0, 0, 0, 0);
+        background-color: unset;
+        text-align: right;
+    }
+    select {
+        pointer-events: none;
+        border-color: rgba(0, 0, 0, 0);
+        background-color: unset;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        text-align-last: right;
+    }
+    option {
+        direction: rtl;
+    }
 }
