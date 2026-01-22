@@ -17,6 +17,7 @@ import { postBlocklyWSInjection } from './usb';
 import { registerControls } from './controls';
 import { isValidExtension, toggleExtension, setExtensionToolbox } from './modals/extensions';
 
+
 registerFieldAngle();
 registerFieldColour();
 
@@ -31,6 +32,7 @@ import { setupManageSensors } from './modals/manageSensors';
 
 const blocks = require.context("./blockly/blocks", false, /\.ts$/);
 const generators = require.context("./blockly/generators", false, /\.ts$/);
+const extensions = require.context("./blockly/extensions", false, /\.ts$/);
 
 blocks.keys().forEach(modulePath => {
     blocks(modulePath);
@@ -38,6 +40,9 @@ blocks.keys().forEach(modulePath => {
 
 generators.keys().forEach(modulePath => {
     generators(modulePath);
+});
+extensions.keys().forEach(modulePath => {
+    extensions(modulePath);
 });
 document.addEventListener("DOMContentLoaded", () => {
     const workspace = Blockly.inject('blocklyDiv', {

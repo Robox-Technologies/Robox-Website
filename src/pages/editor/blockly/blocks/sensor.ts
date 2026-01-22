@@ -6,37 +6,64 @@ const sensors = [
         "type": "ultrasonic_distance",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "distance",
+        "message0": "%1 distance",
+        "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "sensor",
+                "options": [
+                    ["sensor", "0"]
+                ]
+            }
+        ],
         "output": null,
         "style": "sensor_blocks",
-        "inputsInline": true
+        "inputsInline": true,
+        "extensions": ["sensor_menu_extension"]
     },
-        {
+    {
         "type": "color_sensor_value",
-        "message0": "colour sensor",
+        "message0": "%1 colour sensor",
         "output": "String",
         "style": "sensor_blocks",
         "tooltip": "Returns the name of the closest detected colour",
         "helpUrl": "",
-        "inputsInline": true
+        "inputsInline": true,
+        "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "sensor",
+                "options": [
+                    ["sensor", "0"]
+                ]
+            }
+        ],
+        "extensions": ["sensor_menu_extension"]
     },
     {
         "type": "color_sensor_is_colour",
-        "message0": "colour sensor sees %1",
+        "message0": "%1 colour sensor sees %2",
         "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "sensor",
+                "options": [
+                    ["sensor", "0"]
+                ]
+            },
             {
                 "type": "field_colour",
                 "name": "colour",
                 "colour": "#ff0000",
                 "colourOptions": [
-                    "#ff0000",  // red
-                    "#ffa500",  // orange
-                    "#ffff00",  // yellow
-                    "#008000",  // green
-                    "#0000ff",  // blue
-                    "#800080",  // purple
-                    "#000000",  // black
-                    "#ffffff"   // white
+                    "#ff0000",
+                    "#ffa500",
+                    "#ffff00",
+                    "#008000",
+                    "#0000ff",
+                    "#800080",
+                    "#000000",
+                    "#ffffff"
                 ]
             }
         ],
@@ -44,16 +71,27 @@ const sensors = [
         "style": "sensor_blocks",
         "tooltip": "Returns true if the closest colour matches the selected one",
         "helpUrl": "",
-        "inputsInline": true
+        "inputsInline": true,
+        "extensions": ["sensor_menu_extension"]
     },
     {
         "type": "color_sensor_calibrate",
-        "message0": "calibrate colour sensor",
+        "message0": "calibrate %1 colour sensor",
         "previousStatement": null,
         "nextStatement": null,
         "style": "sensor_blocks",
         "tooltip": "Calibrate the colour sensor against a white surface",
-        "helpUrl": ""
+        "helpUrl": "",
+        "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "sensor",
+                "options": [
+                    ["sensor", "0"]
+                ]
+            }
+        ],
+        "extensions": ["sensor_menu_extension"]
     },
     {
         "type": "sensor_bool",
@@ -65,27 +103,37 @@ const sensors = [
                 "type": "field_dropdown",
                 "name": "sensor",
                 "options": [
-                    ["left", "0"],
-                    ["right", "1"]
+                    ["sensor", "0"]
                 ]
             },
             {
                 "type": "field_colour",
                 "name": "colour",
                 "colour": "#FFFFFF",
-                "colourOptions": ['#FFFFFF', '#000000']
+                "colourOptions": [
+                    "#FFFFFF",
+                    "#000000"
+                ]
             }
         ],
         "output": "Boolean",
         "style": "sensor_blocks",
-        "inputsInline": true
+        "inputsInline": true,
+        "extensions": ["sensor_menu_extension"]
     },
     {
         "type": "distance_bool",
         "tooltip": "",
         "helpUrl": "",
-        "message0": "distance is %1 %2",
+        "message0": "%1 distance is %2 %3",
         "args0": [
+            {
+                "type": "field_dropdown",
+                "name": "sensor",
+                "options": [
+                    ["sensor", "0"]
+                ]
+            },
             {
                 "type": "field_dropdown",
                 "name": "equality",
@@ -103,9 +151,11 @@ const sensors = [
         ],
         "style": "sensor_blocks",
         "output": "Boolean",
-        "inputsInline": true
+        "inputsInline": true,
+        "extensions": ["sensor_menu_extension"]
     }
-]
+];
+
 
 
 
