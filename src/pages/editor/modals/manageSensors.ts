@@ -225,7 +225,10 @@ function generatePinElement(sensorType: Sensor): HTMLElement {
 
         pinNameEl.htmlFor = pinId;
         pinNameEl.textContent = `${pin.name} Pin:`;
-        
+        // Removes the custom validity message when the user changes the input
+        pinInputEl.addEventListener("input", () => {
+            pinInputEl.setCustomValidity("");
+        });
         
         pinContainer.appendChild(pinNameEl);
         pinContainer.appendChild(pinInputEl);
