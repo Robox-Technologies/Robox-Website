@@ -20,12 +20,17 @@ export function setupManageSensors(uuid: string) {
         createSensorsButton.addEventListener("click", () => {
             const createCard = document.querySelector("div.create-sensor-card") as HTMLDivElement | null;
             if (!createCard) return;
+            // If the create card is hidden, show it and change the button text to "Submit"
             if (createCard.style.display === "none") {
                 createCard.style.display = "block";
                 createSensorsButton.textContent = "Submit";
+            // If the create card is visible, try and submit the form
             } else {
-                createCard.style.display = "none";
-                createSensorsButton.textContent = "Create Sensor";
+                const createForm = createCard.querySelector("form") as HTMLFormElement | null;
+                if (createForm) {
+                    createForm.requestSubmit();
+                }
+                
             }
         });
     }
@@ -40,7 +45,10 @@ function generateCreateCard(uuid: string): HTMLElement | null {
     if (!sensorCreateCard || !createForm || !createSelect) return null;
     createForm.id = "create-sensor-form";
     createForm.addEventListener("submit", (event) => {
-        createSensor(event, uuid);
+        if (createSensor(event, uuid)) {
+            sensorCreateCard.style.display = "none";
+            sensorCreateCard.textContent = "Create Sensor";
+        }
     });
     generateSelectOptions(createSelect);
     createSelect.addEventListener("change", switchSensorPins);
@@ -73,6 +81,7 @@ function populateSensors(uuid: string) {
         if (!nameInput || !typeSelect || !sensorForm) return;
         if (!userSensor.name || !userSensor.pins || !userSensor.type) return;
 
+        sensorCard.id = `sensor-card-${index}`;
         sensorForm.id = `sensor-form-${index}`;
         generateSelectOptions(typeSelect);
         typeSelect.value = userSensor.type;
@@ -112,25 +121,36 @@ function switchSensorPins(event: Event): void {
     sensorForm.appendChild(newPinsElement);
 }
 
-function createSensor(event: SubmitEvent, uuid: string): void {
+function createSensor(event: SubmitEvent, uuid: string): boolean {
     const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
+    if (!form) return false;
+    event.preventDefault();
     const nameInput = form.querySelector(".sensor-name-input") as HTMLInputElement | null;
     const typeSelect = form.querySelector(".sensor-type-select") as HTMLSelectElement | null;
-    if (!nameInput || !typeSelect) return;
+    if (!nameInput || !typeSelect) return false ;
     const sensorName = nameInput.value;
-    const sensorType = typeSelect.value as Sensor;
-    const pins = generateUserPinsFromForm(form, sensorType);
-    if (!pins) return;
-    // Validate that the pins are the available pins in parsedSensors
-
-    event.preventDefault();
+    const sensorType = typeSelect.value;
+    if (!validateSensorType(sensorType)) return false;
+    const pins = generateUserPinsFromForm(form, sensorType, uuid);
+    if (!pins) return false;
     createUserSensor(uuid, sensorName, sensorType, pins);
     populateSensors(uuid);
+    return true;
 
 }
-function generateUserPinsFromForm(form: HTMLFormElement, sensorType: Sensor): {[key: string]: number} | null {
+function validateSensorType(sensorType: string): sensorType is Sensor {
+    return sensorKeys.includes(sensorType as Sensor);
+}
+function generateUserPinsFromForm(form: HTMLFormElement, sensorType: Sensor, uuid: string): {[key: string]: number} | null {
     const pinInputs: NodeListOf<HTMLInputElement> = form.querySelectorAll(".sensor-pins input");
+    const formId = form.id;
+    let sensorIndex: number | null = null;
+    if (formId === "create-sensor-form") {
+        sensorIndex = null;
+    }
+    else {
+        sensorIndex = parseInt(formId.split("-").pop() || "-1");
+    }
     const pins: {[key: string]: number} = {};
     let invalidPinFound = false;
     pinInputs.forEach((pinInput) => {
@@ -138,12 +158,25 @@ function generateUserPinsFromForm(form: HTMLFormElement, sensorType: Sensor): {[
         const inputEl = pinInput as HTMLInputElement;
         const pinId = inputEl.id;
         const pinValue = parseInt(inputEl.value);
-        if (isNaN(pinValue)) return null;
+        if (isNaN(pinValue)) {
+            pinInput.setCustomValidity("Pin value must be a number");
+            invalidPinFound = true;
+        }
         const parsedSensor = parsedSensors[sensorType];
         const pinSchema = parsedSensor.pins[pinId];
-        if (!pinSchema) return null;
+        if (!pinSchema) {
+            pinInput.setCustomValidity("Invalid pin for selected sensor type");
+            invalidPinFound = true;
+            return;
+        }
+        // Checks if the pin is in the available pins
         if (!pinSchema.available_pins.includes(pinValue)) {
             pinInput.setCustomValidity("Invalid pin for selected sensor type");
+            invalidPinFound = true;
+        }
+        const pinExclusivity = validatePinExclusivity(uuid, pinValue, sensorIndex, pinId, pinSchema.shared);
+        if (!pinExclusivity) {
+            pinInput.setCustomValidity("Pin value is already in use");
             invalidPinFound = true;
         }
         pins[pinId] = pinValue;
@@ -153,6 +186,26 @@ function generateUserPinsFromForm(form: HTMLFormElement, sensorType: Sensor): {[
         return null;
     }
     return pins;
+}
+// Checks if a pin value is already used by another sensor 
+function validatePinExclusivity(uuid: string, value: number, sensorIndex: number | null, pinId: string, shared: boolean=false): boolean {
+    const userSensors = getUserSensors(uuid);
+    if (!userSensors) return true;
+    for (const [index, sensor] of userSensors.entries()) {
+        if (sensorIndex !== null && index === sensorIndex) continue;
+        const sensorPins = sensor.pins;
+        for (const [sensorPinId, sensorPinValue] of Object.entries(sensorPins)) {
+            // No other instance of the pin can have the same value
+            if (sensorPinId !== pinId && sensorPinValue === value) {
+                return false;
+            }
+            // If the pin value is shared with other instances of the pin 
+            if (!shared && sensorPinId === pinId && sensorPinValue === value) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 function editSensor(event: SubmitEvent, uuid: string, sensorIndex: number): void {
     event.preventDefault();
@@ -164,7 +217,7 @@ function editSensor(event: SubmitEvent, uuid: string, sensorIndex: number): void
     if (!nameInput || !typeSelect || !card) return;
     const sensorName = nameInput.value;
     const sensorType = typeSelect.value as Sensor;
-    const pins = generateUserPinsFromForm(form, sensorType);
+    const pins = generateUserPinsFromForm(form, sensorType, uuid);
     if (!pins) return;
     editUserSensor(uuid, sensorIndex, sensorName, sensorType, pins);
     card.removeAttribute("editing");

@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.addEventListener('toggle', () => {
             if (modal.id === "console") return;
             if (modal.open) {
-                disableScroll();
+                // disableScroll();
             } else {
                 enableScroll();
             }

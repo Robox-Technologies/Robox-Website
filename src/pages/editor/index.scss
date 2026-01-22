@@ -529,9 +529,6 @@ $settingsToolbarWidth: 200px;
         gap: variables.$standardGap;
     }
     .card { 
-        flex: 0 0 40%;
-        width: 40%;
-
         .card-image {
             min-width: 100px;
             object-fit: contain;
@@ -602,8 +599,8 @@ dialog[loading] #open-file::hover {
     cursor: unset !important;
 }
 .create-sensor-card, .sensor-card {
-    flex: 0 0 40%;
-    width: 40%;
+    width: 500px;
+    height: fit-content;
     img {
         background-color: variables.$tone3 !important;
     }

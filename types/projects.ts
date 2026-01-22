@@ -12,7 +12,8 @@ function keysOf<T extends object>(obj: T): Extract<keyof T, string>[] {
 }
 export type SensorSchema = {
     name: string,
-    pins: Record<string, {name: string, available_pins: number[]}>
+    // If a pin is shared that means that the same sensor type pin can be used by multiple sensors
+    pins: Record<string, {name: string, available_pins: number[], shared: boolean}>,
 }
 export const extensionKeys = keysOf(parsedExtensions)
 export const sensorKeys = keysOf(parsedSensors)
