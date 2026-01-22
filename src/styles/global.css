@@ -35,7 +35,7 @@
 }
 @layer components {
     .button-standard {
-        @apply bg-primary text-tone4 font-semibold;
+        @apply text-tone4 font-semibold;
     }
 }
 * {

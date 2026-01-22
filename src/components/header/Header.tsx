@@ -1,6 +1,7 @@
 import Clipper from '../Clipper';
 import HeaderLink from './HeaderLink';
 import Logo from '@images/logo-full.svg?react';
+import { faCompass, faGraduationCap } from '@fortawesome/free-solid-svg-icons';
 const headerHeight = 64;
 const headerEndPadding = 16;
 const extraClipperPadding = 32;
@@ -19,9 +20,9 @@ export default function Header() {
                 </div>
                 <Clipper className="ml-auto bg-blue h-full" direction='left' overhang={overhang}>
                     <div className="links h-full flex items-center space-x-6 text-white" style={{paddingLeft: headerEndPadding + extraClipperPadding, paddingRight: headerEndPadding + extraClipperPadding}}>
-                        <HeaderLink href="/">Ro/Box Hub</HeaderLink>
-                        <HeaderLink href="/">Teacher Resources</HeaderLink>
-                        <HeaderLink href="/">Store</HeaderLink>
+                        <HeaderLink icon={faCompass} className='text-white' href="/">Ro/Box Hub</HeaderLink>
+                        <HeaderLink icon={faGraduationCap} className='text-white' href="/">Teacher Resources</HeaderLink>
+                        <HeaderLink className='text-white' href="/">Store</HeaderLink>
 
                     </div>
                 </Clipper>
