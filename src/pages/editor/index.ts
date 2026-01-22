@@ -208,18 +208,18 @@ document.addEventListener("DOMContentLoaded", () => {
     addExtensions();
     // The extension modal and its functionality
     const extensionModal = document.getElementById("extension-modal") as HTMLDialogElement | null;
-    const extensions = extensionModal.querySelectorAll(".card");
+    const extensionsCards = extensionModal.querySelectorAll(".card");
     const extensionButton = document.getElementById("robox-extension-button")
     if (!extensionButton || !extensionModal) return;
     extensionButton?.addEventListener("click", () => {
         extensionModalSetup(workspaceId);
         extensionModal.showModal()
     })
-    extensions.forEach((extensionCard) => {
+    const extensions = getProjectExtensions(workspaceId);
+    extensionsCards.forEach((extensionCard) => {
         extensionCard.addEventListener("click", () => {
             const extensionType = extensionCard.getAttribute("extension-type");
             if (isValidExtension(extensionType) === false) return;
-            const extensions = getProjectExtensions(workspaceId);
             if (!extensions) return;
             const enabled = toggleExtension(workspaceId, extensionType);
             toggleExtensionUI(workspaceId, extensionType, enabled);
@@ -227,6 +227,12 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     if (workspaceId) {
         setExtensionToolbox(getProjectExtensions(workspaceId));
+        if (extensions && extensions["EXTRA_SENSORS"] === true) {
+            const manageSensorsButton = document.getElementById("robox-manage-sensors")
+            if (manageSensorsButton) {
+                manageSensorsButton.style.visibility = "visible";
+            }
+        }
     }
     // Setup the manage sensors stuff
     setupManageSensors(workspaceId);

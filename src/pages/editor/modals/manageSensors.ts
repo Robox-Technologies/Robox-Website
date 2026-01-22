@@ -7,7 +7,6 @@ export function setupManageSensors(uuid: string) {
     // createUserSensor(uuid, "Ultrasonic Sensor", "ULTRASONIC_SENSOR", {trigger: 7, echo: 8});
     const manageSensorsButton = document.getElementById("robox-manage-sensors") as HTMLButtonElement | null;
     if (manageSensorsButton) {
-        manageSensorsButton.style.visibility = "visible";
         manageSensorsButton.addEventListener("click", () => {
             const sensorModal = document.getElementById("manage-sensors-modal") as HTMLDialogElement | null;
             if (!sensorModal) return;

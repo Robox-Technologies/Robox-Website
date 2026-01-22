@@ -56,19 +56,8 @@ const servo = {
         }
     ],
 };
-const extraSensors = {
-    'kind': 'category',
-    'name': 'Extra Sensors',
-    "cssConfig": {
-        "icon": "categoryIcon fa fa-microchip"
-    },
-    'categorystyle': 'extra_sensors_category',
-    'contents': [ 
-    ],
-};
 export const ExtensionToolbox: Record<Extension, object> = {
     "SERVO": servo,
-    "EXTRA_SENSORS": extraSensors,
 }
 export const toolbox = {
     'kind': 'categoryToolbox',
