@@ -20,7 +20,13 @@ export function addExtensions() {
         if (!nameElement || !descriptionElement || !imgElement) return;
 
         card.querySelector(".card-title").textContent = name;
-        card.querySelector(".card-descriptions").textContent = description;
+
+        const descriptionEl = document.createElement("p");
+        descriptionEl.textContent = description;
+        descriptionElement.appendChild(descriptionEl);
+
+        card.querySelector(".card-descriptions")
+        
         card.setAttribute("extension-type", ext.toString());
         imgElement.src = image;
         extensionContainer.appendChild(card);
