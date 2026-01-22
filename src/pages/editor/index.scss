@@ -592,6 +592,8 @@ dialog[loading] #open-file::hover {
 #manage-sensors-modal #manage-sensors-container {
     display: flex;
     flex-wrap: wrap;
+    width: 100%;
+    height: 100%;
     gap: variables.$standardGap;
     flex-direction: row;
 }
@@ -628,6 +630,18 @@ dialog[loading] #open-file::hover {
         width: 50% !important;
         font-size: large;
     }
+    .edit-sensor-button {
+        .fa-pen-to-square {
+            display: none;
+        }
+        .fa-floppy-disk {
+            display: inline;
+            color: variables.$themeGreen;
+        }
+        &:hover {
+            cursor: pointer;
+        }
+    }
     .card-image {
         min-width: 100px;
         object-fit: contain;
@@ -662,6 +676,14 @@ dialog[loading] #open-file::hover {
 // Make the inputs not look like inputs when not editing
 .sensor-card:not([editing]) {
     color: variables.$themeBlack;
+    .edit-sensor-button {
+        .fa-pen-to-square {
+            display: inline;
+        }
+        .fa-floppy-disk {
+            display: none;
+        }
+    }
     label {
         pointer-events: none;
     }

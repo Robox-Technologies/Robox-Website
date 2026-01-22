@@ -102,6 +102,22 @@ export function createUserSensor(uuid: string, name: string, sensorType: Sensor,
     projects[uuid] = project
     localStorage.setItem("roboxProjects", JSON.stringify(projects))
 }
+export function editUserSensor(uuid: string, sensorIndex: number, name: string, sensorType: Sensor, pins: {[key: string]: number}): void {
+    if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
+
+    const projects = getProjects()
+    const project = getProject(uuid, projects)
+    if (!project || !project.sensors) return
+
+    if (!project.sensors[sensorIndex]) return
+
+    project.sensors[sensorIndex].name = name
+    project.sensors[sensorIndex].type = sensorType
+    project.sensors[sensorIndex].pins = pins
+
+    projects[uuid] = project
+    localStorage.setItem("roboxProjects", JSON.stringify(projects))
+}
 export function deleteUserSensor(uuid: string, sensorIndex: number): void {
     if (!isValidUUID(uuid)) throw new Error("Invalid project UUID");
 
