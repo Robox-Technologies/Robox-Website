@@ -1,8 +1,9 @@
 ---
-import StandardLayout from '@layouts/StandardLayout.astro';
+import image from '@images/index/hero.jpg' 
+import Hero from '@components/Hero'
+import StandardLayout from '@layouts/StandardLayout.astro'
 ---
 
 <StandardLayout title="Home">
-    <h1>Welcome to RoboX</h1>
-    <p>Your one-stop solution for all things robotics!</p>
+    <Hero hero={image} />
 </StandardLayout>

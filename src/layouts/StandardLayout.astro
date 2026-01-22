@@ -1,20 +1,20 @@
 ---
-import Meta from '../components/Meta';
-import Header from '@components/header/Header';
-import '@styles/global.css';
+import Meta from '../components/Meta'
+import Header from '@components/header/Header'
+
+import '@styles/global.css'
 interface Props {
-    title: string;
-    header?: "standard" | "workshop";
+    title: string
+    header?: 'standard' | 'workshop';
 };
-const { title, header } = Astro.props;
+const { title, header } = Astro.props as Props;
 ---
 <html lang="en">
-    
     <head>
         <Meta title={title} />
     </head>
     <body>
-        <Header/>
+        <Header />
         <slot />
     </body>
 </html>

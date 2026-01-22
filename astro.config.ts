@@ -5,11 +5,10 @@ import react from '@astrojs/react';
 
 import tailwindcss from '@tailwindcss/vite';
 import svgr from "vite-plugin-svgr";
-// https://astro.build/config
 export default defineConfig({
-  integrations: [react()],
+    integrations: [react()],
 
-  vite: {
-    plugins: [tailwindcss(), svgr()]
-  }
+    vite: {
+        plugins: [tailwindcss(), svgr()]
+    }
 });
