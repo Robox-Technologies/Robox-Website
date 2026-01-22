@@ -5,17 +5,17 @@ import { ContinuousMetrics } from '@blockly/continuous-toolbox';
 
 import theme from "./blockly/theme"
 
-import {toolbox, ExtensionToolbox} from "./blockly/toolbox"
+import {toolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
-import { Extension, extensionKeys, Project, UserExtensions } from '~types/projects';
+import { Extension, extensionKeys, Project } from '~types/projects';
 import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject, getProjectExtensions } from '@root/blockly/serialization';
 import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
 import { registerFieldAngle } from '@blockly/field-angle';
 import { postBlocklyWSInjection } from './usb';
 import { registerControls } from './controls';
-
+import { isValidExtension, toggleExtension, setExtensionToolbox } from './modals/extensions';
 
 registerFieldAngle();
 registerFieldColour();
@@ -266,61 +266,4 @@ function rotateOneTooth(cog: HTMLElement) {
     rotation += degreesPerTooth;
     cog.style.transition = 'transform 0.5s ease-out';
     cog.style.transform = `rotate(${rotation}deg)`;
-}
-function isValidExtension(ext: string): ext is Extension {
-    return extensionKeys.includes(ext as Extension);
-}
-function toggleExtension(uuid: string, extension: Extension):boolean {
-    if (checkIfExtensionBlocksExist(extension)) {
-        showToast("error", "Cannot Disable Extension", `Please remove all blocks from the ${extension} extension before disabling it.`, 5000);
-        return true; // Still enabled
-    }
-
-
-    const projects = JSON.parse(localStorage.getItem("roboxProjects") || "{}") as Record<string, Project>;
-    if (!projects[uuid]) {
-        console.error(`Project with UUID ${uuid} not found.`);
-        return false;
-    }
-    projects[uuid]["extensions"][extension] = !projects[uuid]["extensions"][extension];
-    localStorage.setItem("roboxProjects", JSON.stringify(projects));
-    setExtensionToolbox(projects[uuid]["extensions"]);
-    return projects[uuid]["extensions"][extension];
-}
-function checkIfExtensionBlocksExist(extension: Extension): boolean {
-    const workspace = Blockly.getMainWorkspace();
-    const allBlocks = workspace.getAllBlocks(false);
-    for (const block of allBlocks) {
-        if (block.type.startsWith(extension.toLowerCase())) {
-            return true;
-        }
-    }
-    return false;
-}
-function setExtensionToolbox(extensions: UserExtensions | null): void {
-    const workspace = Blockly.getMainWorkspace();
-    // Assert that workspace is workspaceSVG
-    if (!(workspace instanceof Blockly.WorkspaceSvg)) {
-        console.error("Workspace is not of type Blockly.WorkspaceSvg");
-        return;
-    }
-    if (!extensions) {
-        console.error("Extensions object is null or undefined");
-        return;
-    }
-    //Create a new toolbox with the extensions categories added
-    const newToolbox = structuredClone(toolbox)
-    for (const ext of extensionKeys) {
-        if (extensions[ext]) {
-            const extToolbox = ExtensionToolbox[ext];
-            if (extToolbox) {
-                //@ts-expect-error Blockly for some reason requires the custom type to be present... but this is not a custom category
-                newToolbox.contents.push(extToolbox);
-            }
-        }
-    }
-    workspace.updateToolbox(newToolbox);
-    //Refresh the continuous toolbox
-    workspace.getToolbox().refreshSelection();
-
 }
