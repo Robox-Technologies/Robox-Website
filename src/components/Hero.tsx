@@ -9,13 +9,11 @@ interface HeroProps {
 
 export default function Hero({ hero, scrollIndicator = false, children }: HeroProps) {
     return (
-        <section className="relative flex flex-col items-center justify-center h-screen bg-hero bg-cover bg-center text-center px-4">
+        <section className="relative flex flex-col items-center h-screen bg-hero bg-cover bg-center text-center px-4">
             <div className="absolute inset-0 w-full h-full overflow-hidden">
-                <img src={hero.src} alt="Hero Image" />
+                <img className="h-full w-full object-cover" src={hero.src} alt="Hero Image" />
             </div>
-            <div className="relative z-10 text-white max-w-4xl">
-                {children}
-            </div>
+            {children}
             {scrollIndicator && <ScrollIndicator />}
 
         </section>

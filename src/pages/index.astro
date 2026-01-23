@@ -5,5 +5,14 @@ import StandardLayout from '@layouts/StandardLayout.astro'
 ---
 
 <StandardLayout title="Home">
-    <Hero hero={image} />
+    <Hero hero={image}>
+        <div class="flex flex-col items-center absolute lg:right-2/10 lg:top-1/2 top-1/10 transform -translate-y-1/2">
+            <h1 class="text-5xl w-full font-bold mb-4 text-blue text-left">
+                Robotics for
+            </h1>
+            <h1 class="text-5xl w-full font-bold text-red text-left">
+                Everyone
+            </h1>
+        </div>
+    </Hero>
 </StandardLayout>
