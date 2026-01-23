@@ -56,6 +56,9 @@
     h1 {
         @apply text-4xl font-extrabold text-black;
     }
+    article {
+        @apply py-16 px-8;
+    }
 }
 * {
     box-sizing: border-box;

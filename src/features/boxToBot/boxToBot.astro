@@ -1,0 +1,60 @@
+---
+import step1Image from '@images/boxToBot/step1.svg';
+import step2Image from '@images/boxToBot/step2.svg';
+import step3Image from '@images/boxToBot/step3.svg';
+import step4Image from '@images/boxToBot/step4.svg';
+import Step from './components/Step';
+
+const steps = [
+    {
+        stepNumber: 1,
+        title: "Unbox Your Kit",
+        description: "Open your Ro/Box kit and take out all the components. Make sure you have everything you need before starting.",
+        image: step1Image,
+    },
+    {
+        stepNumber: 2,
+        title: "Assemble the Robot",
+        description: "Follow the step-by-step instructions to assemble your robot. Take your time and ensure all parts are securely connected.",
+        image: step2Image,
+    },
+    {
+        stepNumber: 3,
+        title: "Connect to the App",
+        description: "Download the Ro/Box app on your device and connect it to your robot via Bluetooth. This will allow you to program and control your robot.",
+        image: step3Image,
+    },
+    {
+        stepNumber: 4,
+        title: "Start Coding",
+        description: "Use the app's coding interface to start programming your robot. Experiment with different commands and watch your robot come to life!",
+        image: step4Image,
+    },
+];
+
+---
+<article id="box-to-bot" class="bg-[#23344b]">
+    <section>
+        <div class="intro container py-8">
+            <h1 class="text-6xl text-white font-bold mb-8 text-center">
+                Box-to-Bot in 4 Steps
+            </h1>
+            <p class="text-xl text-white mb-12 text-center">
+                We know how difficult robotics can be.<br>
+                Its why we've made Ro/Box easy to follow for all ages.
+            </p>
+        </div>
+        <div class="columns flex flex-col items-start lg:flex-row gap-8 container pb-16">
+            <div class="steps">
+                {steps.map((step) => (
+                    <Step 
+                        stepNumber={step.stepNumber} 
+                        title={step.title} 
+                        description={step.description} 
+                    />
+                ))}
+            </div>
+            <img src={step1Image.src} alt="Box to Bot Steps Illustration" class="w-lg sticky top-0 object-contain pt-[calc(max(35vh,150px)-150px)]"/>
+        </div>
+    </section>
+</article>

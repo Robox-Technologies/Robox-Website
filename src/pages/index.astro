@@ -12,6 +12,8 @@ import { Image } from 'astro:assets'
 import hero from '@images/index/hero.jpg' 
 import article1 from '@images/index/article1.png'
 import article2 from '@images/index/article2.png'
+
+import BoxToBot from 'src/features/boxToBot/boxToBot.astro'
 ---
 <!-- TODO: Make the image work like the normal website, and make the title work better -->
 <StandardLayout title="Home">
@@ -48,4 +50,5 @@ import article2 from '@images/index/article2.png'
             <Image src={article2} alt="Robox Kit Components" class="rounded-lg max-w-full max-h-full w-full lg:w-1/2 object-contain"/>
         </ArticleSection>
     </Article>
+    <BoxToBot />
 </StandardLayout>
