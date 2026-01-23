@@ -33,8 +33,46 @@ const steps = [
 ];
 
 ---
+<script>
+    
+let currentImgIndex = 0;
+function updateBoxToBot() {
+    const steps = document.querySelectorAll<HTMLDivElement>("div.step");
+    const imageEl = document.querySelector<HTMLImageElement>("img.boxToBotImg");
+    if (!imageEl || steps.length === 0) return;
+
+    let imgIndex = 0;
+
+    for (let i = 0; i < steps.length - 1; i++) {
+        const step = steps[i];
+        const nextStep = steps[i + 1];
+
+        const midpoint =(step.getBoundingClientRect().bottom + nextStep.getBoundingClientRect().top) / 2;
+
+        if (midpoint > window.innerHeight / 2) break;
+        imgIndex++;
+    }
+
+    if (imgIndex === currentImgIndex) return;
+
+    const activeStep = steps[imgIndex];
+    const image = activeStep?.dataset.image;
+    if (!image) return;
+
+    imageEl.src = image;
+
+    imageEl.classList.remove("scale-animate");
+    void imageEl.offsetWidth;
+    imageEl.classList.add("scale-animate");
+
+    currentImgIndex = imgIndex;
+}
+
+document.addEventListener("scroll", updateBoxToBot);
+updateBoxToBot();
+</script>
 <article id="box-to-bot" class="bg-[#23344b]">
-    <section>
+    <section class="flex flex-col w-full">
         <div class="intro container py-8">
             <h1 class="text-6xl text-white font-bold mb-8 text-center">
                 Box-to-Bot in 4 Steps
@@ -44,17 +82,18 @@ const steps = [
                 Its why we've made Ro/Box easy to follow for all ages.
             </p>
         </div>
-        <div class="columns flex flex-col items-start lg:flex-row gap-8 container pb-16">
-            <div class="steps">
+        <div class="columns flex flex-col items-start lg:flex-row gap-8 w-full flex-1">
+            <div class="steps flex flex-col gap-12 lg:w-1/2 px-4 pb-8">
                 {steps.map((step) => (
-                    <Step 
+                    <Step
                         stepNumber={step.stepNumber} 
                         title={step.title} 
-                        description={step.description} 
+                        description={step.description}
+                        image={step.image} 
                     />
                 ))}
             </div>
-            <img src={step1Image.src} alt="Box to Bot Steps Illustration" class="w-lg sticky top-0 object-contain pt-[calc(max(35vh,150px)-150px)]"/>
+            <img src={step1Image.src} alt="Box to Bot Steps Illustration" class="boxToBotImg w-[300px] sticky top-0 object-contain pt-[calc(max(45vh,250px)-55px)] ml-auto hidden lg:block"/>
         </div>
     </section>
 </article>
