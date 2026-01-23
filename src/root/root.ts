@@ -48,8 +48,10 @@ import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft';
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons/faEnvelope';
 import { faQrcode } from '@fortawesome/free-solid-svg-icons/faQrcode';
 import { faHashtag } from '@fortawesome/free-solid-svg-icons/faHashtag';
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons/faChevronRight';
+import { faChalkboard } from '@fortawesome/free-solid-svg-icons/faChalkboard';
 
-library.add(faCheck, faArrowsRotate, faBoxesStacked, faCircleXmark, faX, faGears, faEye, faRobot, faTruckMonster, faRepeat, faTableList, faFlag, faAngleLeft, faTrash, faShoppingCart, faAngleLeft, faCircleInfo, faAngleRight, faGraduationCap, faCompass, faEllipsisVertical, faUpload, faSquareBinary, faPenToSquare, faExclamationCircle, faTerminal, faPlugCircleXmark, faSpinner, faXmark, faRotateRight, faRotateLeft, faDownload, faScrewdriverWrench, faMinus, faPlus, faEyeDropper, faGear, faChevronLeft, faChevronDown, faCloudArrowUp, faChalkboardTeacher, faUserGraduate, faRightToBracket, faArrowRight, faArrowLeft, faEnvelope, faQrcode, faHashtag, faCircleCheck);
+library.add(faCheck, faArrowsRotate, faBoxesStacked, faCircleXmark, faX, faGears, faEye, faRobot, faTruckMonster, faRepeat, faTableList, faFlag, faAngleLeft, faTrash, faShoppingCart, faAngleLeft, faCircleInfo, faAngleRight, faGraduationCap, faCompass, faEllipsisVertical, faUpload, faSquareBinary, faPenToSquare, faExclamationCircle, faTerminal, faPlugCircleXmark, faSpinner, faXmark, faRotateRight, faRotateLeft, faDownload, faScrewdriverWrench, faMinus, faPlus, faEyeDropper, faGear, faChevronLeft, faChevronDown, faCloudArrowUp, faChalkboardTeacher, faUserGraduate, faRightToBracket, faArrowRight, faArrowLeft, faEnvelope, faQrcode, faHashtag, faCircleCheck, faChevronRight, faChalkboard);
 dom.watch(); // Replaces <i> tags with SVGs
 
 import { headerAuth } from "./account";
