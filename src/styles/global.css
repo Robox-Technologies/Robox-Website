@@ -32,10 +32,26 @@
     --button-padding: 5%;
     --button-font-size: 15px;
     --button-radius: 10px;
+
+    /* font */
+    --font-display: 'NunitoSans', sans-serif;
+}
+@font-face {
+    font-family: 'NunitoSans';
+    src: url('/src/fonts/Nunito_Sans/NunitoSans.ttf') format('truetype');
+    font-style: normal;
 }
 @layer components {
     .button-standard {
         @apply text-black font-semibold;
+    }
+}
+@layer base {
+    html {
+        @apply font-display;
+    }
+    h1 {
+        @apply text-4xl font-extrabold text-black;
     }
 }
 * {

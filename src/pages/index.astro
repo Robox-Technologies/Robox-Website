@@ -2,6 +2,9 @@
 import image from '@images/index/hero.jpg' 
 import Hero from '@components/Hero'
 import StandardLayout from '@layouts/StandardLayout.astro'
+import ArticleSection from '@components/article/ArticleSection'
+import ArticleText from '@components/article/ArticleText'
+import Article from '@components/article/Article'
 ---
 <!-- TODO: Make the image work like the normal website, and make the title work better -->
 <StandardLayout title="Home">
@@ -15,4 +18,14 @@ import StandardLayout from '@layouts/StandardLayout.astro'
             </h1>
         </div>
     </Hero>
+    <Article>
+        <ArticleSection id="meet-robox" direction="LTR">
+            <ArticleText>
+                <h1 class="mb-4 text-6xl">Meet Robox</h1>
+                <p class="mb-4 text-xl leading-[150%]">
+                    Ro/Box is an ultra-affordable robotics kit designed to make STEM education accessible to any student, anywhere. Whether you’re a budding engineer or a curious coder, Ro/Box offers hands-on experience in building, programming, and problem-solving
+                </p>
+            </ArticleText>
+        </ArticleSection>
+    </Article>
 </StandardLayout>
