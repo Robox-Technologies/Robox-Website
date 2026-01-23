@@ -45,6 +45,9 @@
     .button-standard {
         @apply text-black font-semibold;
     }
+    .box-shadow {
+        box-shadow: 6px 6px 0 #26363b
+    }
 }
 @layer base {
     html {

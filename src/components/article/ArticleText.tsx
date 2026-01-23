@@ -1,6 +1,6 @@
-export default function ArticleText({ children }: { children: React.ReactNode }) {
+export default function ArticleText({ className, children }: { className?: string; children: React.ReactNode }) {
     return (
-        <div className="prose prose-lg max-w-3xl text-gray-800 leading-[150%]">
+        <div className={` max-w-3xl h-fit text-gray-800 flex flex-col gap-8 leading-[150%] ${className ?? ''}`}>
             {children}
         </div>
     )
