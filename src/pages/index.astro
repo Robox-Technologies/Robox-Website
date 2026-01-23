@@ -3,9 +3,9 @@ import image from '@images/index/hero.jpg'
 import Hero from '@components/Hero'
 import StandardLayout from '@layouts/StandardLayout.astro'
 ---
-
+<!-- TODO: Make the image work like the normal website, and make the title work better -->
 <StandardLayout title="Home">
-    <Hero hero={image}>
+    <Hero hero={image} scrollIndicator={true}>
         <div class="flex flex-col items-center absolute lg:right-2/10 lg:top-1/2 top-1/10 transform -translate-y-1/2">
             <h1 class="text-5xl w-full font-bold mb-4 text-blue text-left">
                 Robotics for

@@ -21,7 +21,7 @@ export default function Hero({ hero, scrollIndicator = false, children }: HeroPr
 }
 function ScrollIndicator() {
     return (
-        <div>
+        <div className="absolute bottom-10 w-full flex justify-center hover:cursor-pointer">
             <button onClick={scrollToContent} aria-label="Scroll to content" className="animate-bounce mt-8 flex flex-col items-center gap-2">
                 <FontAwesomeIcon icon={faChevronDown} className="h-6 w-6 text-white" />
             </button>
