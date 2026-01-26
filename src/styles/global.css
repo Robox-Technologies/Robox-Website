@@ -53,7 +53,7 @@
     html {
         @apply font-display;
     }
-    h1, p, li, a, span {
+    h1, h2, p, li, a, span {
         @apply text-black;
     }
     h1 {

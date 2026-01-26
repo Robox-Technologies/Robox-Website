@@ -13,7 +13,13 @@ import hero from '@images/index/hero.jpg'
 import article1 from '@images/index/article1.png'
 import article2 from '@images/index/article2.png'
 
+import roboxHubCard1 from '@images/index/roboxHubCard1.png'
+import roboxHubCard2 from '@images/index/roboxHubCard2.png'
+import roboxHubCard3 from '@images/index/roboxHubCard3.png'
+
 import BoxToBot from 'src/features/boxToBot/boxToBot.astro'
+import Card from '@components/card.astro'
+import EmpoweringStudents from 'src/features/empoweringStudents/empoweringStudents.astro'
 ---
 <!-- TODO: Make the image work like the normal website, and make the title work better -->
 <StandardLayout title="Home">
@@ -51,19 +57,5 @@ import BoxToBot from 'src/features/boxToBot/boxToBot.astro'
         </ArticleSection>
     </Article>
     <BoxToBot />
-    <Article>
-        <section>
-            <h1 class="text-6xl font-bold mb-8 text-center">
-                Empowering Students to Learn
-            </h1>
-            <div class="flex flex-col justify-center items-center text-center max-w-3xl mx-auto text-xl">
-                <span class="font-bold" >Interactive, hands-on, and made for curious minds.<br></span>
-                <p>
-                    Ro/Box Hub gives learners everything they need to dive into<br>
-                    the world of robotics—from step-by-step instructions<br>
-                    to creative coding challenges.
-                </p>
-            </div>
-        </section>
-    </Article>
+    <EmpoweringStudents />
 </StandardLayout>

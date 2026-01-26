@@ -1,0 +1,16 @@
+---
+import BaseCard from '@components/card.astro';
+interface Props {
+    image: ImageMetadata;
+    title: string;
+    description: string;
+}
+const { image, title, description } : Props = Astro.props;
+---
+<BaseCard class='w-[350px] basis-[350px]' contentClass='bg-gray-100'>
+    <img slot="image" src={image.src} alt="Robotics Kit Components" class="w-full h-auto rounded-t-lg"/>
+    <h2 slot="title" class="text-2xl font-bold mb-4">{title}</h2>
+    <p slot="description" class="text-lg">
+        {description}
+    </p>
+</BaseCard>
