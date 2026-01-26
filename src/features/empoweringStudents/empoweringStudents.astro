@@ -6,6 +6,7 @@ import roboxHubCard2 from '@images/index/roboxHubCard2.png';
 import roboxHubCard3 from '@images/index/roboxHubCard3.png';
 
 import EmpoweringStudentsCard from './components/card.astro';
+import Button from '@components/Button';
 ---
 <Article>
     <section>
@@ -36,7 +37,11 @@ import EmpoweringStudentsCard from './components/card.astro';
                 title="Lessons"
                 description="Build real coding skills with our structured lessons that introduce programming in a simple, visual way using our block code editor."
             />  
-
+        </div>
+        <div class="mt-8 flex justify-center text-center">
+            <Button href="/robox-hub" className="bg-red text-2xl box-shadow  mx-auto block">
+                Visit Ro/Box Hub
+            </Button>
         </div>
     </section>
 </Article>
