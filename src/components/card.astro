@@ -1,0 +1,18 @@
+---
+interface Props {
+    class: string;
+    contentClass?: string;
+    descriptionClass?: string;
+}
+const { class:className, contentClass, descriptionClass  } = Astro.props;
+---
+<div class={`card flex flex-col overflow-hidden ${className ?? ''}`}>
+    <slot name="image"/>
+    <div class={`card-content flex flex-col p-4 ${contentClass ?? ''}`}>
+        <div class={`card-top-row flex justify-between items-center mb-2 ${descriptionClass ?? ''}`}>
+            <slot name="title"/>
+        </div>
+        <slot name="description"/>
+
+    </div>
+</div>
