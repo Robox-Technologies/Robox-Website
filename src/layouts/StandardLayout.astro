@@ -2,6 +2,7 @@
 import Meta from '../components/Meta'
 import Header from '@components/header/Header'
 
+
 import '@styles/global.css'
 interface Props {
     title: string
@@ -14,7 +15,8 @@ const { title, header } = Astro.props as Props;
         <Meta title={title} />
     </head>
     <body>
-        <Header />
+        <Header type={header ?? 'standard'} />
+        
         <slot />
     </body>
 </html>
