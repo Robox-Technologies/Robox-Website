@@ -53,6 +53,9 @@
     html {
         @apply font-display;
     }
+    h1, p, li, a, span {
+        @apply text-black;
+    }
     h1 {
         @apply text-4xl font-extrabold text-black;
     }
