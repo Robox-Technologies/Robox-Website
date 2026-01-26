@@ -3,19 +3,26 @@ interface CardProps {
     image?: React.ReactNode;
     contentClass?: string;
     title?: React.ReactNode;
-    description: React.ReactNode;
+    description?: React.ReactNode;
+    absolute?: React.ReactNode;
+    children?: React.ReactNode;
 }
 export default function Card(props: CardProps) {
     return (
         <div className={`card flex flex-col overflow-hidden rounded-lg ${props.className ?? ''}`}>
+            {props.absolute}
             {props.image}
-            <div className={`card-content flex flex-col p-4 ${props.contentClass ?? ''}`}>
-                <div className={`card-top-row flex justify-between items-center mb-2`}>
-                    {props.title}
+            <div className="card-children p-4 ">
+                <div className={`card-content flex flex-col p-4 ${props.contentClass ?? ''}`}>
+                    <div className={`card-top-row flex justify-between items-center mb-2`}>
+                        {props.title}
+                    </div>
+                    <div className="card-description">
+                        {props.description}
+                    </div>
                 </div>
-                <div className="card-description">
-                    {props.description}
-                </div>
+                {props.children}
+
             </div>
         </div>
     );

@@ -1,0 +1,44 @@
+---
+import Article from '@components/article/Article';
+import ProductCard from './components/card';
+import SingleThumbnail from '@images/product/robox/thumbnail.jpg'
+import PackThumbnail from '@images/product/robox-10-pack/thumbnail.jpg'
+
+
+import Button from '@components/button';
+---
+<Article>
+    <section>
+        <h1 class="text-6xl font-bold mb-8 text-center">
+            Check out our Kits
+        </h1>
+        <div class="flex flex-col justify-center items-center text-center max-w-3xl mx-auto text-xl">
+            <p>
+                Begin your journey with Ro/Box.
+            </p>
+        </div>
+        <div class="flex justify-evenly gap-8 mt-8 flex-wrap">
+            <ProductCard
+                image={SingleThumbnail}
+                price="35"
+                title="Ro/Box"
+                link="https://robox-hub.myshopify.com/products/ro-box-starter"
+            />
+            <ProductCard
+                className='border-8 border-green'
+                image={PackThumbnail}
+                price="330"
+                title="Starter Kit"
+                link="https://robox-hub.myshopify.com/products/ro-box-starter"
+            >
+                <h2 slot="absolute" class="absolute text-white px-4 py-2 text-xl font-bold bg-green rounded-tr rounded-bl -right-1 -top-1">Value Pack</h2>
+                
+            </ProductCard>
+        </div>
+        <div class="mt-8 flex justify-center text-center">
+            <Button href="/robox-hub" className="bg-red text-2xl box-shadow  mx-auto block">
+                Visit Our Shop
+            </Button>
+        </div>
+    </section>
+</Article>

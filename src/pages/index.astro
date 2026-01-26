@@ -6,20 +6,21 @@ import Hero from '@components/Hero'
 import ArticleSection from '@components/article/ArticleSection'
 import ArticleText from '@components/article/ArticleText'
 import Article from '@components/article/Article'
-import Button from '@components/Button'
+import Button from '@components/button'
 
 import { Image } from 'astro:assets'
 import hero from '@images/index/hero.jpg' 
 import article1 from '@images/index/article1.png'
 import article2 from '@images/index/article2.png'
 
-import roboxHubCard1 from '@images/index/roboxHubCard1.png'
-import roboxHubCard2 from '@images/index/roboxHubCard2.png'
-import roboxHubCard3 from '@images/index/roboxHubCard3.png'
+// import roboxHubCard1 from '@images/index/roboxHubCard1.png'
+// import roboxHubCard2 from '@images/index/roboxHubCard2.png'
+// import roboxHubCard3 from '@images/index/roboxHubCard3.png'
 
 import BoxToBot from 'src/features/boxToBot/boxToBot.astro'
-import Card from '@components/card.astro'
+
 import EmpoweringStudents from 'src/features/empoweringStudents/empoweringStudents.astro'
+import CheckOutOurKits from 'src/features/checkOutOurKits/checkOutOurKits.astro'
 ---
 <!-- TODO: Make the image work like the normal website, and make the title work better -->
 <StandardLayout title="Home">
@@ -72,4 +73,5 @@ import EmpoweringStudents from 'src/features/empoweringStudents/empoweringStuden
             <Image src={article2} alt="Robox Kit Components" class="rounded-lg max-w-full max-h-full w-full lg:w-1/2 object-contain"/>
         </ArticleSection>
     </Article>
+    <CheckOutOurKits />
 </StandardLayout>
