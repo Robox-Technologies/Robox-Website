@@ -9,6 +9,7 @@ import {toolbox} from "./blockly/toolbox"
 import "./blockly/toolboxStyling"
 
 import { Extension, extensionKeys, Project } from '~types/projects';
+import { getPreambleScript } from './blockly/preamble';
 import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject, getProjectExtensions } from '@root/blockly/serialization';
 import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
@@ -170,6 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     workspace.addChangeListener((event) => { // Saving every time block is added
         if (event.isUiEvent) return;
+        console.log(getPreambleScript(workspaceId))
         saveBlockly(workspaceId, workspace);
     });
     // Extend first category
