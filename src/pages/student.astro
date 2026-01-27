@@ -1,5 +1,17 @@
 ---
+import PageHero from '@components/pageHero';
 import StandardLayout from '../layouts/StandardLayout.astro';
+import Hero from '@images/studentHub/hero.jpg';
 ---
 <StandardLayout title="Student Resources" header="workshop">
+    <PageHero gradient='positive' className='bg-black' lineWidth='20px' overlap='10vw'>
+        <div slot="left" class="bg-yellow h-full w-full flex justify-start items-end p-8">
+            <h1 class="text-5xl font-boldest">
+                Ro/Box Hub
+            </h1>
+        </div>
+        <div slot="right" class="bg-primary h-full lg:">
+            <img src={Hero.src} alt="Student using Ro/Box" class="w-full h-full object-cover object-left"/>
+        </div>
+    </PageHero>
 </StandardLayout>
