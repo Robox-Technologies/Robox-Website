@@ -1,12 +1,12 @@
 import {DayJS} from 'dayjs';
 import { Workspace } from "blockly"
-import type { PinsOf } from './extraSensors';
-import type { SensorKey } from './extraSensors';
+import type { PinsOf, SensorKey } from './extraSensors';
+import type { ExtensionKey } from './extensions';
 interface UserProject {
     name: string;
     time: DayJS;
-    workspace: Workspace;
-    thumbnail: string;
+    workspace: Workspace | null;
+    thumbnail: string | null;
     extensions: UserExtensions;
     sensors: UserSensors;
 }
