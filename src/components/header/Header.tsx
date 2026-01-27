@@ -7,7 +7,7 @@ import StoreLink from './StoreLink';
 const headerHeight = 64;
 const headerEndPadding = 16;
 const extraClipperPadding = 32;
-const overhang = (headerEndPadding + extraClipperPadding)/2;
+const overhang = `${(headerEndPadding + extraClipperPadding)/2}px`;
 export default function Header({type}: {type?: 'standard' | 'workshop'}) {
     return (
         <header className={`sticky top-0 z-50 flex items-center justify-between w-full ${type === 'workshop' ? 'bg-blue' : 'bg-primary'}`} style={{ height: headerHeight }}>
@@ -20,7 +20,7 @@ export default function Header({type}: {type?: 'standard' | 'workshop'}) {
                     <HeaderLink href="/" className={type === 'workshop' ? 'text-white' : ''}>Contact</HeaderLink>
 
                 </div>
-                <Clipper className={`ml-auto ${type === 'workshop' ? 'bg-red' : 'bg-blue'} h-full`} direction='left' overhang={overhang}>
+                <Clipper className={`ml-auto ${type === 'workshop' ? 'bg-red' : 'bg-blue'} h-full`} gradient='positive' side='left' overhang={overhang}>
                     <div className="links h-full flex items-center space-x-6 text-white" style={{paddingLeft: headerEndPadding + extraClipperPadding, paddingRight: headerEndPadding + extraClipperPadding}}>
                         <HeaderLink icon={faCompass} className='text-white' href="/">Ro/Box Hub</HeaderLink>
                         <HeaderLink icon={faGraduationCap} className='text-white' href="/">Teacher Resources</HeaderLink>

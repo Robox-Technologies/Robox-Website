@@ -1,16 +1,24 @@
 //A generic component that can generate the slanted line clipping effect used in various parts of the site
 interface ClipperProps {
     className?: string;
-    overhang?: number;
-    direction?: 'left' | 'right';
+    style?: React.CSSProperties;
+    overhang?: string;
+    side?: 'left' | 'right';
+    gradient?: 'positive' | 'negative';
     children: React.ReactNode;
 }
-export default function Clipper({ className, overhang=20, direction = 'right', children }: ClipperProps) {
-    const clipPath = direction === 'right'
-        ? `polygon(0 0, 100% 0, calc(100% - ${overhang}px) 100%, 0 100%)`
-        : `polygon(${overhang}px 0, 100% 0, 100% 100%, 0 100%)`;
+export default function Clipper({ className, overhang="20px", style, side = 'right', gradient = "positive", children }: ClipperProps) {
+    const clipPath =
+        side === "right"
+            ? gradient === "positive"
+                ? `polygon(0 0, 100% 0, calc(100% - ${overhang}) 100%, 0 100%)`
+                : `polygon(0 0, calc(100% - ${overhang}) 0, 100% 100%, 0 100%)`
+            : gradient === "positive"
+                ? `polygon(${overhang} 0, 100% 0, 100% 100%, 0 100%)`
+                : `polygon(0 0, 100% 0, 100% 100%, ${overhang} 100%)`;
+
     return (
-        <div className={className} style={{ clipPath }}>
+        <div className={className} style={{ clipPath, ...style }}>
             {children}
         </div>
     );
