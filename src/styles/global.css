@@ -51,9 +51,9 @@
 }
 @layer base {
     html {
-        @apply font-display;
+        @apply font-display bg-primary;
     }
-    h1, h2, p, li, a, span {
+    h1, h2, h3, p, li, a, span {
         @apply text-black;
     }
     h1 {

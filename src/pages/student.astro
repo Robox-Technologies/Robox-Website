@@ -5,6 +5,7 @@ import Hero from '@images/studentHub/hero.jpg';
 import Article from '@components/article/Article';
 import ArticleSection from '@components/article/ArticleSection';
 import StudentResources from '@features/studentResources/studentResources.astro';
+import StudentProjects from '@features/studentProjects/studentProjects.astro';
 ---
 <StandardLayout title="Student Resources" header="workshop">
     <PageHero gradient='positive' className='bg-black' lineWidth='20px' overlap='10vw'>
@@ -19,5 +20,6 @@ import StudentResources from '@features/studentResources/studentResources.astro'
     </PageHero>
     <Article>
         <StudentResources />
+        <StudentProjects  />
     </Article>
 </StandardLayout>

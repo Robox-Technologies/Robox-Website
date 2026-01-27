@@ -1,0 +1,13 @@
+---
+import ImportButton from "./components/importButton"
+import { ProjectCard } from "./components/projectCard"
+---
+<div class="flex justify-start items-center mb-8 gap-4">
+    <h1 class="text-5xl font-bold">
+        My Projects
+    </h1>
+    <ImportButton />
+</div>
+<div class="card-holder flex flex-wrap gap-4 w-full">
+    <ProjectCard client:visible />
+</div>
