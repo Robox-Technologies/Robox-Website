@@ -2,6 +2,7 @@
   "extends": "astro/tsconfigs/strict",
   "include": [
     ".astro/types.d.ts",
+    "src/@types/**/*.d.ts",
     "**/*"
   ],
   "exclude": [
@@ -11,6 +12,9 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strict": true,
     "verbatimModuleSyntax": true,
     "module": "ESNext",
     "baseUrl": "./",
@@ -20,8 +24,10 @@
       "@layouts/*": ["src/layouts/*"],
       "@pages/*": ["src/pages/*"],
       "@styles/*": ["src/styles/*"],
-      "@images/*": ["src/images/*"]
+      "@images/*": ["src/images/*"],
+      "@data/*": ["src/data/*"]
     },
+    "typeRoots": ["src/@types"],
     "plugins": [
       {
         "name": "@astrojs/ts-plugin"
