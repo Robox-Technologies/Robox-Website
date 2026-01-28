@@ -6,6 +6,7 @@ import Article from '@components/article/Article';
 import ArticleSection from '@components/article/ArticleSection';
 import StudentResources from '@features/studentResources/studentResources.astro';
 import StudentProjects from '@features/studentProjects/studentProjects.astro';
+import { Image } from 'astro:assets';
 ---
 <StandardLayout title="Student Resources" header="workshop">
     <PageHero gradient='positive' className='bg-black' lineWidth='20px' overlap='10vw'>
@@ -15,7 +16,7 @@ import StudentProjects from '@features/studentProjects/studentProjects.astro';
             </h1>
         </div>
         <div slot="right" class="bg-primary h-full lg:">
-            <img src={Hero.src} alt="Student using Ro/Box" class="w-full h-full object-cover object-left"/>
+            <Image src={Hero} alt="Student using Ro/Box" class="w-full h-full object-cover object-left" height={Hero.height / 8} width={Hero.width / 8}/>
         </div>
     </PageHero>
     <Article>

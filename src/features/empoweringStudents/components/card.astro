@@ -1,5 +1,6 @@
 ---
 import BaseCard from '@components/card';
+import { Image } from 'astro:assets';
 interface Props {
     image: ImageMetadata;
     title: string;
@@ -12,7 +13,7 @@ const { image, title, description } : Props = Astro.props;
     contentClass='bg-gray-100' 
     description={description}
 >
-    <img slot="image" src={image.src} alt="Robotics Kit Components" class="w-full h-auto rounded-t-lg"/>
+    <Image slot="image" src={image.src} alt="Robotics Kit Components" class="w-full h-auto rounded-t-lg" width={image.width} height={image.height}/>
     <h2 slot="title" class="text-2xl font-bold mb-4">{title}</h2>
     <p slot="description" class="text-lg">
         {description}
