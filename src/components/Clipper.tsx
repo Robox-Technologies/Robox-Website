@@ -5,7 +5,7 @@ interface ClipperProps {
     overhang?: string;
     side?: 'left' | 'right';
     gradient?: 'positive' | 'negative';
-    children: React.ReactNode;
+    children?: React.ReactNode;
 }
 export default function Clipper({ className, overhang="20px", style, side = 'right', gradient = "positive", children }: ClipperProps) {
     const clipPath =

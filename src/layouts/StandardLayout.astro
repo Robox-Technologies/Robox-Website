@@ -1,7 +1,7 @@
 ---
-import Meta from '../components/Meta'
+import Meta from '@components/Meta'
 import Header from '@components/header/Header'
-
+import Footer from '@components/footer/footer'
 
 import '@styles/global.css'
 interface Props {
@@ -19,4 +19,5 @@ const { title, header } = Astro.props as Props;
         
         <slot />
     </body>
+    <Footer />
 </html>
