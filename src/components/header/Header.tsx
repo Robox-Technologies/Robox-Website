@@ -22,8 +22,8 @@ export default function Header({type}: {type?: 'standard' | 'workshop'}) {
                 </div>
                 <Clipper className={`ml-auto ${type === 'workshop' ? 'bg-red' : 'bg-blue'} h-full`} gradient='positive' side='left' overhang={overhang}>
                     <div className="links h-full flex items-center space-x-6 text-white" style={{paddingLeft: headerEndPadding + extraClipperPadding, paddingRight: headerEndPadding + extraClipperPadding}}>
-                        <HeaderLink icon={faCompass} className='text-white' href="/">Ro/Box Hub</HeaderLink>
-                        <HeaderLink icon={faGraduationCap} className='text-white' href="/">Teacher Resources</HeaderLink>
+                        <HeaderLink icon={faCompass} className='text-white' href="/student">Ro/Box Hub</HeaderLink>
+                        <HeaderLink icon={faGraduationCap} className='text-white' href="/teacher">Teacher Resources</HeaderLink>
                         {type === 'standard' && <StoreLink />}
 
                     </div>
