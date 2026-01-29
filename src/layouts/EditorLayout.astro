@@ -1,0 +1,21 @@
+---
+import Meta from '@components/Meta'
+import Header from '@components/header/Header'
+import Footer from '@components/footer/footer'
+
+import '@styles/global.css'
+interface Props {
+    title: string
+};
+const { title } = Astro.props as Props;
+---
+<html lang="en">
+    <head>
+        <Meta title={title} />
+    </head>
+    <body class="flex flex-col">
+        <Header type="workshop" />
+        
+        <slot />
+    </body>
+</html>

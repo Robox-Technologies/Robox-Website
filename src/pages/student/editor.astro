@@ -1,0 +1,14 @@
+---
+import EditorLayout from "@layouts/EditorLayout.astro";
+import Button from "@components/button";
+
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+
+---
+<EditorLayout title="editor">
+    <div class="editorHeader flex flex-row justify-between items-center h-18 bg-red border-b-2 border-black px-8">
+        <Button href="/student" icon={faChevronLeft} className="text-white h-5 w-5 p-0!">
+
+        </Button>
+    </div>
+</EditorLayout>
