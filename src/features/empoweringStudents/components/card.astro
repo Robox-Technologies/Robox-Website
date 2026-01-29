@@ -13,7 +13,7 @@ const { image, title, description } : Props = Astro.props;
     contentClass='bg-gray-100' 
     description={description}
 >
-    <Image slot="image" src={image.src} alt="Robotics Kit Components" class="w-full h-auto rounded-t-lg" width={image.width} height={image.height}/>
+    <Image slot="image" src={image} alt="Robotics Kit Components" class="w-full h-auto rounded-t-lg" width={image.width} height={image.height}/>
     <h2 slot="title" class="text-2xl font-bold mb-4">{title}</h2>
     <p slot="description" class="text-lg">
         {description}

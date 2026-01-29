@@ -56,8 +56,11 @@
     h1, h2, h3, p, li, a, span {
         @apply text-black;
     }
+    p a {
+        @apply underline text-blue;
+    }
     h1 {
-        @apply text-4xl font-extrabold text-black;
+        @apply text-5xl font-extrabold text-black;
     }
     article {
         @apply py-16 px-8;

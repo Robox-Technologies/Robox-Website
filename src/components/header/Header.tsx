@@ -16,7 +16,7 @@ export default function Header({type}: {type?: 'standard' | 'workshop'}) {
                     <a href="/" className="flex items-center p-4">
                         {type === 'workshop' ? <WorkshopLogo className="h-8 w-auto" /> : <Logo className="h-8 w-auto" />}
                     </a>
-                    <HeaderLink href="/" className={type === 'workshop' ? 'text-white' : ''} >About</HeaderLink>
+                    <HeaderLink href="/about" className={type === 'workshop' ? 'text-white' : ''} >About</HeaderLink>
                     <HeaderLink href="/" className={type === 'workshop' ? 'text-white' : ''}>Contact</HeaderLink>
 
                 </div>

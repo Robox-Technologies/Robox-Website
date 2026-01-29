@@ -1,0 +1,95 @@
+---
+import StandardLayout from '@layouts/StandardLayout.astro';
+import Article from '@components/article/Article';
+import Hero from '@images/about/hero.jpg';
+import Article1 from '@images/about/article1.png';
+import Article2 from '@images/about/article2.png';
+import Article3 from '@images/about/article3.png';
+import { Image } from 'astro:assets';
+
+import ArticleSection from '@components/article/ArticleSection';
+import Button from '@components/button';
+---
+<!-- TODO: Goobers -->
+<StandardLayout title="About">
+    <div class="hero h-100 w-full relative">
+        <Image src={Hero} alt="About Ro/Box" class="h-full object-cover w-full z-0 absolute object-right" width={Hero.width} height={Hero.height}/>
+        <div class="about-us bg-green box-shadow z-10 relative lg:w-100 lg:top-1/3 top-50 bottom-0 w-60 rounded-r-2xl lg:pb-90 ">
+            <h1 class="p-12">
+                About Us
+            </h1>
+        </div>
+    </div>
+    <div class="w-full lg:pl-100 flex flex-col justify-center my-20">
+        <h1 class="text-center text-6xl font-bolder">
+            We are Ro/Box.
+        </h1>
+        <p class="text-center text-2xl mt-8 mx-20 leading-[150%]">
+            We make robotics and STEM education affordable, accessible, and fun for everyone.
+        </p>
+    </div>
+    <Article>
+        <ArticleSection id="our-mission" direction="LTR">
+            <div class="w-full lg:w-1/2 flex flex-col justify-center gap-6">
+                <h1 class="text-left mb-8">
+                    Our Mission
+                </h1>
+                <h2 class="text-left text-3xl font-semibold mb-4">
+                    STEM education should be for everyone.
+                </h2>
+                <p class="text-left text-xl leading-[150%]">
+                    At Ro/Box, our mission is to make hands-on engineering and coding education more affordable and accessible to all students, regardless of their background or resources. We are greatly motivated by the opportunities of STEM and robotics, and believe the future belongs to creators, problem-solvers, and innovators. By breaking down the financial barriers to robotics, we hope to open the door for everyone to experience the opportunities and love for robotics we have.
+                </p>
+            </div>
+            <div class="w-full lg:w-1/2 h-full flex justify-center items-center"> 
+                <Image src={Article1} alt="About Ro/Box" class="rounded-lg max-w-full max-h-full w-full object-cover object-center" width={Article1.width} height={Article1.height}/>
+            </div>
+        </ArticleSection>
+        <ArticleSection id="our-story" direction="RTL">
+            <div class="w-full lg:w-1/2 flex flex-col justify-center gap-6">
+                <h1 class="text-left mb-8">
+                    Our Story
+                </h1>
+                <p class="text-left text-xl leading-[150%]">
+                    Ro/Box was founded by <a href="https://madebyyuma.com/">Yuma Soerianto</a> as his project for the <a href="https://www.risefortheworld.org/winners/hadriel-yuma-soerianto/">Rise Challenge</a>, which selects 100 young people globally to support their global impact initiatives. Yuma's project focused on tackling the high cost of robotics in STEM education, motivated by the high prices of robotics kits at his school's robotics club. These high prices pose serious challenges for schools and limit access to STEM learning for countless students.
+                </p>
+            </div>
+            <div class="w-full h-full lg:w-1/2 flex justify-center items-center"> 
+                <Image src={Article2} alt="About Story" class="rounded-lg max-w-full max-h-full w-full object-cover object-center" width={Article2.width} height={Article2.height}/>
+            </div>
+        </ArticleSection>
+        <ArticleSection direction="LTR">
+            <div class="w-full lg:w-1/2 flex flex-col justify-center gap-6">
+                <p class="text-left text-xl leading-[150%]">
+                    Ro/Box went on to become a winning project for the Rise Challenge.<br/>
+                    With this newfound opportunity, our team was formed: Yuma, Ashton, and Seb. Together, we turned Ro/Box from prototype to reality: an ultra-affordable robotics kit designed to make STEM education accessible to any student, anywhere. To complement it, we developed a website filled with guides, learning resources, and a block coding editor, all for free—making it easy and inviting for anyone to start exploring engineering and programming with Ro/Box.
+                </p><br>
+                <p class="text-left text-xl leading-[150%]">
+                    We believe that by lowering the cost of robotics—and reducing the barrier to entry into STEM—we can directly support schools and increase student engagement. Over time, we hope this will give more and more students the opportunity to fall in love with robotics the same way we did.
+                </p>
+            </div>
+            <div class="w-full lg:w-1/2"> 
+                <Image src={Article3} alt="About Story" class="rounded-lg max-w-full max-h-full w-full object-cover object-center" width={Article2.width} height={Article2.height}/>
+            </div>
+        </ArticleSection>
+        <ArticleSection id="join-us" direction="LTR">
+            <div class="w-full lg:w-1/2 flex flex-col justify-center gap-6">
+                <h1 class="text-left mb-8">
+                    Join Us On Our Mission
+                </h1>
+            </div>
+            <div class="w-full lg:w-1/2 flex flex-col justify-center gap-6"> 
+                <p class="text-left text-xl leading-[150%]">
+                    Whether you're a student, a teacher, or someone who believes in equal access to education, we'd love to have your support in helping us realise our vision.
+                    <br/><br/>
+                    You can build your own Ro/Box, use our free resources, or help spread Ro/Box to classrooms that need it most.
+                    <br/><br/>
+                    Together, we can give every child the opportunity to discover, and create the dream of robotics.
+                </p>
+                <Button href="/store" className='bg-red px-6 py-4 text-2xl box-shadow w-fit mt-8'>
+                    Visit Our Store
+                </Button>
+            </div>
+        </ArticleSection>
+    </Article>
+</StandardLayout>

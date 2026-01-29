@@ -19,7 +19,7 @@ export default function PageHero(props: PageHeroProps) {
     const finalRightOffset = `calc(${leftWidth} + ${lineWidth} / 2 - ${overlap} / 2)`;
     // TODO: Make this responsive
     return (
-        <section className={`page-hero relative w-full h-80 overflow-hidden ${className} `}>
+        <section className={`page-hero relative w-full h-100 overflow-hidden ${className} `}>
             <Clipper className="h-full absolute" side={"right"} gradient={isGradientNegative ? 'negative' : 'positive'} style={{ width: finalLeftWidth}} overhang={overlap}>
                 {left}
             </Clipper>
