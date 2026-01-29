@@ -8,7 +8,8 @@ import dayjs from "dayjs";
 const ExtensionKeys = Object.keys(extensions) as ExtensionKey[];
 
 export function getProjects(): Record<string, UserProject> {
-    const projectsJSON = localStorage.getItem('userProjects');
+    if (typeof window === 'undefined') return {};
+    const projectsJSON = localStorage.getItem('roboxProjects');
     if (!projectsJSON) {
         return {};
     }
