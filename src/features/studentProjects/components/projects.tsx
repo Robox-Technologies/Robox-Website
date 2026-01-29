@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 import { ProjectSettingsModalContext } from "@context/projectSettingsModal";
 import { ProjectCard } from "./projectCard";
+import CreateCard from "./createCard";
 export default function Projects() {
     const [openProject, setOpenProject] = useState<string | null>(null);
 
@@ -22,6 +23,7 @@ export default function Projects() {
     const projects = [1, 2, 3];
     return (
         <ProjectSettingsModalContext.Provider value={{ openProject, setOpenProject }}>
+            <CreateCard />
             {projects.map((project) => (<ProjectCard key={project} id={String(project)} />))}
         </ProjectSettingsModalContext.Provider>
     );

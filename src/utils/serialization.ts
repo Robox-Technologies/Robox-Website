@@ -56,7 +56,7 @@ function generateEmptyProject(): UserProject {
         return acc;
     }, {} as Record<ExtensionKey, boolean>);
     return {
-        name: "Untitled Proje`c`t",
+        name: "Untitled Project",
         time: dayjs(),
         workspace: null,
         thumbnail: null,
