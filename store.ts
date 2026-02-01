@@ -15,6 +15,8 @@ const paymentRouter = express.Router()
 const PRODUCT_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 const verifiedProducts = await getProductList()
 
+const couponAdditionalFields = ["data.coupon.applies_to"];
+
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 paymentRouter.post('/webhook', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
     console.log('Received webhook event');
@@ -77,6 +79,7 @@ paymentRouter.post("/create", async (req: Request<object, object, PaymentIntentC
             metadata: {
                 products: JSON.stringify(products),
                 shipping: JSON.stringify(verifiedServerShipping || {}),
+                discount: JSON.stringify({})
             }
         });
         res.json({client_secret: paymentIntent.client_secret, paymentIntentID: paymentIntent.id});
@@ -85,25 +88,49 @@ paymentRouter.post("/create", async (req: Request<object, object, PaymentIntentC
         res.status(500).send({error: err})
     }
 })
-const domesticCountryCode = "AU";
-paymentRouter.post("/updateShipping", async (req: Request<object, object, ShippingUpdateBody>, res: Response): Promise<void> => {
+
+paymentRouter.post("/updateFees", async (req: Request<object, object, ShippingUpdateBody>, res: Response): Promise<void> => {
     const body = req.body;
-    if (!(body && body.paymentIntentID && body.products && body.country && (domesticCountryCode != body.country || body.postcode)) ) {
+    if (!(body && body.paymentIntentID && body.products)) {
         res.status(400).send({ error: "One or more values are not defined" });
         return;
     }  
 
     try {
+        let discountInfo = null;
+
+        // Coupon ID or user-facing promotion code
+        if (body.coupon) {
+            let promoCodes = (await stripeAPI.promotionCodes.list({ limit: 1, code: body.coupon, expand: couponAdditionalFields })).data;
+            let coupon: Stripe.Coupon;
+
+            if (promoCodes.length > 0 && promoCodes[0].coupon) {
+                // Promo code valid
+                coupon = promoCodes[0].coupon;
+            } else {
+                coupon = await stripeAPI.coupons.retrieve(body.coupon, { expand: couponAdditionalFields }).catch(() => null);
+            }
+
+            if (coupon) {
+                discountInfo = {
+                    amountOff: coupon.amount_off,
+                    percentOff: coupon.percent_off,
+                    whitelistProducts: coupon.applies_to ? coupon.applies_to.products : null
+                }
+            }
+        }
+
         const verifiedServerCost = await calculateTotalCost(body.products, verifiedProducts, {
             country: body.country, postcode: body.postcode
-        });
-
-        if (!verifiedServerCost.shippingSucceeded) {
-            throw new Error("Unable to calculate shipping cost");
-        }
+        }, discountInfo);
     
         stripeAPI.paymentIntents.update(body.paymentIntentID, {
-            amount: verifiedServerCost.total
+            amount: verifiedServerCost.total,
+            metadata: {
+                products: JSON.stringify(body.products),
+                shipping: JSON.stringify(verifiedServerCost.shipping || {}),
+                discount: JSON.stringify(verifiedServerCost.discount || {}),
+            }
         });
 
         res.json({verifiedServerCost: verifiedServerCost})

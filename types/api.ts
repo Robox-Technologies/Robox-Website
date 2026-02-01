@@ -25,9 +25,7 @@ export interface ShippingUpdateBody {
     products: Record<string, number>;
     country: string;
     postcode: string;
-}
-export interface ProductsRequestQuery {
-    id?: string; // Product ID to fetch specific product, or "quantity" for quantity product
+    coupon: string; // Coupon ID or user-facing promotion code
 }
 export interface ProductsRequestQuery {
     id?: string; // Product ID to fetch specific product, or "quantity" for quantity product

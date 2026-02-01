@@ -9,6 +9,7 @@ import iso3311a2 from 'iso-3166-1-alpha-2';
 import { stripeAPI, readPaymentMethod } from './stripe-server-helper.js';
 
 import { Resend } from 'resend';
+import { format } from "path";
 
 const resend = new Resend(process.env.RESEND_KEY || 're_...');
 
@@ -112,7 +113,12 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
 
     // Fetch table and product row, if it exists
     const shipping = formatPrice(Number(paymentIntent.metadata.shipping), true);
-    populateProductTable(document, shipping, products);
+
+    let discount = "";
+    let discountRaw = paymentIntent.metadata.discount;
+    if (!isNaN(parseFloat(discountRaw))) discount = formatPrice(Number(discountRaw), true);
+
+    populateProductTable(document, shipping, discount, products);
 
     // Capture body inside table
     const containerTable = document.createElement("table");
@@ -183,7 +189,21 @@ function processPaymentIntent (paymentIntent: Stripe.PaymentIntent, verifiedProd
     return [paymentIntent.receipt_email ?? "", emailProducts];
 }
 
-function populateProductTable(document: Document, shipping: string, products: ProductEmail) {
+function appendFeeRow(document: Document, totalRow: HTMLElement, name: string, value: string) {
+    const feeRow = document.createElement("tr");
+    const feeName = createCell(document, name, "fee-row purchase_item row-separate large");
+    const feeQuantity = createCell(document, "", "fee-row align-center row-separate small");
+    const feePrice = createCell(document, value, "fee-row align-right row-separate small");
+
+    feeRow.appendChild(feeName);
+    feeRow.appendChild(feeQuantity);
+    feeRow.appendChild(feePrice);
+
+    // Insert above the total row
+    totalRow.parentElement!.insertBefore(feeRow, totalRow);
+}
+
+function populateProductTable(document: Document, shipping: string, discount: string, products: ProductEmail) {
     const productTable = document.getElementById("products");
     const totalRow = document.getElementById("total-row");
 
@@ -208,20 +228,9 @@ function populateProductTable(document: Document, shipping: string, products: Pr
         totalRow.parentElement!.insertBefore(productLine, totalRow);
     }
 
-    // If shipping is defined, add a shipping row
-    if (shipping) {
-        const shippingRow = document.createElement("tr");
-        const shippingName = createCell(document, "Shipping", "shipping purchase_item row-separate large");
-        const shippingQuantity = createCell(document, "", "shipping align-center row-separate small");
-        const shippingPrice = createCell(document, shipping, "shipping align-right row-separate small");
-
-        shippingRow.appendChild(shippingName);
-        shippingRow.appendChild(shippingQuantity);
-        shippingRow.appendChild(shippingPrice);
-
-        // Insert above the total row
-        totalRow.parentElement!.insertBefore(shippingRow, totalRow);
-    }
+    // Add fees if applicable
+    if (shipping) appendFeeRow(document, totalRow, "Shipping", shipping);
+    if (discount) appendFeeRow(document, totalRow, "Discount", discount);
 }
 
 function createCell(document: Document, text: string, className: string): HTMLTableCellElement {

@@ -29,6 +29,14 @@ const messageContainer = document.getElementById('error-message') as HTMLParagra
 const totalValue = document.getElementById("total-value") as HTMLParagraphElement;
 const shippingValue = document.getElementById("shipping-cost") as HTMLParagraphElement;
 
+const couponField = document.getElementById("coupon") as HTMLInputElement;
+const couponSubmit = document.getElementById("couponApply") as HTMLButtonElement;
+const couponSuccessStatus = document.getElementById("discountSuccess") as HTMLParagraphElement;
+const couponFailureStatus = document.getElementById("discountFailure") as HTMLParagraphElement;
+const discountErrorDetails = document.getElementById("discountErrorDetails") as HTMLSpanElement;
+const discountRow = document.getElementById("discount-row") as HTMLDivElement;
+const discountValue = document.getElementById("discount-value") as HTMLParagraphElement;
+
 let paymentProcessing = false;
 let shippingPricingValid = false;
 
@@ -71,33 +79,17 @@ if (totalCost < 50) {
         addressElement.on("change", async (event) => {
             const country = event.value.address.country;
             const postcode = event.value.address.postal_code;
-            if (!country) {
-                updateShippingObfuscation(true)
-                return
-            };
-
-            // Recalculate shipping cost
-            shippingPricingValid = false;
-            updateSubmitButton();
-
-            const newCosts = await updatePaymentIntentShipping(paymentIntentID, country, postcode);
-
-            if (newCosts) {
-                // Pricing updated successfully
-                totalValue.textContent = newCosts.displayTotal;
-                shippingValue.textContent = newCosts.displayShipping;
-                shippingPricingValid = true;
-
-                updateSubmitButton();
-                updateShippingObfuscation(false);
-            } else {
-                // Price update unsuccessful
-                updateShippingObfuscation(true);
-            }
+            feeInputUpdate(paymentIntentID, country, postcode, undefined);
         });
     
         document.getElementById("termsConsent").addEventListener("click", () => {
             updateSubmitButton();
+        });
+
+        couponSubmit.addEventListener("click", () => {
+            // Update coupon!
+            const coupon = couponField.value;
+            feeInputUpdate(paymentIntentID, undefined, undefined, coupon);
         });
     
         form.addEventListener("change", () => {
@@ -160,15 +152,72 @@ async function updateShippingObfuscation(obfuscate: boolean) {
     }
 }
 
-async function updatePaymentIntentShipping(paymentIntent: string, country: string, postcode: string) {
-    const updatedPricing = await fetch("/api/store/updateShipping", {
+let persistentFees = {
+    country: "",
+    postcode: "",
+    coupon: ""
+}
+async function feeInputUpdate(
+    paymentIntentID: string, 
+    country?: string, 
+    postcode?: string, 
+    coupon?: string) {
+    if (country) persistentFees.country = country;
+    if (postcode) persistentFees.postcode = postcode;
+
+    let attemptingCoupon = false;
+    if (coupon || coupon == "") {
+        attemptingCoupon = true;
+        persistentFees.coupon = coupon;
+    }
+
+    // Recalculate shipping cost
+    shippingPricingValid = false;
+    updateSubmitButton();
+
+    console.log(persistentFees.coupon);
+    const newCosts = await updatePaymentIntentFees(paymentIntentID, persistentFees.country, persistentFees.postcode, persistentFees.coupon);
+
+    if (!newCosts) {
+        updateShippingObfuscation(true);
+        return;
+    }
+
+    totalValue.textContent = newCosts.displayTotal;
+
+    if (newCosts.shippingSucceeded) {
+        // Pricing updated successfully
+        shippingValue.textContent = newCosts.displayShipping;
+        shippingPricingValid = true;
+
+        updateSubmitButton();
+        updateShippingObfuscation(false);
+    } else {
+        // Price update unsuccessful
+        updateShippingObfuscation(true);
+    }
+
+    if (newCosts.discountStatus > 0) {
+        updateCouponState(1, newCosts.displayDiscount);
+    } else if (persistentFees.coupon == "") {
+        // Coupon was unset - clear status
+        updateCouponState(0, "");
+    } else {
+        let discountStale = newCosts.discountStatus == -2; // If no coupon valid but no discount applied
+        updateCouponState(-1, "", discountStale);
+    }
+}
+
+async function updatePaymentIntentFees(paymentIntent: string, country: string, postcode: string, coupon: string) {
+    const updatedPricing = await fetch("/api/store/updateFees", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
             paymentIntentID: paymentIntent,
             products: cartToDictionary(),
             country: country,
-            postcode: postcode
+            postcode: postcode,
+            coupon: coupon
         })
     });
 
@@ -190,4 +239,33 @@ function updateSubmitButton() {
     submitButton.disabled = !formValid || paymentProcessing || !shippingPricingValid;
 
     paymentLoader.style.display = paymentProcessing ? "block" : "none";
+}
+
+// 0 for unset. <0 for error. >0 for success.
+const discountStaleText = "Your cart's items are ineligible!"
+function updateCouponState(state: number, discountAmount: string, discountStale: boolean = false) {
+    if (state == 0) {
+        couponField.classList.remove("failure", "success");
+        couponFailureStatus.classList.remove("show");
+        couponSuccessStatus.classList.remove("show");
+        discountRow.classList.remove("show");
+        return;
+    } else if (state > 0) {
+        couponField.classList.remove("failure");
+        couponField.classList.add("success");
+
+        couponFailureStatus.classList.remove("show");
+        couponSuccessStatus.classList.add("show");
+        discountValue.textContent = `(${discountAmount})`;
+        discountRow.classList.add("show");
+    } else {
+        couponField.classList.remove("success");
+        couponField.classList.add("failure");
+
+        couponSuccessStatus.classList.remove("show");
+        couponFailureStatus.classList.add("show");
+        discountRow.classList.remove("show");
+
+        discountErrorDetails.textContent = discountStale ? discountStaleText : "";
+    }
 }

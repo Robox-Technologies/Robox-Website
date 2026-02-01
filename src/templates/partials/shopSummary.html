@@ -17,6 +17,21 @@
                 <p class="value" id="shipping-cost"></p>
             </div>
 
+            <div class="breakdown-row" id="discount-row">
+                <p class="label">Discount:</p>
+                <p class="value" id="discount-value"></p>
+            </div>
+
+            <div class="promo-row">
+                <p class="label">Promo Code / Coupon</p>
+                <div class="inlineSubmit">
+                    <input type="text" id="coupon">
+                    <button class="ctaButton" id="couponApply">Apply</button>
+                </div>
+                <p id="discountSuccess">Discount successfully applied!</p>
+                <p id="discountFailure">Could not apply discount. <span id="discountErrorDetails"></span></p>
+            </div>
+
             <hr class="cart-item-break">
 
             <div class="breakdown-row">
