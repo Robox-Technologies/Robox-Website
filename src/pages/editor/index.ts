@@ -12,10 +12,12 @@ import { ExtensionType, Project } from '~types/projects';
 import { getProject, loadBlockly, saveBlockly, renameProject, downloadBlocklyProject, downloadPythonProject, getProjectExtensions } from '@root/blockly/serialization';
 import {RoboxToolbox, RoboxFlyout} from './blockly/toolboxStyling';
 import {registerFieldColour} from '@blockly/field-colour';
+import { registerFieldAngle } from '@blockly/field-angle';
 import { postBlocklyWSInjection } from './usb';
 import { registerControls } from './controls';
 
 
+registerFieldAngle();
 registerFieldColour();
 
 import "./instructions/UF2Flash"
@@ -24,7 +26,6 @@ import "./instructions/colourCalibration"
 import { showToast } from '@root/toast';
 
   
-
 
 const blocks = require.context("./blockly/blocks", false, /\.ts$/);
 const generators = require.context("./blockly/generators", false, /\.ts$/);
@@ -104,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if ("serial" in navigator) {
-        postBlocklyWSInjection()
+        postBlocklyWSInjection(workspaceId);
     }
     else {
         showToast("warning", "Browser Incompatibility", "Web Serial API is not supported in this browser. Please try a different browser like Chrome or Firefox. If you are using a supported browser, ensure that you have enabled the Web Serial API in your browser settings. ", 5000);
@@ -296,6 +297,7 @@ function setExtensionToolbox(extensions: Record<ExtensionType, boolean>) {
         if (extensions[ext]) {
             const extToolbox = ExtensionToolbox[ext];
             if (extToolbox) {
+                //@ts-expect-error Blockly for some reason requires the custom type to be present... but this is not a custom category
                 newToolbox.contents.push(extToolbox);
             }
         }
