@@ -58,7 +58,6 @@ function renderPreview() {
         const priceElement = clone.querySelector(".cart-item-text-price") as HTMLSpanElement
         const quantityInput = clone.querySelector(".cart-quantity") as HTMLInputElement
         const imageElement = clone.querySelector(".cart-item-photo") as HTMLImageElement
-        console.log(product, cachedProduct)
        const thumb = productThumbnails[cachedProduct["internalName"]];
         if (thumb) {
             imageElement.src = thumb;

@@ -21,7 +21,12 @@ $carouselThumbnailSize: 115px;
         margin: 0;
     }
 }
-
+#cart-modal {
+    max-height: unset;
+    max-width: unset;
+    width: revert;
+    height: revert;
+}
 .carousel-container {
     display: flex;
     gap: 10px;
