@@ -39,7 +39,16 @@ npm run dev
 This will open a localhost server on port 3000 (`localhost:3000`).
 
 The code automatically recompiles upon file changes.
-
+## Testing Webhooks
+Make sure the server is running with 
+```bash
+npm run dev
+```
+Then (with stripe CLI installed) run 
+```bash
+stripe listen --forward-to localhost:3000/api/store/webhook
+```
+Then run the payment and it should all work!
 <br>
 
 <br>
