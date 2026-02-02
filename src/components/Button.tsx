@@ -14,7 +14,7 @@ export default function Button({ id, className, children , icon, href, onClick }
         return (
             <a id={id} href={href} className={` text-white rounded-2xl p-4 hover:bg-blue-dark transition ${className}`}>
                 {
-                    icon ? <FontAwesomeIcon icon={icon} className="mr-2"/> : null
+                    icon ? <FontAwesomeIcon icon={icon}/> : null
                 }
                 {children}
             </a>
@@ -24,7 +24,7 @@ export default function Button({ id, className, children , icon, href, onClick }
         return (
             <button id={id} className={` text-white rounded-2xl p-4 hover:bg-blue-dark transition ${className}`} onClick={onClick}>
                 {
-                    icon ? <FontAwesomeIcon icon={icon} className="mr-2"/> : null
+                    icon ? <FontAwesomeIcon icon={icon}/> : null
                 }
                 {children}
             </button>
