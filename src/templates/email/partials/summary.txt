@@ -3,6 +3,6 @@ Date: {{date}}
 
 {{items}}
 ===================
-Shipping: {{shipping}}
+Shipping: {{shipping}}{{discount}}
 ===================
 Total: {{total}}

@@ -135,7 +135,7 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
     document.body.replaceChildren(containerTable);
 
     // Create plaintext fallback
-    const plaintext = generateTxtEmail(templateName, orderId, date, total, customerName, shipping, products, address, billing);
+    const plaintext = generateTxtEmail(templateName, orderId, date, total, customerName, shipping, products, address, billing, discount);
 
     // Inline CSS styles using juice
     const juicedContent = juice(document.documentElement.outerHTML, {
@@ -145,7 +145,7 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
     return sendEmail(to, document.title, juicedContent, plaintext);
 }
 
-function generateTxtEmail(templateName: string, orderId: string, date: string, total: string, customerName: string, shipping: string, products: ProductEmail, address: string, billing: string): string {
+function generateTxtEmail(templateName: string, orderId: string, date: string, total: string, customerName: string, shipping: string, products: ProductEmail, address: string, billing: string, discount?: string): string {
     let plaintext = fs.readFileSync(`./src/templates/email/${templateName}.txt`, "utf-8");
 
     const summary = fs.readFileSync(`./src/templates/email/partials/summary.txt`, "utf-8");
@@ -159,6 +159,7 @@ function generateTxtEmail(templateName: string, orderId: string, date: string, t
 
     plaintext = plaintext.replaceAll("{{total}}", total);
     plaintext = plaintext.replaceAll("{{shipping}}", shipping);
+    plaintext = plaintext.replaceAll("{{discount}}", discount ? `\nDiscount: (${discount})` : "");
     plaintext = plaintext.replaceAll("{{address}}", address.replaceAll("<br>", "\n"));
     plaintext = plaintext.replaceAll("{{billing}}", billing.replaceAll("<br>", "\n"));
 
@@ -189,11 +190,12 @@ function processPaymentIntent (paymentIntent: Stripe.PaymentIntent, verifiedProd
     return [paymentIntent.receipt_email ?? "", emailProducts];
 }
 
-function appendFeeRow(document: Document, totalRow: HTMLElement, name: string, value: string) {
+function appendFeeRow(document: Document, totalRow: HTMLElement, name: string, value: string, className?: string) {
     const feeRow = document.createElement("tr");
-    const feeName = createCell(document, name, "fee-row purchase_item row-separate large");
-    const feeQuantity = createCell(document, "", "fee-row align-center row-separate small");
-    const feePrice = createCell(document, value, "fee-row align-right row-separate small");
+    let customClass = className ? `${className} ` : "";
+    const feeName = createCell(document, name, `${customClass}purchase_item large`);
+    const feeQuantity = createCell(document, "", `${customClass}align-center small`);
+    const feePrice = createCell(document, value, `${customClass}align-right small`);
 
     feeRow.appendChild(feeName);
     feeRow.appendChild(feeQuantity);
@@ -229,8 +231,8 @@ function populateProductTable(document: Document, shipping: string, discount: st
     }
 
     // Add fees if applicable
-    if (shipping) appendFeeRow(document, totalRow, "Shipping", shipping);
-    if (discount) appendFeeRow(document, totalRow, "Discount", discount);
+    if (shipping) appendFeeRow(document, totalRow, "Shipping", shipping, `fee-row${discount ? "" : " row-separate"}`);
+    if (discount) appendFeeRow(document, totalRow, "Discount", `(${discount})`, "discount-row row-separate");
 }
 
 function createCell(document: Document, text: string, className: string): HTMLTableCellElement {
