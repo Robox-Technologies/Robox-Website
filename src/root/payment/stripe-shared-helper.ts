@@ -1,4 +1,3 @@
-import { truncate } from "fs/promises";
 import { Product } from "../../../types/api.js";
 
 const backendExecution = typeof window === 'undefined';
