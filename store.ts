@@ -124,7 +124,7 @@ paymentRouter.post("/updateFees", async (req: Request<object, object, ShippingUp
             country: body.country, postcode: body.postcode
         }, discountInfo);
     
-        stripeAPI.paymentIntents.update(body.paymentIntentID, {
+        await stripeAPI.paymentIntents.update(body.paymentIntentID, {
             amount: verifiedServerCost.total,
             metadata: {
                 products: JSON.stringify(body.products),

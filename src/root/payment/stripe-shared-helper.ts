@@ -56,7 +56,7 @@ export async function calculateTotalCost(
     if (discountInfo) {
         // Note: we can not have a final cost less than 50c else it causes an error with Stripe payments
         discountCost += discountInfo.amountOff;
-        discountCost = Math.floor(Math.min(discountCost, finalCost - 50));
+        discountCost = Math.floor(Math.min(discountCost, Math.max(finalCost - 50, 0)));
         finalCost -= discountCost;
         discountStatus = 1;
 

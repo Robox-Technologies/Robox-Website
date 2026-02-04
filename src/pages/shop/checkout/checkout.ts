@@ -173,7 +173,6 @@ async function feeInputUpdate(
     shippingPricingValid = false;
     updateSubmitButton();
 
-    console.log(persistentFees.coupon);
     const newCosts = await updatePaymentIntentFees(paymentIntentID, persistentFees.country, persistentFees.postcode, persistentFees.coupon);
 
     if (!newCosts) {
