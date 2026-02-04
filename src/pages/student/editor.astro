@@ -1,11 +1,19 @@
 ---
 import EditorLayout from "@layouts/EditorLayout.astro";
-import ProjectContext from "@features/editor/projectContext/projectContext.tsx";
-import ProjectHeader from "@features/editor/projectHeader/projectHeader.tsx";
-
+import ProjectContext from "@components/editor/projectContext.tsx";
+import ProjectHeader from "@components/editor/projectHeader.astro";
+import BlocklyEditor from "@features/editor/components/editor.astro";
 ---
+<style>
+    html, body {
+        height: 100%;
+        width: 100%;
+    }
+</style>
 <EditorLayout title="editor">
-    <ProjectContext client:load>
+    <div class="w-full h-full">
         <ProjectHeader />
-    </ProjectContext>
+        <BlocklyEditor />
+
+    </div>
 </EditorLayout>
