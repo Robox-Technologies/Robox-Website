@@ -165,7 +165,7 @@ async function feeInputUpdate(
     if (country) persistentFees.country = country;
     if (postcode) persistentFees.postcode = postcode;
 
-    if (coupon || coupon == "") {
+    if (coupon !== undefined) {
         persistentFees.coupon = coupon;
     }
 
