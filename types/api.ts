@@ -23,9 +23,9 @@ export interface PaymentIntentCreationBody {
 export interface ShippingUpdateBody {
     paymentIntentID: string;
     products: Record<string, number>;
-    country: string;
-    postcode: string;
-    coupon: string; // Coupon ID or user-facing promotion code
+    country?: string;
+    postcode?: string;
+    coupon?: string; // Coupon ID or user-facing promotion code
 }
 export interface ProductsRequestQuery {
     id?: string; // Product ID to fetch specific product, or "quantity" for quantity product
