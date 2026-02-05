@@ -2,20 +2,20 @@ import type { ToolboxDefinition } from "node_modules/blockly/core/utils/toolbox"
 export const BaseToolbox: ToolboxDefinition = {
     'kind': 'categoryToolbox',
     'contents': [
-        // {
-        //     'kind': 'category',
-        //     'name': 'Events',
-        //     "cssconfig": {
-        //         "icon": "categoryIcon fa fa-flag"
-        //     },
-        //     'categorystyle': 'events_category',
-        //     'contents': [
-        //         {
-        //             'kind': 'block',
-        //             'type': 'event_begin'
-        //         }
-        //     ]
-        // },
+        {
+            'kind': 'category',
+            'name': 'Events',
+            "cssconfig": {
+                "icon": "categoryIcon fa fa-flag"
+            },
+            'categorystyle': 'events_category',
+            'contents': [
+                {
+                    'kind': 'block',
+                    'type': 'event_begin'
+                }
+            ]
+        },
         {
             'kind': 'sep'
         },
@@ -79,10 +79,10 @@ export const BaseToolbox: ToolboxDefinition = {
                     'kind': 'block',
                     'type': 'controls_whileUntil'
                 },
-                // {
-                //     'kind': 'block',
-                //     'type': 'controls_forever'
-                // },
+                {
+                    'kind': 'block',
+                    'type': 'controls_forever'
+                },
                 {
                     'kind': 'block',
                     'type': 'controls_for',
@@ -411,200 +411,200 @@ export const BaseToolbox: ToolboxDefinition = {
         {
             'kind': 'sep'
         },
-        // {
-        //     'kind': 'category',
-        //     'name': 'Sensors',
-        //     'categorystyle': 'sensor_category',
-        //     "cssconfig": {
-        //         "icon": "categoryIcon fa fa-eye"
-        //     },
-        //     'contents': [
-        //         {
-        //             'kind': 'block',
-        //             'type': 'ultrasonic_distance'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'sensor_bool'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'distance_bool',
-        //             'inputs': {
-        //                 'number': {
-        //                     'shadow': {
-        //                         'type': 'math_number',
-        //                         'fields': {
-        //                             'NUM': 10
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'color_sensor_value'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'color_sensor_is_colour'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'color_sensor_calibrate'
-        //         }
-        //     ]
-        // },
-        // {
-        //     'kind': 'category',
-        //     'name': 'System',
-        //     'categorystyle': 'system_category',
-        //     "cssconfig": {
-        //         "icon": "categoryIcon fa fa-robot"
-        //     },
-        //     'contents': [
-        //         {
-        //             'kind': 'block',
-        //             'type': 'sleep',
-        //             'inputs': {
-        //                 'time': {
-        //                     'shadow': {
-        //                         'type': 'math_number',
-        //                         'fields': {
-        //                             'NUM': 1
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'print',
-        //             'inputs': {
-        //                 'string': {
-        //                     'shadow': {
-        //                         'type': 'text',
-        //                         'fields': {
-        //                             'TEXT': ''
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'led_toggle'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'led_bool'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'get_time'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'get_led_state'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'wait_until'
-        //         }
-        //     ]
-        // },
-        // {
-        //     'kind': 'category',
-        //     'name': 'Motors',
-        //     'categorystyle': 'motor_category',
-        //     "cssconfig": {
-        //         "icon": "categoryIcon fa fa-truck-monster"
-        //     },
-        //     'contents': [
-        //         {
-        //             'kind': 'block',
-        //             'type': 'motor_stop'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'motor_reverse'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'motor_move_simple'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'motor_turn_simple'
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'motor_set_speed',
-        //             'inputs': {
-        //                 'speed': {
-        //                     'shadow': {
-        //                         'type': 'math_number',
-        //                         'fields': {
-        //                             'NUM': 50
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'motor_dual_speed',
-        //             'inputs': {
-        //                 'left_speed': {
-        //                     'shadow': {
-        //                         'type': 'math_number',
-        //                         'fields': {
-        //                             'NUM': 50
-        //                         }
-        //                     }
-        //                 },
-        //                 'right_speed': {
-        //                     'shadow': {
-        //                         'type': 'math_number',
-        //                         'fields': {
-        //                             'NUM': 50
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         },
-        //         {
-        //             'kind': 'block',
-        //             'type': 'motor_dual_speed_duration',
-        //             'inputs': {
-        //                 'left_speed': {
-        //                     'shadow': {
-        //                         'type': 'math_number',
-        //                         'fields': {
-        //                             'NUM': 50
-        //                         }
-        //                     }
-        //                 },
-        //                 'right_speed': {
-        //                     'shadow': {
-        //                         'type': 'math_number',
-        //                         'fields': {
-        //                             'NUM': 50
-        //                         }
-        //                     }
-        //                 },
-        //                 'duration': {
-        //                     'shadow': {
-        //                         'type': 'math_number',
-        //                         'fields': {
-        //                             'NUM': 2
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     ]
-        // },
+        {
+            'kind': 'category',
+            'name': 'Sensors',
+            'categorystyle': 'sensor_category',
+            "cssconfig": {
+                "icon": "categoryIcon fa fa-eye"
+            },
+            'contents': [
+                {
+                    'kind': 'block',
+                    'type': 'ultrasonic_distance'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'sensor_bool'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'distance_bool',
+                    'inputs': {
+                        'number': {
+                            'shadow': {
+                                'type': 'math_number',
+                                'fields': {
+                                    'NUM': 10
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    'kind': 'block',
+                    'type': 'color_sensor_value'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'color_sensor_is_colour'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'color_sensor_calibrate'
+                }
+            ]
+        },
+        {
+            'kind': 'category',
+            'name': 'System',
+            'categorystyle': 'system_category',
+            "cssconfig": {
+                "icon": "categoryIcon fa fa-robot"
+            },
+            'contents': [
+                {
+                    'kind': 'block',
+                    'type': 'sleep',
+                    'inputs': {
+                        'time': {
+                            'shadow': {
+                                'type': 'math_number',
+                                'fields': {
+                                    'NUM': 1
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    'kind': 'block',
+                    'type': 'print',
+                    'inputs': {
+                        'string': {
+                            'shadow': {
+                                'type': 'text',
+                                'fields': {
+                                    'TEXT': ''
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    'kind': 'block',
+                    'type': 'led_toggle'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'led_bool'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'get_time'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'get_led_state'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'wait_until'
+                }
+            ]
+        },
+        {
+            'kind': 'category',
+            'name': 'Motors',
+            'categorystyle': 'motor_category',
+            "cssconfig": {
+                "icon": "categoryIcon fa fa-truck-monster"
+            },
+            'contents': [
+                {
+                    'kind': 'block',
+                    'type': 'motor_stop'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'motor_reverse'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'motor_move_simple'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'motor_turn_simple'
+                },
+                {
+                    'kind': 'block',
+                    'type': 'motor_set_speed',
+                    'inputs': {
+                        'speed': {
+                            'shadow': {
+                                'type': 'math_number',
+                                'fields': {
+                                    'NUM': 50
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    'kind': 'block',
+                    'type': 'motor_dual_speed',
+                    'inputs': {
+                        'left_speed': {
+                            'shadow': {
+                                'type': 'math_number',
+                                'fields': {
+                                    'NUM': 50
+                                }
+                            }
+                        },
+                        'right_speed': {
+                            'shadow': {
+                                'type': 'math_number',
+                                'fields': {
+                                    'NUM': 50
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    'kind': 'block',
+                    'type': 'motor_dual_speed_duration',
+                    'inputs': {
+                        'left_speed': {
+                            'shadow': {
+                                'type': 'math_number',
+                                'fields': {
+                                    'NUM': 50
+                                }
+                            }
+                        },
+                        'right_speed': {
+                            'shadow': {
+                                'type': 'math_number',
+                                'fields': {
+                                    'NUM': 50
+                                }
+                            }
+                        },
+                        'duration': {
+                            'shadow': {
+                                'type': 'math_number',
+                                'fields': {
+                                    'NUM': 2
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
         {
             'kind': 'sep'
         },

@@ -1,7 +1,6 @@
 ---
 import "../styles/toolbox.scss";
 
-
 ---
 
 <div id="blocklyDiv" class="flex-1">
@@ -14,13 +13,22 @@ import "../styles/toolbox.scss";
     dom.watch()
 </script>
 <script>
+    // Setting up Blockly
     import * as Blockly from 'blockly/core'; 
+
+    
+    // Required for some reason as it does not apply automatically 
     import * as En from 'blockly/msg/en';
-    import 'blockly/blocks';
-    // @ts-ignore its so odd why it care, 
+    // @ts-ignore its so odd why it cares
     Blockly.setLocale(En);
     import { BlocklyConfig } from '../config/blockly';
+    import 'blockly/blocks';
+    // Dynamically import all blocks in the blocks directory
+    import.meta.glob('../config/blocks/*.ts', { eager: true });
+    import.meta.glob('../config/generators/*.ts', { eager: true });
 
     Blockly.inject('blocklyDiv', BlocklyConfig);
-    console.log('Blockly injected');
+
+
+
 </script>
