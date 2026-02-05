@@ -2,7 +2,7 @@ import { getCart, stripePublishableKey } from "@root/payment/cart";
 import { Appearance, loadStripe } from '@stripe/stripe-js';
 import { Product } from "~types/api.js";
 import "@root/payment/shop";
-import { calculateTotalCost, cartToDictionary } from "@root/payment/stripe-shared-helper";
+import { calculateTotalCost, cartToDictionary, DiscountStatus } from "@root/payment/stripe-shared-helper";
 
 const cart = getCart();
 const cartProducts = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, productId: string) => {
@@ -89,7 +89,7 @@ if (totalCost < 50) {
         couponSubmit.addEventListener("click", () => {
             // Update coupon!
             const coupon = couponField.value;
-            feeInputUpdate(paymentIntentID, undefined, undefined, coupon);
+            feeInputUpdate(paymentIntentID, undefined, undefined, coupon, true);
         });
     
         form.addEventListener("change", () => {
@@ -161,13 +161,12 @@ async function feeInputUpdate(
     paymentIntentID: string, 
     country?: string, 
     postcode?: string, 
-    coupon?: string) {
+    coupon?: string,
+    attemptingCoupon: boolean = false) {
     if (country) persistentFees.country = country;
     if (postcode) persistentFees.postcode = postcode;
 
-    let attemptingCoupon = false;
-    if (coupon || coupon == "") {
-        attemptingCoupon = true;
+    if (attemptingCoupon) {
         persistentFees.coupon = coupon;
     }
 
@@ -175,7 +174,6 @@ async function feeInputUpdate(
     shippingPricingValid = false;
     updateSubmitButton();
 
-    console.log(persistentFees.coupon);
     const newCosts = await updatePaymentIntentFees(paymentIntentID, persistentFees.country, persistentFees.postcode, persistentFees.coupon);
 
     if (!newCosts) {
@@ -197,15 +195,7 @@ async function feeInputUpdate(
         updateShippingObfuscation(true);
     }
 
-    if (newCosts.discountStatus > 0) {
-        updateCouponState(1, newCosts.displayDiscount);
-    } else if (persistentFees.coupon == "") {
-        // Coupon was unset - clear status
-        updateCouponState(0, "");
-    } else {
-        let discountStale = newCosts.discountStatus == -2; // If no coupon valid but no discount applied
-        updateCouponState(-1, "", discountStale);
-    }
+    updateCouponState(persistentFees.coupon == "" ? DiscountStatus.Unset : newCosts.discountStatus, newCosts.displayDiscount);
 }
 
 async function updatePaymentIntentFees(paymentIntent: string, country: string, postcode: string, coupon: string) {
@@ -243,14 +233,14 @@ function updateSubmitButton() {
 
 // 0 for unset. <0 for error. >0 for success.
 const discountStaleText = "Your cart's items are ineligible!"
-function updateCouponState(state: number, discountAmount: string, discountStale: boolean = false) {
-    if (state == 0) {
+function updateCouponState(state: number, discountAmount: string) {
+    if (state == DiscountStatus.Unset) {
         couponField.classList.remove("failure", "success");
         couponFailureStatus.classList.remove("show");
         couponSuccessStatus.classList.remove("show");
         discountRow.classList.remove("show");
         return;
-    } else if (state > 0) {
+    } else if (state == DiscountStatus.Success) {
         couponField.classList.remove("failure");
         couponField.classList.add("success");
 
@@ -266,6 +256,6 @@ function updateCouponState(state: number, discountAmount: string, discountStale:
         couponFailureStatus.classList.add("show");
         discountRow.classList.remove("show");
 
-        discountErrorDetails.textContent = discountStale ? discountStaleText : "";
+        discountErrorDetails.textContent = state == DiscountStatus.Stale ? discountStaleText : "";
     }
 }

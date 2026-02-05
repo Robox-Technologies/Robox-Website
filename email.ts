@@ -9,7 +9,6 @@ import iso3311a2 from 'iso-3166-1-alpha-2';
 import { stripeAPI, readPaymentMethod } from './stripe-server-helper.js';
 
 import { Resend } from 'resend';
-import { format } from "path";
 
 const resend = new Resend(process.env.RESEND_KEY || 're_...');
 

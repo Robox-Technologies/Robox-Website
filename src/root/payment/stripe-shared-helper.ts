@@ -1,4 +1,3 @@
-import { truncate } from "fs/promises";
 import { Product } from "../../../types/api.js";
 
 const backendExecution = typeof window === 'undefined';
@@ -7,6 +6,13 @@ const domesticCountryCode = "AU";
 let calculatePostage;
 if (backendExecution) {
     calculatePostage = (await import( /* webpackIgnore: true */'../../../auspost-server-helper.js')).calculatePostage;
+}
+
+export enum DiscountStatus {
+    Success,
+    Error,
+    Stale,
+    Unset
 }
 
 export async function calculateTotalCost(
@@ -53,17 +59,17 @@ export async function calculateTotalCost(
 
     let finalCost = totalCost + shippingCost;
 
-    let discountStatus = -1;
+    let discountStatus = DiscountStatus.Error;
     if (discountInfo) {
         // Note: we can not have a final cost less than 50c else it causes an error with Stripe payments
         discountCost += discountInfo.amountOff;
-        discountCost = Math.floor(Math.min(discountCost, finalCost - 50));
+        discountCost = Math.floor(Math.min(discountCost, Math.max(finalCost - 50, 0)));
         finalCost -= discountCost;
-        discountStatus = 1;
+        discountStatus = DiscountStatus.Success;
 
         // If discount is 0, coupon was valid but no discount was applied.
         if (discountCost == 0) {
-            discountStatus = -2;
+            discountStatus = DiscountStatus.Stale;
         }
     }
 
