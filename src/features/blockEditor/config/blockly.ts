@@ -2,14 +2,15 @@ import { RoboxFlyout, RoboxToolbox } from "../libs/roboxStyling"
 import { ContinuousMetrics } from "@blockly/continuous-toolbox"
 import theme from "./roboxTheme"
 import toolbox from "../utils/toolbox"
+
 export const BlocklyConfig = {
     toolbox: toolbox(),
     theme: theme,
-    // plugins: {
-    //     'flyoutsVerticalToolbox': RoboxFlyout,
-    //     'toolbox': RoboxToolbox,
-    //     "MetricsManager": ContinuousMetrics
-    // },
+    plugins: {
+        'flyoutsVerticalToolbox': RoboxFlyout,
+        'toolbox': RoboxToolbox,
+        "MetricsManager": ContinuousMetrics
+    },
     zoom: {
         controls: false,
         maxScale: 2.5,

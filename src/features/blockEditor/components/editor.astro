@@ -1,15 +1,24 @@
 ---
 import "../styles/toolbox.scss";
+
+
 ---
 
 <div id="blocklyDiv" class="flex-1">
 
 </div>
 <script>
+    import { faCog, faRepeat, faPlus, faTableList, faEye, faRobot, faTruckMonster, faX, faGears,  } from "@fortawesome/free-solid-svg-icons";
+    import { dom, library } from "@fortawesome/fontawesome-svg-core";
+    library.add(faCog, faRepeat, faPlus, faTableList, faEye, faRobot, faTruckMonster, faX, faGears);
+    dom.watch()
+</script>
+<script>
     import * as Blockly from 'blockly/core'; 
     import * as En from 'blockly/msg/en';
     import 'blockly/blocks';
-    Blockly.setLocale(En as any);
+    // @ts-ignore its so odd why it care, 
+    Blockly.setLocale(En);
     import { BlocklyConfig } from '../config/blockly';
 
     Blockly.inject('blocklyDiv', BlocklyConfig);

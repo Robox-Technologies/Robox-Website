@@ -4,7 +4,6 @@ import archSVG from '../assets/Arch.svg?raw';
 
 import { ContinuousFlyout, RecyclableBlockFlyoutInflater, ContinuousToolbox } from '@blockly/continuous-toolbox';
 
-
 export class RoboxToolbox extends ContinuousToolbox {
     // Random deselects when you click the same category again
     override shouldDeselectItem_(oldItem: Blockly.ISelectableToolboxItem | null, newItem: Blockly.ISelectableToolboxItem | null,): boolean {
@@ -22,7 +21,6 @@ class RoboxToolboxCategories extends Blockly.ToolboxCategory {
     /** @override */
     createRowContentsContainer_() {
         const dom = super.createRowContentsContainer_();
-        dom.querySelector(".categoryIcon")?.classList.add("categoryIcon");
         const rectangle = document.createElement("div")
         rectangle.className = "extender"
         rectangle.style.background = this.colour_

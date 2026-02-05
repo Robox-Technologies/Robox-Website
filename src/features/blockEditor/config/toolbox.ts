@@ -79,10 +79,10 @@ export const BaseToolbox: ToolboxDefinition = {
                     'kind': 'block',
                     'type': 'controls_whileUntil'
                 },
-                {
-                    'kind': 'block',
-                    'type': 'controls_forever'
-                },
+                // {
+                //     'kind': 'block',
+                //     'type': 'controls_forever'
+                // },
                 {
                     'kind': 'block',
                     'type': 'controls_for',
