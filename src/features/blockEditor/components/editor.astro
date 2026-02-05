@@ -7,6 +7,9 @@ import "../styles/toolbox.scss";
 </div>
 <script>
     import * as Blockly from 'blockly/core'; 
+    import * as En from 'blockly/msg/en';
+    import 'blockly/blocks';
+    Blockly.setLocale(En as any);
     import { BlocklyConfig } from '../config/blockly';
 
     Blockly.inject('blocklyDiv', BlocklyConfig);
