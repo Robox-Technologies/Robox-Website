@@ -112,7 +112,12 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
 
     // Fetch table and product row, if it exists
     const shipping = formatPrice(Number(paymentIntent.metadata.shipping), true);
-    populateProductTable(document, shipping, products);
+
+    let discount = "";
+    let discountRaw = paymentIntent.metadata.discount;
+    if (!isNaN(parseFloat(discountRaw))) discount = formatPrice(Number(discountRaw), true);
+
+    populateProductTable(document, shipping, discount, products);
 
     // Capture body inside table
     const containerTable = document.createElement("table");
@@ -129,7 +134,7 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
     document.body.replaceChildren(containerTable);
 
     // Create plaintext fallback
-    const plaintext = generateTxtEmail(templateName, orderId, date, total, customerName, shipping, products, address, billing);
+    const plaintext = generateTxtEmail(templateName, orderId, date, total, customerName, shipping, products, address, billing, discount);
 
     // Inline CSS styles using juice
     const juicedContent = juice(document.documentElement.outerHTML, {
@@ -139,7 +144,7 @@ export async function processEmail(paymentIntent: Stripe.PaymentIntent, verified
     return sendEmail(to, document.title, juicedContent, plaintext);
 }
 
-function generateTxtEmail(templateName: string, orderId: string, date: string, total: string, customerName: string, shipping: string, products: ProductEmail, address: string, billing: string): string {
+function generateTxtEmail(templateName: string, orderId: string, date: string, total: string, customerName: string, shipping: string, products: ProductEmail, address: string, billing: string, discount?: string): string {
     let plaintext = fs.readFileSync(`./src/templates/email/${templateName}.txt`, "utf-8");
 
     const summary = fs.readFileSync(`./src/templates/email/partials/summary.txt`, "utf-8");
@@ -153,6 +158,7 @@ function generateTxtEmail(templateName: string, orderId: string, date: string, t
 
     plaintext = plaintext.replaceAll("{{total}}", total);
     plaintext = plaintext.replaceAll("{{shipping}}", shipping);
+    plaintext = plaintext.replaceAll("{{discount}}", discount ? `\nDiscount: (${discount})` : "");
     plaintext = plaintext.replaceAll("{{address}}", address.replaceAll("<br>", "\n"));
     plaintext = plaintext.replaceAll("{{billing}}", billing.replaceAll("<br>", "\n"));
 
@@ -183,7 +189,22 @@ function processPaymentIntent (paymentIntent: Stripe.PaymentIntent, verifiedProd
     return [paymentIntent.receipt_email ?? "", emailProducts];
 }
 
-function populateProductTable(document: Document, shipping: string, products: ProductEmail) {
+function appendFeeRow(document: Document, totalRow: HTMLElement, name: string, value: string, className?: string) {
+    const feeRow = document.createElement("tr");
+    let customClass = className ? `${className} ` : "";
+    const feeName = createCell(document, name, `${customClass}purchase_item large`);
+    const feeQuantity = createCell(document, "", `${customClass}align-center small`);
+    const feePrice = createCell(document, value, `${customClass}align-right small`);
+
+    feeRow.appendChild(feeName);
+    feeRow.appendChild(feeQuantity);
+    feeRow.appendChild(feePrice);
+
+    // Insert above the total row
+    totalRow.parentElement!.insertBefore(feeRow, totalRow);
+}
+
+function populateProductTable(document: Document, shipping: string, discount: string, products: ProductEmail) {
     const productTable = document.getElementById("products");
     const totalRow = document.getElementById("total-row");
 
@@ -208,20 +229,9 @@ function populateProductTable(document: Document, shipping: string, products: Pr
         totalRow.parentElement!.insertBefore(productLine, totalRow);
     }
 
-    // If shipping is defined, add a shipping row
-    if (shipping) {
-        const shippingRow = document.createElement("tr");
-        const shippingName = createCell(document, "Shipping", "shipping purchase_item row-separate large");
-        const shippingQuantity = createCell(document, "", "shipping align-center row-separate small");
-        const shippingPrice = createCell(document, shipping, "shipping align-right row-separate small");
-
-        shippingRow.appendChild(shippingName);
-        shippingRow.appendChild(shippingQuantity);
-        shippingRow.appendChild(shippingPrice);
-
-        // Insert above the total row
-        totalRow.parentElement!.insertBefore(shippingRow, totalRow);
-    }
+    // Add fees if applicable
+    if (shipping) appendFeeRow(document, totalRow, "Shipping", shipping, `fee-row${discount ? "" : " row-separate"}`);
+    if (discount) appendFeeRow(document, totalRow, "Discount", `(${discount})`, "discount-row row-separate");
 }
 
 function createCell(document: Document, text: string, className: string): HTMLTableCellElement {

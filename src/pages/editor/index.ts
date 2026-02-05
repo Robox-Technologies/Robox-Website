@@ -21,6 +21,7 @@ import "./instructions/UF2Flash"
 import "./instructions/colourCalibration"
 
 import { showToast } from '@root/toast';
+import { printToConsole } from './console';
 
 
 
@@ -162,7 +163,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event.isUiEvent) return;
         saveBlockly(workspaceId, workspace);
     });
-
     // Extend first category
     const firstCategory = document.querySelector(".blocklyToolboxCategory")
     const icon = firstCategory.querySelector(".categoryIcon") as HTMLElement;

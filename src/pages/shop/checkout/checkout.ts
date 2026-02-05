@@ -2,7 +2,7 @@ import { getCart, stripePublishableKey } from "@root/payment/cart";
 import { Appearance, loadStripe } from '@stripe/stripe-js';
 import { Product } from "~types/api.js";
 import "@root/payment/shop";
-import { calculateTotalCost, cartToDictionary } from "@root/payment/stripe-shared-helper";
+import { calculateTotalCost, cartToDictionary, DiscountStatus } from "@root/payment/stripe-shared-helper";
 
 const cart = getCart();
 const cartProducts = Object.keys(cart["products"]).reduce((acc: Record<string, Product>, productId: string) => {
@@ -28,6 +28,14 @@ const messageContainer = document.getElementById('error-message') as HTMLParagra
 
 const totalValue = document.getElementById("total-value") as HTMLParagraphElement;
 const shippingValue = document.getElementById("shipping-cost") as HTMLParagraphElement;
+
+const couponField = document.getElementById("coupon") as HTMLInputElement;
+const couponSubmit = document.getElementById("couponApply") as HTMLButtonElement;
+const couponSuccessStatus = document.getElementById("discountSuccess") as HTMLParagraphElement;
+const couponFailureStatus = document.getElementById("discountFailure") as HTMLParagraphElement;
+const discountErrorDetails = document.getElementById("discountErrorDetails") as HTMLSpanElement;
+const discountRow = document.getElementById("discount-row") as HTMLDivElement;
+const discountValue = document.getElementById("discount-value") as HTMLParagraphElement;
 
 let paymentProcessing = false;
 let shippingPricingValid = false;
@@ -71,33 +79,17 @@ if (totalCost < 50) {
         addressElement.on("change", async (event) => {
             const country = event.value.address.country;
             const postcode = event.value.address.postal_code;
-            if (!country) {
-                updateShippingObfuscation(true)
-                return
-            };
-
-            // Recalculate shipping cost
-            shippingPricingValid = false;
-            updateSubmitButton();
-
-            const newCosts = await updatePaymentIntentShipping(paymentIntentID, country, postcode);
-
-            if (newCosts) {
-                // Pricing updated successfully
-                totalValue.textContent = newCosts.displayTotal;
-                shippingValue.textContent = newCosts.displayShipping;
-                shippingPricingValid = true;
-
-                updateSubmitButton();
-                updateShippingObfuscation(false);
-            } else {
-                // Price update unsuccessful
-                updateShippingObfuscation(true);
-            }
+            feeInputUpdate(paymentIntentID, country, postcode, undefined);
         });
     
         document.getElementById("termsConsent").addEventListener("click", () => {
             updateSubmitButton();
+        });
+
+        couponSubmit.addEventListener("click", () => {
+            // Update coupon!
+            const coupon = couponField.value;
+            feeInputUpdate(paymentIntentID, undefined, undefined, coupon, true);
         });
     
         form.addEventListener("change", () => {
@@ -160,15 +152,62 @@ async function updateShippingObfuscation(obfuscate: boolean) {
     }
 }
 
-async function updatePaymentIntentShipping(paymentIntent: string, country: string, postcode: string) {
-    const updatedPricing = await fetch("/api/store/updateShipping", {
+let persistentFees = {
+    country: "",
+    postcode: "",
+    coupon: ""
+}
+async function feeInputUpdate(
+    paymentIntentID: string, 
+    country?: string, 
+    postcode?: string, 
+    coupon?: string,
+    attemptingCoupon: boolean = false) {
+    if (country) persistentFees.country = country;
+    if (postcode) persistentFees.postcode = postcode;
+
+    if (attemptingCoupon) {
+        persistentFees.coupon = coupon;
+    }
+
+    // Recalculate shipping cost
+    shippingPricingValid = false;
+    updateSubmitButton();
+
+    const newCosts = await updatePaymentIntentFees(paymentIntentID, persistentFees.country, persistentFees.postcode, persistentFees.coupon);
+
+    if (!newCosts) {
+        updateShippingObfuscation(true);
+        return;
+    }
+
+    totalValue.textContent = newCosts.displayTotal;
+
+    if (newCosts.shippingSucceeded) {
+        // Pricing updated successfully
+        shippingValue.textContent = newCosts.displayShipping;
+        shippingPricingValid = true;
+
+        updateSubmitButton();
+        updateShippingObfuscation(false);
+    } else {
+        // Price update unsuccessful
+        updateShippingObfuscation(true);
+    }
+
+    updateCouponState(persistentFees.coupon == "" ? DiscountStatus.Unset : newCosts.discountStatus, newCosts.displayDiscount);
+}
+
+async function updatePaymentIntentFees(paymentIntent: string, country: string, postcode: string, coupon: string) {
+    const updatedPricing = await fetch("/api/store/updateFees", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
             paymentIntentID: paymentIntent,
             products: cartToDictionary(),
             country: country,
-            postcode: postcode
+            postcode: postcode,
+            coupon: coupon
         })
     });
 
@@ -190,4 +229,33 @@ function updateSubmitButton() {
     submitButton.disabled = !formValid || paymentProcessing || !shippingPricingValid;
 
     paymentLoader.style.display = paymentProcessing ? "block" : "none";
+}
+
+// 0 for unset. <0 for error. >0 for success.
+const discountStaleText = "Your cart's items are ineligible!"
+function updateCouponState(state: number, discountAmount: string) {
+    if (state == DiscountStatus.Unset) {
+        couponField.classList.remove("failure", "success");
+        couponFailureStatus.classList.remove("show");
+        couponSuccessStatus.classList.remove("show");
+        discountRow.classList.remove("show");
+        return;
+    } else if (state == DiscountStatus.Success) {
+        couponField.classList.remove("failure");
+        couponField.classList.add("success");
+
+        couponFailureStatus.classList.remove("show");
+        couponSuccessStatus.classList.add("show");
+        discountValue.textContent = `(${discountAmount})`;
+        discountRow.classList.add("show");
+    } else {
+        couponField.classList.remove("success");
+        couponField.classList.add("failure");
+
+        couponSuccessStatus.classList.remove("show");
+        couponFailureStatus.classList.add("show");
+        discountRow.classList.remove("show");
+
+        discountErrorDetails.textContent = state == DiscountStatus.Stale ? discountStaleText : "";
+    }
 }

@@ -40,6 +40,15 @@ $downloadButtonSize: 60px;
     transition-property: width, margin-left;
     transition-duration: .5s;
 }
+#blockly-0 {
+    .extender {
+        transition-duration: 0.5s !important;
+    }
+    svg {
+        transition: unset !important;
+        transition-duration: 0.5s !important;
+    }
+}
 
 body {
     min-width: 870px;
@@ -373,8 +382,6 @@ button[calibrating]:hover {
 }
 #console {
     .modal-content {
-        min-height: 500px;
-        height: 600px;
         overflow-y: scroll;
         margin-top: auto;
         display: flex;
@@ -385,9 +392,6 @@ button[calibrating]:hover {
             margin-top: auto;
         }
     }
-    
-    height: 700px;
-    width: unset !important;    
 
 }
 
