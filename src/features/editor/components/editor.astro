@@ -1,6 +1,14 @@
+---
+import "../styles/toolbox.scss";
+---
+
 <div id="blocklyDiv" class="flex-1">
 
 </div>
 <script>
     import * as Blockly from 'blockly/core'; 
+    import { BlocklyConfig } from '../config/blockly';
+
+    Blockly.inject('blocklyDiv', BlocklyConfig);
+    console.log('Blockly injected');
 </script>

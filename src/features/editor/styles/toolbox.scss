@@ -1,0 +1,566 @@
+
+$navEdges: #717171;
+$componentHeight: 48px;
+
+//How big the seperators are in the category
+$seperatorHeight: 20px;
+//The colour of the middle seperator line
+$seperatorColour: black;
+//The size of the middle seperator line
+$seperatorStrokeSize: 3px;
+//How long the stroke line
+$seperatorLength: 80%;
+
+//How tall the icon is in the category
+$iconHeight: 20px;
+
+//How wide the arch/tab thing is in the category sidebar
+$archWidth: 48px;
+
+//How big the sidebar is
+$toolboxWidth: 200px;
+
+//How much the tabs extend
+$extensionRest: 16px;
+$extensionAmount: 20px;
+//This is the height for the top and bottom divs
+$barHeight: 75px;
+
+$topButtonsDropShadowMult: 1;
+$dropShadowColour: rgb(47, 47, 47);
+
+$backgroundColour: #E6F0FF;
+
+$barPadding: 2.5%;
+$topBarButtonGap: 10px;
+
+$downloadButtonSize: 60px;
+
+@mixin extendTransition {
+    transition-property: width, margin-left;
+    transition-duration: .5s;
+}
+#blockly-0 {
+    .extender {
+        transition-duration: 0.5s !important;
+    }
+    svg {
+        transition: unset !important;
+        transition-duration: 0.5s !important;
+    }
+}
+
+body {
+    min-width: 870px;
+    min-height: 500px;
+}
+
+// Makes our label white.
+.blocklyTreeLabel {
+    color: white;
+    font-size: large;
+}
+.side-arch > svg > path{
+    fill: rgba(0,0,0,0)
+}
+.categoryIcon { 
+    @include extendTransition;
+    height: $iconHeight;
+    width: $iconHeight;
+    color: white;
+    position: absolute;
+    left: calc(($archWidth/3) - ($iconHeight/2) + $extensionRest);
+    margin-left: 0px;
+}
+
+.categoryIcon::before { 
+    font-size: $iconHeight;
+}
+.blocklyTreeSeparator {
+    display: flex;
+    background-color: white;
+    justify-content: center;
+    align-items: center;
+    height: $seperatorHeight;
+    border-bottom: 0;
+    margin: 0;
+}
+/* Adds padding around the group of categories and separators. */
+
+/* Adds space between the categories, rounds the corners and adds space around the label. */
+.blocklyToolboxCategory {
+    border-top: $seperatorStrokeSize solid #F5F5F5;
+    cursor: pointer;
+    
+    &:last-child {
+        border-bottom: $seperatorStrokeSize solid #F5F5F5;
+    }
+}
+.blocklyTreeLabel { 
+    color: black;
+}
+.customIcon {
+    color: white;
+}
+.blocklyToolbox {
+    background-color: white;
+    padding: 0;
+    width: $toolboxWidth;
+    border-right: $seperatorStrokeSize solid $navEdges;
+}
+
+.injectionDiv > .blocklyFlyout { 
+    border-right: $seperatorStrokeSize solid $navEdges;
+    background-color: rgb(245, 245, 245);;
+}
+.blocklyMutatorBackground {
+    fill: #fff !important;
+}
+/* Stacks the icon on top of the label. */
+.blocklyTreeRowContentContainer {
+    display: flex;
+    position: relative;
+    align-items: center;
+    flex-direction: row;
+}
+.blocklyTreeRowContentContainer >svg >path {
+    fill: white;
+}
+.blocklyToolboxCategory {
+    height: initial;
+}
+.side-arch {
+    height: $componentHeight;
+    width: $componentHeight;
+}
+.extender {
+    @include extendTransition;
+
+    height: $componentHeight;
+    border-right: 1px solid rgba(0, 0, 0, 0);
+    margin-right: -1px;
+    z-index: 0;
+    box-sizing: border-box;
+    width: $extensionRest;
+
+    &.extended {
+        width: calc($extensionAmount + $extensionRest);
+    }
+}
+
+.blocklyTreeRow { 
+    margin-bottom: 0;
+}
+#blocklyDiv {
+    flex: auto;
+    position: relative;
+}
+.injectionDiv {
+    border-top: $seperatorStrokeSize solid $navEdges;
+    box-sizing: border-box;
+}
+.blocklyMainBackground {
+    stroke: none;
+}
+html {
+    height: 100%;
+}
+body {
+    height: 100%;
+    flex-direction: column;
+    display: flex;
+    background-color: $backgroundColour;
+}
+#workspaceTabs {
+    background-color: red;
+}
+#workspaceTabs {
+    height: $barHeight;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 $barPadding 0 $barPadding;
+    flex-direction: row;
+    align-content: center;
+}
+#buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    gap: $topBarButtonGap;
+}
+#project-name-input {
+    font-size: 20px;
+    background-color: unset;
+    border-radius: unset;
+    width: 170px;
+    padding: 10px;
+    border: 0;
+}
+#download-button {
+    background-color: unset;
+    cursor: pointer;
+    padding: 8px;
+    padding-right: 12px;
+    font-size: 16px;
+}
+
+#project-name-form {
+
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 7px;
+}
+#bluetooth, #learn {
+    font-size: 20px;
+}
+#project-name {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#back-button {
+    background-color: unset;
+    font-size: 20px;
+    color: white;
+    display: flex;
+}
+#back-button:hover {
+    cursor: pointer;
+}
+#back-button > svg > path {
+    color: white;
+}
+#back-button > svg {
+    display: block;
+    margin: auto;
+}
+
+.mainButton {
+    color: white;
+    height: 100%;
+    font-weight: bold;
+    font-size: larger;
+    width: 270px;
+    padding: 0 40px 0 40px;
+    border-right: $seperatorStrokeSize solid white;
+
+}
+#connection-management {
+
+
+    display: flex;
+    pointer-events: auto;
+
+    background-color: red;
+    justify-content: space-between;
+    padding: 0;
+    width: 310px;
+    height: 50px;
+    border-radius: 25px;
+
+    & > * {
+        cursor: pointer;
+    }
+}
+.mainSideButton {
+    font-size: 20px;
+    padding: 0 15px 0 15px;
+    color: white;
+    
+}
+.categoryLabel > .blocklyFlyoutLabelText {
+    font: 400 24px sans-serif !important;
+}
+$blocklyUIIconSize: 40px;
+$zoomButtonsGap: 10px;
+
+#blocklyCustomTimeControls {
+    z-index: 9;
+    position: absolute;
+    top: 32px;
+    right: 32px;
+
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+}
+
+#blocklyCustomTimeControls > .uiButtons:first-child {
+    border-radius: 7px 0 0 7px;
+    margin-right: -$seperatorStrokeSize;
+}
+#blocklyCustomTimeControls > .uiButtons:last-child {
+    border-radius: 0 7px 7px 0;
+}
+
+#calibrate-button, #calibrate-outcome-button {
+    svg {
+        display: none;
+    }
+}
+.calibrate-button{
+    width: 100px;
+    height: 37px;
+    min-height: 37px;
+    svg {
+        display: none;
+    }
+}
+
+#calibrate-outcome-button[calibrating], #calibrate-button[calibrating] {
+    font-size: 0;
+    width: 76px;
+    max-height: 37px !important;
+    svg {
+        font-size: 20px;
+        display: inline;
+    }
+}
+button[calibrating]:hover {
+    cursor: not-allowed;
+}
+.uiButtons {
+
+    background-color: white;
+    color: blue;
+    border: $seperatorStrokeSize solid blue;
+    font-size: calc((30px/$blocklyUIIconSize)*$blocklyUIIconSize);
+    width: $blocklyUIIconSize;
+    height: $blocklyUIIconSize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    cursor: pointer;
+}
+
+.sideControls {
+    pointer-events: none;
+    user-select: none;
+    position: absolute;
+    z-index: 9;
+    right: 32px;
+    bottom: 32px;
+}
+
+.sideButtons {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    gap: 16px;
+    margin-bottom: 32px;
+
+    .uiButtons {
+        pointer-events: auto;
+        border-radius: 50%;
+    }
+    .zoomControls {
+        display: flex;
+        flex-direction: column;
+        align-items: end;
+        gap: 16px;
+    }
+    #console-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: larger;
+        color: green;
+        border: 3px solid green;
+    }
+    #console-button:disabled {
+        color: #717171;
+        border: 3px solid #717171;
+    }
+    
+}
+#console {
+    .modal-content {
+        overflow-y: scroll;
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        :first-child
+        {
+            margin-top: auto;
+        }
+    }
+
+}
+
+#connection-management {
+    #download-robox-button {
+        display: none;
+    }
+    #connect-robox-button {
+        display: none;
+    }
+    #stop-robox-button {
+        display: none;
+    }
+    #code-download-robox-button {
+        display: none;
+    }
+    #run-robox-button {
+        display: none;
+    }
+
+    #loading {
+        display: none;
+    }
+
+    #options {
+        display: none;
+    }
+    #disconnect {
+        display: none;
+    }
+    #download {
+        display: none;
+    }
+}
+
+#connection-management[status="disconnected"] {
+    background-color: blue;
+    #connect-robox-button {
+        display: block;
+        width: 100%;
+        border-right: unset;
+    }
+}
+
+#connection-management[status="downloaded"] {
+    background-color: green;
+    #run-robox-button {
+        display: block;
+    }
+    
+    #download {
+        display: block;
+    }
+}
+#robox-project-download .fa-download {
+    color: green;
+}
+#connection-management[status="running"] {
+    background-color: red;
+    #stop-robox-button {
+        display: block;
+        width: 100%;
+        border-right: unset;
+    }
+}
+$settingsToolbarWidth: 200px;
+#settings-toolbar {
+    width: $settingsToolbarWidth;
+    position: absolute;
+    bottom: 0;
+    left: calc(10px - $settingsToolbarWidth );
+    top: 35px;
+}
+#robox-settings-calibrate > svg {
+    color: blue;
+}
+#connection-management[status="no-serial"] {
+    background-color: yellow;
+    border-right: unset;
+
+    .mainButton {
+        width: 100%;
+    }
+
+    #code-download-robox-button {
+        display: block;
+        border-right: unset;
+    }
+}
+
+#connection-management[loading="true"] {
+    #download-robox-button {
+        display: none;
+    }
+    #connect-robox-button {
+        display: none;
+    }
+    #stop-robox-button {
+        display: none;
+    }
+    #code-download-robox-button {
+        display: none;
+    }
+    #run-robox-button {
+        display: none;
+    }
+
+    #options {
+        display: none;
+    }
+    #disconnect {
+        display: none;
+    }
+    #download {
+        display: none;
+    }
+    
+    #loading {
+        display: block;
+        width: 100%;
+        font-size: 20px;
+        border-right: unset;
+    }
+
+}
+#robox-settings-button, #robox-extension-button {
+    font-size: 20px;
+    cursor: pointer;
+}
+#extension-modal {
+    .modal-content {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-content: flex-start;
+        gap: 32px;
+    }
+    .card { 
+        flex: 0 0 30%;
+        width: 30%;
+
+        .card-image {
+            min-width: 100px;
+            object-fit: contain;
+            padding: 5px;
+            background-color: blue;
+        }
+        .card-description {
+            font-size: small;
+        }
+    }
+    .card:hover {
+        cursor: pointer;
+        transform: translateY(-2px);
+    }
+}
+.bootsel[loading] {
+    button.calibrate-button {
+        font-size: 0;
+    }
+    .fa-spinner {
+        display: inline;
+        font-size: 20px;
+    }
+}
+dialog[loading] #open-file::hover {
+    cursor: not-allowed;
+}
+.extension-card img {
+    pointer-events: none;      /* optional if you really need it */
+    user-select: none;         /* <- prevents selection */
+    -webkit-user-drag: none;   /* <- prevents dragging ghost image */
+    draggable: false;          /* HTML attribute alternative */
+}
