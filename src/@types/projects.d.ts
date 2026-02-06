@@ -5,7 +5,7 @@ import type { ExtensionKey } from './extensions';
 interface UserProject {
     name: string;
     time: DayJS;
-    workspace: Workspace | null;
+    workspace: Record<string, any> | null;
     thumbnail: string | null;
     extensions: UserExtensions;
     sensors: UserSensors;

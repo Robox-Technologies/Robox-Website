@@ -4,6 +4,14 @@ import ProjectContext from "@components/editor/projectContext.tsx";
 import ProjectHeader from "@components/editor/projectHeader.astro";
 import BlocklyEditor from "@features/blockEditor/components/editor.astro";
 ---
+<script>
+    import { useStore } from '@nanostores/react';
+    import { projectId } from "@stores/project";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    projectId.set(id);
+</script>
 <style>
     html, body {
         height: 100%;

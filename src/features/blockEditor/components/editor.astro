@@ -15,8 +15,8 @@ import "../styles/toolbox.scss";
 <script>
     // Setting up Blockly
     import * as Blockly from 'blockly/core'; 
-
-    
+    import { loadBlockly, saveBlockly } from "../utils/serialization";
+    import { projectId } from "@stores/project";
     // Required for some reason as it does not apply automatically 
     import * as En from 'blockly/msg/en';
     // @ts-ignore its so odd why it cares
@@ -27,8 +27,14 @@ import "../styles/toolbox.scss";
     import.meta.glob('../config/blocks/*.ts', { eager: true });
     import.meta.glob('../config/generators/*.ts', { eager: true });
 
-    Blockly.inject('blocklyDiv', BlocklyConfig);
-
+    const workspace = Blockly.inject('blocklyDiv', BlocklyConfig);
+    const id = projectId.get();
+    loadBlockly(workspace)
+    // Saving every time a change is made to the workspace, except for UI events (like dragging blocks)
+    workspace.addChangeListener((event) => { 
+        if (event.isUiEvent) return;
+        saveBlockly(workspace);
+    });
 
 
 </script>
