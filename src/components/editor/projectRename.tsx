@@ -1,4 +1,4 @@
-import { id } from "@stores/project"
+import { id } from "@stores/editor"
 import { useStore } from "@nanostores/react";
 import { useEffect, useState } from "react";
 import { editProject, getProject } from "@utils/serialization";

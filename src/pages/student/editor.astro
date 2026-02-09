@@ -5,7 +5,7 @@ import ProjectHeader from "@components/editor/projectHeader.astro";
 import BlocklyEditor from "@features/blockEditor/components/editor.astro";
 ---
 <script>
-    import { id } from "@stores/project";
+    import { id } from "@stores/editor";
 
     const urlParams = new URLSearchParams(window.location.search);
     const projectId = urlParams.get('id');

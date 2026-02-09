@@ -1,6 +1,6 @@
 // This file exists to seperate out the Blockly library (as it does not support tree shaking) from the rest of the codebase
 import { Workspace, WorkspaceSvg } from "blockly/core";
-import { id } from "@stores/project";
+import { id } from "@stores/editor";
 import { getProject, getProjects, isValidProjectId, isProtoPollution, sanitizeImageDataUrl, editProject } from "@utils/serialization";
 import * as Blockly from "blockly";
 import { workspaceToPng_ } from "./screenshot";
