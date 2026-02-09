@@ -1,0 +1,40 @@
+---
+import { faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
+import Button from "@components/button";
+---
+<div class="flex flex-col items-end gap-2">
+    <Button icon={faPlus} id="zoomInButton" className="flex items-center w-10 h-10 justify-center border-2 border-blue rounded-full bg-white box-shadow" iconStyle="text-blue text-2xl"/>
+        
+    <Button icon={faMinus} id="zoomOutButton" className="flex items-center w-10 h-10 justify-center border-2 border-blue rounded-full bg-white box-shadow" iconStyle="text-blue text-2xl"/>
+</div>
+<script>
+    const zoomStep = 0.7;
+    import * as Blockly from "blockly";
+    document.addEventListener("DOMContentLoaded", () => {
+        const workspace: Blockly.WorkspaceSvg = Blockly.getMainWorkspace() as Blockly.WorkspaceSvg;
+        if (!workspace) throw new Error("Workspace not found");
+        function stepZoom(mult: number) {
+            const workspaceCoordinates = workspace.getMetricsManager().getViewMetrics(false);
+            const toolboxCoordinates = workspace.getMetricsManager().getToolboxMetrics();
+            const flyoutCoordinates = workspace.getMetricsManager().getFlyoutMetrics();
+            
+            const centreX = (workspaceCoordinates.width / 2) + toolboxCoordinates.width + flyoutCoordinates.width;
+            const centreY = workspaceCoordinates.height / 2;
+
+            workspace.zoom(centreX, centreY, zoomStep * mult);
+        }
+
+        const zoomInButton = document.querySelector("button#zoomInButton");
+        if (!zoomInButton) throw new Error("Zoom in button not found");
+        zoomInButton.addEventListener("click", () => {
+            stepZoom(1);
+        });
+
+        const zoomOutButton = document.querySelector("button#zoomOutButton");
+        if (!zoomOutButton) throw new Error("Zoom out button not found");
+        zoomOutButton.addEventListener("click", () => {
+            stepZoom(-1);
+        });
+    });
+    
+</script>
