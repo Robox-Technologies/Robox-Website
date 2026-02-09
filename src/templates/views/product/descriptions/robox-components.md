@@ -1,13 +1,11 @@
 ## Unlock the world of robotics
 
 **Ro/Box** is a compact, hands-on kit designed for education, experimentation, and innovation. Whether you're a beginner or an advanced maker, this kit provides all the essential components needed to bring your robotic creations to life.
-## Compact & Sturdy Design
 
-Ro/Box measures **110mm (wide) x 125mm (long) x 68mm (tall)**, or 88mm tall with wheels. The frame is crafted from 3mm plywood.
+This is the components bag, intended for spare parts or to use your creativitiy to create your own chassis! 
 
 ## What's in the Ro/Box:
 
-- 3mm Plywood Panels (x1 Kit)
 - Dual-Shaft DC 200RPM Gearbox TT Motor (x2)
 - 66mm Plastic Tire Wheel (x2)
 - TCRT5000 Infrared (IR) Sensor (x2)
@@ -17,8 +15,6 @@ Ro/Box measures **110mm (wide) x 125mm (long) x 68mm (tall)**, or 88mm tall with
 - Raspberry Pi Pico (x1)
 - 170-Pin Breadboard (x1)
 - 3xAA Battery Case (x1)
-- M2 Nut + Bolt (x4)
-- Zip Tie (x35)
 - 10cm Male-Female Dupont Wire (x12)
 - 10cm Female-Female Dupont Wire (x11)
 - 10cm Male-Male Dupont Wire (x1)
@@ -30,7 +26,7 @@ Ro/Box measures **110mm (wide) x 125mm (long) x 68mm (tall)**, or 88mm tall with
 
 ## Easy Assembly & Secure Mounting
 
-The kit includes zip ties, screws, and bolts to securely mount components. No soldering required—simply connect, fasten, and start coding!
+The kit includes all the electrical components required to make a working! No soldering required—simply connect, fasten, and start coding!
 
 <img alt="A nearly-complete Ro/Box kit being assembled" src="@images/product/assembly.png">
 
