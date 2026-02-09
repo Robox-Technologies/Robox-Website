@@ -2,7 +2,7 @@
   "extends": "astro/tsconfigs/strict",
   "include": [
     ".astro/types.d.ts",
-    "src/@types/**/*.d.ts",
+    "src/types/**/*.d.ts",
     "**/*"
   ],
   "exclude": [
@@ -21,7 +21,7 @@
     "paths": {
       "@*": ["src/*"]
     },
-    "typeRoots": ["src/@types"],
+    "typeRoots": ["src/types", "node_modules/@types"],
     "plugins": [
       {
         "name": "@astrojs/ts-plugin"
