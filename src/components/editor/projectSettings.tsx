@@ -63,7 +63,7 @@ function ProjectSettingButton({color, icon, children}: {color: string, icon: Ico
     return (
         <Button 
             icon={icon}
-            iconColor={color}
+            iconStyle={color}
             className={`text-black! text-sm p-0! text-left flex items-center gap-2`}
         >
             {children}
