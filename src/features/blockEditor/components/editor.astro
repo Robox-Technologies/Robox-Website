@@ -21,6 +21,7 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
     import * as Blockly from 'blockly/core'; 
     import { loadBlockly, saveBlockly } from "../utils/serialization";
     import { id } from "@stores/project";
+    import { registerControls } from '../utils/controls';
     // Required for some reason as it does not apply automatically 
     import * as En from 'blockly/msg/en';
     // @ts-ignore its so odd why it cares
@@ -39,6 +40,7 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
         if (event.isUiEvent) return;
         saveBlockly(workspace);
     });
+    registerControls(workspace);
 
 
 </script>
