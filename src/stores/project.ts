@@ -1,3 +1,3 @@
 import { atom } from 'nanostores';
 
-export const projectId = atom(null as string | null);
+export const id = atom(null as string | null);
