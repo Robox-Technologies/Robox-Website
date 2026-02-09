@@ -6,13 +6,16 @@
     "dev": "astro check && astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "build:ios": "npm run build && npx cap sync && npx cap open ios"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.2",
     "@astrojs/react": "^4.4.2",
     "@astrojs/ts-plugin": "^1.10.6",
     "@blockly/continuous-toolbox": "^7.0.8",
+    "@capacitor/core": "^8.0.2",
+    "@capacitor/ios": "^8.0.2",
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
     "@fortawesome/free-brands-svg-icons": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
@@ -33,6 +36,7 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.0.2",
     "@stylistic/eslint-plugin": "^5.7.0",
     "@typescript-eslint/parser": "^8.53.1",
     "eslint": "^9.39.2",

@@ -1,0 +1,6 @@
+{
+	"appId": "com.robox.app",
+	"appName": "Robox Learning App",
+	"webDir": "dist",
+	"packageClassList": []
+}
