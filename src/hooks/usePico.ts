@@ -72,7 +72,6 @@ export function usePico() {
         // Computed values
         isConnected: state.connectionStatus === ConnectionStatus.CONNECTED,
         isConnecting: state.connectionStatus === ConnectionStatus.CONNECTING,
-        hasError: state.connectionStatus === ConnectionStatus.ERROR,
         isFirmwareUpToDate: state.firmwareStatus === FirmwareStatus.UP_TO_DATE,
         isFirmwareOutOfDate: state.firmwareStatus === FirmwareStatus.OUT_OF_DATE,
         

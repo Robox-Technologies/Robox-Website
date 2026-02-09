@@ -12,11 +12,11 @@ export interface Communication {
 export enum ConnectionStatus {
     DISCONNECTED = "disconnected",
     DISCONNECTING = "disconnecting",
+    RESTARTING = "restarting",
     CONNECTING = "connecting",
     CONNECTED = "connected",
     LOADING = "loading",
     RUNNING = "running",
-    ERROR = "error"
 }
 
 export enum FirmwareStatus {
@@ -31,7 +31,7 @@ export type CommunicationMethod = "USB" | "Bluetooth" | null
 
 // Types
 export interface PicoMessage {
-    type: "console" | "confirmation" | "error"
+    type: "console" | "download" | "error" | "firmware" | "connect"
     message: string
 }
 
@@ -49,5 +49,6 @@ export interface PicoEventMap {
     calibrated: { message: string }
     downloaded: object
     error: { message: string }
+    firmware: { status: FirmwareStatus, version: string }
     revert: object
 }

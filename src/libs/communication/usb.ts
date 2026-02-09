@@ -192,7 +192,7 @@ export class USBCommunication implements Communication {
         if (portInfo.usbVendorId === PI_VENDOR_ID) {
             if (event.type === 'connect') {
                 await this.parent.connect(port)
-            } else if (event.type === 'disconnect') {
+            } else if (event.type === 'disconnect' && !this.parent.getState().isRestarting) {
                 await this.parent.disconnect()
             }
         }

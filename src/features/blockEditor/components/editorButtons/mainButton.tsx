@@ -1,9 +1,42 @@
 import Button from "@components/button";
 import { usePico } from "@hooks/usePico";
+import { ConnectionStatus } from "src/types/communication";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons/faSpinner";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect } from "react";
+const statusStyling: Record<ConnectionStatus, {className: string, children: React.ReactNode}> = {
+    [ConnectionStatus.CONNECTED]: { className: "bg-green", children: "Run Ro/Box" },
+    [ConnectionStatus.CONNECTING]: { className: "bg-blue", children: <FontAwesomeIcon icon={faSpinner} spin /> },
+    [ConnectionStatus.DISCONNECTED]: { className: "bg-blue", children: "Connect to Ro/Box" },
+    [ConnectionStatus.DISCONNECTING]: { className: "bg-blue", children: <FontAwesomeIcon icon={faSpinner} spin /> },
+    [ConnectionStatus.RESTARTING]: { className: "bg-red", children: <FontAwesomeIcon icon={faSpinner} spin /> },
+    [ConnectionStatus.LOADING]: { className: "bg-red", children: <FontAwesomeIcon icon={faSpinner} spin /> },
+    [ConnectionStatus.RUNNING]: { className: "bg-red", children: "Stop Ro/Box" },
+}
 export default function MainButton() {
+    const { connectionStatus, connect, disconnect, restart, sendCode, runCode, setCommunicationMethod } = usePico()
+    const { className, children } = statusStyling[connectionStatus]
+    useEffect(() => {
+        setCommunicationMethod("USB")
+    }, [])
+    const stateClickHandlers: Partial<Record<ConnectionStatus, () => void>> = {
+        [ConnectionStatus.DISCONNECTED]: () => {
+            connect()
+        },
+        [ConnectionStatus.CONNECTED]: async () => {
+            await sendCode("print('Hello, Ro/Box!')")
+            runCode()
+            // runCode()
+        },
+        [ConnectionStatus.RUNNING]: () => {
+            restart()
+        }
+    }
+
+    const handleClick = stateClickHandlers[connectionStatus]
     return (
-        <Button className="bg-blue rounded-3xl box-shadow w-70 text-xl font-bold">
-            Connect To RoBox
+        <Button className={`rounded-3xl box-shadow w-65 text-xl font-bold py-3 px-2 ${className}`} onClick={handleClick}  disabled={!handleClick}>
+            {children}
         </Button>
     )
 }

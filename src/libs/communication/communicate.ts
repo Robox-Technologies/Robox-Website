@@ -84,7 +84,6 @@ export class Pico {
 
         this.responded = false
         this.firmwareConfirmed = false
-
         this.updateState({
             communicationMethod: method,
             connectionStatus: ConnectionStatus.DISCONNECTED,
@@ -114,9 +113,6 @@ export class Pico {
             this.firmwareCheck()
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error)
-            this.updateState({
-                connectionStatus: ConnectionStatus.ERROR,
-            })
             this.emit('error', { message })
         }
     }
@@ -134,7 +130,6 @@ export class Pico {
             }
 
             await this.communication.disconnect()
-
             this.updateState({
                 connectionStatus: ConnectionStatus.DISCONNECTED,
                 firmwareStatus: FirmwareStatus.UNKNOWN,
@@ -154,13 +149,15 @@ export class Pico {
         }
 
 
-        if (type === "confirmation") {
+        if (type === "firmware") {
             this.firmwareConfirmed = true
             this.updateState({
                 firmwareStatus: FirmwareStatus.UP_TO_DATE,
                 connectionStatus: ConnectionStatus.CONNECTED,
                 firmwareVersion: message
             })
+        } else if (type === "connect" && this.state.isRestarting) {
+            this.updateState({ connectionStatus: ConnectionStatus.CONNECTED })
         } else if (type === "console") {
             this.emit('console', { message })
         } else if (type === "error") {
@@ -204,7 +201,7 @@ export class Pico {
 
     restart(): void {
         this.updateState({ 
-            connectionStatus: ConnectionStatus.DISCONNECTING,
+            connectionStatus: ConnectionStatus.RESTARTING,
             isRestarting: true
         })
         this.communication?.write(COMMANDS.RESTART)

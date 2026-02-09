@@ -1,7 +1,7 @@
 import type { Communication, PicoMessage }  from "src/types/communication";
 import type { Pico } from "./communicate";
 
-const WRITE_TIMEOUT = 2
+const WRITE_TIMEOUT = 20
 const UART_SERVICE = 0xFFE0
 const UART_CHARACTERISTIC = 0xFFE1
 const CHUNK_SIZE = 20
@@ -129,7 +129,7 @@ export class BluetoothCommunication implements Communication {
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error)
             this.parent.handleMessage({ type: 'error', message })
-            throw new Error("Could not write to Ro/Box!")
+            throw new Error("Could not write to Ro/Box!", { cause: error })
         }
     }
 
