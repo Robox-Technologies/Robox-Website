@@ -15,8 +15,6 @@ This is the components bag, intended for spare parts or to use your creativitiy 
 - Raspberry Pi Pico (x1)
 - 170-Pin Breadboard (x1)
 - 3xAA Battery Case (x1)
-- M2 Nut + Bolt (x4)
-- Zip Tie (x35)
 - 10cm Male-Female Dupont Wire (x12)
 - 10cm Female-Female Dupont Wire (x11)
 - 10cm Male-Male Dupont Wire (x1)
