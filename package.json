@@ -38,6 +38,7 @@
     "@types/w3c-web-usb": "^1.0.13",
     "@types/web-bluetooth": "^0.0.21",
     "@typescript-eslint/parser": "^8.53.1",
+    "baseline-browser-mapping": "^2.9.19",
     "eslint": "^9.39.2",
     "eslint-plugin-astro": "^1.5.0",
     "eslint-plugin-react": "^7.37.5",
