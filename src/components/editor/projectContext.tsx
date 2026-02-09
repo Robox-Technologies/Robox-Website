@@ -1,7 +1,7 @@
 import {EditorContext} from "@stores/project"
 import { useEffect, useState, useContext } from "react"
 import { getProject } from "@utils/serialization";
-import type { UserProject } from "@types/projects";
+import type { UserProject } from "projects";
 export default function ProjectContext({ children }: { children?: React.ReactNode }) {
     const [project, setProject] = useState<UserProject & { id: string } | null>(null);
     useEffect(() => {

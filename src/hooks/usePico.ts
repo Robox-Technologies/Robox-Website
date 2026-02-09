@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { pico } from '@libs/communication/communicate'
-import type { PicoState, CommunicationMethod } from 'communication'
-import { ConnectionStatus, FirmwareStatus } from 'communication'
+import type { PicoState, CommunicationMethod } from "src/types/communication";
+import { ConnectionStatus, FirmwareStatus }  from "src/types/communication";
 
 export function usePico() {
     const [state, setState] = useState<PicoState>(pico.getState())
@@ -67,14 +67,12 @@ export function usePico() {
         firmwareStatus: state.firmwareStatus,
         firmwareVersion: state.firmwareVersion,
         isRestarting: state.isRestarting,
-        lastError: state.lastError,
-        lastMessage: state.lastMessage,
         communicationMethod: state.communicationMethod,
         
         // Computed values
         isConnected: state.connectionStatus === ConnectionStatus.CONNECTED,
         isConnecting: state.connectionStatus === ConnectionStatus.CONNECTING,
-        hasError: state.connectionStatus === ConnectionStatus.ERROR || state.lastError !== null,
+        hasError: state.connectionStatus === ConnectionStatus.ERROR,
         isFirmwareUpToDate: state.firmwareStatus === FirmwareStatus.UP_TO_DATE,
         isFirmwareOutOfDate: state.firmwareStatus === FirmwareStatus.OUT_OF_DATE,
         

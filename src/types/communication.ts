@@ -11,8 +11,11 @@ export interface Communication {
 // Enums for better type safety
 export enum ConnectionStatus {
     DISCONNECTED = "disconnected",
+    DISCONNECTING = "disconnecting",
     CONNECTING = "connecting",
     CONNECTED = "connected",
+    LOADING = "loading",
+    RUNNING = "running",
     ERROR = "error"
 }
 
@@ -37,8 +40,6 @@ export interface PicoState {
     firmwareStatus: FirmwareStatus
     firmwareVersion: string
     isRestarting: boolean
-    lastError: string | null
-    lastMessage: string | null
     communicationMethod: CommunicationMethod
 }
 

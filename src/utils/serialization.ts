@@ -1,5 +1,5 @@
-import type { UserProject } from "@types/projects";
-import type { ExtensionKey } from "@types/extensions";
+import type { UserProject } from "projects";
+import type { ExtensionKey } from "extensions";
 import extensions from '@data/extensions.json';
 import DOMPurify from "dompurify";
 import sensors from '@data/sensors.json';

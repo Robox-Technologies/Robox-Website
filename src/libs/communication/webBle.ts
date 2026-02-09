@@ -1,4 +1,4 @@
-import type { Communication, PicoMessage } from "communication";
+import type { Communication, PicoMessage }  from "src/types/communication";
 import type { Pico } from "./communicate";
 
 const WRITE_TIMEOUT = 2

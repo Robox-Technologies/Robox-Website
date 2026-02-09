@@ -1,5 +1,6 @@
-import type { Communication, PicoEventMap, CommunicationMethod, PicoState, PicoMessage } from "communication";
-import { ConnectionStatus, FirmwareStatus } from "communication";
+import type { Communication, PicoEventMap, CommunicationMethod, PicoState, PicoMessage } from "src/types/communication";
+
+import { ConnectionStatus, FirmwareStatus } from "src/types/communication";
 
 import { USBCommunication } from "./usb"
 import { BluetoothCommunication } from "./webBle"
@@ -42,8 +43,6 @@ export class Pico {
             firmwareStatus: FirmwareStatus.UNKNOWN,
             firmwareVersion: "0.0.0",
             isRestarting: false,
-            lastError: null,
-            lastMessage: null,
             communicationMethod: null
         }
     }
@@ -108,20 +107,15 @@ export class Pico {
         }
 
         try {
-            this.updateState({ connectionStatus: ConnectionStatus.CONNECTING })
             await this.communication.connect(port)
             
-            this.updateState({
-                connectionStatus: ConnectionStatus.CONNECTED,
-                isRestarting: false
-            })
+            
             
             this.firmwareCheck()
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error)
             this.updateState({
                 connectionStatus: ConnectionStatus.ERROR,
-                lastError: message
             })
             this.emit('error', { message })
         }
@@ -144,11 +138,9 @@ export class Pico {
             this.updateState({
                 connectionStatus: ConnectionStatus.DISCONNECTED,
                 firmwareStatus: FirmwareStatus.UNKNOWN,
-                lastError: this.state.isRestarting ? null : this.state.lastError
             })
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error)
-            this.updateState({ lastError: message })
             this.emit('error', { message })
         }
     }
@@ -161,19 +153,20 @@ export class Pico {
             this.responded = true
         }
 
-        this.updateState({ lastMessage: message })
 
         if (type === "confirmation") {
             this.firmwareConfirmed = true
             this.updateState({
                 firmwareStatus: FirmwareStatus.UP_TO_DATE,
+                connectionStatus: ConnectionStatus.CONNECTED,
                 firmwareVersion: message
             })
         } else if (type === "console") {
             this.emit('console', { message })
         } else if (type === "error") {
-            this.updateState({ lastError: message })
             this.emit('error', { message })
+            // We disconnect on error because the Ro/Box is likely in a bad state if it's sending error messages
+            this.disconnect()
         }
     }
 
@@ -187,15 +180,15 @@ export class Pico {
             if ((!this.firmwareConfirmed && this.responded) || (this.responded && hasWrongVersion)) {
                 const errorMessage = `The firmware running on the Ro/Box (${this.state.firmwareVersion}) is out of date! Please update it.`
                 this.updateState({
+                    connectionStatus: ConnectionStatus.DISCONNECTED,
                     firmwareStatus: FirmwareStatus.OUT_OF_DATE,
-                    lastError: errorMessage
                 })
                 this.emit('error', { message: errorMessage })
             } else if (!this.firmwareConfirmed && !this.responded) {
                 const errorMessage = "Ro/Box did not respond to the firmware check! Please try disconnecting and reconnecting it. If this issue persists, try reflashing the Ro/Box."
                 this.updateState({
+                    connectionStatus: ConnectionStatus.DISCONNECTED,
                     firmwareStatus: FirmwareStatus.NO_RESPONSE,
-                    lastError: errorMessage
                 })
                 this.emit('error', { message: errorMessage })
             }
@@ -205,13 +198,15 @@ export class Pico {
     write(command: string | string[]): void {
         this.communication?.write(command).catch(error => {
             const message = error instanceof Error ? error.message : String(error)
-            this.updateState({ lastError: message })
             this.emit('error', { message })
         })
     }
 
     restart(): void {
-        this.updateState({ isRestarting: true })
+        this.updateState({ 
+            connectionStatus: ConnectionStatus.DISCONNECTING,
+            isRestarting: true
+        })
         this.communication?.write(COMMANDS.RESTART)
     }
 
@@ -220,6 +215,7 @@ export class Pico {
     }
 
     request(): void {
+        this.updateState({ connectionStatus: ConnectionStatus.CONNECTING })
         this.communication?.request()
     }
 
@@ -229,7 +225,7 @@ export class Pico {
 
     async sendCode(code: string): Promise<void> {
         if (!this.communication) return
-
+        this.updateState({ connectionStatus: ConnectionStatus.LOADING })
         await this.communication.write(COMMANDS.START_UPLOAD)
         await this.communication.write(code)
         await this.communication.write(COMMANDS.END_UPLOAD)
@@ -237,6 +233,7 @@ export class Pico {
 
     runCode(): void {
         this.communication?.write(COMMANDS.START_PROGRAM)
+        this.updateState({ connectionStatus: ConnectionStatus.RUNNING })
     }
 }
 

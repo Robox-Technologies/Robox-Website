@@ -1,4 +1,4 @@
-import type { UserProject } from "@types/projects";
+import type { UserProject } from "projects";
 import { createContext} from "react";
 export const EditorContext = createContext<{
     project: UserProject & { id: string } | null;
