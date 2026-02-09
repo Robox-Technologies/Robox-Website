@@ -1,7 +1,7 @@
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useContext } from "react";
-import { ProjectSettingsModalContext } from "@context/projectSettingsModal";
+import { ProjectSettingsModalContext } from "@stores/projectSettingsModal";
 import Button from "@components/button";
 
 export default function ProjectSettings({id}: {id: string}) {

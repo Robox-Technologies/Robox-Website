@@ -1,4 +1,4 @@
-import {EditorContext} from "@context/project"
+import {EditorContext} from "@stores/project"
 import { useEffect, useState, useContext } from "react"
 import { getProject } from "@utils/serialization";
 import type { UserProject } from "@@types/projects";

@@ -3,7 +3,7 @@ import { faSquareBinary } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ProjectSettings from "./projectSettings";
 import { useContext } from "react";
-import { ProjectSettingsModalContext } from "@context/projectSettingsModal";
+import { ProjectSettingsModalContext } from "@stores/projectSettingsModal";
 import SettingDialog from "./settingDialog";
 import { getProject } from "@utils/serialization";
 import dayjs from "dayjs";
