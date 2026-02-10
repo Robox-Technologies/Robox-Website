@@ -48,7 +48,7 @@ export default function ProjectSettings() {
             />
             <dialog 
                 ref={dialogRef} 
-                className="modal absolute top-1/2 right-full -translate-x-full rounded drop-shadow-xl ml-2 transform border-2 border-black p-0! z-40"
+                className="modal absolute top-1/2 right-full -translate-x-full rounded drop-shadow-xl ml-2 transform border-2 border-black p-0! z-50"
             >
                 <div className="modal-content bg-white h-25 w-45 rounded flex flex-col p-2! justify-between">
                     {Object.entries(Settings).map(([name, {icon, color}]) => (

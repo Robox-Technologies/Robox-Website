@@ -1,5 +1,6 @@
 ---
 import MainButton from "./mainButton";
+import TerminalButton from "./terminalButton";
 import UndoRedo from "./undoRedo.astro";
 import ZoomButtons from "./zoomButtons.astro";
 ---
@@ -9,6 +10,7 @@ import ZoomButtons from "./zoomButtons.astro";
     </div>
     <div class="flex flex-col items-end gap-4"> 
         <div class="flex flex-col items-end gap-4"> 
+            <TerminalButton client:load/>
             <ZoomButtons />
         </div>
         <MainButton client:load/>
