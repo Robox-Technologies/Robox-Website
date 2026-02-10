@@ -1,0 +1,14 @@
+---
+import { getAllProducts } from "@utils/server/stripe.server";
+const products = await getAllProducts();
+import { formatPrice } from "@utils/stripe";
+---
+<div>
+    {products.map(product => (
+        <div >
+            <h2>{product.name}</h2>
+            <p>{product.description}</p>
+            <p>Price: {formatPrice(product.price)}</p>
+        </div>
+    ))}
+</div>
