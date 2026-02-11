@@ -17,14 +17,15 @@ export default function MainButton() {
     const { connectionStatus, connect, disconnect, restart, sendCode, runCode, setCommunicationMethod } = usePico()
     const { className, children } = statusStyling[connectionStatus]
     useEffect(() => {
-        setCommunicationMethod("USB")
+        //TODO: make this dynamic based on platform
+        setCommunicationMethod("iOSBluetooth")
     }, [])
     const stateClickHandlers: Partial<Record<ConnectionStatus, () => void>> = {
         [ConnectionStatus.DISCONNECTED]: () => {
             connect()
         },
         [ConnectionStatus.CONNECTED]: async () => {
-            await sendCode("print('Hello, Ro/Box!')")
+            await sendCode()
             runCode()
             // runCode()
         },

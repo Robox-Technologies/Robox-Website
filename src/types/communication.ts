@@ -1,7 +1,8 @@
+import type { BleDevice } from "@capacitor-community/bluetooth-le"
 export interface Communication {
     destroyed: boolean
     request(): Promise<void>
-    connect(port: SerialPort | BluetoothDevice): Promise<void>
+    connect(port: SerialPort | BluetoothDevice | BleDevice): Promise<void>
     disconnect(): Promise<void>
     destroy(): Promise<void>
     write(message: string | string[]): Promise<void>
@@ -27,7 +28,7 @@ export enum FirmwareStatus {
     NO_RESPONSE = "noResponse"
 }
 
-export type CommunicationMethod = "USB" | "Bluetooth" | null
+export type CommunicationMethod = "USB" | "WebBluetooth" | "iOSBluetooth" | null
 
 // Types
 export interface PicoMessage {

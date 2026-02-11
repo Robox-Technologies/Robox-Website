@@ -4,6 +4,8 @@ import { ConnectionStatus, FirmwareStatus } from "src/types/communication";
 
 import { USBCommunication } from "./usb"
 import { BluetoothCommunication } from "./webBle"
+import { IOSBluetoothCommunication } from "./iosBle";
+import type { BleDevice } from "@capacitor-community/bluetooth-le";
 
 
 const COMMANDS = {
@@ -93,22 +95,22 @@ export class Pico {
 
         if (method === "USB") {
             this.communication = new USBCommunication(this)
-        } else if (method === "Bluetooth") {
+        } else if (method === "WebBluetooth") {
             this.communication = new BluetoothCommunication(this)
+        } else if (method === "iOSBluetooth") {
+            this.communication = new IOSBluetoothCommunication(this)
         }
 
         this.communication?.initialize()
     }
 
-    async connect(port: SerialPort | BluetoothDevice): Promise<void> {
+    async connect(port: SerialPort | BluetoothDevice | BleDevice): Promise<void> {
         if (!this.communication) {
             throw new Error("Communication method not set")
         }
 
         try {
             await this.communication.connect(port)
-            
-            
             
             this.firmwareCheck()
         } catch (error) {
@@ -142,7 +144,7 @@ export class Pico {
 
     handleMessage(payload: PicoMessage): void {
         const { type, message } = payload
-
+        console.log("Received message from Pico communication layer:", payload)
         // First message means we're connected
         if (!this.responded) {
             this.responded = true
@@ -221,11 +223,12 @@ export class Pico {
     }
 
     async sendCode(code: string): Promise<void> {
-        if (!this.communication) return
+        if (!this.communication) return Promise.reject(new Error("No communication method set"))
         this.updateState({ connectionStatus: ConnectionStatus.LOADING })
         await this.communication.write(COMMANDS.START_UPLOAD)
         await this.communication.write(code)
         await this.communication.write(COMMANDS.END_UPLOAD)
+        return Promise.resolve()
     }
 
     runCode(): void {
