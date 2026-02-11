@@ -7,6 +7,7 @@
     "build": "astro check && astro build",
     "astro": "astro",
     "build:ios": "npm run build && npx cap sync && npx cap open ios",
+    "ios": "npm run build && npx cap sync && npx cap run ios",
     "preview": "astro preview --port 3000"
   },
   "dependencies": {
