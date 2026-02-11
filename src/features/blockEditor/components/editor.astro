@@ -1,23 +1,28 @@
 ---
 import "../styles/toolbox.scss";
-
+import EditorButtons from "./editorButtons/editorButtons.astro";
 ---
 
-<div id="blocklyDiv" class="flex-1">
+<div class="flex-1 flex relative">
+    <div id="blocklyDiv" class="flex-1">
+        
+    </div>
+    <EditorButtons />
 
 </div>
 <script>
-    import { faCog, faRepeat, faPlus, faTableList, faEye, faRobot, faTruckMonster, faX, faGears,  } from "@fortawesome/free-solid-svg-icons";
+    import { faFlag, faCog, faRepeat, faPlus, faTableList, faEye, faRobot, faTruckMonster, faX, faGears,  } from "@fortawesome/free-solid-svg-icons";
     import { dom, library } from "@fortawesome/fontawesome-svg-core";
     import '../utils/communication';
-    library.add(faCog, faRepeat, faPlus, faTableList, faEye, faRobot, faTruckMonster, faX, faGears);
+    library.add(faFlag, faCog, faRepeat, faPlus, faTableList, faEye, faRobot, faTruckMonster, faX, faGears);
     dom.watch()
 </script>
 <script>
     // Setting up Blockly
     import * as Blockly from 'blockly/core'; 
     import { loadBlockly, saveBlockly } from "../utils/serialization";
-    import { projectId } from "@stores/project";
+    import { id } from "@stores/editor";
+    import { registerControls } from '../utils/controls';
     // Required for some reason as it does not apply automatically 
     import * as En from 'blockly/msg/en';
     // @ts-ignore its so odd why it cares
@@ -29,13 +34,14 @@ import "../styles/toolbox.scss";
     import.meta.glob('../config/generators/*.ts', { eager: true });
 
     const workspace = Blockly.inject('blocklyDiv', BlocklyConfig);
-    const id = projectId.get();
+    const projectId = id.get();
     loadBlockly(workspace)
     // Saving every time a change is made to the workspace, except for UI events (like dragging blocks)
     workspace.addChangeListener((event) => { 
         if (event.isUiEvent) return;
         saveBlockly(workspace);
     });
+    registerControls(workspace);
 
 
 </script>

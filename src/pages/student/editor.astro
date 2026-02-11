@@ -3,14 +3,14 @@ import EditorLayout from "@layouts/EditorLayout.astro";
 import ProjectContext from "@components/editor/projectContext.tsx";
 import ProjectHeader from "@components/editor/projectHeader.astro";
 import BlocklyEditor from "@features/blockEditor/components/editor.astro";
+import { Modal } from "@components/modal";
 ---
 <script>
-    import { useStore } from '@nanostores/react';
-    import { projectId } from "@stores/project";
+    import { id } from "@stores/editor";
 
     const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get('id');
-    projectId.set(id);
+    const projectId = urlParams.get('id');
+    id.set(projectId);
 </script>
 <style>
     html, body {
@@ -20,6 +20,14 @@ import BlocklyEditor from "@features/blockEditor/components/editor.astro";
 </style>
 <EditorLayout title="editor">
     <div class="w-full h-full flex flex-col">
+        <Modal id="terminalDialog" client:load>
+            <div class="bg-black text-green-500 font-mono p-4 rounded-lg h-64 w-96 overflow-y-scroll">
+                <p> Welcome to the Ro/Box Terminal</p>
+                <p> Here you can see the output of your code and debug any issues</p>
+                <p> Happy coding!</p>
+            </div>
+        </Modal>
+
         <ProjectHeader />
         <BlocklyEditor />
 

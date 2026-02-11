@@ -1,9 +1,9 @@
 import { createContext, useEffect, useState } from "react";
-import { ProjectSettingsModalContext } from "@context/projectSettingsModal";
+import { ProjectSettingsModalContext } from "@stores/projectSettingsModal";
 import { ProjectCard } from "./projectCard";
 import CreateCard from "./createCard";
 import { getProjects } from "@utils/serialization";
-import type { UserProject } from "@@types/projects";
+import type { UserProject } from "src/types/projects";
 export default function Projects() {
     const [openProject, setOpenProject] = useState<string | null>(null);
     const [projects, setProjects] = useState<Record<string, UserProject>>({});
