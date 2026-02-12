@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { pico } from '@libs/communication/communicate'
 import type { PicoState, CommunicationMethod } from "src/types/communication";
 import { ConnectionStatus, FirmwareStatus }  from "src/types/communication";
-
+import { generateCode } from '@features/blockEditor/utils/serialization';
+import * as Blockly from "blockly"
 export function usePico() {
     const [state, setState] = useState<PicoState>(pico.getState())
 
@@ -48,7 +49,8 @@ export function usePico() {
         pico.colorCalibrate()
     }, [])
 
-    const sendCode = useCallback(async (code: string) => {
+    const sendCode = useCallback(async () => {
+        const code = generateCode(Blockly.getMainWorkspace())
         await pico.sendCode(code)
     }, [])
 

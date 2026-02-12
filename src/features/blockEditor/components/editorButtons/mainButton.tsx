@@ -24,7 +24,7 @@ export default function MainButton() {
             connect()
         },
         [ConnectionStatus.CONNECTED]: async () => {
-            await sendCode("print('Hello, Ro/Box!')")
+            await sendCode()
             runCode()
             // runCode()
         },
