@@ -1,4 +1,0 @@
-import{j as o}from"./jsx-runtime.D_zvdyIk.js";import{B as r}from"./button.CfJZJ9aG.js";import{j as e}from"./index.BlK8OeIR.js";import{u as i}from"./usePico.C_jp5qmy.js";import{o as m}from"./modals.Wpu3FOhr.js";import"./index.BeMCFdl8.js";import"./index.B2wPdkV2.js";import"./_commonjsHelpers.Cpj98o6Y.js";import"./index.BxmClRgr.js";import"./index.bIOzY23V.js";import"./blockly_compressed.Dnh9KwAa.js";import"./python.CFM5o84E.js";import"./index.daetGfa_.js";function y(){const{isConnected:t}=i();return o.jsx(r,{icon:e,id:"terminalButton",className:`flex items-center w-10 h-10 justify-center border-2 rounded-full bg-white box-shadow 
-                ${t?"border-green":"border-gray-500"}`,iconStyle:`text-xl
-                ${t?"text-green":"text-gray-500"}
-            `,onClick:()=>{m.set("terminalDialog")}})}export{y as default};

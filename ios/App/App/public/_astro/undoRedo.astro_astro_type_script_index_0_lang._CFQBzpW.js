@@ -1,1 +1,0 @@
-import{o}from"./blockly.wAYJ9zAt.js";import"./_commonjsHelpers.Cpj98o6Y.js";import"./blockly_compressed.Dnh9KwAa.js";const e=document.querySelector("button#undoButton"),n=document.querySelector("button#redoButton");e?.addEventListener("click",()=>{o().undo(!1)});n?.addEventListener("click",()=>{o().undo(!0)});

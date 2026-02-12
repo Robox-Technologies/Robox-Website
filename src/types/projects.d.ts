@@ -11,10 +11,14 @@ interface UserProject {
     sensors: UserSensors;
 }
 export type UserExtensions = Record<ExtensionKey, boolean>;
-export type UserSensorPins = Record<string, number>;
-export type UserSensor<T extends SensorKey = SensorKey> = {
+
+export type UserSensor<T extends SensorKey> = {
     name: string,
     type: T,
     pins: Record<PinsOf<T>, number>,
 }
-export type UserSensors = Record<string, UserSensor>;
+
+export type UserSensors = Record<
+    string,
+    { [K in SensorKey]: UserSensor<K> }[SensorKey]
+>;

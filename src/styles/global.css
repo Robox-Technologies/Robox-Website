@@ -65,6 +65,9 @@
     article {
         @apply py-16 px-8;
     }
+    dialog::backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
 }
 * {
     box-sizing: border-box;

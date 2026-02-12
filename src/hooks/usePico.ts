@@ -2,29 +2,8 @@ import { useEffect, useState, useCallback } from 'react'
 import { pico } from '@libs/communication/communicate'
 import type { PicoState, CommunicationMethod } from "src/types/communication";
 import { ConnectionStatus, FirmwareStatus }  from "src/types/communication";
-import * as Blockly from "blockly";
-import { pythonGenerator } from "blockly/python";
-const scriptDependency = `
-from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
-from machine import Pin, Timer
-import time
-import json
-import sys
-ENV_LED = Pin(25, Pin.OUT)
-line = LineSensors()
-left_motor_polarity = right_motor_polarity = -1
-ultrasonic = UltrasonicSensor()
-
-def generatePrint(typ, message):
-    jsmessage = {"type": typ, "message": message}
-    return json.dumps(jsmessage)
-try:
-    color_sensor = ColorSensor()
-except Exception:
-    generatePrint("error", "Cannot connect to colour sensor, is it on?")
-motors = Motors()
-motor_speed = 60
-`
+import { generateCode } from '@features/blockEditor/utils/serialization';
+import * as Blockly from "blockly"
 export function usePico() {
     const [state, setState] = useState<PicoState>(pico.getState())
 
@@ -71,10 +50,8 @@ export function usePico() {
     }, [])
 
     const sendCode = useCallback(async () => {
-        const workspace = Blockly.getMainWorkspace()
-        const code = pythonGenerator.workspaceToCode(workspace);
-        const finalCode = `${scriptDependency}\n${code}\nevent_begin()`
-        await pico.sendCode(finalCode)
+        const code = generateCode(Blockly.getMainWorkspace())
+        await pico.sendCode(code)
     }, [])
 
     const runCode = useCallback(() => {

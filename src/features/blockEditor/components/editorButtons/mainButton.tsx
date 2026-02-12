@@ -36,7 +36,7 @@ export default function MainButton() {
 
     const handleClick = stateClickHandlers[connectionStatus]
     return (
-        <Button className={`rounded-3xl box-shadow w-65 text-xl font-bold py-3 px-2 ${className}`} onClick={handleClick}  disabled={!handleClick}>
+        <Button className={`rounded-3xl box-shadow w-65 text-xl font-bold py-3 px-2 pointer-events-auto ${className}`} onClick={handleClick}  disabled={!handleClick}>
             {children}
         </Button>
     )

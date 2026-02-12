@@ -25,16 +25,4 @@ pnpm-debug.log*
 .idea/
 
 .vscode/
-ios/App/build
-ios/App/Pods
-ios/App/output
-ios/App/public
-ios/DerivedData
-ios/xcuserdata
-
-# Cordova plugins for Capacitor
-capacitor-cordova-ios-plugins
-
-# Generated Config files
-ios/App/capacitor.config.json
-ios/App/config.xml
+ios/
