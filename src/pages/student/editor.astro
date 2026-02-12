@@ -3,7 +3,7 @@ import EditorLayout from "@layouts/EditorLayout.astro";
 import ProjectContext from "@components/editor/projectContext.tsx";
 import ProjectHeader from "@components/editor/projectHeader.astro";
 import BlocklyEditor from "@features/blockEditor/components/editor.astro";
-import { Modal } from "@components/modal";
+import { Dialog, DialogHeader, DialogBody } from "@components/dialog";
 ---
 <script>
     import { id } from "@stores/editor";
@@ -19,14 +19,14 @@ import { Modal } from "@components/modal";
     }
 </style>
 <EditorLayout title="editor">
+    <Dialog id="terminalDialog" client:load>
+        <DialogHeader>Terminal</DialogHeader>
+        <DialogBody>
+            <p class="text-gray-700">This is the terminal modal. You can put any content you want here, such as a terminal emulator or other controls.</p>
+        </DialogBody>
+    </Dialog>
     <div class="w-full h-full flex flex-col">
-        <Modal id="terminalDialog" client:load>
-            <div class="bg-black text-green-500 font-mono p-4 rounded-lg h-64 w-96 overflow-y-scroll">
-                <p> Welcome to the Ro/Box Terminal</p>
-                <p> Here you can see the output of your code and debug any issues</p>
-                <p> Happy coding!</p>
-            </div>
-        </Modal>
+        
 
         <ProjectHeader />
         <BlocklyEditor />
