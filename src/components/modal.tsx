@@ -3,6 +3,7 @@ import { useStore } from "@nanostores/react";
 import { useEffect, useRef } from "react";
 import clsx from "clsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faXmark } from "@fortawesome/free-solid-svg-icons/faXmark";
 
 export function Modal({
     id,
@@ -73,7 +74,7 @@ export function Modal({
                     onClick={() => openModal.set(null)}
                     className="absolute right-4 top-4 rounded-sm opacity-70 transition hover:opacity-100 focus:outline-none"
                 >
-                    <FontAwesomeIcon icon="xmark" className="h-5 w-5" />
+                    <FontAwesomeIcon icon={faXmark} className="h-5 w-5" />
                     <span className="sr-only">Close</span>
                 </button>
             </div>

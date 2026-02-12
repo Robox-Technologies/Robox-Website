@@ -51,6 +51,7 @@ export function deleteProject(id: string): boolean {
     }
     return false;
 }
+
 function generateEmptyProject(): UserProject {
     const userExtensions = ExtensionKeys.reduce((acc, key) => {
         acc[key] = false;

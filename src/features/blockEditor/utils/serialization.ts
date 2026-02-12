@@ -5,6 +5,7 @@ import { getProject, getProjects, isValidProjectId, isProtoPollution, sanitizeIm
 import * as Blockly from "blockly";
 import { workspaceToPng_ } from "./screenshot";
 import dayjs from "dayjs";
+
 export async function loadBlockly(workspace: Workspace) {
     const projectId = id.get();
     if (!projectId) return;
