@@ -12,7 +12,7 @@ import { promises as fs } from 'fs';
 export default defineConfig({
     integrations: [
         react(), 
-        process.env.PUBLIC_IOS_BUILD === "true" ? transformIOSBuild() : undefined
+        process.env.IOS_BUILD === "true" ? transformIOSBuild() : undefined
     ],
     vite: {
         plugins: [

@@ -15,7 +15,7 @@ export function ProjectCard({id}: {id: string}) {
     if (!project) return null;
     const isSelected = openProject === id;
     return (
-        <a href={`/student/editor/index.html?id=${id}`}>
+        <a href={`./editor/index.html?id=${id}`}>
             <Card
                 className={`project-card overflow-visible relative bg-white w-[250px] border-transparent border-4 transition-transform hover:-translate-y-0.5 hover:border-blue duration-100 hover:cursor-pointer ${isSelected ? "-translate-y-0.5! border-green! z-99" : ""}`}
                 image={<img src={project.thumbnail || ""} alt="Project Image" className="w-full object-cover bg-tone3 aspect-video" />}

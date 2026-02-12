@@ -2,20 +2,21 @@
 import Meta from '@components/Meta'
 import Header from '@components/header/Header'
 import Footer from '@components/footer/footer'
-
+const isIOSBuild = process.env.IOS_BUILD === 'true';
 import '@styles/global.css'
 interface Props {
     title: string
     header?: 'standard' | 'workshop';
 };
-const { title, header } = Astro.props as Props;
+const { title, header='standard' } = Astro.props as Props;
 ---
 <html lang="en">
     <head>
         <Meta title={title} />
     </head>
     <body>
-        <Header type={header ?? 'standard'} />
+        {!isIOSBuild && <Header type={header} />}
+        
         
         <slot />
     </body>
