@@ -1,4 +1,4 @@
-import { WorkspaceSvg } from "blockly";
+import type { WorkspaceSvg } from "blockly";
 const ratio = 16/9;
 const padding = 30;
 const finalWidth = 250*2;
