@@ -10,11 +10,12 @@ export default function TerminalButton() {
     return (
         <Button icon={faTerminal} id="terminalButton" 
             className={`flex items-center w-10 h-10 justify-center border-2 rounded-full bg-white box-shadow pointer-events-auto 
-                ${isConnected ? "border-green" : "border-gray-500"}`
+                ${isConnected ? "border-green" : "border-gray-500 hover:cursor-not-allowed!"}`
             } 
             iconStyle={`text-xl
                 ${isConnected ? "text-green" : "text-gray-500"}
             `}
+            disabled={!isConnected}
             onClick={
                 () => {
                     openModal.set("terminalDialog")

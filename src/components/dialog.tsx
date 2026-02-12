@@ -71,13 +71,14 @@ export function Dialog({
                 "open:zoom-in-95 open:duration-200",
                 className
             )}
+            id={id}
         >
             {children}
             <button
                 onClick={() => openModal.set(null)}
-                className="absolute top-4 right-6 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                className="absolute top-3.5 right-4 rounded-sm transition-opacity hover:cursor-pointer flex items-center justify-center py-1 px-0.5"
             >
-                <FontAwesomeIcon icon={faXmark} className="size-4" />
+                <FontAwesomeIcon icon={faXmark} className="size-4 text-red-500" />
                 <span className="sr-only">Close</span>
             </button>
         </dialog>
@@ -90,9 +91,16 @@ export function DialogHeader({ children }: { children: React.ReactNode }) {
         </div>
     )
 }
+export function DialogFooter({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="border-t gap-4 px-6 py-3 flex">
+            {children}
+        </div>
+    )
+}
 export function DialogBody({ children }: { children: React.ReactNode }) {
     return (
-         <div className="relative grid gap-4 p-6 bg-gray-100 flex-1 overflow-auto">
+         <div className="relative grid gap-4 bg-gray-100 flex-1 overflow-auto">
             {children}
         </div>
     )

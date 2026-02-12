@@ -4,6 +4,7 @@ import ProjectContext from "@components/editor/projectContext.tsx";
 import ProjectHeader from "@components/editor/projectHeader.astro";
 import BlocklyEditor from "@features/blockEditor/components/editor.astro";
 import { Dialog, DialogHeader, DialogBody } from "@components/dialog";
+import TerminalDialog from "@features/blockEditor/components/terminalDialog";
 ---
 <script>
     import { id } from "@stores/editor";
@@ -19,12 +20,7 @@ import { Dialog, DialogHeader, DialogBody } from "@components/dialog";
     }
 </style>
 <EditorLayout title="editor">
-    <Dialog id="terminalDialog" client:load>
-        <DialogHeader>Terminal</DialogHeader>
-        <DialogBody>
-            <p class="text-gray-700">This is the terminal modal. You can put any content you want here, such as a terminal emulator or other controls.</p>
-        </DialogBody>
-    </Dialog>
+    <TerminalDialog client:load/>
     <div class="w-full h-full flex flex-col">
         
 
