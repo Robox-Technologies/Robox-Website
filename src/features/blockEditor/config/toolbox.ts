@@ -1,4 +1,50 @@
+import type { ExtensionKey } from "src/types/extensions";
 import type { ToolboxDefinition } from "node_modules/blockly/core/utils/toolbox";
+import type { ToolboxItemInfo } from "node_modules/blockly/core/utils/toolbox";
+
+const ServoCategory: ToolboxItemInfo = {
+    'kind': 'category',
+    'name': 'Servo',
+    "cssconfig": {
+        "icon": "categoryIcon fa fa-arrows-rotate"
+    },
+    'categorystyle': 'servo_category',
+    'contents': [
+        {
+          'kind': 'block',
+          'type': 'servo_angle'
+        },
+        {
+            'kind': 'block',
+            'type': 'servo_set_angle',
+            "inputs": {
+                'ANGLE': {
+                    'shadow': {
+                        'type': 'servo_angle',
+                    }
+                }
+            }
+        },
+        {
+            'kind': 'block',
+            'type': 'servo_rotate',
+            "inputs": {
+                'ANGLE': {
+                    'shadow': {
+                        'type': 'servo_angle',
+                    }
+                }
+            }
+        },
+        {
+            'kind': 'block',
+            'type': 'servo_get_angle'
+        }
+    ],
+};
+export const ExtensionCategories: Record<ExtensionKey, ToolboxItemInfo> = {
+    "SERVO": ServoCategory,
+}
 export const BaseToolbox: ToolboxDefinition = {
     'kind': 'categoryToolbox',
     'contents': [

@@ -1,5 +1,5 @@
 import { id } from "@stores/editor";
-import type { ExtensionKey } from "@types/extensions";
+import type { ExtensionKey } from "src/types/extensions";
 import type { PinsOf, SensorKey } from "src/types/extraSensors";
 import type { UserExtensions, UserSensor, UserSensors } from "src/types/projects";
 

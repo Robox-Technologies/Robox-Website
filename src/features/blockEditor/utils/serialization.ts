@@ -5,7 +5,7 @@ import { getProject, getProjects, isValidProjectId, isProtoPollution, sanitizeIm
 import * as Blockly from "blockly";
 import { workspaceToPng_ } from "./screenshot";
 import dayjs from "dayjs";
-import type { ExtensionKey } from "@types/extensions";
+import type { ExtensionKey } from "src/types/extensions";
 import type { PinsOf, SensorKey } from "src/types/extraSensors";
 import type { UserExtensions, UserSensor, UserSensors } from "src/types/projects";
 import { pythonGenerator } from "blockly/python";
@@ -40,9 +40,9 @@ export async function saveBlockly(workspace: WorkspaceSvg) {
     });
 }
 export function generateCode(workspace: Workspace) {
-    const $projectId = id.get();
-    if (!$projectId) throw new Error("No project ID found");
-    const project = getProject($projectId);
+    const projectId = id.get();
+    if (!projectId) throw new Error("No project ID found");
+    const project = getProject(projectId);
     if (!project) throw new Error("Project not found");
     const extensionsPreamble = generateExtensionsPreamble(project.extensions);
     const extraSensorsPreamble = generateExtraSensorsPreamble(project.sensors);
@@ -68,4 +68,16 @@ function generateExtraSensorsPreamble(userExtraSensors: UserSensors): string {
 // So we preserver the typing of the sensor keys in the preamble generation
 function callSensorPreamble<K extends SensorKey>(sensor: UserSensor<K>): string {
     return ExtraSensorsPreamble[sensor.type](sensor.pins);
+}
+export function setUserExtension(extension: ExtensionKey, enabled: boolean) {
+    const projectId = id.get();
+    if (!projectId) throw new Error("No project ID found");
+    const project = getProject(projectId);
+    if (!project) throw new Error("Project not found");
+    const extensions = project.extensions;
+    extensions[extension] = enabled;
+    editProject(projectId, {
+        ...project,
+        extensions
+    })
 }

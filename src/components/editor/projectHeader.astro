@@ -3,10 +3,15 @@ import Button from "@components/button";
 import ProjectRename from "@components/editor/projectRename";
 import ProjectSettings from "@components/editor/projectSettings";
 import { faChevronLeft, faGear } from "@fortawesome/free-solid-svg-icons";
+import ProjectExtensions from "@components/editor/projectExtensions";
 ---
 <div class="editorHeader flex flex-row justify-between items-center h-18 bg-red border-b-2 border-black px-8">
     <Button href="/student" icon={faChevronLeft} className="text-white h-4 w-4 p-0! flex justify-center items-center"/>
     <ProjectRename client:load />
-    <ProjectSettings client:load/>
+    <div class="flex flex-row gap-4">
+        <ProjectExtensions client:load />
+        <ProjectSettings client:load/>
+
+    </div>
     
 </div>

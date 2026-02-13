@@ -4,11 +4,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { ExtensionKey, ExtensionTags } from "src/types/extensions";
 import extensions from "@data/extensions.json";
 import { Toggle } from "@components/toggle";
-import { useState } from "react";
-
+import { use, useEffect, useState } from "react";
+import generateToolbox from "../utils/toolbox";
+import { setUserExtension } from "../utils/serialization";
+import { id } from "@stores/editor";
+import * as Blockly from "blockly";
+import { getProject } from "@utils/serialization";
 
 export default function ExtensionsDialog() {
     const extensionKeys = Object.keys(extensions) as (keyof typeof extensions)[]
+
     return (
         <Dialog id="extensionsDialog" className="h-175">
             <DialogHeader>
@@ -31,7 +36,14 @@ export default function ExtensionsDialog() {
 }
 
 function ExtensionCard({extension}: {extension: ExtensionKey}) {
-    const [enabled, setEnabled] = useState(false);
+    const [isEnabled, setIsEnabled] = useState(false);
+    useEffect(() => {
+        const projectId = id.get();
+        if (!projectId) return;
+        const project = getProject(projectId);
+        if (!project) return;
+        setIsEnabled(project.extensions[extension] === true)
+    }, [extension])
     const extensionData = extensions[extension]
     return (
         <div className="border border-gray-300 rounded-lg p-4 w-full hover:bg-gray-100 transition">
@@ -40,14 +52,25 @@ function ExtensionCard({extension}: {extension: ExtensionKey}) {
                     <h3 className="text-lg text-gray-800 font-semibold">{extensionData.emoji} {extensionData.name}</h3>
                     <ExtensionTag tag={extensionData.tag as ExtensionTags} />
                 </div>
-                <Toggle enabled={enabled} onToggle={() => {
-                    setEnabled(!enabled)
+                <Toggle enabled={isEnabled ?? false} onToggle={() => {
+                    toggleExtension(extension, !isEnabled, setIsEnabled)
                 }} />
             </div>
             <p className="text-gray-500 text-sm">{extensionData.description}</p>
-            
         </div>
     )
+}
+function toggleExtension(extension: ExtensionKey, enabled: boolean, setEnabled: (enabled: boolean) => void) {
+    setEnabled(enabled)
+    setUserExtension(extension, enabled)
+    const toolbox = generateToolbox();
+    const workspace = Blockly.getMainWorkspace()
+    if (!(workspace instanceof Blockly.WorkspaceSvg)) {
+        console.error("Workspace is not of type Blockly.WorkspaceSvg");
+        return;
+    }
+    workspace.updateToolbox(toolbox);
+    workspace.getToolbox()?.refreshSelection();
 }
 function ExtensionTag({tag}: {tag: ExtensionTags}) {
     const colors: Record<ExtensionTags, string> = {
