@@ -39,7 +39,7 @@ export default function TerminalDialog() {
     }, []);
 
     return (
-        <Dialog id="terminalDialog">
+        <Dialog id="terminalDialog" className="h-150">
             <DialogHeader>
                 <div className="flex items-center text-xl font-bold">
                     <FontAwesomeIcon icon={faTerminal} className="text-green mr-2 mb-0.5" />

@@ -17,6 +17,8 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
     dom.watch()
 </script>
 <script>
+    import { openModal } from "@stores/modals";
+    openModal.set("extensionsDialog");
     // Setting up Blockly
     import * as Blockly from 'blockly/core'; 
     import { loadBlockly, saveBlockly } from "../utils/serialization";

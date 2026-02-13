@@ -1,6 +1,6 @@
 import { openModal } from "../stores/modals";
 import { useStore } from "@nanostores/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type HTMLAttributes } from "react";
 import clsx from "clsx";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons/faXmark";
@@ -9,11 +9,7 @@ export function Dialog({
     id,
     children,
     className,
-}: {
-    id: string;
-    children: React.ReactNode;
-    className?: string;
-}) {
+}: HTMLAttributes<HTMLDialogElement>) {
     const ref = useRef<HTMLDialogElement>(null);
     const activeModal = useStore(openModal);
 
@@ -66,8 +62,7 @@ export function Dialog({
             className={clsx(
                 "fixed open:flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50",
                 "w-full max-w-full sm:max-w-lg",
-                "h-150",
-                "rounded-t-lg shadow-lg bg-white",
+                "rounded-lg shadow-lg bg-white",
                 "open:zoom-in-95 open:duration-200",
                 className
             )}
@@ -84,23 +79,24 @@ export function Dialog({
         </dialog>
     );
 }
-export function DialogHeader({ children }: { children: React.ReactNode }) {
+export function DialogHeader({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
     return (
-        <div className="border-b flex items-center text-lg font-semibold px-6 py-3 pr-12">
+        <div className={clsx("border-b border-gray-300 flex items-center text-lg font-semibold px-6 py-3 pr-12", className)} {...props}>
             {children}
         </div>
     )
 }
-export function DialogFooter({ children }: { children: React.ReactNode }) {
+
+export function DialogFooter({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
     return (
-        <div className="border-t gap-4 px-6 py-3 flex">
+        <div className={clsx("border-t border-gray-300 gap-4 px-6 py-4 flex", className)} {...props}>
             {children}
         </div>
     )
 }
-export function DialogBody({ children }: { children: React.ReactNode }) {
+export function DialogBody({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
     return (
-         <div className="relative grid gap-4 bg-gray-100 flex-1 overflow-auto">
+         <div className={clsx("relative gap-4 flex-1 overflow-auto", className)} {...props}>
             {children}
         </div>
     )

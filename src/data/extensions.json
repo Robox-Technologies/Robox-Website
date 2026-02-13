@@ -1,6 +1,8 @@
 {
     "SERVO": {
         "name": "Servo Extension",
-        "description": "A powerful extension that adds servo motor support to your Ro/Box projects, enabling precise control of movement and positioning."
+        "description": "Enables precise control of servo motors in your Ro/Box projects.",
+        "emoji": "⚙️",
+        "tag": "software"
     }
 }
