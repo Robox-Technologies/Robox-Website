@@ -1,6 +1,6 @@
 import { formatPrice } from "@utils/stripe"
 import type { ImageMetadata } from "astro"
-import type { Product, ProductStatus } from "src/types/store"
+import type { Product, ProductStatus } from "src/types/shop"
 const displayStatus: Record<ProductStatus, {
     text: string;
     color: string;

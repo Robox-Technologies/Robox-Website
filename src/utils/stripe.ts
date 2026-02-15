@@ -1,5 +1,3 @@
-import type { Product } from "src/types/store";
-
 const backendExecution = typeof window === 'undefined';
 const domesticCountryCode = "AU";
 

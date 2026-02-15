@@ -10,7 +10,7 @@ import PageHero from "@components/pageHero";
 import Hero from "@images/shop/hero.jpg" ;
 import { Image } from "astro:assets";
 import Article from "@components/article/Article";
-import ProductCard from "@components/store/productCard";
+import ProductCard from "@components/shop/productCard";
 const images = import.meta.glob<{ default: ImageMetadata }>('src/images/shop/products/*/thumbnail.jpg', { eager: true });
 // Check that all products have images
 const product = {}
@@ -32,7 +32,7 @@ products.map(product => {
         </div>
         <div slot="left" class="bg-blue h-full w-full flex justify-start items-end p-8">
             <h1 class="text-5xl font-bold text-white">
-                Store
+                Shop
                 <p class="text-xl mt-4 text-white">
                     Check out our Ro/Box product range!
                 </p>
@@ -48,6 +48,7 @@ products.map(product => {
                 <ProductCard
                     product={product}
                     image={images[`/src/images/shop/products/${product.internalName}/thumbnail.jpg`].default}
+
                     
                 />
             ))}

@@ -1,9 +1,9 @@
 import stripe, { Stripe } from 'stripe'
 import 'dotenv/config'
-import type { Product } from 'src/types/store'
+import type { Product } from 'src/types/shop'
 import slugify from 'slugify';
 import { formatPrice } from '@utils/stripe';
-import { isValidStatus } from 'src/types/guards/store';
+import { isValidStatus } from 'src/types/guards/shop';
 if (!process.env.STRIPE_SECRET_KEY) {
     throw new Error('STRIPE_SECRET_KEY is not defined in environment variables')
 }
