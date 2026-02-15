@@ -7,7 +7,7 @@ import { Toggle } from "@components/toggle";
 import { use, useEffect, useState } from "react";
 import generateToolbox from "../utils/toolbox";
 import { setUserExtension } from "../utils/serialization";
-import { id } from "@stores/editor";
+import { id } from "@features/blockEditor/stores/editor";
 import * as Blockly from "blockly";
 import { getProject } from "@utils/serialization";
 

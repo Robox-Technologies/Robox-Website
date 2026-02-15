@@ -1,6 +1,6 @@
 import type { ToolboxDefinition } from "node_modules/blockly/core/utils/toolbox";
 import { BaseToolbox, ExtensionCategories } from "@features/blockEditor/config/toolbox";
-import { id } from "@stores/editor";
+import { id } from "@features/blockEditor/stores/editor";
 import { getProject } from "@utils/serialization";
 import type { ExtensionKey } from "src/types/extensions";
 

@@ -1,11 +1,12 @@
 import { createContext, useEffect, useState } from "react";
-import { ProjectSettingsModalContext } from "@stores/projectSettingsModal";
-import { ProjectCard } from "./projectCard";
+import { ProjectCard } from "./projectCard/projectCard";
 import CreateCard from "./createCard";
+import { openProject } from "../stores/projectSettingsModal";
+import { useStore } from "@nanostores/react";
 import { getProjects } from "@utils/serialization";
 import type { UserProject } from "src/types/projects";
 export default function Projects() {
-    const [openProject, setOpenProject] = useState<string | null>(null);
+
     const [projects, setProjects] = useState<Record<string, UserProject>>({});
 
     //Make sure the localstorage runs only on client side
@@ -17,24 +18,25 @@ export default function Projects() {
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (event.target instanceof HTMLElement && !event.target.closest('.project-card')) {
-                setOpenProject(null); // close project
+                openProject.set(null);
             }
+
         }
 
         document.addEventListener('click', handleClickOutside);
         return () => {
             document.removeEventListener('click', handleClickOutside);
         };
-    }, [setOpenProject]);
+    }, []);
 
 
     return (
-        <ProjectSettingsModalContext.Provider value={{ openProject, setOpenProject }}>
+        <>
             <CreateCard />
             {Object.keys(projects).map((projectId) => (
                 <ProjectCard key={projectId} id={projectId} />
             ))}
-        </ProjectSettingsModalContext.Provider>
+        </>
     );
 
 }

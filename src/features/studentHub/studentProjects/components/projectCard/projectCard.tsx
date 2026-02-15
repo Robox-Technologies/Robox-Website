@@ -2,18 +2,18 @@ import Card from "@components/card";
 import { faSquareBinary } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ProjectSettings from "./projectSettings";
-import { useContext } from "react";
-import { ProjectSettingsModalContext } from "@stores/projectSettingsModal";
+import { useStore } from "@nanostores/react";
+import { openProject } from "../../stores/projectSettingsModal";
 import SettingDialog from "./settingDialog";
 import { getProject } from "@utils/serialization";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 export function ProjectCard({id}: {id: string}) {
-    const { openProject } = useContext(ProjectSettingsModalContext);
+    const $selectedProject = useStore(openProject);
     const project = getProject(id);
     if (!project) return null;
-    const isSelected = openProject === id;
+    const isSelected = $selectedProject === id;
     return (
         <a href={`/student/editor?id=${id}`}>
             <Card

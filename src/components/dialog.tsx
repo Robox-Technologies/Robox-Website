@@ -81,7 +81,7 @@ export function Dialog({
 }
 export function DialogHeader({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
     return (
-        <div className={clsx("border-b border-gray-300 flex items-center text-lg font-semibold px-6 py-3 pr-12", className)} {...props}>
+        <div className={clsx("border-b border-gray-300 flex items-center text-lg flex-col font-semibold px-6 py-3 pr-12", className)} {...props}>
             {children}
         </div>
     )
@@ -96,7 +96,7 @@ export function DialogFooter({ children, className, ...props }: HTMLAttributes<H
 }
 export function DialogBody({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
     return (
-         <div className={clsx("relative gap-4 flex-1 overflow-auto", className)} {...props}>
+         <div className={clsx("relative gap-4 flex-1 overflow-auto" , className)} {...props}>
             {children}
         </div>
     )

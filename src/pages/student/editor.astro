@@ -1,19 +1,11 @@
 ---
 import EditorLayout from "@layouts/EditorLayout.astro";
-import ProjectContext from "@components/editor/projectContext.tsx";
 import ProjectHeader from "@components/editor/projectHeader.astro";
 import BlocklyEditor from "@features/blockEditor/components/editor.astro";
 import { Dialog, DialogHeader, DialogBody } from "@components/dialog";
 import TerminalDialog from "@features/blockEditor/components/terminalDialog";
 import ExtensionsDialog from "@features/blockEditor/components/extensionsDialog";
 ---
-<script>
-    import { id } from "@stores/editor";
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const projectId = urlParams.get('id');
-    id.set(projectId);
-</script>
 <style>
     html, body {
         height: 100%;
