@@ -1,7 +1,21 @@
 ---
 import type { GetStaticPaths } from "astro";
-export const getStaticPaths = (() => {
+import { getAllProducts, getProductById } from "@utils/server/stripe.server";
+import type { ImageMetadata } from 'astro';
+export const getStaticPaths = (async () => {
+    const products = await getAllProducts();
     
-    return [];
+    return products.map(product => ({
+        params: { id: product.internalName }
+    }));
 }) satisfies GetStaticPaths;
+const { id } = Astro.params;
+const product = await getProductById(id);
+if (!product) {
+    throw new Error(`Product with id ${id} not found`);
+}
+const images = import.meta.glob<{ default: ImageMetadata }>(`src/images/shop/products/${product.internalName}/thumbnail.jpg`, { eager: true });
+if (!images[`/src/images/shop/products/${product.internalName}/thumbnail.jpg`]) {
+    throw new Error(`Missing image for product ${product.name} at path /src/images/shop/products/${product.internalName}/thumbnail.jpg`);
+}
 ---
