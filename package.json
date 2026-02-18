@@ -7,7 +7,8 @@
     "build": "astro check && astro build",
     "astro": "astro",
     "build:ios": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" IOS_BUILD=true npm run build && npx cap sync && npx cap open ios",
-    "ios": "npm run build && npx cap sync && npx cap run ios",
+    "start:ios": "npx cap add ios",
+    "ios": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" IOS_BUILD=true npm run build && npx cap sync && npx cap run ios",
     "preview": "astro preview --port 3000"
   },
   "dependencies": {
