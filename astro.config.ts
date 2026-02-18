@@ -10,6 +10,7 @@ import type { AstroIntegration } from 'astro';
 import { resolve, join } from 'path';
 import { promises as fs } from 'fs';
 export default defineConfig({
+    srcDir: 'src',
     integrations: [
         react(), 
         process.env.IOS_BUILD === "true" ? transformIOSBuild() : undefined
