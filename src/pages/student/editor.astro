@@ -5,6 +5,7 @@ import BlocklyEditor from "@features/blockEditor/components/editor.astro";
 import { Dialog, DialogHeader, DialogBody } from "@components/dialog";
 import TerminalDialog from "@features/blockEditor/components/terminalDialog";
 import ExtensionsDialog from "@features/blockEditor/components/extensionsDialog";
+import PythonEditor from "@features/pythonEditor/components/pythonEditor";
 ---
 <style>
     html, body {
@@ -19,7 +20,8 @@ import ExtensionsDialog from "@features/blockEditor/components/extensionsDialog"
         
 
         <ProjectHeader />
-        <BlocklyEditor />
+        <PythonEditor client:only="react"/>
+        <!-- <BlocklyEditor /> -->
 
     </div>
 </EditorLayout>
