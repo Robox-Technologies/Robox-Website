@@ -26,6 +26,45 @@ except Exception:
     generatePrint("error", "Cannot connect to colour sensor, is it on?")
 motors = Motors()
 motor_speed = 60
+def closest_colour_name():
+    r, g, b = color_sensor.readColor()
+    h, s, v = rgb_to_hsv(r, g, b)
+
+    # Quick white/black check
+    if s < 0.1 and v > 0.9:
+        return "white"
+    if v < 0.1:
+        return "black"
+
+    # Heuristic: if hue is in cyan range and value is low, prefer green
+    # Cyan roughly around 180° to 210°
+    if 180 <= h <= 210 and v < 0.5:
+        return "green"
+
+    def hue_distance(h1, h2):
+        d = abs(h1 - h2)
+        return min(d, 360 - d) / 180  # normalized 0 to 1
+
+    best_match = None
+    best_score = float('inf')
+
+    for name, (r_std, g_std, b_std) in _STANDARD_COLORS.items():
+        h_std, s_std, v_std = rgb_to_hsv(r_std, g_std, b_std)
+        hd = hue_distance(h, h_std)
+        sd = abs(s - s_std)
+        vd = abs(v - v_std)
+
+        score = hd * 3 + sd * 1 + vd * 1
+
+        if score < best_score:
+            best_score = score
+            best_match = name
+
+    return best_match
+try:
+    color_sensor.closest_colour_name()
+except Exception:
+    color_sensor.closest_colour_name = closest_colour_name
 `
 
 let downloadingToPico = false
