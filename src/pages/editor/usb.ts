@@ -2,7 +2,7 @@ import { pico } from './communication/communicate';
 import * as Blockly from 'blockly/core';
 import { pythonGenerator } from 'blockly/python'
 
-import { clearConsole, printToConsole } from './console';
+import { printToConsole } from './console';
 import * as sanitizeHtml from 'sanitize-html';
 import { showToast } from '@root/toast';
 
@@ -26,6 +26,39 @@ except Exception:
     generatePrint("error", "Cannot connect to colour sensor, is it on?")
 motors = Motors()
 motor_speed = 60
+_STANDARD_COLORS = {
+    "red": (255, 0, 0),
+    "orange": (255, 165, 0),
+    "yellow": (255, 255, 0),
+    "green": (0, 128, 0),
+    "blue": (0, 0, 255),
+    "purple": (128, 0, 128),
+    "black": (0, 0, 0),
+    "white": (255, 255, 255)
+}
+def rgb_to_hsv(r, g, b):
+    r, g, b = r / 255.0, g / 255.0, b / 255.0  # Normalize to [0,1]
+    max_c = max(r, g, b)
+    min_c = min(r, g, b)
+    delta = max_c - min_c
+
+    # Hue
+    if delta == 0:
+        h = 0
+    elif max_c == r:
+        h = (60 * ((g - b) / delta)) % 360
+    elif max_c == g:
+        h = (60 * ((b - r) / delta)) + 120
+    elif max_c == b:
+        h = (60 * ((r - g) / delta)) + 240
+
+    # Saturation
+    s = 0 if max_c == 0 else delta / max_c
+
+    # Value
+    v = max_c
+
+    return h, s, v  # h in [0,360), s and v in [0,1]
 def closest_colour_name():
     r, g, b = color_sensor.readColor()
     h, s, v = rgb_to_hsv(r, g, b)
