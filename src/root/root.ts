@@ -35,8 +35,16 @@ import {faTruckMonster} from '@fortawesome/free-solid-svg-icons/faTruckMonster';
 import {faX} from '@fortawesome/free-solid-svg-icons/faX';
 import {faCircleXmark} from '@fortawesome/free-solid-svg-icons/faCircleXmark';
 import {faGears} from '@fortawesome/free-solid-svg-icons/faGears';
+<<<<<<< HEAD
 import { faCalendar } from '@fortawesome/free-solid-svg-icons/faCalendar';
 library.add(faCalendar, faCircleXmark, faX, faGears, faEye, faRobot, faTruckMonster, faRepeat, faTableList, faFlag, faAngleLeft, faTrash, faShoppingCart, faAngleLeft, faCircleInfo, faAngleRight, faGraduationCap, faCompass, faEllipsisVertical, faUpload, faSquareBinary, faPenToSquare, faExclamationCircle, faTerminal, faPlugCircleXmark, faSpinner, faXmark, faRotateRight, faRotateLeft, faDownload, faScrewdriverWrench, faMinus, faPlus, faEyeDropper, faGear, faChevronLeft, faChevronDown);
+=======
+import { faLinkedin } from '@fortawesome/free-brands-svg-icons/faLinkedin';
+import { faXTwitter } from '@fortawesome/free-brands-svg-icons/faXTwitter';
+import { faInstagram } from '@fortawesome/free-brands-svg-icons/faInstagram';
+
+library.add(faXTwitter, faInstagram, faLinkedin, faCircleXmark, faX, faGears, faEye, faRobot, faTruckMonster, faRepeat, faTableList, faFlag, faAngleLeft, faTrash, faShoppingCart, faAngleLeft, faCircleInfo, faAngleRight, faGraduationCap, faCompass, faEllipsisVertical, faUpload, faSquareBinary, faPenToSquare, faExclamationCircle, faTerminal, faPlugCircleXmark, faSpinner, faXmark, faRotateRight, faRotateLeft, faDownload, faScrewdriverWrench, faMinus, faPlus, faEyeDropper, faGear, faChevronLeft, faChevronDown);
+>>>>>>> db4ebb5a5d8bec11de109db7acae0d214a259eb9
 dom.watch(); // Replaces <i> tags with SVGs
 refreshCart()
 
