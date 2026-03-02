@@ -19,7 +19,7 @@
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@fortawesome/react-fontawesome": "^3.1.1",
     "@nanostores/react": "^1.0.0",
-    "@tailwindcss/vite": "^4.1.17",
+    "@tailwindcss/vite": "^4.2.1",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.3",
     "astro": "^5.16.12",
@@ -33,11 +33,13 @@
     "sass": "^1.97.3",
     "slugify": "^1.6.6",
     "stripe": "^20.3.1",
-    "tailwindcss": "^4.1.17",
-    "typescript": "^5.9.3"
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.9.3",
+    "vite-plugin-svgr": "^4.5.0"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^5.7.0",
+    "@types/node": "^25.3.3",
     "@types/w3c-web-serial": "^1.0.8",
     "@types/w3c-web-usb": "^1.0.13",
     "@types/web-bluetooth": "^0.0.21",
@@ -47,7 +49,6 @@
     "eslint": "^9.39.3",
     "eslint-plugin-astro": "^1.5.0",
     "eslint-plugin-react": "^7.37.5",
-    "prettier": "^3.8.1",
-    "vite-plugin-svgr": "^4.5.0"
+    "prettier": "^3.8.1"
   }
 }
