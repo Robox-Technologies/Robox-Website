@@ -10,7 +10,7 @@ const extraClipperPadding = 32;
 const overhang = `${(headerEndPadding + extraClipperPadding)/2}px`;
 export default function Header({type}: {type?: 'standard' | 'workshop'}) {
     return (
-        <header className={`fixed top-0 z-50 flex items-center justify-between w-full ${type === 'workshop' ? 'bg-blue' : 'bg-primary'}`} style={{ height: headerHeight }}>
+        <header className={`sticky top-0 z-50 flex items-center justify-between w-full ${type === 'workshop' ? 'bg-blue' : 'bg-primary'}`} style={{ height: headerHeight }}>
             <nav className="flex items-center h-full flex-row w-full font-medium text-lg" style={{marginLeft: headerEndPadding}} >
                 <div className='flex flex-row items-center space-x-6'> 
                     <a href="/" className="flex items-center p-4">
