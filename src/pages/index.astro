@@ -51,8 +51,13 @@ import CheckOutOurKits from 'src/features/checkOutOurKits/checkOutOurKits.astro'
             <ArticleText className="lg:w-1/2 w-full">
                 <h1 class=" text-6xl">Build it. Code it. Bring it to life.</h1>
                 <p class="text-xl leading-[150%]">
-                    Ro/Box is an ultra-affordable robotics kit designed to make STEM education accessible to any student, anywhere. Whether you’re a budding engineer or a curious coder, Ro/Box offers hands-on experience in building, programming, and problem-solving
+                    There is more to Ro/Box than meets the eye. Each kit is jam-packed with features <span class="italic">(as much as our budget allows)</span> to give you the most value out of an already affordable product.
                 </p>
+                <ul class="list-disc list-inside flex flex-col gap-2 mt-4">
+                    <li class="text-xl"><span class="font-bold">Plywood chassis:</span> We use sustainable material that looks both elegant and strong to create the box shape. (After all, it wouldn’t be Ro/Box without Box!)</li>
+                    <li class="text-xl"><span>Reusable components:</span> No proprietary hardware! All of the components within a Ro/Box kit can be modified, substituted, or used in other robotics projects.</li>
+                    <li class="text-xl"><span class="font-bold">Open-sourced:</span> We mean it. Everything from the Ro/Box design schematics, to this website, is open-sourced. It’s our way of giving to the community.</li>
+                </ul>
             </ArticleText>
             <Image src={article2} alt="Robox Kit Components" class="rounded-lg max-w-full max-h-full w-full lg:w-1/2 object-contain"/>
         </ArticleSection>
