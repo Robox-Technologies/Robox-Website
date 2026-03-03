@@ -34,11 +34,11 @@
     --button-radius: 10px;
 
     /* font */
-    --font-display: 'NunitoSans', sans-serif;
+    --font-display: 'Nunito', sans-serif;
 }
 @font-face {
-    font-family: 'NunitoSans';
-    src: url('/src/fonts/Nunito_Sans/NunitoSans.ttf') format('truetype');
+    font-family: 'Nunito';
+    src: url('/src/fonts/Nunito/Nunito-VariableFont_wght.ttf') format('truetype');
     font-style: normal;
 }
 @layer components {

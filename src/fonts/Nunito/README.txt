@@ -1,21 +1,34 @@
-Nunito Sans Variable Font
-=========================
+Nunito Variable Font
+====================
 
-This download contains Nunito Sans as both variable fonts and static fonts.
+This download contains Nunito as both variable fonts and static fonts.
 
-Nunito Sans is a variable font with these axes:
-  YTLC
-  opsz
-  wdth
+Nunito is a variable font with this axis:
   wght
 
 This means all the styles are contained in these files:
-  Nunito_Sans/NunitoSans-VariableFont_YTLC,opsz,wdth,wght.ttf
-  Nunito_Sans/NunitoSans-Italic-VariableFont_YTLC,opsz,wdth,wght.ttf
+  Nunito-VariableFont_wght.ttf
+  Nunito-Italic-VariableFont_wght.ttf
 
 If your app fully supports variable fonts, you can now pick intermediate styles
 that aren’t available as static fonts. Not all apps support variable fonts, and
-in those cases you can use the static font files for Nunito Sans:
+in those cases you can use the static font files for Nunito:
+  static/Nunito-ExtraLight.ttf
+  static/Nunito-Light.ttf
+  static/Nunito-Regular.ttf
+  static/Nunito-Medium.ttf
+  static/Nunito-SemiBold.ttf
+  static/Nunito-Bold.ttf
+  static/Nunito-ExtraBold.ttf
+  static/Nunito-Black.ttf
+  static/Nunito-ExtraLightItalic.ttf
+  static/Nunito-LightItalic.ttf
+  static/Nunito-Italic.ttf
+  static/Nunito-MediumItalic.ttf
+  static/Nunito-SemiBoldItalic.ttf
+  static/Nunito-BoldItalic.ttf
+  static/Nunito-ExtraBoldItalic.ttf
+  static/Nunito-BlackItalic.ttf
 
 Get started
 -----------
