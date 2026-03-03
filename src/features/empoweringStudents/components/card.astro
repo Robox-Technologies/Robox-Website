@@ -9,8 +9,8 @@ interface Props {
 const { image, title, description } : Props = Astro.props;
 ---
 <BaseCard 
-    className='w-[350px] basis-[350px]' 
-    contentClass='bg-gray-100' 
+    className='w-[350px] basis-[350px] box-shadow' 
+    contentClass='bg-white' 
     description={description}
 >
     <Image slot="image" src={image} alt="Robotics Kit Components" class="w-full h-auto rounded-t-lg" width={image.width} height={image.height}/>
