@@ -38,7 +38,7 @@ const statusText = formatStatus(product.status);
 ---
 <StandardLayout title={product.name}>
     <Article>
-        <div class="w-full flex flex-row gap-8">
+        <div class="w-full flex flex-row max-xl:flex-col gap-8">
             <Carousel images={images} client:load/>
             <div class="flex-1 flex flex-col gap-4">
                 <!-- <div set:html={marked.parse(product.banner)} /> -->
