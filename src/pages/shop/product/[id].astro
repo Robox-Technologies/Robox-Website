@@ -6,7 +6,7 @@ import StandardLayout from '@layouts/StandardLayout.astro';
 import Article from '@components/article/Article';
 import Carousel from '@components/product/carousel/carousel';
 import Button from '@components/button';
-import { formatStatus } from "@utils/stripe";
+import { formatStatus, formatPrice } from "@utils/stripe";
 
 import AddQuantity from '@features/cart/components/addQuantity';
 export const getStaticPaths = (async () => {    
@@ -39,23 +39,23 @@ if (!description) {
 }
 
 const statusText = formatStatus(product.status);
-
+const priceText = formatPrice(product.price);
 ---
 <StandardLayout title={product.name}>
     <Article>
         <div class="w-full flex flex-row max-xl:flex-col gap-8">
             <Carousel images={images} client:load/>
-            <div class="flex-1 flex flex-col gap-4">
+            <div class="flex-1 flex flex-col gap-2">
                 <!-- <div set:html={marked.parse(product.banner)} /> -->
                 <div class="flex flex-col gap-2">
                     <h1 class="text-5xl font-bolder">
                         {product.name}
                     </h1>
-                    <p class="text-4xl text-blue font-bold mb-4">
-                        AU${product.price}
+                    <p class="text-4xl text-blue font-bold mb-0!">
+                        {priceText}
                     </p>
                 </div>
-                <p class="text-xl">
+                <p class="text-xl mb-0!">
                     {product.description}
                 </p>
                 <p class={statusText.color}>{statusText.text}</p>
