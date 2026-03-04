@@ -6,7 +6,6 @@ import StandardLayout from '@layouts/StandardLayout.astro';
 import Article from '@components/article/Article';
 import Carousel from '@components/product/carousel/carousel';
 import Button from '@components/button';
-
 import { formatStatus } from "@utils/stripe";
 
 import AddQuantity from '@features/cart/components/addQuantity';
@@ -31,6 +30,12 @@ const images = Object.entries(allImages).filter(([path, _]) => path.includes(`/s
     }, [] as ImageMetadata[]);
 if (images.length === 0) {
     throw new Error(`Image for product ${product.internalName} not found`);
+}
+
+const descriptions = import.meta.glob<ExportedMarkdownModuleEntities>('/src/data/products/*.mdx', { eager: true });
+const description = descriptions[`/src/data/products/${product.internalName}.mdx`];
+if (!description) {
+    throw new Error(`Description for product ${product.internalName} not found at path /src/data/products/${product.internalName}.mdx, only found: ${Object.keys(descriptions).join(', ')}`);
 }
 
 const statusText = formatStatus(product.status);
@@ -61,6 +66,11 @@ const statusText = formatStatus(product.status);
                     </Button>
 
                 </div>
+            </div>
+        </div>
+        <div class="w-full mt-16">
+            <div class="w-full mt-16 prose max-w-none">
+                <description.Content /> 
             </div>
         </div>
     </Article>
