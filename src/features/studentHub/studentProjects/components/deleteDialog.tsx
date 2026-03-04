@@ -1,19 +1,29 @@
-import { Dialog, DialogBody, DialogFooter, DialogHeader } from "@components/dialog";
+import { DialogBody, DialogFooter, DialogHeader } from "@components/dialog";
+import Dialog from "@components/dialog";
 import Button from "@components/button";
 import { faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";   
 import { openProject } from "../stores/projectSettingsModal";
 import { deleteProject } from "@utils/serialization";
-import { openModal } from "@stores/modals";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 export default function DeleteDialog() {
     const onDeleteProject = () => {
         const projectId = openProject.get();
         deleteProject(projectId!);
         openProject.set(null);
-        openModal.set(null);
     }
     return (
-         <Dialog id="deleteProjectDialog" className="h-fit">
+         <Dialog id="deleteProjectDialog" className="h-fit"
+            trigger={(setIsOpen) => <>
+                <Button className="text-black! p-1.5! flex items-center justify-start gap-1.5 hover:cursor-pointer" onClick={(event) => {
+                    event.stopPropagation();
+                    event.preventDefault();
+                    setIsOpen(true);
+                }}>
+                    <FontAwesomeIcon className="text-red" icon={faTrash} /> Delete
+                </Button>
+            </>}
+         >
             <DialogHeader>
                 <div className="flex items-center text-xl font-bold">
                     <FontAwesomeIcon icon={faWarning} className="text-red mr-2 mb-0.5" />
@@ -42,12 +52,6 @@ export default function DeleteDialog() {
             </DialogBody>
 
             <DialogFooter>
-                <Button
-                    className="bg-black w-25 px-4 py-2 text-white rounded-xl hover:bg-gray-600 ml-auto transition-colors"
-                    onClick={() => openModal.set(null)}
-                >
-                    Cancel
-                </Button>
                 <Button
                     className="bg-red w-25 px-4 py-2 text-white rounded-xl hover:bg-red-600 transition-colors"
                     onClick={onDeleteProject}

@@ -26,7 +26,7 @@ export default function Dialog({trigger, children, className, ...props}: {trigge
         <div>
             {trigger(setIsOpen)}
 
-            {createPortal(
+            {isOpen && createPortal(
                 <dialog
                     ref={modalRef}
                     onClose={() => setIsOpen(false)}
