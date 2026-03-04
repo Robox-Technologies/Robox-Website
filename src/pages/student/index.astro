@@ -6,10 +6,8 @@ import Article from '@components/article/Article';
 import StudentResources from '@features/studentHub/studentResources/studentResources.astro';
 import StudentProjects from '@features/studentHub/studentProjects/studentProjects.astro';
 import { Image } from 'astro:assets';
-import DeleteDialog from '@features/studentHub/studentProjects/components/deleteDialog';
 ---
 <StandardLayout title="Student Resources" header="workshop">
-    <DeleteDialog client:load />
     <PageHero gradient='positive' className='bg-black' lineWidth='20px' overlap='10vw'>
         <div slot="left" class="bg-yellow h-full w-full flex justify-start items-end p-8">
             <h1 class="text-5xl font-bold">

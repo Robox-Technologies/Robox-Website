@@ -60,8 +60,7 @@ const priceText = formatPrice(product.price);
                 </p>
                 <p class={statusText.color}>{statusText.text}</p>
                 <div class="flex flex-col gap-4 w-60 mt-auto ">
-                    <AddQuantity data-product-id={product.internalName} id="add-to-card" client:load/>
-                    <ProductCartModal client:only="react" />
+                    <ProductCartModal product={product} image={images[0]} client:only="react" />
 
                 </div>
             </div>

@@ -4,8 +4,7 @@ import { addToCart } from "@features/cart/utils/cart.client";
 import clsx from "clsx";
 import { useState } from "react";
 import type { FormHTMLAttributes } from "react";
-export default function AddQuantity({className, ...props}: FormHTMLAttributes<HTMLFormElement>) {
-    const [quantity, setQuantity] = useState(0);
+export default function AddQuantity({quantity, setQuantity, className, ...props}: FormHTMLAttributes<HTMLFormElement> & { quantity: number; setQuantity: React.Dispatch<React.SetStateAction<number>> }) {
     
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         setQuantity(Math.abs(parseInt(e.target.value) || 0));

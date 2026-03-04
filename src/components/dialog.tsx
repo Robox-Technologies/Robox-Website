@@ -3,17 +3,19 @@ import { createPortal } from "react-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
-export default function Dialog({trigger, children, className, ...props}: {trigger: (setIsOpen: Dispatch<SetStateAction<boolean>>) => React.ReactNode, children: React.ReactNode,} & HTMLAttributes<HTMLDialogElement>) {
+export default function Dialog({ref, trigger, children, className, ...props}: {ref?: React.RefObject<HTMLDialogElement | null>, trigger: (setIsOpen: Dispatch<SetStateAction<boolean>>) => React.ReactNode, children: React.ReactNode,} & HTMLAttributes<HTMLDialogElement>) {
     const [isOpen, setIsOpen] = useState(false);
-    const modalRef = useRef<HTMLDialogElement>(null);
+    if (!ref) {
+        ref = useRef<HTMLDialogElement>(null);
+    }
     const handleClick = (event: React.MouseEvent<HTMLDialogElement>) => {
-        if (event.target === modalRef.current) {
+        if (event.target === ref.current) {
             setIsOpen(false);
         }
     };
 
     useEffect(() => {
-        const modal = modalRef.current;
+        const modal = ref.current;
         if (!modal) return;
 
         if (isOpen && !modal.open) {
@@ -28,7 +30,7 @@ export default function Dialog({trigger, children, className, ...props}: {trigge
 
             {isOpen && createPortal(
                 <dialog
-                    ref={modalRef}
+                    ref={ref}
                     onClose={() => setIsOpen(false)}
                     onCancel={() => setIsOpen(false)}
                     onClick={handleClick}
@@ -57,7 +59,7 @@ export default function Dialog({trigger, children, className, ...props}: {trigge
 }
 export function DialogHeader({ children, className, ...props }: HTMLAttributes<HTMLDivElement>) {
     return (
-        <div className={twMerge("border-b border-gray-300 flex items-center text-lg flex-col font-semibold px-6 py-3 pr-12", className)} {...props}>
+        <div className={twMerge("border-b border-gray-300 flex items-center text-xl flex-col font-semibold px-6 py-3 pr-12 text-black", className)} {...props}>
             {children}
         </div>
     )
