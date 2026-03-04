@@ -20,10 +20,11 @@ ultrasonic = UltrasonicSensor()
 def generatePrint(typ, message):
     jsmessage = {"type": typ, "message": message}
     return json.dumps(jsmessage)
+color_sensor = None
 try:
     color_sensor = ColorSensor()
 except Exception:
-    generatePrint("error", "Cannot connect to colour sensor, is it on?")
+    print(generatePrint("error", "Cannot connect to colour sensor, please check the wiring, the program will still run but may crash if you use the color sensor."))
 motors = Motors()
 motor_speed = 60
 _STANDARD_COLORS = {
@@ -97,7 +98,8 @@ def closest_colour_name():
 try:
     color_sensor.closest_colour_name()
 except Exception:
-    color_sensor.closest_colour_name = closest_colour_name
+    if (color_sensor):
+        color_sensor.closest_colour_name = closest_colour_name
 `
 
 let downloadingToPico = false
@@ -179,6 +181,7 @@ export function postBlocklyWSInjection() {
     const stage2Modal = document.querySelector("dialog#bootsel-flash") as HTMLDialogElement | null;
     const stage1Modal = document.querySelector("dialog#bootsel-boot") as HTMLDialogElement | null;
     pico.addEventListener("error", (event) => {
+        console.log("Pico error event: ", event)
         if (stage2Modal?.hasAttribute("open") || stage1Modal?.hasAttribute("open")) return; // Don't show error if flashing
 
         const picoEvent = event as CustomEvent
