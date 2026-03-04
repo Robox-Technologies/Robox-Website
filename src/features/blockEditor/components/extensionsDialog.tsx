@@ -1,4 +1,5 @@
-import { Dialog, DialogHeader, DialogBody, DialogFooter } from "@components/dialog";
+import { DialogHeader, DialogBody, DialogFooter } from "@components/dialog";
+import Dialog from "@components/dialog";
 import { faPuzzlePiece } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { ExtensionKey, ExtensionTags } from "src/types/extensions";
@@ -10,12 +11,15 @@ import { setUserExtension } from "../utils/serialization";
 import { id } from "@features/blockEditor/stores/editor";
 import * as Blockly from "blockly";
 import { getProject } from "@utils/serialization";
+import ProjectExtensions from "@components/editor/projectExtensions";
 
 export default function ExtensionsDialog() {
     const extensionKeys = Object.keys(extensions) as (keyof typeof extensions)[]
 
     return (
-        <Dialog id="extensionsDialog" className="h-175">
+        <Dialog id="extensionsDialog" className="h-175"
+            trigger={(setIsOpen) => <ProjectExtensions setIsOpen={setIsOpen} />}
+        >
             <DialogHeader>
                 <div className="flex items-center text-xl font-bold">
                     <FontAwesomeIcon icon={faPuzzlePiece} className="text-green mr-2 mb-0.5" />

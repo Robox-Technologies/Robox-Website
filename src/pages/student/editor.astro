@@ -2,9 +2,6 @@
 import EditorLayout from "@layouts/EditorLayout.astro";
 import ProjectHeader from "@components/editor/projectHeader.astro";
 import BlocklyEditor from "@features/blockEditor/components/editor.astro";
-import { Dialog, DialogHeader, DialogBody } from "@components/dialog";
-import TerminalDialog from "@features/blockEditor/components/terminalDialog";
-import ExtensionsDialog from "@features/blockEditor/components/extensionsDialog";
 ---
 <style>
     html, body {
@@ -13,8 +10,7 @@ import ExtensionsDialog from "@features/blockEditor/components/extensionsDialog"
     }
 </style>
 <EditorLayout title="editor">
-    <TerminalDialog client:load/>
-    <ExtensionsDialog client:load/>
+
     <div class="w-full h-full flex flex-col">
         
 

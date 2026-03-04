@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { twMerge } from "tailwind-merge";
-export default function Dialog({trigger, children}: {trigger: (setIsOpen: Dispatch<SetStateAction<boolean>>) => React.ReactNode, children: React.ReactNode}) {
+export default function Dialog({trigger, children, className, ...props}: {trigger: (setIsOpen: Dispatch<SetStateAction<boolean>>) => React.ReactNode, children: React.ReactNode,} & HTMLAttributes<HTMLDialogElement>) {
     const [isOpen, setIsOpen] = useState(false);
     const modalRef = useRef<HTMLDialogElement>(null);
     const handleClick = (event: React.MouseEvent<HTMLDialogElement>) => {
@@ -22,7 +22,6 @@ export default function Dialog({trigger, children}: {trigger: (setIsOpen: Dispat
             modal.close();
         }
     }, [isOpen]);
-
     return (
         <div>
             {trigger(setIsOpen)}
@@ -38,7 +37,9 @@ export default function Dialog({trigger, children}: {trigger: (setIsOpen: Dispat
                         "w-full max-w-full sm:max-w-lg",
                         "rounded-lg shadow-lg bg-white",
                         "open:zoom-in-95 open:duration-200",
+                        className
                     )}
+                    {...props}
                 >
                     <button
                         onClick={() => setIsOpen(false)}

@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Dialog, DialogHeader, DialogBody, DialogFooter } from "@components/dialog";
+import { DialogHeader, DialogBody, DialogFooter } from "@components/dialog";
+import Dialog from "@components/dialog";
 import { faTerminal } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Button from "@components/button";
 import { pico } from "@libs/communication/communicate";
+import TerminalButton from "./editorButtons/terminalButton";
 export default function TerminalDialog() {
     const [logs, setLogs] = useState<string[]>([]);
     const [isAtBottom, setIsAtBottom] = useState(true);
@@ -39,7 +41,9 @@ export default function TerminalDialog() {
     }, []);
 
     return (
-        <Dialog id="terminalDialog" className="h-150">
+        <Dialog id="terminalDialog" className="h-150"
+            trigger={(setIsOpen) => <TerminalButton setIsOpen={setIsOpen} />}
+        >
             <DialogHeader>
                 <div className="flex items-center text-xl font-bold">
                     <FontAwesomeIcon icon={faTerminal} className="text-green mr-2 mb-0.5" />

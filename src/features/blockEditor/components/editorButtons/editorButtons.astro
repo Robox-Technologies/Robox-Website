@@ -1,6 +1,6 @@
 ---
+import TerminalDialog from "../terminalDialog";
 import MainButton from "./mainButton";
-import TerminalButton from "./terminalButton";
 import UndoRedo from "./undoRedo.astro";
 import ZoomButtons from "./zoomButtons.astro";
 ---
@@ -10,7 +10,7 @@ import ZoomButtons from "./zoomButtons.astro";
     </div>
     <div class="flex flex-col items-end gap-4"> 
         <div class="flex flex-col items-end gap-4"> 
-            <TerminalButton client:load/>
+            <TerminalDialog client:only="react"/>
             <ZoomButtons />
         </div>
         <MainButton client:load/>
