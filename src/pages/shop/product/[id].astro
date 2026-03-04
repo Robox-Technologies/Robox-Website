@@ -5,7 +5,7 @@ import type { ImageMetadata } from 'astro';
 import StandardLayout from '@layouts/StandardLayout.astro';
 import Article from '@components/article/Article';
 import Carousel from '@components/product/carousel/carousel';
-import Button from '@components/button';
+import ProductCartModal from '@features/cart/components/productCartModal';
 import { formatStatus, formatPrice } from "@utils/stripe";
 
 import AddQuantity from '@features/cart/components/addQuantity';
@@ -61,9 +61,7 @@ const priceText = formatPrice(product.price);
                 <p class={statusText.color}>{statusText.text}</p>
                 <div class="flex flex-col gap-4 w-60 mt-auto ">
                     <AddQuantity data-product-id={product.internalName} id="add-to-card" client:load/>
-                    <Button className="bg-red w-50 rounded-full! py-2 text-xl">
-                        Add to Cart
-                    </Button>
+                    <ProductCartModal client:only="react" />
 
                 </div>
             </div>

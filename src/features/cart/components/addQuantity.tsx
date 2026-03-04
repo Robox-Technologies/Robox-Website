@@ -1,6 +1,6 @@
 import Button from "@components/button";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { addToCart } from "@utils/client/cart.client";
+import { addToCart } from "@features/cart/utils/cart.client";
 import clsx from "clsx";
 import { useState } from "react";
 import type { FormHTMLAttributes } from "react";
