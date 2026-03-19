@@ -1,33 +1,49 @@
+import type { Product } from "src/types/shop";
+import { atom, map } from "nanostores";
+
 const cartKey = "roboxCart";
 
-export function getCart() {
-    if (typeof window === 'undefined') return null;
+export const isCartOpen = atom(false);
+export const cartItems = map<Record<string, Product & { quantity: number }>>({});
+
+// Load cart from localStorage
+function loadCart() {
+    if (typeof window === "undefined") return;
+
     const cart = localStorage.getItem(cartKey);
-    if (cart) {
-        try {
-            return JSON.parse(cart) as Record<string, number>;
-        } catch (e) {
-            console.error("Failed to parse cart from localStorage:", e);
-            localStorage.removeItem(cartKey);
-        }
+    if (!cart) return;
+
+    try {
+        cartItems.set(JSON.parse(cart));
+    } catch (e) {
+        console.error("Failed to parse cart:", e);
+        localStorage.removeItem(cartKey);
     }
-    return {};
 }
-export function updateCart(cart: Record<string, number>) {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(cartKey, JSON.stringify(cart));
+
+// Save cart whenever it changes
+cartItems.subscribe((value) => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(cartKey, JSON.stringify(value));
+});
+export function addToCart(productId: string, quantity = 1) {
+    const cart = cartItems.get();
+
+    cartItems.set({
+        ...cart,
+        [productId]: (cart[productId] || 0) + quantity
+    });
 }
-export function addToCart(productId: string, quantity: number) {
-    const cart = getCart() || {};
-    cart[productId] = (cart[productId] || 0) + quantity;
-    updateCart(cart);
-}
+
 export function removeFromCart(productId: string) {
-    const cart = getCart() || {};
-    delete cart[productId];
-    updateCart(cart);
+    const cart = cartItems.get();
+    const newCart = { ...cart };
+
+    delete newCart[productId];
+    cartItems.set(newCart);
 }
+
 export function clearCart() {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(cartKey);
+    cartItems.set({});
 }
+loadCart();
