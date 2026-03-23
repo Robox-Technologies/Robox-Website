@@ -20,5 +20,5 @@ const { title, header='standard' } = Astro.props as Props;
         
         <slot />
     </body>
-    <Footer />
+    {!isIOSBuild && <Footer />}
 </html>
