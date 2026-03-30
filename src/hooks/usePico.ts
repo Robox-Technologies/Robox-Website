@@ -7,7 +7,6 @@ import * as Blockly from "blockly"
 export function usePico() {
     const [state, setState] = useState<PicoState>(pico.getState())
 
-
     useEffect(() => {
         const handleStateChange = (newState: PicoState) => {
             setState(newState)
