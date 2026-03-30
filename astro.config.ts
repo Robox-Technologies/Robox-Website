@@ -11,7 +11,7 @@ export default defineConfig({
     integrations: [react(), mdx()],
 
     vite: {
-        plugins: [tailwindcss(), svgr()]
+        plugins: [tailwindcss(), svgr()],
     },
     markdown: {
         remarkPlugins: [
