@@ -11,7 +11,6 @@ export default defineConfig({
     integrations: [react(), mdx()],
 
     vite: {
-        // @ts-expect-error - This is going to be an issue until Astro V6 with Vite 7
         plugins: [tailwindcss(), svgr()]
     },
     markdown: {
