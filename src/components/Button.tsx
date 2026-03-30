@@ -1,21 +1,12 @@
 import type { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type { ButtonHTMLAttributes } from "react";
 
-interface ButtonProps {
-    id?: string;
-    className?: string;
-    icon?: IconProp;
-    href?: string;
-    iconStyle?: string;
-    onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-    disabled?: boolean;
-    children?: React.ReactNode;
-    style?: React.CSSProperties;
-}
-export default function Button({ id, className, children , icon, href, onClick, style, iconStyle, disabled }: ButtonProps) {
+
+export default function Button({ className, children , icon, href, iconStyle, ...props }: {icon?: IconProp, iconStyle?: string, disabled?: boolean, href?: string} & ButtonHTMLAttributes<HTMLButtonElement> ) {
     if (href) {
         return (
-            <a id={id} href={href} className={` text-white rounded-2xl p-4 hover:bg-blue-dark transition ${className}`} style={style}>
+            <a href={href} className={` text-white rounded-lg px-4 py-2 hover:bg-blue-dark transition ${className}`}>
                 {
                     icon ? <FontAwesomeIcon icon={icon} className={iconStyle}/> : null
                 }
@@ -25,7 +16,7 @@ export default function Button({ id, className, children , icon, href, onClick, 
     }
     else {
         return (
-            <button id={id} disabled={disabled} className={` text-white rounded-2xl p-4 hover:bg-blue-dark hover:cursor-pointer transition ${className}`} onClick={onClick} style={style}>
+            <button className={` text-white rounded-lg px-4 py-2 hover:bg-blue-dark hover:cursor-pointer transition ${className}`} {...props} >
                 {
                     icon ? <FontAwesomeIcon icon={icon} className={iconStyle}/> : null
                 }

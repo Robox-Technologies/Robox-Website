@@ -1,0 +1,74 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getAllProducts, getProductById } from "@utils/server/stripe.server";
+import type { ImageMetadata } from 'astro';
+import StandardLayout from '@layouts/StandardLayout.astro';
+import Article from '@components/article/Article';
+import Carousel from '@components/product/carousel/carousel';
+import ProductCartModal from '@features/cart/components/productCartModal';
+import { formatStatus, formatPrice } from "@utils/stripe";
+
+import AddQuantity from '@features/cart/components/addQuantity';
+export const getStaticPaths = (async () => {    
+    const products = await getAllProducts();
+    return products.map(product => ({
+        params: { id: product.internalName }
+    }));
+}) satisfies GetStaticPaths;
+const { id } = Astro.params;
+const products = await getAllProducts();
+
+const product = products.find(p => p.internalName === id);
+if (!product) {
+    throw new Error(`Product with id ${id} not found`);
+}
+const allImages = import.meta.glob<{ default: ImageMetadata }>(`src/images/shop/products/**/*`, { eager: true });
+const images = Object.entries(allImages).filter(([path, _]) => path.includes(`/src/images/shop/products/${product.internalName}/`))
+    .reduce((acc, [_, image]) => {
+        acc.push(image.default);
+        return acc;
+    }, [] as ImageMetadata[]);
+if (images.length === 0) {
+    throw new Error(`Image for product ${product.internalName} not found`);
+}
+
+const descriptions = import.meta.glob<ExportedMarkdownModuleEntities>('/src/data/products/*.mdx', { eager: true });
+const description = descriptions[`/src/data/products/${product.internalName}.mdx`];
+if (!description) {
+    throw new Error(`Description for product ${product.internalName} not found at path /src/data/products/${product.internalName}.mdx, only found: ${Object.keys(descriptions).join(', ')}`);
+}
+
+const statusText = formatStatus(product.status);
+const priceText = formatPrice(product.price);
+---
+<StandardLayout title={product.name}>
+    <Article>
+        <div class="w-full flex flex-row max-xl:flex-col gap-8">
+            <Carousel images={images} client:load/>
+            <div class="flex-1 flex flex-col gap-2">
+                <!-- <div set:html={marked.parse(product.banner)} /> -->
+                <div class="flex flex-col gap-2">
+                    <h1 class="text-5xl font-bolder">
+                        {product.name}
+                    </h1>
+                    <p class="text-4xl text-blue font-bold mb-0!">
+                        {priceText}
+                    </p>
+                </div>
+                <p class="text-xl mb-0!">
+                    {product.description}
+                </p>
+                <p class={statusText.color}>{statusText.text}</p>
+                <div class="flex flex-col gap-4 w-60 mt-auto ">
+                    <ProductCartModal product={product} image={images[0]} client:only="react" />
+
+                </div>
+            </div>
+        </div>
+        <div class="w-full mt-16">
+            <div class="w-full mt-16 prose max-w-none">
+                <description.Content /> 
+            </div>
+        </div>
+    </Article>
+</StandardLayout>

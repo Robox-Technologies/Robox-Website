@@ -1,3 +1,5 @@
+import { twMerge } from "tailwind-merge";
+
 interface CardProps {
     className?: string;
     image?: React.ReactNode;
@@ -9,7 +11,7 @@ interface CardProps {
 }
 export default function Card(props: CardProps) {
     return (
-        <div className={`card flex flex-col overflow-hidden rounded-lg ${props.className ?? ''}`}>
+        <div className={twMerge("card flex flex-col overflow-hidden rounded-lg", props.className)}>
             {props.absolute}
             {props.image}
             <div className="card-children rounded-b-lg flex flex-col gap-4">

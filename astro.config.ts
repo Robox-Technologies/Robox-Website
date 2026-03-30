@@ -3,21 +3,29 @@ import { defineConfig } from 'astro/config';
 import 'dotenv/config';
 
 import react from '@astrojs/react';
-
 import tailwindcss from '@tailwindcss/vite';
 import svgr from "vite-plugin-svgr";
 import type { AstroIntegration } from 'astro';
 import { resolve, join } from 'path';
 import { promises as fs } from 'fs';
+import mdx from '@astrojs/mdx';
+import RoboxSectionize from './astro/integrations/markdown/roboxSectionize';
+
 export default defineConfig({
     srcDir: 'src',
     integrations: [
         react(), 
+        mdx(),
         process.env.IOS_BUILD === "true" ? transformIOSBuild() : undefined
     ],
     vite: {
         plugins: [
             tailwindcss(), svgr()
+        ]
+    },
+    markdown: {
+        remarkPlugins: [
+            RoboxSectionize
         ]
     }
 });

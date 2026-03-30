@@ -1,0 +1,27 @@
+---
+import { getAllProducts } from "@utils/server/stripe.server";
+import type { ImageMetadata } from 'astro';
+const products = await getAllProducts();
+import { formatPrice } from "@utils/stripe";
+
+import StandardLayout from "@layouts/StandardLayout.astro";
+import PageHero from "@components/pageHero";
+
+import Hero from "@images/shop/hero.jpg" ;
+import { Image } from "astro:assets";
+import Article from "@components/article/Article";
+import ProductCard from "@components/shop/productCard";
+const images = import.meta.glob<{ default: ImageMetadata }>('src/images/shop/products/*/thumbnail.jpg', { eager: true });
+// Check that all products have images
+const product = {}
+products.map(product => {
+    const imagePath = `/src/images/shop/products/${product.internalName}/thumbnail.jpg`;
+    if (!images[imagePath]) {
+        throw new Error(`Missing image for product ${product.name} at path ${imagePath} only found: ${Object.keys(images).join(', ')}`);
+    }
+    return {
+        ...product,
+        image: images[imagePath]
+    }
+});
+---

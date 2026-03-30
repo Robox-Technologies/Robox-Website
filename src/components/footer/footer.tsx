@@ -21,7 +21,7 @@ export default function Footer() {
                         Ro/Box Hub
                     </FooterLink>
                     <FooterLink href="/contact">
-                        Store
+                        Shop
                     </FooterLink>
                 </div>
                 <div className="flex flex-col gap-4">

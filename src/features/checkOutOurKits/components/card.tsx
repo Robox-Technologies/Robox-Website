@@ -5,11 +5,11 @@ interface ProductCardProps {
     className?: string;
     image: ImageMetadata;
     price: string;
-    link: string;
+    href: string;
     absolute?: React.ReactNode;
     title: string;
 }
-export default function ProductCard({ className, image, price, link, absolute, title }: ProductCardProps) {
+export default function ProductCard({ className, image, price, href, absolute, title }: ProductCardProps) {
     return (
         <Card 
             className={`w-[350px] basis-[350px] relative box-shadow bg-gray-100 ${className ?? ''}`} 
@@ -24,7 +24,7 @@ export default function ProductCard({ className, image, price, link, absolute, t
             }
         >
             <div className="flex justify-center p-4">
-                <Button href={link} className="bg-blue text-xl px-8 box-shadow">
+                <Button href={href} className="bg-blue text-xl px-8 box-shadow">
                     View Product
                 </Button>
 

@@ -1,6 +1,6 @@
 // This file exists to seperate out the Blockly library (as it does not support tree shaking) from the rest of the codebase
 import type { Workspace, WorkspaceSvg } from "blockly/core";
-import { id } from "@stores/editor";
+import { id } from "@features/blockEditor/stores/editor";
 import { getProject, getProjects, isValidProjectId, isProtoPollution, sanitizeImageDataUrl, editProject } from "@utils/serialization";
 import * as Blockly from "blockly";
 import { workspaceToPng_ } from "./screenshot";
@@ -40,9 +40,9 @@ export async function saveBlockly(workspace: WorkspaceSvg) {
     });
 }
 export function generateCode(workspace: Workspace) {
-    const $projectId = id.get();
-    if (!$projectId) throw new Error("No project ID found");
-    const project = getProject($projectId);
+    const projectId = id.get();
+    if (!projectId) throw new Error("No project ID found");
+    const project = getProject(projectId);
     if (!project) throw new Error("Project not found");
     const extensionsPreamble = generateExtensionsPreamble(project.extensions);
     const extraSensorsPreamble = generateExtraSensorsPreamble(project.sensors);
@@ -68,4 +68,16 @@ function generateExtraSensorsPreamble(userExtraSensors: UserSensors): string {
 // So we preserver the typing of the sensor keys in the preamble generation
 function callSensorPreamble<K extends SensorKey>(sensor: UserSensor<K>): string {
     return ExtraSensorsPreamble[sensor.type](sensor.pins);
+}
+export function setUserExtension(extension: ExtensionKey, enabled: boolean) {
+    const projectId = id.get();
+    if (!projectId) throw new Error("No project ID found");
+    const project = getProject(projectId);
+    if (!project) throw new Error("Project not found");
+    const extensions = project.extensions;
+    extensions[extension] = enabled;
+    editProject(projectId, {
+        ...project,
+        extensions
+    })
 }

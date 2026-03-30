@@ -1,17 +1,8 @@
 ---
 import EditorLayout from "@layouts/EditorLayout.astro";
-import ProjectContext from "@components/editor/projectContext.tsx";
 import ProjectHeader from "@components/editor/projectHeader.astro";
 import BlocklyEditor from "@features/blockEditor/components/editor.astro";
-import { Dialog, DialogHeader, DialogBody } from "@components/dialog";
 ---
-<script>
-    import { id } from "@stores/editor";
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const projectId = urlParams.get('id');
-    id.set(projectId);
-</script>
 <style>
     html, body {
         height: 100%;
@@ -19,12 +10,7 @@ import { Dialog, DialogHeader, DialogBody } from "@components/dialog";
     }
 </style>
 <EditorLayout title="editor">
-    <Dialog id="terminalDialog" client:load>
-        <DialogHeader>Terminal</DialogHeader>
-        <DialogBody>
-            <p class="text-gray-700">This is the terminal modal. You can put any content you want here, such as a terminal emulator or other controls.</p>
-        </DialogBody>
-    </Dialog>
+
     <div class="w-full h-full flex flex-col">
         <ProjectHeader />
         <BlocklyEditor />

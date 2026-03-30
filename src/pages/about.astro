@@ -29,7 +29,7 @@ import Button from '@components/button';
         </p>
     </div>
     <Article>
-        <ArticleSection id="our-mission" direction="LTR">
+        <ArticleSection id="our-mission" direction="LTR" className='flex-col'>
             <div class="w-full lg:w-1/2 flex flex-col justify-center gap-6">
                 <h1 class="text-left mb-8">
                     Our Mission
@@ -45,7 +45,7 @@ import Button from '@components/button';
                 <Image src={Article1} alt="About Ro/Box" class="rounded-lg max-w-full max-h-full w-full object-cover object-center" width={Article1.width} height={Article1.height}/>
             </div>
         </ArticleSection>
-        <ArticleSection id="our-story" direction="RTL">
+        <ArticleSection id="our-story" direction="RTL" className='flex-col'>
             <div class="w-full lg:w-1/2 flex flex-col justify-center gap-6">
                 <h1 class="text-left mb-8">
                     Our Story
@@ -58,7 +58,7 @@ import Button from '@components/button';
                 <Image src={Article2} alt="About Story" class="rounded-lg max-w-full max-h-full w-full object-cover object-center" width={Article2.width} height={Article2.height}/>
             </div>
         </ArticleSection>
-        <ArticleSection direction="LTR">
+        <ArticleSection direction="LTR" className='flex-col'>
             <div class="w-full lg:w-1/2 flex flex-col justify-center gap-6">
                 <p class="text-left text-xl leading-[150%]">
                     Ro/Box went on to become a winning project for the Rise Challenge.<br/>
@@ -72,7 +72,7 @@ import Button from '@components/button';
                 <Image src={Article3} alt="About Story" class="rounded-lg max-w-full max-h-full w-full object-cover object-center" width={Article2.width} height={Article2.height}/>
             </div>
         </ArticleSection>
-        <ArticleSection id="join-us" direction="LTR">
+        <ArticleSection id="join-us" direction="LTR" className='flex-col'>
             <div class="w-full lg:w-1/2 flex flex-col justify-center gap-6">
                 <h1 class="text-left mb-8">
                     Join Us On Our Mission
@@ -86,8 +86,8 @@ import Button from '@components/button';
                     <br/><br/>
                     Together, we can give every child the opportunity to discover, and create the dream of robotics.
                 </p>
-                <Button href="/store" className='bg-red px-6 py-4 text-2xl box-shadow w-fit mt-8'>
-                    Visit Our Store
+                <Button href="/shop" className='bg-red px-6 py-4 text-2xl box-shadow w-fit mt-8'>
+                    Visit Our Shop
                 </Button>
             </div>
         </ArticleSection>
