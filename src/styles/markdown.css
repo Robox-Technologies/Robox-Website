@@ -1,9 +1,10 @@
-@import "tailwindcss";
-.RTL, .LTR {
+@import 'tailwindcss';
+.RTL,
+.LTR {
     gap: 2rem;
 }
 .RTL {
-    display: flex;;
+    display: flex;
     flex-direction: row-reverse;
 }
 .LTR {
@@ -20,21 +21,20 @@ section.articleSection {
 h2 {
     margin-bottom: 1rem;
     font-weight: 600;
-    @apply text-3xl
+    @apply text-3xl;
 }
-p, li {
+p,
+li {
     margin-bottom: 1rem;
     line-height: 1.6;
-    @apply text-xl
+    @apply text-xl;
 }
 ul {
     list-style: unset;
-    
 }
 li {
     margin-left: 1.5rem;
 }
 img {
     flex-grow: 0;
-
 }

@@ -1,22 +1,21 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-
-    --color-blue: #2588C7;
-    --color-green: #91CC31;
-    --color-yellow: #FFCD44;
-    --color-red: #FF6166;
-    --color-black:#405C64;
+    --color-blue: #2588c7;
+    --color-green: #91cc31;
+    --color-yellow: #ffcd44;
+    --color-red: #ff6166;
+    --color-black: #405c64;
     /* Colors */
-    --color-drop-shadow: #26363B;
+    --color-drop-shadow: #26363b;
 
-    --color-tone1: #F8F8F8;
-    --color-tone2: #EFEFEF;
+    --color-tone1: #f8f8f8;
+    --color-tone2: #efefef;
     --color-tone3: #717171;
     --color-tone4: #000000;
 
-    --color-primary: #F8F8F8;
-    --color-secondary: #C6C6C6;
+    --color-primary: #f8f8f8;
+    --color-secondary: #c6c6c6;
 
     /* Layout */
     --stroke-size: 3px;
@@ -38,7 +37,8 @@
 }
 @font-face {
     font-family: 'Nunito';
-    src: url('/src/fonts/Nunito/Nunito-VariableFont_wght.ttf') format('truetype');
+    src: url('/src/fonts/Nunito/Nunito-VariableFont_wght.ttf')
+        format('truetype');
     font-style: normal;
 }
 @layer components {
@@ -46,14 +46,20 @@
         @apply text-black font-semibold;
     }
     .box-shadow {
-        box-shadow: 6px 6px 0 #26363b
+        box-shadow: 6px 6px 0 #26363b;
     }
 }
 @layer base {
     html {
         @apply font-display bg-primary;
     }
-    h1, h2, h3, p, li, a, span {
+    h1,
+    h2,
+    h3,
+    p,
+    li,
+    a,
+    span {
         @apply text-black;
     }
     p a {

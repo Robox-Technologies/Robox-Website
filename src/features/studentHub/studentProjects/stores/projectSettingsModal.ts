@@ -1,2 +1,2 @@
-import { atom } from "nanostores";
-export const openProject = atom<string | null>(null);
+import { atom } from 'nanostores'
+export const openProject = atom<string | null>(null)
