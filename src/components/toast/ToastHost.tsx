@@ -113,6 +113,9 @@ export default function ToastHost() {
     )
 }
 
+const bottomOffset = 16
+const toastHeight = 96
+
 function ToastItemCard({
     toastItem,
     index,
@@ -129,10 +132,10 @@ function ToastItemCard({
             className={twMerge(
                 'pointer-events-auto m-0 border-2 rounded-xl shadow-lg box-shadow',
                 'w-[min(92vw,24rem)] p-0 overflow-hidden',
-                'fixed left-auto right-4 animate-in fade-in slide-in-from-bottom-10 duration-300',
+                'fixed left-auto right-4 animate-toast-in',
                 variantConfig.classes,
             )}
-            style={{ bottom: `${16 + index * 96}px` }}
+            style={{ bottom: `${bottomOffset + index * toastHeight}px` }}
         >
             <div className="flex items-start gap-3 p-4 pr-2 bg-white/85">
                 <FontAwesomeIcon

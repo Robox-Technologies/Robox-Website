@@ -79,6 +79,27 @@
     box-sizing: border-box;
 }
 @layer utilities {
+    @keyframes toast-slide-in {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .animate-toast-in {
+        animation: toast-slide-in 220ms ease-out both;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .animate-toast-in {
+            animation: none;
+        }
+    }
+
     /* Chrome, Safari, Edge, Opera */
     .no-spinner::-webkit-inner-spin-button,
     .no-spinner::-webkit-outer-spin-button {
@@ -88,6 +109,7 @@
 
     /* Firefox */
     .no-spinner {
+        appearance: textfield;
         -moz-appearance: textfield;
     }
 }

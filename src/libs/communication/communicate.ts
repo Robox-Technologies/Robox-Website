@@ -250,7 +250,6 @@ export class Pico {
             toast.warning({
                 title: 'Connection Cancelled',
                 message: 'Ro/Box connection was cancelled.',
-                durationMs: 5000000,
             })
         })
     }
