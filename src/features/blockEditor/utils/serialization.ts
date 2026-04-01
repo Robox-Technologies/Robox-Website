@@ -44,8 +44,8 @@ export function generateCode(workspace: Workspace) {
     if (!projectId) throw new Error("No project ID found");
     const project = getProject(projectId);
     if (!project) throw new Error("Project not found");
-    const extensionsPreamble = generateExtensionsPreamble(project.extensions);
-    const extraSensorsPreamble = generateExtraSensorsPreamble(project.sensors);
+    const extensionsPreamble = generateExtensionsPreamble(project.extensions ?? {});
+    const extraSensorsPreamble = generateExtraSensorsPreamble(project.sensors ?? {});
 
     const code = preamble + extensionsPreamble + extraSensorsPreamble + pythonGenerator.workspaceToCode(workspace) + "\nevent_begin()"
 

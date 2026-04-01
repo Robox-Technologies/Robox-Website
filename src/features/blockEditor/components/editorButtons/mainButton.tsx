@@ -4,6 +4,7 @@ import { ConnectionStatus } from "src/types/communication";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons/faSpinner";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect } from "react";
+import { twMerge } from "tailwind-merge";
 const statusStyling: Record<ConnectionStatus, {className: string, children: React.ReactNode}> = {
     [ConnectionStatus.CONNECTED]: { className: "bg-green", children: "Run Ro/Box" },
     [ConnectionStatus.CONNECTING]: { className: "bg-blue", children: <FontAwesomeIcon icon={faSpinner} spin /> },
@@ -26,6 +27,7 @@ export default function MainButton() {
         },
         [ConnectionStatus.CONNECTED]: async () => {
             await sendCode()
+            //TODO: Make this not run every time
             runCode()
             // runCode()
         },
@@ -36,7 +38,7 @@ export default function MainButton() {
 
     const handleClick = stateClickHandlers[connectionStatus]
     return (
-        <Button className={`rounded-3xl box-shadow w-65 text-xl font-bold py-3 px-2 pointer-events-auto ${className}`} onClick={handleClick}  disabled={!handleClick}>
+        <Button className={twMerge(`rounded-3xl box-shadow w-65 text-xl font-bold py-3 px-2 pointer-events-auto ${className}`)} onClick={handleClick}  disabled={!handleClick}>
             {children}
         </Button>
     )

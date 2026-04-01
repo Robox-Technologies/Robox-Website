@@ -19,9 +19,7 @@ export default defineConfig({
         process.env.IOS_BUILD === "true" ? transformIOSBuild() : undefined
     ],
     vite: {
-        plugins: [
-            tailwindcss(), svgr()
-        ]
+        plugins: [tailwindcss(), svgr()],
     },
     markdown: {
         remarkPlugins: [

@@ -31,7 +31,10 @@ export function addToCart(productId: string, quantity = 1) {
 
     cartItems.set({
         ...cart,
-        [productId]: (cart[productId] || 0) + quantity
+        [productId]: {
+            ...cart[productId],
+            quantity: (cart[productId]?.quantity || 0) + quantity
+        }
     });
 }
 

@@ -1,7 +1,7 @@
 import type { Communication, PicoMessage }  from "src/types/communication";
 import type { Pico } from "./communicate";
 
-const WRITE_TIMEOUT = 20
+const WRITE_TIMEOUT = 0
 const UART_SERVICE = 0xFFE0
 const UART_CHARACTERISTIC = 0xFFE1
 const CHUNK_SIZE = 20
