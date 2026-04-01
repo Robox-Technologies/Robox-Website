@@ -60,7 +60,6 @@ function CarouselSideBar({
                     key={index}
                     isActive={index === currentIndex}
                     onClick={() => {
-                        console.log(index)
                         setCurrentIndex(index)
                     }}
                 />

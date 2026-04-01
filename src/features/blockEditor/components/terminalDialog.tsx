@@ -70,7 +70,6 @@ export default function TerminalDialog() {
             <DialogFooter>
                 <Button
                     onClick={() => {
-                        console.log('Clearing terminal output')
                         setLogs([])
                     }}
                     className="bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 ml-auto transition-colors"

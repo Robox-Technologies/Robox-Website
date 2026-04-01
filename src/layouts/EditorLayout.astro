@@ -1,7 +1,7 @@
 ---
 import Meta from '@components/Meta'
 import Header from '@components/header/Header'
-import Footer from '@components/footer/footer'
+import ToastHost from '@components/toast/ToastHost'
 
 import '@styles/global.css'
 interface Props {
@@ -17,5 +17,6 @@ const { title } = Astro.props as Props;
         <Header type="workshop" />
         
         <slot />
+        <ToastHost client:only="react" />
     </body>
 </html>

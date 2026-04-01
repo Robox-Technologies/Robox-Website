@@ -187,6 +187,7 @@ export class USBCommunication implements Communication {
                 error.name === 'NotFoundError'
             ) {
                 this.parent.emit('revert', {})
+                throw error
             } else {
                 this.parent.handleMessage({
                     type: 'error',
