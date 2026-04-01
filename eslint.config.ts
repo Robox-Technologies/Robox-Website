@@ -56,6 +56,27 @@ export default defineConfig([
         ...css.configs.recommended,
     },
     {
+        files: [
+            'src/layouts/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx,astro}',
+            'src/utils/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+            'src/libs/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+        ],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            group: ['@features/*/*', 'src/features/*/*'],
+                            message:
+                                'Shared layers must import features only via public APIs like @features/<feature>.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+    {
         plugins: {
             '@stylistic': stylistic,
         },

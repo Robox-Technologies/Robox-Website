@@ -5,13 +5,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { ExtensionKey, ExtensionTags } from 'src/types/extensions'
 import extensions from '@data/extensions.json'
 import { Toggle } from '@components/toggle'
-import { use, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import generateToolbox from '../utils/toolbox'
 import { setUserExtension } from '../utils/serialization'
 import { id } from '@features/blockEditor/stores/editor'
 import * as Blockly from 'blockly'
 import { getProject } from '@utils/serialization'
-import ProjectExtensions from '@components/editor/projectExtensions'
+import ProjectExtensions from '@features/blockEditor/components/editor/projectExtensions'
 
 export default function ExtensionsDialog() {
     const extensionKeys = Object.keys(extensions) as (keyof typeof extensions)[]

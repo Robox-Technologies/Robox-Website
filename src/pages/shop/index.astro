@@ -10,7 +10,7 @@ import PageHero from "@components/pageHero";
 import Hero from "@images/shop/hero.jpg" ;
 import { Image } from "astro:assets";
 import Article from "@components/article/Article";
-import ProductCard from "@components/shop/productCard";
+import ProductCard from "@features/shop/components/catalog/productCard";
 const images = import.meta.glob<{ default: ImageMetadata }>('src/images/shop/products/*/thumbnail.jpg', { eager: true });
 // Check that all products have images
 const product = {}
@@ -44,6 +44,7 @@ products.map(product => {
             Our Products
         </h1>
         <div class="card-holder flex flex-wrap gap-4 w-full">
+            <!-- TODO: THis has very bad constrast -->
             {products.map(product => (
                 <ProductCard
                     product={product}

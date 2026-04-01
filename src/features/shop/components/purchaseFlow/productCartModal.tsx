@@ -1,13 +1,10 @@
 import {
     useState,
     useRef,
-    useEffect,
-    type ComponentType,
     type Dispatch,
     type SetStateAction,
 } from 'react'
-import { createPortal } from 'react-dom'
-import AddToCartButton from '@components/shop/product/addToCartButton'
+import AddToCartButton from '@features/shop/components/purchaseFlow/addToCartButton'
 import Dialog, {
     DialogBody,
     DialogFooter,
