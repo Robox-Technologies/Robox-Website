@@ -29,7 +29,6 @@ export default function AddQuantity({
                 'data-product-id',
             ) || ''
         addToCart(productId, quantity)
-        console.log(`Submitted quantity: ${quantity} for product ID: ${productId}`) // Debug log to check submitted quantity and product ID
     }
     return (
         <form

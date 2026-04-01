@@ -17,7 +17,12 @@ export default function HeaderLink({
             href={href}
             className={`button-standard inline-flex items-center gap-2 ${className}`}
         >
-            {icon && <FontAwesomeIcon icon={icon} className="h-4 w-4 max-h-4 max-w-4" />}
+            {icon && (
+                <FontAwesomeIcon
+                    icon={icon}
+                    className="h-4 w-4 max-h-4 max-w-4"
+                />
+            )}
             {children}
         </a>
     )

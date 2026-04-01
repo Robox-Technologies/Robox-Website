@@ -1,10 +1,5 @@
-import {
-    useState,
-    useRef,
-    type Dispatch,
-    type SetStateAction,
-} from 'react'
-import AddToCartButton from '@features/cart/components/addToCartButton'
+import { useState, useRef, type Dispatch, type SetStateAction } from 'react'
+import AddToCartButton from '@features/shop/components/purchaseFlow/addToCartButton'
 import Dialog, {
     DialogBody,
     DialogFooter,
@@ -13,7 +8,7 @@ import Dialog, {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
 import type { Product } from '@/types/shop'
-import AddQuantity from './addQuantity'
+import AddQuantity from '@features/shop/components/purchaseFlow/addQuantity'
 import { formatPrice } from '@utils/stripe'
 import Button from '@components/button'
 
@@ -100,7 +95,11 @@ function OpenElement({
                 data-product-id={product.internalName}
                 id="add-to-cart"
             />
-            <AddToCartButton type="submit" form="add-to-cart" setIsOpen={setIsOpen} />
+            <AddToCartButton
+                type="submit"
+                form="add-to-cart"
+                setIsOpen={setIsOpen}
+            />
         </div>
     )
 }

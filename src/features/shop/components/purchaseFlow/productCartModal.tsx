@@ -1,9 +1,4 @@
-import {
-    useState,
-    useRef,
-    type Dispatch,
-    type SetStateAction,
-} from 'react'
+import { useState, useRef, type Dispatch, type SetStateAction } from 'react'
 import AddToCartButton from '@features/shop/components/purchaseFlow/addToCartButton'
 import Dialog, {
     DialogBody,
@@ -100,7 +95,11 @@ function OpenElement({
                 data-product-id={product.internalName}
                 id="add-to-cart"
             />
-            <AddToCartButton type="submit" form="add-to-cart" setIsOpen={setIsOpen} />
+            <AddToCartButton
+                type="submit"
+                form="add-to-cart"
+                setIsOpen={setIsOpen}
+            />
         </div>
     )
 }

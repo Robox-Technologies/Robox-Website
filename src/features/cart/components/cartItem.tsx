@@ -5,7 +5,6 @@ export default function CartItem({
     product,
     quantity,
     image,
-    updateQuantity,
 }: {
     product: Product
     quantity: number

@@ -5,8 +5,7 @@ export default function AddToCartButton({
     ...props
 }: {
     setIsOpen: Dispatch<SetStateAction<boolean>>
-} & React.ButtonHTMLAttributes<HTMLButtonElement> 
-) {
+} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
     return (
         <Button
             className="bg-red w-50 rounded-full! py-2 text-xl"
