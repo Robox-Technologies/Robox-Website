@@ -2,7 +2,6 @@ import Button from "@components/button";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { addToCart } from "@features/cart/utils/cart.client";
 import clsx from "clsx";
-import { useState } from "react";
 import type { FormHTMLAttributes } from "react";
 export default function AddQuantity({quantity, setQuantity, className, ...props}: FormHTMLAttributes<HTMLFormElement> & { quantity: number; setQuantity: React.Dispatch<React.SetStateAction<number>> }) {
     

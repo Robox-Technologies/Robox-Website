@@ -3,7 +3,6 @@ import { atom, map } from "nanostores";
 
 const cartKey = "roboxCart";
 
-export const isCartOpen = atom(false);
 export const cartItems = map<Record<string, Product & { quantity: number }>>({});
 
 // Load cart from localStorage

@@ -3,13 +3,12 @@
     gap: 2rem;
 }
 .RTL {
-    display: flex;
-    direction: rtl;
+    display: flex;;
+    flex-direction: row-reverse;
 }
 .LTR {
     display: flex;
     flex-direction: row;
-    direction: ltr;
 }
 .equalWidth > * {
     width: 50%;
@@ -37,4 +36,5 @@ li {
 }
 img {
     flex-grow: 0;
+
 }
