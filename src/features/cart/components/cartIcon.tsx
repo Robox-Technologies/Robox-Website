@@ -12,11 +12,11 @@ export default function CartIcon() {
         <Button
             type="button"
             icon={faShoppingCart}
-            iconStyle="text-black"
-            className={`relative rounded-full! border-2 p-0! w-10 border-black flex items-center justify-center h-10 ${quantityInCart > 0 ? 'ring-2 ring-red' : ''}`}
+            iconStyle="text-white"
+            className={`relative rounded-full! text-white p-0! w-10 flex items-center justify-center h-10 ${quantityInCart > 0 ? 'ring-2 ring-red' : ''}`}
         >
             {quantityInCart > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red border-white text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                     {quantityInCart}
                 </span>
             )}

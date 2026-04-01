@@ -22,12 +22,14 @@ export default function AddQuantity({
         setQuantity((prev) => Math.max(0, prev - 1))
     }
     const onSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
+        console.log('Submitting form with quantity:', quantity) // Debug log to check submitted quantity
         e.preventDefault()
         const productId =
             (e.currentTarget as HTMLFormElement).getAttribute(
                 'data-product-id',
             ) || ''
         addToCart(productId, quantity)
+        console.log(`Submitted quantity: ${quantity} for product ID: ${productId}`) // Debug log to check submitted quantity and product ID
     }
     return (
         <form

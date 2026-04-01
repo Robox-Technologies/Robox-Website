@@ -18,6 +18,7 @@ function loadCart() {
         console.error('Failed to parse cart:', e)
         localStorage.removeItem(cartKey)
     }
+    console.log('Cart loaded:', cartItems.get()) // Debug log to check loaded cart items
 }
 
 // Save cart whenever it changes
@@ -27,7 +28,7 @@ cartItems.subscribe((value) => {
 })
 export function addToCart(productId: string, quantity = 1) {
     const cart = cartItems.get()
-
+    console.log(`Adding to cart: ${productId} (quantity: ${quantity})`) // Debug log to check product being added
     cartItems.set({
         ...cart,
         [productId]: {

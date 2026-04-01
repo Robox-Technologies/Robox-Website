@@ -15,7 +15,7 @@ const { title, header } = Astro.props as Props;
         <Meta title={title} />
     </head>
     <body>
-        <Header type={header ?? 'standard'} />
+        <Header type={header ?? 'standard'} client:load />
         
         <slot />
     </body>

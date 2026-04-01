@@ -101,9 +101,9 @@ function OpenElement({
                 quantity={quantity}
                 setQuantity={setQuantity}
                 data-product-id={product.internalName}
-                id="add-to-card"
+                id="add-to-cart"
             />
-            <AddToCartButton setIsOpen={setIsOpen} />
+            <AddToCartButton type="submit" form="add-to-cart" setIsOpen={setIsOpen} />
         </div>
     )
 }
