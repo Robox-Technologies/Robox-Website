@@ -40,7 +40,7 @@ export class IOSBluetoothCommunication implements Communication {
         } catch (error) {
             if (
                 error instanceof Error &&
-                (error as any).name === 'NotFoundError'
+                error.name === 'NotFoundError'
             ) {
                 this.parent.emit('revert', { message: 'No device selected' })
             } else {
@@ -143,7 +143,7 @@ export class IOSBluetoothCommunication implements Communication {
                 error instanceof Error ? error.message : String(error)
             this.parent.handleMessage({ type: 'error', message })
             throw new Error('Could not write to Ro/Box!', {
-                cause: error as any,
+                cause: error,
             })
         }
     }
@@ -208,7 +208,7 @@ export class IOSBluetoothCommunication implements Communication {
             if (this.deviceId) {
                 try {
                     await this.disconnect()
-                } catch (_) {
+                } catch {
                     /* ignore */
                 }
             }
