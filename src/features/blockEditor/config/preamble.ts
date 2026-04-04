@@ -1,15 +1,6 @@
-import { id } from '@features/blockEditor/stores/editor'
+
 import type { ExtensionKey } from 'src/types/extensions'
 import type { PinsOf, SensorKey } from 'src/types/extraSensors'
-import type {
-    UserExtensions,
-    UserSensor,
-    UserSensors,
-} from 'src/types/projects'
-
-import type { Workspace } from 'blockly'
-import { pythonGenerator } from 'blockly/python'
-import { getProject } from '@utils/serialization'
 export const preamble = `
 from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
 from machine import Pin, Timer

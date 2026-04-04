@@ -1,23 +1,29 @@
-import type { Product } from 'src/types/shop'
-import { atom, map } from 'nanostores'
+import { map } from 'nanostores'
 
 const cartKey = 'roboxCart'
 
-export const isCartOpen = atom(false)
-export const cartItems = map<Record<string, Product & { quantity: number }>>({})
+type CartItems = Record<string, { quantity: number }>
 
-// Load cart from localStorage
-function loadCart() {
+const initialCart: CartItems = loadCart()
+export const cartItems = map<CartItems>(initialCart)
+
+cartItems.subscribe((value) => {
     if (typeof window === 'undefined') return
+    localStorage.setItem(cartKey, JSON.stringify(value))
+})
+
+function loadCart(): CartItems {
+    if (typeof window === 'undefined') return {}
 
     const cart = localStorage.getItem(cartKey)
-    if (!cart) return
+    if (!cart) return {}
 
     try {
-        cartItems.set(JSON.parse(cart))
+        return JSON.parse(cart) as CartItems
     } catch (e) {
         console.error('Failed to parse cart:', e)
         localStorage.removeItem(cartKey)
+        return {}
     }
 }
 
@@ -28,13 +34,8 @@ cartItems.subscribe((value) => {
 })
 export function addToCart(productId: string, quantity = 1) {
     const cart = cartItems.get()
-
-    cartItems.set({
-        ...cart,
-        [productId]: {
-            ...cart[productId],
-            quantity: (cart[productId]?.quantity || 0) + quantity,
-        },
+    cartItems.setKey(productId, {
+        quantity: (cart[productId]?.quantity || 0) + quantity,
     })
 }
 
@@ -49,4 +50,3 @@ export function removeFromCart(productId: string) {
 export function clearCart() {
     cartItems.set({})
 }
-loadCart()

@@ -5,12 +5,10 @@ export default function CartItem({
     product,
     quantity,
     image,
-    updateQuantity,
 }: {
     product: Product
     quantity: number
     image: ImageMetadata
-    updateQuantity: (quantity: number) => void
 }) {
     return (
         <div className="flex flex-row gap-4">

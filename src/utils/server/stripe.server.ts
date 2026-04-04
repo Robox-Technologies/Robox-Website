@@ -13,7 +13,7 @@ export async function getAllProducts(): Promise<Product[]> {
     const stripeProducts = await stripeAPI.products.list({
         expand: ['data.default_price'],
     })
-    let products: Product[] = stripeProducts.data.map((product) => {
+    const products: Product[] = stripeProducts.data.map((product) => {
         const price = product.default_price as Stripe.Price
         if (price.unit_amount === null) {
             throw new Error(

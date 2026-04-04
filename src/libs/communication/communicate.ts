@@ -7,6 +7,7 @@ import type {
 } from 'src/types/communication'
 
 import { ConnectionStatus, FirmwareStatus } from 'src/types/communication'
+import { toast } from '@libs/ui/toast'
 
 import { USBCommunication } from './usb'
 import { BluetoothCommunication } from './webBle'
@@ -78,6 +79,15 @@ export class Pico {
     }
 
     emit<K extends keyof PicoEventMap>(event: K, data: PicoEventMap[K]): void {
+        // Emit toasts for error events only
+        if (event === 'error') {
+            const errorData = data as { message: string }
+            toast.danger({
+                title: 'Ro/Box Error',
+                message: errorData.message,
+                durationMs: 6000,
+            })
+        }
         this.listeners.get(event)?.forEach((listener) => listener(data))
     }
 
@@ -120,7 +130,13 @@ export class Pico {
 
         try {
             await this.communication.connect(port)
-
+            
+            toast.success({
+                title: 'Ro/Box Connected',
+                message: 'Your Ro/Box is connected and ready to run.',
+                durationMs: 3000,
+            })
+            
             this.firmwareCheck()
         } catch (error) {
             const message =
@@ -174,8 +190,7 @@ export class Pico {
             this.emit('console', { message })
         } else if (type === 'error') {
             this.emit('error', { message })
-            // We disconnect on error because the Ro/Box is likely in a bad state if it's sending error messages
-            this.disconnect()
+            this.restart()
         }
     }
 
@@ -231,7 +246,12 @@ export class Pico {
 
     request(): void {
         this.updateState({ connectionStatus: ConnectionStatus.CONNECTING })
-        this.communication?.request()
+        this.communication?.request().catch(() => {
+            toast.warning({
+                title: 'Connection Cancelled',
+                message: 'Ro/Box connection was cancelled.',
+            })
+        })
     }
 
     colorCalibrate(): void {

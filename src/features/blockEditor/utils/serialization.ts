@@ -1,6 +1,5 @@
 // This file exists to seperate out the Blockly library (as it does not support tree shaking) from the rest of the codebase
 import type { Workspace, WorkspaceSvg } from 'blockly/core'
-import { id } from '@features/blockEditor/stores/editor'
 import {
     getProject,
     getProjects,
@@ -25,9 +24,20 @@ import {
     ExtensionsPreamble,
     ExtraSensorsPreamble,
 } from '../config/preamble'
-
+export function getProjectIdFromURL(): string | null {
+    // If we are running on the server, we cannot access the URL, so we return null
+    if (typeof window === 'undefined') return null
+    const urlParams = new URLSearchParams(window.location.search)
+    const projectId = urlParams.get('id')
+    if (projectId && isValidProjectId(projectId)) {
+        return projectId
+    }
+    return null
+}
 export async function loadBlockly(workspace: Workspace) {
-    const projectId = id.get()
+
+    const projectId = getProjectIdFromURL()
+    console.log('Loading Blockly workspace, project ID:', projectId)
     if (!projectId) return
 
     const project = getProject(projectId)
@@ -41,7 +51,7 @@ export async function loadBlockly(workspace: Workspace) {
     Blockly.Events.enable()
 }
 export async function saveBlockly(workspace: WorkspaceSvg) {
-    const projectId = id.get()
+    const projectId = getProjectIdFromURL()
     if (!projectId) return
     workspaceToPng_(workspace, (thumburi: string) => {
         if (!isValidProjectId(projectId))
@@ -57,7 +67,7 @@ export async function saveBlockly(workspace: WorkspaceSvg) {
     })
 }
 export function generateCode(workspace: Workspace) {
-    const projectId = id.get()
+    const projectId = getProjectIdFromURL()
     if (!projectId) throw new Error('No project ID found')
     const project = getProject(projectId)
     if (!project) throw new Error('Project not found')
@@ -98,7 +108,7 @@ function callSensorPreamble<K extends SensorKey>(
     return ExtraSensorsPreamble[sensor.type](sensor.pins)
 }
 export function setUserExtension(extension: ExtensionKey, enabled: boolean) {
-    const projectId = id.get()
+    const projectId = getProjectIdFromURL()
     if (!projectId) throw new Error('No project ID found')
     const project = getProject(projectId)
     if (!project) throw new Error('Project not found')

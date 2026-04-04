@@ -2,7 +2,8 @@
 import Meta from '@components/Meta'
 import Header from '@components/header/Header'
 import Footer from '@components/footer/footer'
-const isIOSBuild = process.env.IOS_BUILD === 'true';
+const isIOSBuild = process.env.IOS_BUILD === 'true';import ToastHost from '@components/toast/ToastHost'
+
 import '@styles/global.css'
 interface Props {
     title: string
@@ -15,10 +16,11 @@ const { title, header='standard' } = Astro.props as Props;
         <Meta title={title} />
     </head>
     <body>
-        {!isIOSBuild && <Header type={header} />}
+        {!isIOSBuild && <Header type={header} client:load />}
         
         
         <slot />
+        <ToastHost client:only="react" />
     </body>
     {!isIOSBuild && <Footer />}
 </html>

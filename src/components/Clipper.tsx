@@ -21,8 +21,8 @@ export default function Clipper({
                 ? `polygon(0 0, 100% 0, calc(100% - ${overhang}) 100%, 0 100%)`
                 : `polygon(0 0, calc(100% - ${overhang}) 0, 100% 100%, 0 100%)`
             : gradient === 'positive'
-              ? `polygon(${overhang} 0, 100% 0, 100% 100%, 0 100%)`
-              : `polygon(0 0, 100% 0, 100% 100%, ${overhang} 100%)`
+                ? `polygon(${overhang} 0, 100% 0, 100% 100%, 0 100%)`
+                : `polygon(0 0, 100% 0, 100% 100%, ${overhang} 100%)`
 
     return (
         <div className={className} style={{ clipPath, ...style }}>

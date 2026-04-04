@@ -18,24 +18,13 @@ export default function TerminalDialog() {
         el.scrollTop = el.scrollHeight
     }, [logs, isAtBottom])
 
-    // Track manual scrolling
     useEffect(() => {
-        const el = containerRef.current
-        if (!el) return
-
-        const handleScroll = () => {
-            const threshold = 5
-            const atBottom =
-                el.scrollHeight - el.scrollTop <= el.clientHeight + threshold
-            setIsAtBottom(atBottom)
-        }
         const handleNewLog = ({ message }: { message: string }) => {
             setLogs((prev) => [...prev, message])
         }
-        el.addEventListener('scroll', handleScroll)
+
         pico.on('console', handleNewLog)
         return () => {
-            el.removeEventListener('scroll', handleScroll)
             pico.off('console', handleNewLog)
         }
     }, [])
@@ -59,6 +48,14 @@ export default function TerminalDialog() {
             <DialogBody>
                 <div
                     ref={containerRef}
+                    onScroll={(event) => {
+                        const threshold = 5
+                        const el = event.currentTarget
+                        const atBottom =
+                            el.scrollHeight - el.scrollTop <=
+                            el.clientHeight + threshold
+                        setIsAtBottom(atBottom)
+                    }}
                     className="relative font-mono text-sm overflow-y-scroll px-6 h-full"
                 >
                     {logs.map((line, i) => (
@@ -70,7 +67,6 @@ export default function TerminalDialog() {
             <DialogFooter>
                 <Button
                     onClick={() => {
-                        console.log('Clearing terminal output')
                         setLogs([])
                     }}
                     className="bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 ml-auto transition-colors"

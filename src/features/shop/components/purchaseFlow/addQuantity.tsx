@@ -1,8 +1,8 @@
 import Button from '@components/button'
 import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { addToCart } from '@features/cart/utils/cart.client'
+import { toast } from '@libs/ui/toast'
 import clsx from 'clsx'
-import { useState } from 'react'
 import type { FormHTMLAttributes } from 'react'
 export default function AddQuantity({
     quantity,
@@ -28,7 +28,29 @@ export default function AddQuantity({
             (e.currentTarget as HTMLFormElement).getAttribute(
                 'data-product-id',
             ) || ''
+
+        if (!productId) {
+            toast.danger({
+                title: 'Cart Error',
+                message: 'Unable to add this item to cart right now.',
+            })
+            return
+        }
+
+        if (quantity <= 0) {
+            toast.warning({
+                title: 'Quantity Needed',
+                message: 'Choose at least one item before adding to cart.',
+            })
+            return
+        }
+
         addToCart(productId, quantity)
+        toast.success({
+            title: 'Added to Cart',
+            message: `Added ${quantity} item${quantity === 1 ? '' : 's'} to your cart.`,
+            durationMs: 3500,
+        })
     }
     return (
         <form

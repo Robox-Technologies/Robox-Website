@@ -19,6 +19,7 @@ export default defineConfig({
         process.env.IOS_BUILD === 'true' ? transformIOSBuild() : undefined,
     ],
     vite: {
+        //@ts-expect-error this is fixed in astro 6
         plugins: [tailwindcss(), svgr()],
     },
     markdown: {

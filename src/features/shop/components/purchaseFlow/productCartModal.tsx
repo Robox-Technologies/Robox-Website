@@ -8,7 +8,7 @@ import Dialog, {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
 import type { Product } from '@/types/shop'
-import AddQuantity from '@features/shop/components/purchaseFlow/addQuantity'
+import AddQuantity from './addQuantity'
 import { formatPrice } from '@utils/stripe'
 import Button from '@components/button'
 

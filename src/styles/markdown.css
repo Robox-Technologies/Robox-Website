@@ -5,12 +5,11 @@
 }
 .RTL {
     display: flex;
-    direction: rtl;
+    flex-direction: row-reverse;
 }
 .LTR {
     display: flex;
     flex-direction: row;
-    direction: ltr;
 }
 .equalWidth > * {
     width: 50%;
