@@ -50,7 +50,6 @@ export default function MainButton() {
     } = usePico()
     const { className, children } = statusStyling[connectionStatus]
     useEffect(() => {
-        //TODO: make this dynamic based on platform
         setCommunicationMethod('iOSBluetooth')
     }, [])
     const stateClickHandlers: Partial<Record<ConnectionStatus, () => void>> = {

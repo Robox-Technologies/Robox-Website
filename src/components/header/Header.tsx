@@ -4,6 +4,7 @@ import Logo from '@images/logo-full.svg?react'
 import WorkshopLogo from '@images/logo-workshop.svg?react'
 import { faCompass, faGraduationCap } from '@fortawesome/free-solid-svg-icons'
 import StoreLink from './StoreLink'
+import CartIcon from '@features/cart/components/cartIcon'
 const headerHeight = 64
 const headerEndPadding = 16
 const extraClipperPadding = 32

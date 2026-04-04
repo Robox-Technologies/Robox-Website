@@ -27,11 +27,6 @@ function loadCart(): CartItems {
     }
 }
 
-// Save cart whenever it changes
-cartItems.subscribe((value) => {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(cartKey, JSON.stringify(value))
-})
 export function addToCart(productId: string, quantity = 1) {
     const cart = cartItems.get()
     cartItems.setKey(productId, {
