@@ -11,8 +11,8 @@ export default function TerminalButton({
 }) {
     const { connectionStatus } = usePico()
     const connected =
-        connectionStatus === ConnectionStatus.CONNECTED ||
-        connectionStatus === ConnectionStatus.RUNNING
+        connectionStatus !== ConnectionStatus.DISCONNECTED &&
+        connectionStatus !== ConnectionStatus.DISCONNECTING
     return (
         <Button
             icon={faTerminal}
