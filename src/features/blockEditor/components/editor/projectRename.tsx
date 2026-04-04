@@ -1,9 +1,9 @@
-import { id } from '@features/blockEditor/stores/editor'
 import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
 import { editProject, getProject } from '@utils/serialization'
+import { getProjectIdFromURL } from '@features/blockEditor/utils/serialization'
 export default function ProjectRename() {
-    const projectId = useStore(id)
+    const projectId = getProjectIdFromURL()
     const [projectName, setProjectName] = useState('')
     useEffect(() => {
         if (projectId) {

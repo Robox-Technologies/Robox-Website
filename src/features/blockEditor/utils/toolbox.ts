@@ -3,13 +3,13 @@ import {
     BaseToolbox,
     ExtensionCategories,
 } from '@features/blockEditor/config/toolbox'
-import { id } from '@features/blockEditor/stores/editor'
 import { getProject } from '@utils/serialization'
 import type { ExtensionKey } from 'src/types/extensions'
+import { getProjectIdFromURL } from './serialization'
 
 //TODO: Make this dynamic
 export default function generateToolbox(): ToolboxDefinition {
-    const projectId = id.get()
+    const projectId = getProjectIdFromURL()
     if (!projectId) return BaseToolbox
     const project = getProject(projectId)
     if (!project) return BaseToolbox

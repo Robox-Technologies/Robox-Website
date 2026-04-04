@@ -11,13 +11,6 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
 
 </div>
 <script>
-    import { id } from "../stores/editor";
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const projectId = urlParams.get('id');
-    id.set(projectId);
-</script>
-<script>
     import { faArrowsRotate,faFlag, faCog, faRepeat, faPlus, faTableList, faEye, faRobot, faTruckMonster, faX, faGears,  } from "@fortawesome/free-solid-svg-icons";
     import { dom, library } from "@fortawesome/fontawesome-svg-core";
     library.add(faArrowsRotate, faFlag, faCog, faRepeat, faPlus, faTableList, faEye, faRobot, faTruckMonster, faX, faGears);

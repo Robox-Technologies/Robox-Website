@@ -1,4 +1,4 @@
-import { id } from '@features/blockEditor/stores/editor'
+
 import type { ExtensionKey } from 'src/types/extensions'
 import type { PinsOf, SensorKey } from 'src/types/extraSensors'
 import type {
