@@ -20,7 +20,7 @@ export default function TerminalDialog() {
 
     useEffect(() => {
         const handleNewLog = ({ message }: { message: string }) => {
-            setLogs((prev) => [...prev, message])
+            setLogs((prev) => [...prev, generateLog(message)])
         }
 
         pico.on('console', handleNewLog)
@@ -56,7 +56,7 @@ export default function TerminalDialog() {
                             el.clientHeight + threshold
                         setIsAtBottom(atBottom)
                     }}
-                    className="relative font-mono text-sm overflow-y-scroll px-6 h-full"
+                    className="relative font-mono text-sm overflow-y-scroll px-6 py-4 h-full"
                 >
                     {logs.map((line, i) => (
                         <div key={i}>{line}</div>
@@ -76,4 +76,8 @@ export default function TerminalDialog() {
             </DialogFooter>
         </Dialog>
     )
+}
+function generateLog(message: string) {
+    const timestamp = new Date().toLocaleTimeString()
+    return `[${timestamp}] ${message}`
 }
