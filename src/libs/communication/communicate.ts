@@ -86,7 +86,6 @@ export class Pico {
                 durationMs: 6000,
             })
         }
-
         this.listeners.get(event)?.forEach((listener) => listener(data))
     }
 

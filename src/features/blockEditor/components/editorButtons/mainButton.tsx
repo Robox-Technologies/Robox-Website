@@ -50,7 +50,7 @@ export default function MainButton() {
     } = usePico()
     const { className, children } = statusStyling[connectionStatus]
     useEffect(() => {
-        setCommunicationMethod('USB')
+        setCommunicationMethod('Bluetooth')
     }, [])
     const stateClickHandlers: Partial<Record<ConnectionStatus, () => void>> = {
         [ConnectionStatus.DISCONNECTED]: () => {

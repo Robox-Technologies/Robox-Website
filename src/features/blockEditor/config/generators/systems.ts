@@ -27,8 +27,9 @@ pythonGenerator.forBlock['sleep'] = function (block, generator) {
     const code = `time.sleep(${value_time})\n`
     return code
 }
+//This will break if the version is not updated
 pythonGenerator.forBlock['print'] = function (block, generator) {
     const value_time = generator.valueToCode(block, 'string', Order.ATOMIC)
-    const code = `print(generatePrint("console", ${value_time}))\n`
+    const code = `comm.write_message("console", ${value_time})\n`
     return code
 }
