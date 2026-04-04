@@ -16,10 +16,6 @@
         "@astrojs/ts-plugin": "^1.10.6",
         "@blockly/continuous-toolbox": "^7.0.8",
         "@blockly/field-colour": "^6.0.11",
-        "@eslint/css": "^1.1.0",
-        "@eslint/js": "^10.0.1",
-        "@eslint/json": "^1.2.0",
-        "@eslint/markdown": "^8.0.1",
         "@fortawesome/fontawesome-svg-core": "^7.1.0",
         "@fortawesome/free-brands-svg-icons": "^7.1.0",
         "@fortawesome/free-solid-svg-icons": "^7.1.0",
@@ -44,11 +40,14 @@
         "tailwind-merge": "^3.5.0",
         "tailwindcss": "^4.2.1",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.58.0",
         "vite-plugin-svgr": "^4.5.0"
     },
     "devDependencies": {
-        "@stylistic/eslint-plugin": "^5.7.0",
+        "@eslint/css": "^1.1.0",
+        "@eslint/js": "^9.39.4",
+        "@eslint/json": "^1.2.0",
+        "@eslint/markdown": "^8.0.1",
+        "@stylistic/eslint-plugin": "^5.10.0",
         "@types/node": "^25.3.3",
         "@types/w3c-web-serial": "^1.0.8",
         "@types/w3c-web-usb": "^1.0.13",
@@ -57,8 +56,9 @@
         "@typescript-eslint/parser": "^8.56.1",
         "baseline-browser-mapping": "^2.9.19",
         "eslint": "^9.39.4",
-        "eslint-plugin-astro": "^1.5.0",
+        "eslint-plugin-astro": "^1.6.0",
         "eslint-plugin-react": "^7.37.5",
-        "prettier": "^3.8.1"
+        "prettier": "^3.8.1",
+        "typescript-eslint": "^8.58.0"
     }
 }

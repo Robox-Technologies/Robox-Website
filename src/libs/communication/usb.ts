@@ -122,9 +122,9 @@ export class USBCommunication implements Communication {
         this.currentWriterStreamClosed = this.textEncoder.readable.pipeTo(
             this.port.writable,
         )
-        //@ts-expect-error There is a type mismatch in the Streams API typings that causes this to error, but it works correctly at runtime
-        // as seen here https://github.com/microsoft/typescript/issues/62168
         this.currentReadableStreamClosed = this.port.readable.pipeTo(
+            //@ts-expect-error There is a type mismatch in the Streams API typings that causes this to error, but it works correctly at runtime
+            // as seen here https://github.com/microsoft/typescript/issues/62168
             this.textDecoder.writable as WritableStream<BufferSource>,
         )
 

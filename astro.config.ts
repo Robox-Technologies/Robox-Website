@@ -11,6 +11,7 @@ export default defineConfig({
     integrations: [react(), mdx()],
 
     vite: {
+        //@ts-expect-error Vite's typings don't recognize this plugin, but it works correctly at runtime
         plugins: [tailwindcss(), svgr()],
     },
     markdown: {
