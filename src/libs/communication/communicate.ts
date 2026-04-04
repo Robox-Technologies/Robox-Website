@@ -78,6 +78,7 @@ export class Pico {
 
     emit<K extends keyof PicoEventMap>(event: K, data: PicoEventMap[K]): void {
         // Emit toasts for error events only
+        console.log(`Event emitted: ${event}`, data)
         if (event === 'error') {
             const errorData = data as { message: string }
             toast.danger({
@@ -184,8 +185,7 @@ export class Pico {
             this.emit('console', { message })
         } else if (type === 'error') {
             this.emit('error', { message })
-            // We disconnect on error because the Ro/Box is likely in a bad state if it's sending error messages
-            this.disconnect()
+            this.restart()
         }
     }
 
@@ -228,10 +228,6 @@ export class Pico {
     }
 
     restart(): void {
-        toast.informative({
-            title: 'Restarting',
-            message: 'Sending restart command to Ro/Box...',
-        })
         this.updateState({
             connectionStatus: ConnectionStatus.RESTARTING,
             isRestarting: true,
