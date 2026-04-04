@@ -1,9 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
 import { pico } from '@libs/communication/communicate'
-import type { PicoState, CommunicationMethod } from "src/types/communication";
-import { ConnectionStatus, FirmwareStatus }  from "src/types/communication";
-import { generateCode } from '@features/blockEditor/utils/serialization';
-import * as Blockly from "blockly"
+import type { PicoState, CommunicationMethod } from 'src/types/communication'
+import { ConnectionStatus, FirmwareStatus } from 'src/types/communication'
+import { generateCode } from '@features/blockEditor/utils/serialization'
+import * as Blockly from 'blockly'
 export function usePico() {
     const [state, setState] = useState<PicoState>(pico.getState())
 
@@ -28,9 +28,12 @@ export function usePico() {
         }
     }, [])
 
-    const setCommunicationMethod = useCallback(async (method: CommunicationMethod) => {
-        await pico.setCommunicationMethod(method)
-    }, [])
+    const setCommunicationMethod = useCallback(
+        async (method: CommunicationMethod) => {
+            await pico.setCommunicationMethod(method)
+        },
+        [],
+    )
 
     const connect = useCallback(() => {
         pico.request()
@@ -61,7 +64,6 @@ export function usePico() {
         pico.bootloaderMode()
     }, [])
 
-
     return {
         // State
         connectionStatus: state.connectionStatus,
@@ -69,13 +71,14 @@ export function usePico() {
         firmwareVersion: state.firmwareVersion,
         isRestarting: state.isRestarting,
         communicationMethod: state.communicationMethod,
-        
+
         // Computed values
         isConnected: state.connectionStatus === ConnectionStatus.CONNECTED,
         isConnecting: state.connectionStatus === ConnectionStatus.CONNECTING,
         isFirmwareUpToDate: state.firmwareStatus === FirmwareStatus.UP_TO_DATE,
-        isFirmwareOutOfDate: state.firmwareStatus === FirmwareStatus.OUT_OF_DATE,
-        
+        isFirmwareOutOfDate:
+            state.firmwareStatus === FirmwareStatus.OUT_OF_DATE,
+
         // Actions
         setCommunicationMethod,
         connect,
@@ -84,6 +87,6 @@ export function usePico() {
         colorCalibrate,
         sendCode,
         runCode,
-        bootloaderMode
+        bootloaderMode,
     }
 }

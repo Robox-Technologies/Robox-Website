@@ -1,8 +1,7 @@
-import type { Communication, PicoMessage } from "src/types/communication";
-import type { Pico } from "./communicate";
+import type { Communication, PicoMessage } from 'src/types/communication'
+import type { Pico } from './communicate'
 
 const PI_VENDOR_ID = 0x2e8a
-
 
 export class USBCommunication implements Communication {
     destroyed: boolean = false
@@ -16,7 +15,10 @@ export class USBCommunication implements Communication {
     private currentReadableStreamClosed: Promise<void> = Promise.resolve()
     private readonly initPortsBound = this.initPorts.bind(this)
 
-    constructor(private parent: Pico, baudRate = 9600) {
+    constructor(
+        private parent: Pico,
+        baudRate = 9600,
+    ) {
         this.baudRate = baudRate
     }
 
@@ -38,18 +40,20 @@ export class USBCommunication implements Communication {
                     let consoleMessages: PicoMessage[] = []
 
                     try {
-                        if (typeof value !== "string") continue
+                        if (typeof value !== 'string') continue
                         consoleMessages = [JSON.parse(value)]
                         errorString = ''
                     } catch {
                         errorString += value
-                        const rawErrorMessages = errorString.split("\n")
+                        const rawErrorMessages = errorString.split('\n')
                         let index = 0
 
                         for (const errorMessage of rawErrorMessages) {
                             try {
-                                if (typeof errorMessage !== "string") {
-                                    throw new Error("Received non-string message from the Ro/Box!")
+                                if (typeof errorMessage !== 'string') {
+                                    throw new Error(
+                                        'Received non-string message from the Ro/Box!',
+                                    )
                                 }
                                 consoleMessages.push(JSON.parse(errorMessage))
                                 index += 1
@@ -59,7 +63,7 @@ export class USBCommunication implements Communication {
                         }
 
                         rawErrorMessages.splice(0, index)
-                        errorString = rawErrorMessages.join("\n").trim()
+                        errorString = rawErrorMessages.join('\n').trim()
                     }
 
                     for (const message of consoleMessages) {
@@ -67,7 +71,7 @@ export class USBCommunication implements Communication {
                     }
                 }
             } catch (err) {
-                console.warn("USB read error:", err)
+                console.warn('USB read error:', err)
             }
         }
 
@@ -76,7 +80,7 @@ export class USBCommunication implements Communication {
 
     async write(messages: string | string[]): Promise<void> {
         if (!this.currentWriter || this.destroyed) {
-            throw new Error("Could not write to Ro/Box!")
+            throw new Error('Could not write to Ro/Box!')
         }
 
         try {
@@ -89,7 +93,7 @@ export class USBCommunication implements Communication {
                 await this.currentWriter.write(`${messages}\n`)
             }
         } catch (error) {
-            throw new Error("Could not write to Ro/Box!")
+            throw new Error('Could not write to Ro/Box!')
         }
     }
 
@@ -97,26 +101,32 @@ export class USBCommunication implements Communication {
         this.port = port
 
         if (this.port?.readable?.locked || this.port?.writable?.locked) {
-            throw new Error("Port already in use")
+            throw new Error('Port already in use')
         }
 
         try {
             await this.port.open({ baudRate: this.baudRate })
         } catch (error) {
-            throw new Error("We are unable to open the port on the Ro/Box! Try resetting it? This could also be caused by another application using the Ro/Box.")
+            throw new Error(
+                'We are unable to open the port on the Ro/Box! Try resetting it? This could also be caused by another application using the Ro/Box.',
+            )
         }
 
         if (!this.port.writable || !this.port.readable) {
-            throw new Error("The port is not readable/writable!")
+            throw new Error('The port is not readable/writable!')
         }
 
         this.textEncoder = new TextEncoderStream()
         this.textDecoder = new TextDecoderStream()
 
-        this.currentWriterStreamClosed = this.textEncoder.readable.pipeTo(this.port.writable)
+        this.currentWriterStreamClosed = this.textEncoder.readable.pipeTo(
+            this.port.writable,
+        )
         //@ts-expect-error There is a type mismatch in the Streams API typings that causes this to error, but it works correctly at runtime
         // as seen here https://github.com/microsoft/typescript/issues/62168
-        this.currentReadableStreamClosed = this.port.readable.pipeTo(this.textDecoder.writable as WritableStream<BufferSource>)
+        this.currentReadableStreamClosed = this.port.readable.pipeTo(
+            this.textDecoder.writable as WritableStream<BufferSource>,
+        )
 
         this.currentWriter = this.textEncoder.writable.getWriter()
         this.currentReader = this.textDecoder.readable.getReader()
@@ -132,7 +142,7 @@ export class USBCommunication implements Communication {
                     this.currentReader.releaseLock()
                     await this.currentReadableStreamClosed?.catch(() => {})
                 } catch (error) {
-                    console.warn("Error closing reader:", error)
+                    console.warn('Error closing reader:', error)
                 }
             }
 
@@ -142,7 +152,7 @@ export class USBCommunication implements Communication {
                     this.currentWriter.releaseLock()
                     await this.currentWriterStreamClosed?.catch(() => {})
                 } catch (error) {
-                    console.warn("Error closing writer:", error)
+                    console.warn('Error closing writer:', error)
                 }
             }
 
@@ -150,7 +160,7 @@ export class USBCommunication implements Communication {
                 try {
                     await this.port.close()
                 } catch (error) {
-                    throw new Error("Could not close the port!")
+                    throw new Error('Could not close the port!')
                 }
             }
 
@@ -160,7 +170,7 @@ export class USBCommunication implements Communication {
             throw new Error(
                 error instanceof Error
                     ? error.message
-                    : String(error || "Could not disconnect from Ro/Box!")
+                    : String(error || 'Could not disconnect from Ro/Box!'),
             )
         }
     }
@@ -168,16 +178,20 @@ export class USBCommunication implements Communication {
     async request(): Promise<void> {
         try {
             const port = await navigator.serial.requestPort({
-                filters: [{ usbVendorId: PI_VENDOR_ID }]
+                filters: [{ usbVendorId: PI_VENDOR_ID }],
             })
             await this.parent.connect(port)
         } catch (error) {
-            if (error instanceof DOMException && error.name === 'NotFoundError') {
+            if (
+                error instanceof DOMException &&
+                error.name === 'NotFoundError'
+            ) {
                 this.parent.emit('revert', {})
             } else {
                 this.parent.handleMessage({
                     type: 'error',
-                    message: 'Could not request Ro/Box! Make sure you have it connected via USB.'
+                    message:
+                        'Could not request Ro/Box! Make sure you have it connected via USB.',
                 })
             }
         }
@@ -192,7 +206,10 @@ export class USBCommunication implements Communication {
         if (portInfo.usbVendorId === PI_VENDOR_ID) {
             if (event.type === 'connect') {
                 await this.parent.connect(port)
-            } else if (event.type === 'disconnect' && !this.parent.getState().isRestarting) {
+            } else if (
+                event.type === 'disconnect' &&
+                !this.parent.getState().isRestarting
+            ) {
                 await this.parent.disconnect()
             }
         }
@@ -208,7 +225,10 @@ export class USBCommunication implements Communication {
     async destroy(): Promise<void> {
         if (navigator.serial) {
             navigator.serial.removeEventListener('connect', this.initPortsBound)
-            navigator.serial.removeEventListener('disconnect', this.initPortsBound)
+            navigator.serial.removeEventListener(
+                'disconnect',
+                this.initPortsBound,
+            )
         }
 
         await this.disconnect()

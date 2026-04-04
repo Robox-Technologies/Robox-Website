@@ -1,32 +1,25 @@
 {
-  "extends": "astro/tsconfigs/strict",
-  "include": [
-    ".astro/types.d.ts",
-    "src/types/**/*.d.ts",
-    "**/*"
-  ],
-  "exclude": [
-    "dist",
-    "ios"
-  ],
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "react",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "strict": true,
-    "verbatimModuleSyntax": true,
-    "module": "ESNext",
-    "baseUrl": "./",
-    "paths": {
-      "@*": ["src/*"]
-    },
-    "typeRoots": [ "node_modules/@types"],
-    "plugins": [
-      {
-        "name": "@astrojs/ts-plugin"
-      }
-    ]
-  }
+    "extends": "astro/tsconfigs/strict",
+    "include": [".astro/types.d.ts", "src/types/**/*.d.ts", "**/*"],
+    "exclude": ["dist", "ios"],
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "jsxImportSource": "react",
+        "moduleResolution": "bundler",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "strict": true,
+        "verbatimModuleSyntax": true,
+        "module": "ESNext",
+        "baseUrl": "./",
+        "paths": {
+            "@*": ["src/*"]
+        },
+        "typeRoots": ["node_modules/@types"],
+        "plugins": [
+            {
+                "name": "@astrojs/ts-plugin"
+            }
+        ]
+    }
 }
