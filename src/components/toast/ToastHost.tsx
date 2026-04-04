@@ -37,7 +37,7 @@ const VARIANT_STYLES: Record<
     },
 }
 
-export default function ToastHost() {
+export default function ToastHost(props: ToastHostProps) {
     const [toasts, setToasts] = useState<Toast[]>(toast.getToasts())
     const timeoutMapRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
         new Map(),
@@ -97,32 +97,60 @@ export default function ToastHost() {
             </div>
 
             {createPortal(
-                <div className="pointer-events-none fixed inset-0 z-2147483647">
-                    {toasts.map((toastItem, index) => (
+                <ToastViewport {...props}>
+                    {toasts.map((toastItem) => (
                         <ToastItemCard
                             key={toastItem.id}
                             toastItem={toastItem}
-                            index={index}
                             onDismiss={() => toast.dismiss(toastItem.id)}
                         />
                     ))}
-                </div>,
+                </ToastViewport>,
                 document.body,
             )}
         </>
     )
 }
 
-const bottomOffset = 16
-const toastHeight = 96
+type ToastHostProps = {
+    bottomOffsetPx?: number
+    rightOffsetPx?: number
+    gapPx?: number
+    width?: string
+}
+
+function ToastViewport({
+    children,
+    bottomOffsetPx = 94,
+    rightOffsetPx = 16,
+    gapPx = 10,
+    width = 'min(92vw, 24rem)',
+}: React.PropsWithChildren<ToastHostProps>) {
+    return (
+        <div className="pointer-events-none fixed inset-0 z-2147483647">
+            <div
+                className={twMerge(
+                    'fixed pointer-events-none flex',
+                    'flex-col-reverse items-end',
+                )}
+                style={{
+                    bottom: `${bottomOffsetPx}px`,
+                    right: `${rightOffsetPx}px`,
+                    gap: `${gapPx}px`,
+                    width,
+                }}
+            >
+                {children}
+            </div>
+        </div>
+    )
+}
 
 function ToastItemCard({
     toastItem,
-    index,
     onDismiss,
 }: {
     toastItem: Toast
-    index: number
     onDismiss: () => void
 }) {
     const variantConfig = VARIANT_STYLES[toastItem.variant]
@@ -131,11 +159,9 @@ function ToastItemCard({
         <div
             className={twMerge(
                 'pointer-events-auto m-0 border-2 rounded-xl shadow-lg box-shadow',
-                'w-[min(92vw,24rem)] p-0 overflow-hidden',
-                'fixed left-auto right-4 animate-toast-in',
+                'w-full p-0 overflow-hidden animate-toast-in',
                 variantConfig.classes,
             )}
-            style={{ bottom: `${bottomOffset + index * toastHeight}px` }}
         >
             <div className="flex items-start gap-3 p-4 pr-2 bg-white/85">
                 <FontAwesomeIcon
