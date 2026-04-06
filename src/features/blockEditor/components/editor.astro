@@ -21,11 +21,11 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
     import * as Blockly from 'blockly/core'; 
     import { loadBlockly, saveBlockly } from "../utils/serialization";
     import { registerControls } from '../utils/controls';
-    import {registerFieldColour} from '@blockly/field-colour';
+    import { registerFieldColour } from '@blockly/field-colour';
     registerFieldColour();
     // Required for some reason as it does not apply automatically 
     import * as En from 'blockly/msg/en';
-    // @ts-ignore its so odd why it cares
+    // @ts-expect-error its so odd why it cares
     Blockly.setLocale(En);
     import { BlocklyConfig } from '../config/blockly';
     import 'blockly/blocks';

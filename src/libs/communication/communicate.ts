@@ -87,6 +87,8 @@ export class Pico {
                 message: errorData.message,
                 durationMs: 6000,
             })
+            //Emit a revert event to reset the UI to a safe state
+            this.emit('revert', {  })
         }
         this.listeners.get(event)?.forEach((listener) => listener(data))
     }
@@ -171,7 +173,6 @@ export class Pico {
 
     handleMessage(payload: PicoMessage): void {
         const { type, message } = payload
-        console.log('Received message from Pico communication layer:', payload)
         // First message means we're connected
         if (!this.responded) {
             this.responded = true
