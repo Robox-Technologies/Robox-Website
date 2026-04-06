@@ -11,6 +11,7 @@ export const BlocklyConfig = {
         toolbox: RoboxToolbox,
         MetricsManager: ContinuousMetrics,
     },
+    modalInputs: false,
     zoom: {
         controls: false,
         maxScale: 2.5,
