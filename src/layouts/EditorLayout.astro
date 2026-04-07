@@ -3,6 +3,7 @@ import Meta from '@components/Meta'
 import Header from '@components/header/Header'
 
 const isIOSBuild = process.env.IOS_BUILD === 'true';
+import ToastHost from '@components/toast/ToastHost'
 
 import '@styles/global.css'
 interface Props {
@@ -18,5 +19,6 @@ const { title } = Astro.props as Props;
         {!isIOSBuild && <Header type="workshop" />}
         
         <slot />
+        <ToastHost client:only="react" />
     </body>
 </html>

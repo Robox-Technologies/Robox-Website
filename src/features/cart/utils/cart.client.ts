@@ -1,49 +1,47 @@
-import type { Product } from "src/types/shop";
-import { atom, map } from "nanostores";
+import { map } from 'nanostores'
 
-const cartKey = "roboxCart";
+const cartKey = 'roboxCart'
 
-export const isCartOpen = atom(false);
-export const cartItems = map<Record<string, Product & { quantity: number }>>({});
+type CartItems = Record<string, { quantity: number }>
 
-// Load cart from localStorage
-function loadCart() {
-    if (typeof window === "undefined") return;
+const initialCart: CartItems = loadCart()
+export const cartItems = map<CartItems>(initialCart)
 
-    const cart = localStorage.getItem(cartKey);
-    if (!cart) return;
+cartItems.subscribe((value) => {
+    if (typeof window === 'undefined') return
+    localStorage.setItem(cartKey, JSON.stringify(value))
+})
+
+function loadCart(): CartItems {
+    if (typeof window === 'undefined') return {}
+
+    const cart = localStorage.getItem(cartKey)
+    if (!cart) return {}
 
     try {
-        cartItems.set(JSON.parse(cart));
+        return JSON.parse(cart) as CartItems
     } catch (e) {
-        console.error("Failed to parse cart:", e);
-        localStorage.removeItem(cartKey);
+        console.error('Failed to parse cart:', e)
+        localStorage.removeItem(cartKey)
+        return {}
     }
 }
 
-// Save cart whenever it changes
-cartItems.subscribe((value) => {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(cartKey, JSON.stringify(value));
-});
 export function addToCart(productId: string, quantity = 1) {
-    const cart = cartItems.get();
-
-    cartItems.set({
-        ...cart,
-        [productId]: (cart[productId] || 0) + quantity
-    });
+    const cart = cartItems.get()
+    cartItems.setKey(productId, {
+        quantity: (cart[productId]?.quantity || 0) + quantity,
+    })
 }
 
 export function removeFromCart(productId: string) {
-    const cart = cartItems.get();
-    const newCart = { ...cart };
+    const cart = cartItems.get()
+    const newCart = { ...cart }
 
-    delete newCart[productId];
-    cartItems.set(newCart);
+    delete newCart[productId]
+    cartItems.set(newCart)
 }
 
 export function clearCart() {
-    cartItems.set({});
+    cartItems.set({})
 }
-loadCart();

@@ -1,40 +1,72 @@
-import { useState, useRef, useEffect, type ComponentType, type Dispatch, type SetStateAction } from "react";
-import { createPortal } from "react-dom";
-import AddToCartButton from '@components/shop/product/addToCartButton';
-import Dialog, { DialogBody, DialogFooter, DialogHeader } from "@components/dialog";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
-import type { Product } from "@/types/shop";
-import AddQuantity from "./addQuantity";
-import { formatPrice } from "@utils/stripe";
-import Button from "@components/button";
+import { useState, useRef, type Dispatch, type SetStateAction } from 'react'
+import AddToCartButton from '@features/shop/components/purchaseFlow/addToCartButton'
+import Dialog, {
+    DialogBody,
+    DialogFooter,
+    DialogHeader,
+} from '@components/dialog'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
+import type { Product } from '@/types/shop'
+import AddQuantity from '@features/shop/components/purchaseFlow/addQuantity'
+import { formatPrice } from '@utils/stripe'
+import Button from '@components/button'
 
-export default function ProductCartModal({product, image} : { product: Product, image: ImageMetadata}) {
-    const [quantity, setQuantity] = useState(0);
-    const dialogRef = useRef<HTMLDialogElement>(null);
+export default function ProductCartModal({
+    product,
+    image,
+}: {
+    product: Product
+    image: ImageMetadata
+}) {
+    const [quantity, setQuantity] = useState(0)
+    const dialogRef = useRef<HTMLDialogElement>(null)
     return (
         <Dialog
             ref={dialogRef}
-            trigger={(setIsOpen) => <OpenElement quantity={quantity} setQuantity={setQuantity} setIsOpen={setIsOpen} product={product} />}
+            trigger={(setIsOpen) => (
+                <OpenElement
+                    quantity={quantity}
+                    setQuantity={setQuantity}
+                    setIsOpen={setIsOpen}
+                    product={product}
+                />
+            )}
         >
             <DialogHeader className="flex-row">
-                <FontAwesomeIcon icon={faShoppingCart} className="text-black mr-2" />
+                <FontAwesomeIcon
+                    icon={faShoppingCart}
+                    className="text-black mr-2"
+                />
                 <h2 className="mb-0! text-2xl! font-bold">Added to Cart</h2>
             </DialogHeader>
             <DialogBody className="flex flex-row gap-4 p-4 justify-between">
-                <img src={image.src} alt={product.name} className="w-1/2 object-cover rounded-lg" />
+                <img
+                    src={image.src}
+                    alt={product.name}
+                    className="w-1/2 object-cover rounded-lg"
+                />
                 <div className="flex flex-col flex-1 gap-2 w-1/2 h-full items-start justify-between">
-                    <h3 className="text-2xl! font-semibold mb-4!">{product.name} (Qty: {quantity})</h3>
-                    <p className="text-black text-2xl! font-bolder mt-auto!">{formatPrice(product.price)}/each</p>
-                    <p className="text-black text-base! mt-auto">Total: {formatPrice(product.price * quantity)}</p>
+                    <h3 className="text-2xl! font-semibold mb-4!">
+                        {product.name} (Qty: {quantity})
+                    </h3>
+                    <p className="text-black text-2xl! font-bolder mt-auto!">
+                        {formatPrice(product.price)}/each
+                    </p>
+                    <p className="text-black text-base! mt-auto">
+                        Total: {formatPrice(product.price * quantity)}
+                    </p>
                 </div>
             </DialogBody>
             <DialogFooter className="flex-row items-end gap-4">
-                <Button onClick={() => {
-                    if (dialogRef && dialogRef.current) {
-                        dialogRef.current.close()
-                    }
-                }} className="bg-black text-white! ml-auto">
+                <Button
+                    onClick={() => {
+                        if (dialogRef && dialogRef.current) {
+                            dialogRef.current.close()
+                        }
+                    }}
+                    className="bg-black text-white! ml-auto"
+                >
                     Continue Shopping
                 </Button>
                 <Button href="/cart" className="bg-blue text-white">
@@ -42,15 +74,32 @@ export default function ProductCartModal({product, image} : { product: Product, 
                 </Button>
             </DialogFooter>
         </Dialog>
-
-    );
+    )
 }
-function OpenElement({quantity, setQuantity, setIsOpen, product}: {quantity: number; setQuantity: Dispatch<SetStateAction<number>>; setIsOpen: Dispatch<SetStateAction<boolean>>; product: Product}) {
+function OpenElement({
+    quantity,
+    setQuantity,
+    setIsOpen,
+    product,
+}: {
+    quantity: number
+    setQuantity: Dispatch<SetStateAction<number>>
+    setIsOpen: Dispatch<SetStateAction<boolean>>
+    product: Product
+}) {
     return (
         <div className="flex flex-col gap-4">
-            <AddQuantity quantity={quantity} setQuantity={setQuantity} data-product-id={product.internalName} id="add-to-card" />
-            <AddToCartButton setIsOpen={setIsOpen} />
-
+            <AddQuantity
+                quantity={quantity}
+                setQuantity={setQuantity}
+                data-product-id={product.internalName}
+                id="add-to-cart"
+            />
+            <AddToCartButton
+                type="submit"
+                form="add-to-cart"
+                setIsOpen={setIsOpen}
+            />
         </div>
     )
 }
