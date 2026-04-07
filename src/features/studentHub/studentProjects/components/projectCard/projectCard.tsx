@@ -3,21 +3,38 @@ import { faSquareBinary } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ProjectSettings from './projectSettings'
 import { useStore } from '@nanostores/react'
-import { openProject } from '../../stores/projectSettingsModal'
+import { openProject, editingProject } from '../../stores/projectSettingsModal'
 import SettingDialog from './settingDialog'
-import { getProject } from '@utils/serialization'
+import ProjectEditInput from './projectEditInput'
+import { getProject, editProject } from '@utils/serialization'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
 export function ProjectCard({ id }: { id: string }) {
     const $selectedProject = useStore(openProject)
+    const $editingProject = useStore(editingProject)
     const project = getProject(id)
     if (!project) return null
     const isSelected = $selectedProject === id
+    const isEditing = $editingProject === id
+
+    const handleSaveName = (newName: string) => {
+        if (newName.trim()) {
+            const success = editProject(id, { ...project, name: newName.trim() })
+            if (success) {
+                editingProject.set(null)
+            }
+        }
+    }
+
+    const handleCancelEdit = () => {
+        editingProject.set(null)
+    }
+
     return (
-        <a href={`./editor/index.html?id=${id}`}>
+        <a href={`./student/editor/index.html?id=${id}`} onClick={(e) => isEditing && e.preventDefault()}>
             <Card
-                className={`project-card overflow-visible relative bg-white w-[250px] border-transparent border-4 transition-transform hover:-translate-y-0.5 hover:border-blue duration-100 hover:cursor-pointer ${isSelected ? '-translate-y-0.5! border-green! z-99' : ''}`}
+                className={`project-card overflow-visible relative bg-white w-62.5 border-transparent border-4 transition-transform hover:-translate-y-0.5 hover:border-blue duration-100 hover:cursor-pointer ${isSelected ? '-translate-y-0.5! border-green! z-99' : ''}`}
                 image={
                     <img
                         src={project.thumbnail || ''}
@@ -27,16 +44,26 @@ export function ProjectCard({ id }: { id: string }) {
                 }
                 title={
                     <>
-                        <div className="flex flex-row justify-center items-center gap-2">
-                            <FontAwesomeIcon
-                                className="h-6 w-5 text-blue -transform-y-1"
-                                icon={faSquareBinary}
-                            />
-                            <h3 className="text-xl font-bold">
-                                {project.name || 'Untitled'}
-                            </h3>
+                        <div className="flex flex-row justify-between items-center gap-2">
+                            {isEditing ? (
+                                <ProjectEditInput
+                                    initialName={project.name}
+                                    onSave={handleSaveName}
+                                    onCancel={handleCancelEdit}
+                                />
+                            ) : (
+                                <div className="flex flex-row justify-center items-center gap-2 flex-1">
+                                    <FontAwesomeIcon
+                                        className="h-6 w-5 text-blue -transform-y-1"
+                                        icon={faSquareBinary}
+                                    />
+                                    <h3 className="text-xl font-bold">
+                                        {project.name || 'Untitled'}
+                                    </h3>
+                                </div>
+                            )}
+                            {!isEditing && <ProjectSettings id={id} />}
                         </div>
-                        <ProjectSettings id={id} />
                     </>
                 }
                 description={
@@ -44,7 +71,7 @@ export function ProjectCard({ id }: { id: string }) {
                         {dayjs(project.time).fromNow()}
                     </p>
                 }
-                absolute={isSelected ? <SettingDialog /> : null}
+                absolute={isSelected && !isEditing ? <SettingDialog /> : null}
             />
         </a>
     )

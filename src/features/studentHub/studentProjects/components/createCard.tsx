@@ -5,7 +5,8 @@ import { createProject } from '@utils/serialization'
 export default function CreateCard() {
     const onClick = () => {
         const id = createProject()
-        window.location.href = `./editor/index.html?id=${id}`
+
+        window.location.href = `./student/editor/index.html?id=${id}`
     }
     return (
         <Button
