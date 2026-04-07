@@ -42,11 +42,13 @@ export default function DeleteDialog() {
                 </div>
             </DialogHeader>
 
-            <DialogBody>
+            <DialogBody
+                className='overflow-visible'
+            >
                 <div className="px-6 py-4">
                     <div className="bg-red/50 h-full w-full rounded-lg flex-col items-center justify-center p-4">
                         <p>
-                            <span className="font-bold">Warning: </span>{' '}
+                            <span className="font-bold">Warning: </span>
                             Deleting a project is irreversible. This action will
                             remove:
                         </p>
