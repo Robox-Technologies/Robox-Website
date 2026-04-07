@@ -44,7 +44,7 @@ export function ProjectCard({ id }: { id: string }) {
                 }
                 title={
                     <>
-                        <div className="flex flex-row justify-between items-center gap-2">
+                        <div className="flex w-full flex-row items-center gap-2">
                             {isEditing ? (
                                 <ProjectEditInput
                                     initialName={project.name}
@@ -52,12 +52,12 @@ export function ProjectCard({ id }: { id: string }) {
                                     onCancel={handleCancelEdit}
                                 />
                             ) : (
-                                <div className="flex flex-row justify-center items-center gap-2 flex-1">
+                                <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
                                     <FontAwesomeIcon
                                         className="h-6 w-5 text-blue -transform-y-1"
                                         icon={faSquareBinary}
                                     />
-                                    <h3 className="text-xl font-bold">
+                                    <h3 className="truncate whitespace-nowrap text-xl font-bold">
                                         {project.name || 'Untitled'}
                                     </h3>
                                 </div>
