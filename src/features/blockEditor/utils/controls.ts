@@ -5,21 +5,44 @@ const scrollSpeed = 1.1 // Adjust for sensitivity
 const zoomFac = 0.02
 
 export function registerControls(workspace: WorkspaceSvg) {
+    let averageTouch = {
+        clientX: 0,
+        clientY: 0,
+        current: false
+    };
+
+    document.addEventListener('touchmove', (e) => {
+        const touches = e.targetTouches; // or e.touches
+        if (touches.length === 0) return;
+      
+        let totalX = 0;
+        let totalY = 0;
+      
+        for (let i = 0; i < touches.length; i++) {
+          totalX += touches[i].clientX;
+          totalY += touches[i].clientY;
+        }
+      
+        averageTouch = {
+            clientX: totalX / touches.length,
+            clientY: totalY / touches.length,
+            current: true
+        };
+    });
+
     document.addEventListener(
         'wheel',
         (event: WheelEvent) => {
-            if (!(event.target instanceof Element)) return
+            if (!(event.target instanceof Element)) return;
             if (
                 document.querySelector('dialog[open]') ||
                 !event.target.closest('#blocklyDiv')
-            )
-                return
+            ) return;
             if (
                 event.target.closest('.blocklyFlyoutScrollbar') ||
                 event.target.closest('.blocklyFlyout') ||
                 event.target.closest('.blocklyToolbox')
-            )
-                return
+            ) return;
 
             // Workspace interaction - prevent window scrolling
             event.preventDefault()
@@ -27,21 +50,23 @@ export function registerControls(workspace: WorkspaceSvg) {
             if (event.ctrlKey) {
                 // Zoom override
                 const mouseSvgCoords = utils.browserEvents.mouseToSvg(
-                    event,
-                    workspace.getParentSvg(),
-                    workspace.getInverseScreenCTM(),
+                    (averageTouch.current ? averageTouch : event) as MouseEvent, // Get average of touch coordinates if using touchscreen
+                    workspace.getParentSvg(), 
+                    workspace.getInverseScreenCTM()
                 )
+                averageTouch.current = false;
+
                 workspace.zoom(
                     mouseSvgCoords.x,
                     mouseSvgCoords.y,
                     -event.deltaY * zoomFac,
                 )
 
-                return
+                return;
             }
 
-            let dx = event.deltaX * scrollSpeed
-            let dy = event.deltaY * scrollSpeed
+            let dx = event.deltaX * scrollSpeed;
+            let dy = event.deltaY * scrollSpeed;
 
             if (dx === 0 && dy !== 0 && event.shiftKey) {
                 // Purely vertical scroll with shift key -> horizontal scroll instead
