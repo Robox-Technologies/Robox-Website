@@ -4,11 +4,6 @@ import type { PicoState, CommunicationMethod } from 'src/types/communication'
 import { ConnectionStatus, FirmwareStatus } from 'src/types/communication'
 import { generateCode } from '@features/blockEditor/utils/serialization'
 import * as Blockly from 'blockly'
-const revertStateMapping: Partial<Record<ConnectionStatus, ConnectionStatus>> = {
-    [ConnectionStatus.CONNECTING]: ConnectionStatus.DISCONNECTED,
-    [ConnectionStatus.RESTARTING]: ConnectionStatus.CONNECTED,
-    [ConnectionStatus.DISCONNECTING]: ConnectionStatus.DISCONNECTED,
-}
 export function usePico() {
     const [state, setState] = useState<PicoState>(pico.getState())
 
@@ -17,21 +12,10 @@ export function usePico() {
             setState(newState)
         }
 
-        const handleRevert = () => {
-            setState((prev) => ({
-                ...prev,
-                connectionStatus:
-                    revertStateMapping[prev.connectionStatus] ||
-                    ConnectionStatus.DISCONNECTED,
-            }))
-        }
-
         pico.on('stateChange', handleStateChange)
-        pico.on('revert', handleRevert)
 
         return () => {
             pico.off('stateChange', handleStateChange)
-            pico.off('revert', handleRevert)
         }
     }, [])
 

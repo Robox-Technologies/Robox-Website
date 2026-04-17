@@ -92,7 +92,7 @@ export class USBCommunication implements Communication {
             } else {
                 await this.currentWriter.write(`${messages}\n`)
             }
-        } catch (error) {
+        } catch {
             throw new Error('Could not write to Ro/Box!')
         }
     }
@@ -106,7 +106,7 @@ export class USBCommunication implements Communication {
 
         try {
             await this.port.open({ baudRate: this.baudRate })
-        } catch (error) {
+        } catch {
             throw new Error(
                 'We are unable to open the port on the Ro/Box! Try resetting it? This could also be caused by another application using the Ro/Box.',
             )
@@ -159,7 +159,7 @@ export class USBCommunication implements Communication {
             if (this.port) {
                 try {
                     await this.port.close()
-                } catch (error) {
+                } catch {
                     throw new Error('Could not close the port!')
                 }
             }
@@ -186,7 +186,7 @@ export class USBCommunication implements Communication {
                 error instanceof DOMException &&
                 error.name === 'NotFoundError'
             ) {
-                this.parent.emit('revert', {})
+                this.parent.revertConnectionState()
                 throw error
             } else {
                 this.parent.handleMessage({

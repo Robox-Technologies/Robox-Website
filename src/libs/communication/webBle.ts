@@ -46,7 +46,8 @@ export class BluetoothCommunication implements Communication {
                 error instanceof DOMException &&
                 error.name === 'NotFoundError'
             ) {
-                this.parent.emit('revert', {})
+                this.parent.revertConnectionState()
+                throw error
             } else {
                 const message =
                     error instanceof Error ? error.message : String(error)

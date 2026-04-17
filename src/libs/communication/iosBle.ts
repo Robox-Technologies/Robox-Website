@@ -46,7 +46,7 @@ export class IOSBluetoothCommunication implements Communication {
             await this.parent.connect(device)
         } catch (error) {
             if (error instanceof Error && error.name === 'NotFoundError') {
-                this.parent.emit('revert', {})
+                this.parent.revertConnectionState()
                 throw error
             } else {
                 const message =
