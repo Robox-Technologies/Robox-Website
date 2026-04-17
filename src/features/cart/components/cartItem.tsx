@@ -1,19 +1,18 @@
 import { formatPrice } from '@utils/stripe'
-import type { ImageMetadata } from 'astro'
 import type { Product } from 'src/types/shop'
 export default function CartItem({
     product,
     quantity,
-    image,
+    imageSrc,
 }: {
     product: Product
     quantity: number
-    image: ImageMetadata
+    imageSrc: string
 }) {
     return (
         <div className="flex flex-row gap-4">
             <img
-                src={image.src}
+                src={imageSrc}
                 alt={product.name}
                 className="w-24 aspect-video object-cover rounded-lg"
             />

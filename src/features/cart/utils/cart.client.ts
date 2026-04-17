@@ -34,6 +34,18 @@ export function addToCart(productId: string, quantity = 1) {
     })
 }
 
+export function setCartQuantity(productId: string, quantity: number) {
+    const nextQuantity = Math.min(Math.max(Number(quantity) || 0, 0), 99)
+    if (nextQuantity === 0) {
+        removeFromCart(productId)
+        return
+    }
+
+    cartItems.setKey(productId, {
+        quantity: nextQuantity,
+    })
+}
+
 export function removeFromCart(productId: string) {
     const cart = cartItems.get()
     const newCart = { ...cart }

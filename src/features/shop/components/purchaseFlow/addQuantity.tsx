@@ -7,11 +7,13 @@ import type { FormHTMLAttributes } from 'react'
 export default function AddQuantity({
     quantity,
     setQuantity,
+    submitToCart = true,
     className,
     ...props
 }: FormHTMLAttributes<HTMLFormElement> & {
     quantity: number
     setQuantity: React.Dispatch<React.SetStateAction<number>>
+    submitToCart?: boolean
 }) {
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         setQuantity(Math.abs(parseInt(e.target.value) || 0))
@@ -24,6 +26,11 @@ export default function AddQuantity({
     }
     const onSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault()
+
+        if (!submitToCart) {
+            return
+        }
+
         const productId =
             (e.currentTarget as HTMLFormElement).getAttribute(
                 'data-product-id',
@@ -56,7 +63,7 @@ export default function AddQuantity({
         <form
             {...props}
             onSubmit={onSubmit}
-            className={clsx(className, `flex flex-row items-center gap-0 w-64`)}
+            className={clsx(`flex flex-row items-center gap-0 w-64`, className)}
         >
             <Button
                 type="button"

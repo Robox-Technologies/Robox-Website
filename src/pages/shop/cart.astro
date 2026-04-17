@@ -1,27 +1,42 @@
 ---
-import { getAllProducts } from "@utils/server/stripe.server";
-import type { ImageMetadata } from 'astro';
-const products = await getAllProducts();
-import { formatPrice } from "@utils/stripe";
+import { getAllProducts } from '@utils/server/stripe.server'
+import type { ImageMetadata } from 'astro'
+import StandardLayout from '@layouts/StandardLayout.astro'
+import Article from '@components/article/Article'
+import CartView from '@features/cart/components/cartView'
 
-import StandardLayout from "@layouts/StandardLayout.astro";
-import PageHero from "@components/pageHero";
+const products = await getAllProducts()
+const images = import.meta.glob<{ default: ImageMetadata }>(
+    'src/images/shop/products/*/thumbnail.jpg',
+    { eager: true },
+)
 
-import Hero from "@images/shop/hero.jpg" ;
-import { Image } from "astro:assets";
-import Article from "@components/article/Article";
-import ProductCard from "@features/shop/components/catalog/productCard";
-const images = import.meta.glob<{ default: ImageMetadata }>('src/images/shop/products/*/thumbnail.jpg', { eager: true });
-// Check that all products have images
-const product = {}
-products.map(product => {
-    const imagePath = `/src/images/shop/products/${product.internalName}/thumbnail.jpg`;
+const productsWithImages = products.map((product) => {
+    const imagePath = `/src/images/shop/products/${product.internalName}/thumbnail.jpg`
     if (!images[imagePath]) {
-        throw new Error(`Missing image for product ${product.name} at path ${imagePath} only found: ${Object.keys(images).join(', ')}`);
+        throw new Error(
+            `Missing image for product ${product.name} at path ${imagePath} only found: ${Object.keys(images).join(', ')}`,
+        )
     }
+
     return {
         ...product,
-        image: images[imagePath]
+        imageSrc: images[imagePath].default.src,
     }
-});
+})
 ---
+<StandardLayout title="Cart">
+    <Article className="w-full px-6! py-6! lg:flex lg:h-[calc(100vh-8rem)] lg:flex-col lg:px-8!">
+        <a
+            href="/shop"
+            class="mb-4 inline-flex items-center text-base font-semibold text-blue hover:underline"
+        >
+            ← Shop
+        </a>
+        <h1 class="mb-8 text-5xl font-bold">My Cart</h1>
+
+        <div class="min-h-0 flex-1">
+            <CartView products={productsWithImages} client:load />
+        </div>
+    </Article>
+</StandardLayout>

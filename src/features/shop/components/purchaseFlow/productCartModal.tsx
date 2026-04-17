@@ -69,7 +69,7 @@ export default function ProductCartModal({
                 >
                     Continue Shopping
                 </Button>
-                <Button href="/cart" className="bg-blue text-white">
+                <Button href="/shop/cart" className="bg-blue text-white">
                     View Cart
                 </Button>
             </DialogFooter>

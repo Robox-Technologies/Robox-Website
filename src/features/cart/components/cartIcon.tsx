@@ -26,7 +26,7 @@ export default function CartIcon() {
     }
     return (
         <Button
-            type="button"
+            href="/shop/cart"
             icon={faShoppingCart}
             iconStyle="text-white"
             className={`relative rounded-full! text-white p-0! w-10 flex items-center justify-center h-10`}
