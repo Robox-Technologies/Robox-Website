@@ -7,7 +7,7 @@ import {
     type BleDevice,
 } from '@capacitor-community/bluetooth-le'
 
-const WRITE_TIMEOUT = 20 // ms
+const WRITE_TIMEOUT = 30 // ms
 const UART_SERVICE = 0xffe0
 const UART_CHARACTERISTIC = 0xffe1
 const CHUNK_SIZE = 20
@@ -169,7 +169,7 @@ export class IOSBluetoothCommunication implements Communication {
             // convert to numbers array for numbersToDataView helper
             const nums = Array.from(slice)
             const dataView = numbersToDataView(nums)
-            await BleClient.write(
+            await BleClient.writeWithoutResponse(
                 this.deviceId!,
                 numberToUUID(UART_SERVICE),
                 numberToUUID(UART_CHARACTERISTIC),
