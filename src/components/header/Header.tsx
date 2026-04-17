@@ -69,6 +69,7 @@ export default function Header({ type }: { type?: 'standard' | 'workshop' }) {
                             Teacher Resources
                         </HeaderLink>
                         {type === 'standard' && <StoreLink />}
+                        {type !== 'workshop' && <CartIcon />}
                     </div>
                 </Clipper>
             </nav>
