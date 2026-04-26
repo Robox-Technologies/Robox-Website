@@ -59,9 +59,117 @@ export class Pico {
         }
     }
 
+    static parseBufferedMessages(buffer: string): {
+        messages: PicoMessage[]
+        remainder: string
+    } {
+        // Remove control characters that can corrupt JSON framing (e.g. null bytes from BLE payloads).
+        const sanitized = buffer.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
+        const messages: PicoMessage[] = []
+        let cursor = 0
+        let firstIncompleteStart = -1
+
+        while (cursor < sanitized.length) {
+            const start = sanitized.indexOf('{', cursor)
+            if (start === -1) {
+                break
+            }
+
+            const end = Pico.findJsonObjectEnd(sanitized, start)
+            if (end === -1) {
+                if (firstIncompleteStart === -1) {
+                    firstIncompleteStart = start
+                }
+                // Keep scanning: a later '{' may begin a valid JSON object even if this one is malformed.
+                cursor = start + 1
+                continue
+            }
+
+            const candidate = sanitized.slice(start, end + 1)
+
+            try {
+                const parsed: unknown = JSON.parse(candidate)
+                if (Pico.isPicoMessage(parsed)) {
+                    messages.push(parsed)
+                    cursor = end + 1
+                    firstIncompleteStart = -1
+                    continue
+                }
+            } catch {
+                // Ignore malformed object and continue searching from the next '{'.
+            }
+
+            cursor = start + 1
+        }
+
+        const remainder =
+            firstIncompleteStart === -1
+                ? ''
+                : sanitized.slice(firstIncompleteStart)
+
+        return { messages, remainder }
+    }
+
+    private static findJsonObjectEnd(input: string, startIndex: number): number {
+        let depth = 0
+        let inString = false
+        let escaped = false
+
+        for (let i = startIndex; i < input.length; i += 1) {
+            const char = input[i]
+
+            if (inString) {
+                if (escaped) {
+                    escaped = false
+                } else if (char === '\\') {
+                    escaped = true
+                } else if (char === '"') {
+                    inString = false
+                }
+                continue
+            }
+
+            if (char === '"') {
+                inString = true
+                continue
+            }
+
+            if (char === '{') {
+                depth += 1
+            } else if (char === '}') {
+                depth -= 1
+                if (depth === 0) {
+                    return i
+                }
+                if (depth < 0) {
+                    return -1
+                }
+            }
+        }
+
+        return -1
+    }
+
+    private static isPicoMessage(value: unknown): value is PicoMessage {
+        if (!value || typeof value !== 'object') return false
+        if (!('type' in value) || !('message' in value)) return false
+
+        const { type, message } = value as Record<string, unknown>
+
+        const validTypes = ['console', 'download', 'error', 'firmware', 'connect']
+        return typeof type === 'string' && validTypes.includes(type) && typeof message === 'string'
+    }
+
     // Public getters for state
     getState(): PicoState {
         return { ...this.state }
+    }
+
+    parseBufferedMessages(buffer: string): {
+        messages: PicoMessage[]
+        remainder: string
+    } {
+        return Pico.parseBufferedMessages(buffer)
     }
 
     isConnected(): boolean {

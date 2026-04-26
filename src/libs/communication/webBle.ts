@@ -1,7 +1,7 @@
-import type { Communication, PicoMessage } from 'src/types/communication'
+import type { Communication } from 'src/types/communication'
 import type { Pico } from './communicate'
 
-const WRITE_TIMEOUT = 30
+const WRITE_TIMEOUT = 40
 const UART_SERVICE = 0xffe0
 const UART_CHARACTERISTIC = 0xffe1
 const CHUNK_SIZE = 20
@@ -96,25 +96,13 @@ export class BluetoothCommunication implements Communication {
 
         this.buffer += value
 
-        const consoleMessages: PicoMessage[] = []
-        const jsonRegex = /\{[^}]*\}/g
-        let match: RegExpExecArray | null
-        let lastIndex = 0
+        const { messages, remainder } = this.parent.parseBufferedMessages(
+            this.buffer,
+        )
+        console.debug('Parsed messages:', messages, 'Remainder:', remainder)
+        this.buffer = remainder
 
-        while ((match = jsonRegex.exec(this.buffer)) !== null) {
-            try {
-                const jsonString = match[0]
-                const message: PicoMessage = JSON.parse(jsonString)
-                consoleMessages.push(message)
-                lastIndex = jsonRegex.lastIndex
-            } catch {
-                break
-            }
-        }
-
-        this.buffer = this.buffer.slice(lastIndex)
-
-        for (const message of consoleMessages) {
+        for (const message of messages) {
             this.parent.handleMessage(message)
         }
     }

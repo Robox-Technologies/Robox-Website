@@ -1,4 +1,4 @@
-import type { Communication, PicoMessage } from 'src/types/communication'
+import type { Communication } from 'src/types/communication'
 import type { Pico } from './communicate'
 import {
     BleClient,
@@ -7,7 +7,7 @@ import {
     type BleDevice,
 } from '@capacitor-community/bluetooth-le'
 
-const WRITE_TIMEOUT = 30 // ms
+const WRITE_TIMEOUT = 40 // ms
 const UART_SERVICE = 0xffe0
 const UART_CHARACTERISTIC = 0xffe1
 const CHUNK_SIZE = 20
@@ -104,25 +104,12 @@ export class IOSBluetoothCommunication implements Communication {
 
         this.buffer += chunk
 
-        const consoleMessages: PicoMessage[] = []
-        const jsonRegex = /\{[^}]*\}/g
-        let match: RegExpExecArray | null
-        let lastIndex = 0
+        const { messages, remainder } = this.parent.parseBufferedMessages(
+            this.buffer,
+        )
+        this.buffer = remainder
 
-        while ((match = jsonRegex.exec(this.buffer)) !== null) {
-            try {
-                const jsonString = match[0]
-                const message: PicoMessage = JSON.parse(jsonString)
-                consoleMessages.push(message)
-                lastIndex = jsonRegex.lastIndex
-            } catch {
-                break // malformed JSON, wait for more data
-            }
-        }
-
-        this.buffer = this.buffer.slice(lastIndex)
-
-        for (const message of consoleMessages) {
+        for (const message of messages) {
             this.parent.handleMessage(message)
         }
     }
