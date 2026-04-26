@@ -1,6 +1,5 @@
 import type { Communication, PicoMessage } from 'src/types/communication'
 import type { Pico } from './communicate'
-
 import {
     BleClient,
     numbersToDataView,
@@ -8,7 +7,7 @@ import {
     type BleDevice,
 } from '@capacitor-community/bluetooth-le'
 
-const WRITE_TIMEOUT = 20 // ms
+const WRITE_TIMEOUT = 30 // ms
 const UART_SERVICE = 0xffe0
 const UART_CHARACTERISTIC = 0xffe1
 const CHUNK_SIZE = 20
@@ -35,26 +34,34 @@ export class IOSBluetoothCommunication implements Communication {
             await BleClient.initialize()
             const device = await BleClient.requestDevice({
                 services: [numberToUUID(UART_SERVICE)],
+                displayMode: 'list',
             })
-            this.parent.connect(device)
+            if (!device) {
+                this.parent.emit('error', {
+                    message:
+                        'Could not request Ro/Box! Make sure you have it powered on and nearby.',
+                })
+                return
+            }
+            await this.parent.connect(device)
         } catch (error) {
-            if (
-                error instanceof Error &&
-                error.name === 'NotFoundError'
-            ) {
-                this.parent.emit('revert', { message: 'No device selected' })
+            if (error instanceof Error && error.name === 'NotFoundError') {
+                this.parent.revertConnectionState()
+                throw error
             } else {
                 const message =
-                    error instanceof Error ? error.message : String(error)
-                this.parent.handleMessage({ type: 'error', message })
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to connect to Ro/Box'
+                this.parent.emit('error', { message })
             }
         }
     }
 
     // Accepts either the BleDevice object (from requestDevice) or a saved deviceId (string).
     async connect(device: BleDevice): Promise<void> {
+        const { deviceId } = device
         try {
-            const { deviceId } = device
             this.deviceId = deviceId
 
             // Connect and register an onDisconnect callback
@@ -64,10 +71,13 @@ export class IOSBluetoothCommunication implements Communication {
             this.read()
             return
         } catch (error) {
-            const message =
-                error instanceof Error ? error.message : String(error)
-            this.parent.handleMessage({ type: 'error', message })
-            throw error
+            this.deviceId = null
+            this.buffer = ''
+            throw new Error(
+                error instanceof Error
+                    ? error.message
+                    : String(error || 'Could not connect to Ro/Box'),
+            )
         }
     }
     read(): void {
@@ -141,7 +151,7 @@ export class IOSBluetoothCommunication implements Communication {
         } catch (error) {
             const message =
                 error instanceof Error ? error.message : String(error)
-            this.parent.handleMessage({ type: 'error', message })
+            this.parent.emit('error', { message })
             throw new Error('Could not write to Ro/Box!', {
                 cause: error,
             })
@@ -159,11 +169,7 @@ export class IOSBluetoothCommunication implements Communication {
             // convert to numbers array for numbersToDataView helper
             const nums = Array.from(slice)
             const dataView = numbersToDataView(nums)
-            console.log('Writing chunk to Ro/Box:', {
-                chunk: slice,
-                chunkString: this.decoder.decode(slice),
-            })
-            await BleClient.write(
+            await BleClient.writeWithoutResponse(
                 this.deviceId!,
                 numberToUUID(UART_SERVICE),
                 numberToUUID(UART_CHARACTERISTIC),
@@ -183,11 +189,6 @@ export class IOSBluetoothCommunication implements Communication {
         try {
             if (!this.deviceId) return
 
-            await BleClient.stopNotifications(
-                this.deviceId,
-                numberToUUID(UART_SERVICE),
-                numberToUUID(UART_CHARACTERISTIC),
-            )
 
             await BleClient.disconnect(this.deviceId)
 

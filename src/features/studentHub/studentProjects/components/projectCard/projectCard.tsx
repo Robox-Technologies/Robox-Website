@@ -30,7 +30,6 @@ export function ProjectCard({ id }: { id: string }) {
     const handleCancelEdit = () => {
         editingProject.set(null)
     }
-
     return (
         <a href={`/student/editor/index.html?id=${id}`} onClick={(e) => isEditing && e.preventDefault()}>
             <Card

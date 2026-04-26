@@ -51,5 +51,4 @@ export interface PicoEventMap {
     downloaded: object
     error: { message: string }
     firmware: { status: FirmwareStatus; version: string }
-    revert: object
 }

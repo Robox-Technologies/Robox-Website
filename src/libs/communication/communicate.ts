@@ -29,12 +29,20 @@ type PicoEventListener<K extends keyof PicoEventMap> = (
     data: PicoEventMap[K],
 ) => void
 
+type PicoEventHandler = (data: unknown) => void
+
 const CURRENT_FIRMWARE_VERSION = '1.0.0'
+
+const revertStateMapping: Partial<Record<ConnectionStatus, ConnectionStatus>> = {
+    [ConnectionStatus.CONNECTING]: ConnectionStatus.DISCONNECTED,
+    [ConnectionStatus.RESTARTING]: ConnectionStatus.CONNECTED,
+    [ConnectionStatus.DISCONNECTING]: ConnectionStatus.DISCONNECTED,
+}
 
 export class Pico {
     private communication: Communication | null
     private state: PicoState
-    private listeners: Map<keyof PicoEventMap, Set<PicoEventListener<any>>>
+    private listeners: Map<keyof PicoEventMap, Set<PicoEventHandler>>
     private firmwareCheckTimeout: ReturnType<typeof setTimeout> | null = null
     private responded: boolean = false
     private firmwareConfirmed: boolean = false
@@ -68,14 +76,14 @@ export class Pico {
         if (!this.listeners.has(event)) {
             this.listeners.set(event, new Set())
         }
-        this.listeners.get(event)!.add(listener)
+        this.listeners.get(event)!.add(listener as PicoEventHandler)
     }
 
     off<K extends keyof PicoEventMap>(
         event: K,
         listener: PicoEventListener<K>,
     ): void {
-        this.listeners.get(event)?.delete(listener)
+        this.listeners.get(event)?.delete(listener as PicoEventHandler)
     }
 
     emit<K extends keyof PicoEventMap>(event: K, data: PicoEventMap[K]): void {
@@ -89,6 +97,15 @@ export class Pico {
             })
         }
         this.listeners.get(event)?.forEach((listener) => listener(data))
+    }
+
+    revertConnectionState(): void {
+        const revertedConnectionStatus =
+            revertStateMapping[this.state.connectionStatus]
+
+        if (!revertedConnectionStatus) return
+
+        this.updateState({ connectionStatus: revertedConnectionStatus })
     }
 
     private updateState(updates: Partial<PicoState>): void {
@@ -171,7 +188,6 @@ export class Pico {
 
     handleMessage(payload: PicoMessage): void {
         const { type, message } = payload
-        console.log('Received message from Pico communication layer:', payload)
         // First message means we're connected
         if (!this.responded) {
             this.responded = true

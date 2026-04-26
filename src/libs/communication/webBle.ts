@@ -1,11 +1,13 @@
 import type { Communication, PicoMessage } from 'src/types/communication'
 import type { Pico } from './communicate'
 
-const WRITE_TIMEOUT = 0
+const WRITE_TIMEOUT = 30
 const UART_SERVICE = 0xffe0
 const UART_CHARACTERISTIC = 0xffe1
 const CHUNK_SIZE = 20
-
+function numberToUUID(num: number): string {
+    return '0000' + num.toString(16) + '-0000-1000-8000-00805f9b34fb'
+}
 export class BluetoothCommunication implements Communication {
     destroyed: boolean = false
     private device: BluetoothDevice | null = null
@@ -25,7 +27,7 @@ export class BluetoothCommunication implements Communication {
     async request(): Promise<void> {
         try {
             const device = await navigator.bluetooth.requestDevice({
-                filters: [{ namePrefix: 'RoBox' }],
+                filters: [{ services: [numberToUUID(UART_SERVICE)] }],
                 optionalServices: [UART_SERVICE],
             })
 
@@ -44,7 +46,8 @@ export class BluetoothCommunication implements Communication {
                 error instanceof DOMException &&
                 error.name === 'NotFoundError'
             ) {
-                this.parent.emit('revert', {})
+                this.parent.revertConnectionState()
+                throw error
             } else {
                 const message =
                     error instanceof Error ? error.message : String(error)
@@ -128,7 +131,8 @@ export class BluetoothCommunication implements Communication {
         for (let i = 0; i < message.length; i += CHUNK_SIZE) {
             const chunk = message.slice(i, i + CHUNK_SIZE)
             const data = this.encoder.encode(chunk)
-            await this.characteristic?.writeValue(data)
+            await this.characteristic?.writeValueWithoutResponse(data)
+
             await new Promise((resolve) => setTimeout(resolve, WRITE_TIMEOUT))
         }
     }
