@@ -1,6 +1,11 @@
 import Button from '@components/button'
 import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { addToCart } from '@features/cart/utils/cart.client'
+import {
+    clampQuantity,
+    decrementQuantity,
+    incrementQuantity,
+} from '@features/cart/utils/quantity'
 import { toast } from '@libs/ui/toast'
 import clsx from 'clsx'
 import type { FormHTMLAttributes } from 'react'
@@ -16,13 +21,13 @@ export default function AddQuantity({
     submitToCart?: boolean
 }) {
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setQuantity(Math.abs(parseInt(e.target.value) || 0))
+        setQuantity(clampQuantity(e.target.value))
     }
     const increment = () => {
-        setQuantity((prev) => prev + 1)
+        setQuantity((prev) => incrementQuantity(prev))
     }
     const decrement = () => {
-        setQuantity((prev) => Math.max(0, prev - 1))
+        setQuantity((prev) => decrementQuantity(prev))
     }
     const onSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault()

@@ -3,20 +3,16 @@ import CartItemsSection from '@features/cart/components/cartItemsSection'
 import CartSummary, {
     SummaryPrimaryAction,
 } from '@features/cart/components/cartSummary'
+import { useHydrated } from '@features/cart/hooks/useHydrated'
 import { useCartViewModel } from '@features/cart/hooks/useCartViewModel'
 import type { ProductWithImage } from '@features/cart/types/cart'
-import { useEffect, useState } from 'react'
 
 export default function CartView({
     products,
 }: {
     products: ProductWithImage[]
 }) {
-    const [mounted, setMounted] = useState(false)
-
-    useEffect(() => {
-        setMounted(true)
-    }, [])
+    const mounted = useHydrated()
 
     const {
         activeEntries,
@@ -24,8 +20,15 @@ export default function CartView({
         preorderItems,
         summaryLines,
         updateQuantity,
+        incrementQuantity,
+        decrementQuantity,
         removeItem,
     } = useCartViewModel(products)
+
+    const sections = [
+        { title: 'Available Now', items: availableItems },
+        { title: 'Preorder Now', items: preorderItems },
+    ]
 
     if (!mounted) {
         return (
@@ -56,30 +59,17 @@ export default function CartView({
                     <CartEmptyState />
                 ) : (
                     <>
-                        <CartItemsSection
-                            title="Available Now"
-                            items={availableItems}
-                            onIncrease={(productId, quantity) =>
-                                updateQuantity(productId, quantity + 1)
-                            }
-                            onDecrease={(productId, quantity) =>
-                                updateQuantity(productId, quantity - 1)
-                            }
-                            onInputChange={updateQuantity}
-                            onRemove={removeItem}
-                        />
-                        <CartItemsSection
-                            title="Preorder Now"
-                            items={preorderItems}
-                            onIncrease={(productId, quantity) =>
-                                updateQuantity(productId, quantity + 1)
-                            }
-                            onDecrease={(productId, quantity) =>
-                                updateQuantity(productId, quantity - 1)
-                            }
-                            onInputChange={updateQuantity}
-                            onRemove={removeItem}
-                        />
+                        {sections.map((section) => (
+                            <CartItemsSection
+                                key={section.title}
+                                title={section.title}
+                                items={section.items}
+                                onIncrease={incrementQuantity}
+                                onDecrease={decrementQuantity}
+                                onInputChange={updateQuantity}
+                                onRemove={removeItem}
+                            />
+                        ))}
                     </>
                 )}
             </div>

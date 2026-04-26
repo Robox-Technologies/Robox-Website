@@ -1,6 +1,6 @@
 import type { Product } from '@/types/shop'
-
-type CartItems = Record<string, { quantity: number }>
+import type { CartItems } from '../types/cart'
+import { clampQuantity } from './quantity'
 
 export type CartTotals = {
     itemCount: number
@@ -18,7 +18,7 @@ export function getCartTotals(
                 return acc
             }
 
-            const quantity = Math.max(0, Number(cartValue.quantity || 0))
+            const quantity = clampQuantity(cartValue.quantity)
             acc.itemCount += quantity
             acc.subtotalCents += product.price * quantity
             return acc

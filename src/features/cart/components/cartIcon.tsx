@@ -1,16 +1,12 @@
-import { useEffect, useState } from 'react'
 import Button from '@components/button'
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
 import { cartItems } from '../utils/cart.client'
 import { useStore } from '@nanostores/react'
+import { useHydrated } from '@features/cart/hooks/useHydrated'
 
 export default function CartIcon() {
-    const [mounted, setMounted] = useState(false)
+    const mounted = useHydrated()
     const $cartItems = useStore(cartItems)
-    // TODO: Fix this on flash behaviour
-    useEffect(() => {
-        setMounted(true)
-    }, [])
 
     if (!mounted) {
         // SSR + first client render match → no mismatch

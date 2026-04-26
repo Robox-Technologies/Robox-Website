@@ -5,14 +5,11 @@ import {
     removeFromCart,
     setCartQuantity,
 } from '@features/cart/utils/cart.client'
+import { clampQuantity } from '@features/cart/utils/quantity'
 import { getCartTotals } from '@features/cart/utils/cartTotals'
 import { toast } from '@libs/ui/toast'
 import { useStore } from '@nanostores/react'
 import { useEffect, useMemo } from 'react'
-
-function clampQuantity(quantity: number): number {
-    return Math.min(Math.max(quantity, 0), 99)
-}
 
 export function useCartViewModel(products: ProductWithImage[]) {
     const currentCart = useStore(cartItems)
@@ -97,6 +94,14 @@ export function useCartViewModel(products: ProductWithImage[]) {
         setCartQuantity(productId, clampQuantity(nextValue))
     }
 
+    const incrementQuantity = (productId: string, quantity: number) => {
+        updateQuantity(productId, quantity + 1)
+    }
+
+    const decrementQuantity = (productId: string, quantity: number) => {
+        updateQuantity(productId, quantity - 1)
+    }
+
     const removeItem = (productId: string) => {
         removeFromCart(productId)
     }
@@ -107,6 +112,8 @@ export function useCartViewModel(products: ProductWithImage[]) {
         preorderItems,
         summaryLines,
         updateQuantity,
+        incrementQuantity,
+        decrementQuantity,
         removeItem,
     }
 }

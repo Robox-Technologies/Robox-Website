@@ -1,8 +1,8 @@
 import { map } from 'nanostores'
+import type { CartItems } from '../types/cart'
+import { clampQuantity, toQuantity } from './quantity'
 
 const cartKey = 'roboxCart'
-
-type CartItems = Record<string, { quantity: number }>
 
 const initialCart: CartItems = loadCart()
 export const cartItems = map<CartItems>(initialCart)
@@ -29,13 +29,20 @@ function loadCart(): CartItems {
 
 export function addToCart(productId: string, quantity = 1) {
     const cart = cartItems.get()
+    const nextQuantity = clampQuantity((cart[productId]?.quantity || 0) + toQuantity(quantity))
+
+    if (nextQuantity === 0) {
+        removeFromCart(productId)
+        return
+    }
+
     cartItems.setKey(productId, {
-        quantity: (cart[productId]?.quantity || 0) + quantity,
+        quantity: nextQuantity,
     })
 }
 
 export function setCartQuantity(productId: string, quantity: number) {
-    const nextQuantity = Math.min(Math.max(Number(quantity) || 0, 0), 99)
+    const nextQuantity = clampQuantity(quantity)
     if (nextQuantity === 0) {
         removeFromCart(productId)
         return
