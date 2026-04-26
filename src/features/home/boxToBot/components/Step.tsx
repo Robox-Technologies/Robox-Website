@@ -1,8 +1,3 @@
-import step1Image from '@images/boxToBot/step1.svg'
-import step2Image from '@images/boxToBot/step2.svg'
-import step3Image from '@images/boxToBot/step3.svg'
-import step4Image from '@images/boxToBot/step4.svg'
-const stepImages = [step1Image, step2Image, step3Image, step4Image]
 interface StepProps {
     stepNumber: number
     title: string
@@ -10,8 +5,12 @@ interface StepProps {
 }
 const stepColours = ['bg-blue', 'bg-red', 'bg-green', 'bg-yellow']
 export default function Step({ stepNumber, title, description }: StepProps) {
+
     return (
-        <div className="step flex flex-col gap-6 ml-46.75">
+        <div
+            className="step flex flex-col gap-6 ml-46.75"
+            style={{ marginTop: 'max(25vh, 150px)' }}
+        >
             <div className="flex flex-row gap-6 items-start">
                 <StepNumber stepNumber={stepNumber} />
                 <div className=" flex flex-col gap-4">
@@ -21,7 +20,6 @@ export default function Step({ stepNumber, title, description }: StepProps) {
                     <p className=" text-black text-lg">{description}</p>
                 </div>
             </div>
-            {/* <img src={image.src} alt={`Step ${stepNumber} Illustration`} className="lg:hidden block w-full object-contain"/> */}
         </div>
     )
 }
