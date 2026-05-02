@@ -1,26 +1,27 @@
 import type { Product } from '@/types/shop'
 import type { CartItems } from '../types/cart'
-import { clampQuantity } from './quantity'
 
 export type CartTotals = {
     itemCount: number
     subtotalCents: number
 }
 
-export function getCartTotals(
-    cart: CartItems,
+export function calculateSubtotalCents(
+    cart: CartItems | Record<string, number>,
     productsById: Record<string, Product>,
 ): CartTotals {
     return Object.entries(cart).reduce(
-        (acc, [productId, cartValue]) => {
+        (acc, [productId, value]) => {
             const product = productsById[productId]
             if (!product) {
                 return acc
             }
 
-            const quantity = clampQuantity(cartValue.quantity)
-            acc.itemCount += quantity
-            acc.subtotalCents += product.price * quantity
+            // Handle both CartItems (with .quantity property) and plain numbers
+            const quantity = typeof value === 'object' ? value.quantity : value
+            const safeQuantity = Math.max(0, Math.floor(quantity || 0))
+            acc.itemCount += safeQuantity
+            acc.subtotalCents += product.price * safeQuantity
             return acc
         },
         {

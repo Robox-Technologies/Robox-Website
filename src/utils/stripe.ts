@@ -1,7 +1,6 @@
 import type { ProductStatus } from '@/types/shop'
 
 
-const domesticCountryCode = 'AU'
 
 export enum DiscountStatus {
     Success,

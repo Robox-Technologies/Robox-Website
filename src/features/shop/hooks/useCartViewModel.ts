@@ -6,7 +6,7 @@ import {
     setCartQuantity,
 } from '../state/cart.client'
 import { clampQuantity } from '../utils/quantity'
-import { getCartTotals } from '../utils/cartTotals'
+import { calculateSubtotalCents } from '../utils/pricing'
 import { toast } from '@libs/ui/toast'
 import { useStore } from '@nanostores/react'
 import { useEffect, useMemo } from 'react'
@@ -75,7 +75,7 @@ export function useCartViewModel(products: ProductWithImage[]) {
         ({ product }) => product.status === 'preorder',
     )
 
-    const totals = getCartTotals(currentCart, productsById)
+    const totals = calculateSubtotalCents(currentCart, productsById)
     const summaryLines: SummaryLine[] = [
         {
             id: 'subtotal',

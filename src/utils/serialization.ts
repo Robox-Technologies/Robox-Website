@@ -2,7 +2,6 @@ import type { UserProject } from 'src/types/projects'
 import type { ExtensionKey } from 'src/types/extensions'
 import extensions from '@data/extensions.json'
 import DOMPurify from 'dompurify'
-import sensors from '@data/sensors.json'
 import dayjs from 'dayjs'
 
 const ExtensionKeys = Object.keys(extensions) as ExtensionKey[]
