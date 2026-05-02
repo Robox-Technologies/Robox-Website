@@ -1,12 +1,12 @@
-import type { SummaryLine } from '@features/cart/components/cartSummary'
-import type { CartEntry, ProductWithImage } from '@features/cart/types/cart'
+import type { SummaryLine } from '../components/shared/summaryCard'
+import type { CartEntry, ProductWithImage } from '../types/cart'
 import {
     cartItems,
     removeFromCart,
     setCartQuantity,
-} from '@features/cart/utils/cart.client'
-import { clampQuantity } from '@features/cart/utils/quantity'
-import { getCartTotals } from '@features/cart/utils/cartTotals'
+} from '../state/cart.client'
+import { clampQuantity } from '../utils/quantity'
+import { getCartTotals } from '../utils/cartTotals'
 import { toast } from '@libs/ui/toast'
 import { useStore } from '@nanostores/react'
 import { useEffect, useMemo } from 'react'
@@ -94,14 +94,6 @@ export function useCartViewModel(products: ProductWithImage[]) {
         setCartQuantity(productId, clampQuantity(nextValue))
     }
 
-    const incrementQuantity = (productId: string, quantity: number) => {
-        updateQuantity(productId, quantity + 1)
-    }
-
-    const decrementQuantity = (productId: string, quantity: number) => {
-        updateQuantity(productId, quantity - 1)
-    }
-
     const removeItem = (productId: string) => {
         removeFromCart(productId)
     }
@@ -112,8 +104,6 @@ export function useCartViewModel(products: ProductWithImage[]) {
         preorderItems,
         summaryLines,
         updateQuantity,
-        incrementQuantity,
-        decrementQuantity,
         removeItem,
     }
 }

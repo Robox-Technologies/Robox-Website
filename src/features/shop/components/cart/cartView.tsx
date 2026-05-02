@@ -1,11 +1,11 @@
-import CartEmptyState from '@features/cart/components/cartEmptyState'
-import CartItemsSection from '@features/cart/components/cartItemsSection'
-import CartSummary, {
+import CartEmptyState from './cartEmptyState'
+import CartItemsSection from './cartItemsSection'
+import SummaryCard, {
     SummaryPrimaryAction,
-} from '@features/cart/components/cartSummary'
-import { useHydrated } from '@features/cart/hooks/useHydrated'
-import { useCartViewModel } from '@features/cart/hooks/useCartViewModel'
-import type { ProductWithImage } from '@features/cart/types/cart'
+} from '../shared/summaryCard'
+import { useHydrated } from '../../hooks/useHydrated'
+import { useCartViewModel } from '../../hooks/useCartViewModel'
+import type { ProductWithImage } from '../../types/cart'
 
 export default function CartView({
     products,
@@ -20,8 +20,6 @@ export default function CartView({
         preorderItems,
         summaryLines,
         updateQuantity,
-        incrementQuantity,
-        decrementQuantity,
         removeItem,
     } = useCartViewModel(products)
 
@@ -42,7 +40,8 @@ export default function CartView({
                 </div>
 
                 <div className="w-full lg:h-full lg:w-96 lg:shrink-0">
-                    <CartSummary
+                    <SummaryCard
+                        title="Order Summary"
                         className="w-full lg:h-full"
                         lines={[]}
                         emptyMessage="Add products to build your checkout summary."
@@ -64,8 +63,6 @@ export default function CartView({
                                 key={section.title}
                                 title={section.title}
                                 items={section.items}
-                                onIncrease={incrementQuantity}
-                                onDecrease={decrementQuantity}
                                 onInputChange={updateQuantity}
                                 onRemove={removeItem}
                             />
@@ -75,7 +72,8 @@ export default function CartView({
             </div>
 
             <div className="w-full lg:h-full lg:w-96 lg:shrink-0">
-                <CartSummary
+                <SummaryCard
+                    title="Order Summary"
                     className="w-full lg:h-full"
                     lines={activeEntries.length > 0 ? summaryLines : []}
                     emptyMessage="Add products to build your checkout summary."

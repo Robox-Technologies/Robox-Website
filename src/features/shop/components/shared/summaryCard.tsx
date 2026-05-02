@@ -1,5 +1,5 @@
 import Button from '@components/button'
-import { formatPrice } from '@utils/stripe'
+import { formatPrice } from '@features/shop/utils/shop'
 import { twMerge } from 'tailwind-merge'
 import type { ReactNode } from 'react'
 
@@ -10,8 +10,8 @@ export type SummaryLine = {
     highlighted?: boolean
 }
 
-export default function CartSummary({
-    title = 'Order Summary',
+export default function SummaryCard({
+    title = 'Summary',
     lines,
     footer,
     className,
@@ -33,7 +33,7 @@ export default function CartSummary({
             >
                 <h2 className="mb-4! text-2xl font-bold">{title}</h2>
                 <p className="mb-0 text-gray-600">
-                    {emptyMessage ?? 'Add items to see your order summary.'}
+                    {emptyMessage ?? 'Add items to see your summary.'}
                 </p>
             </aside>
         )
@@ -53,7 +53,8 @@ export default function CartSummary({
                         key={line.id}
                         className={twMerge(
                             'flex items-center justify-between text-base text-gray-700',
-                            line.highlighted && 'mt-2 border-t border-black/10 pt-3 text-lg font-semibold text-black',
+                            line.highlighted &&
+                                'mt-2 border-t border-black/10 pt-3 text-lg font-semibold text-black',
                         )}
                     >
                         <span>{line.label}</span>

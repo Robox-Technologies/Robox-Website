@@ -2,12 +2,12 @@ import stripe, { Stripe } from 'stripe'
 import 'dotenv/config'
 import type { Product } from 'src/types/shop'
 import slugify from 'slugify'
-import { formatPrice } from '@utils/stripe'
+
 import { isValidStatus } from 'src/types/guards/shop'
 if (!process.env.STRIPE_SECRET_KEY) {
     throw new Error('STRIPE_SECRET_KEY is not defined in environment variables')
 }
-const stripeAPI = new stripe(process.env.STRIPE_SECRET_KEY)
+export const stripeAPI = new stripe(process.env.STRIPE_SECRET_KEY)
 
 export async function getAllProducts(): Promise<Product[]> {
     const stripeProducts = await stripeAPI.products.list({

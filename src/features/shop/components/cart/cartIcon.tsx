@@ -1,8 +1,8 @@
 import Button from '@components/button'
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
-import { cartItems } from '../utils/cart.client'
+import { cartItems } from '../../state/cart.client'
 import { useStore } from '@nanostores/react'
-import { useHydrated } from '@features/cart/hooks/useHydrated'
+import { useHydrated } from '../../hooks/useHydrated'
 
 export default function CartIcon() {
     const mounted = useHydrated()

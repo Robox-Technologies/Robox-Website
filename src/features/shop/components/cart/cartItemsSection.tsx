@@ -1,18 +1,14 @@
-import CartItemRow from '@features/cart/components/cartItemRow'
-import type { CartEntry } from '@features/cart/types/cart'
+import CartItemRow from './cartItemRow'
+import type { CartEntry } from '../../types/cart'
 
 export default function CartItemsSection({
     title,
     items,
-    onIncrease,
-    onDecrease,
     onInputChange,
     onRemove,
 }: {
     title: string
     items: CartEntry[]
-    onIncrease: (productId: string, quantity: number) => void
-    onDecrease: (productId: string, quantity: number) => void
     onInputChange: (productId: string, value: number) => void
     onRemove: (productId: string) => void
 }) {
@@ -29,12 +25,6 @@ export default function CartItemsSection({
                         key={product.internalName}
                         item={product}
                         quantity={quantity}
-                        onIncrease={() =>
-                            onIncrease(product.internalName, quantity)
-                        }
-                        onDecrease={() =>
-                            onDecrease(product.internalName, quantity)
-                        }
                         onInputChange={(value) =>
                             onInputChange(product.internalName, value)
                         }

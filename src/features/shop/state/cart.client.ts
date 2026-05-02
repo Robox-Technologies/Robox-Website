@@ -1,6 +1,6 @@
 import { map } from 'nanostores'
 import type { CartItems } from '../types/cart'
-import { clampQuantity, toQuantity } from './quantity'
+import { clampQuantity, toQuantity } from '../utils/quantity'
 
 const cartKey = 'roboxCart'
 

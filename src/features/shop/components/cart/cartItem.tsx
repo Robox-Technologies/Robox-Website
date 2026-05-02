@@ -1,4 +1,4 @@
-import { formatPrice } from '@utils/stripe'
+import { formatPrice } from '@features/shop/utils/shop'
 import type { Product } from 'src/types/shop'
 export default function CartItem({
     product,

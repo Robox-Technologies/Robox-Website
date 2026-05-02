@@ -1,8 +1,5 @@
 import type { ProductStatus } from '@/types/shop'
 
-
-const domesticCountryCode = 'AU'
-
 export enum DiscountStatus {
     Success,
     Error,
@@ -16,6 +13,7 @@ export function formatPrice(
 ): string {
     return `AU$${(price / 100).toFixed(!forceCents && Number.isInteger(price) ? 0 : 2)}`
 }
+
 export function formatStatus(status: ProductStatus): {
     text: string
     color: string

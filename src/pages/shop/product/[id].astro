@@ -7,7 +7,7 @@ import Article from '@components/article/Article';
 import Carousel from '@features/shop/components/productDetail/carousel';
 import ProductCartModal from '@features/shop/components/purchaseFlow/productCartModal';
 import AddQuantity from '@features/shop/components/purchaseFlow/addQuantity';
-import { formatStatus, formatPrice } from "@utils/stripe";
+import { formatStatus, formatPrice } from "@features/shop/utils/shop";
 export const getStaticPaths = (async () => {    
     const products = await getAllProducts();
     return products.map(product => ({

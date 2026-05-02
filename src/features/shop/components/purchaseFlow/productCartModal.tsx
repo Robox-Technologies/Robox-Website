@@ -9,7 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
 import type { Product } from '@/types/shop'
 import AddQuantity from './addQuantity'
-import { formatPrice } from '@utils/stripe'
+import { formatPrice } from '@features/shop/utils/shop'
 import Button from '@components/button'
 
 export default function ProductCartModal({

@@ -2,7 +2,7 @@
 import { getAllProducts } from "@utils/server/stripe.server";
 import type { ImageMetadata } from 'astro';
 const products = await getAllProducts();
-import { formatPrice } from "@utils/stripe";
+import { formatPrice } from "@features/shop/utils/shop";
 
 import StandardLayout from "@layouts/StandardLayout.astro";
 import PageHero from "@components/pageHero";

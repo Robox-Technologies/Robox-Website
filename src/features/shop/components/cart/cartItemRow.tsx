@@ -1,20 +1,16 @@
 import Button from '@components/button'
-import CartItem from '@features/cart/components/cartItem'
-import type { ProductWithImage } from '@features/cart/types/cart'
+import CartItem from './cartItem'
+import type { ProductWithImage } from '../../types/cart'
 import AddQuantity from '@features/shop/components/purchaseFlow/addQuantity'
 
 export default function CartItemRow({
     item,
     quantity,
-    onIncrease,
-    onDecrease,
     onInputChange,
     onRemove,
 }: {
     item: ProductWithImage
     quantity: number
-    onIncrease: () => void
-    onDecrease: () => void
     onInputChange: (value: number) => void
     onRemove: () => void
 }) {
