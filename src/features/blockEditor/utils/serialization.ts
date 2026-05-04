@@ -37,7 +37,6 @@ export function getProjectIdFromURL(): string | null {
 export async function loadBlockly(workspace: Workspace) {
 
     const projectId = getProjectIdFromURL()
-    console.log('Loading Blockly workspace, project ID:', projectId)
     if (!projectId) return
 
     const project = getProject(projectId)

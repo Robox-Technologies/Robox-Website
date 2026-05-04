@@ -33,7 +33,7 @@ export type CommunicationMethod = "USB" | "WebBluetooth" | "iOSBluetooth" | null
 // Types
 export interface PicoMessage {
     type: 'console' | 'download' | 'error' | 'firmware' | 'connect'
-    message: string
+    message: unknown
 }
 
 export interface PicoState {

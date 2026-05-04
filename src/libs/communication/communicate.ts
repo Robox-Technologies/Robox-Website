@@ -101,7 +101,6 @@ export class Pico {
 
             cursor = start + 1
         }
-
         const remainder =
             firstIncompleteStart === -1
                 ? ''
@@ -157,7 +156,7 @@ export class Pico {
         const { type, message } = value as Record<string, unknown>
 
         const validTypes = ['console', 'download', 'error', 'firmware', 'connect']
-        return typeof type === 'string' && validTypes.includes(type) && typeof message === 'string'
+        return typeof type === 'string' && validTypes.includes(type) && typeof message !== 'undefined'
     }
 
     // Public getters for state
@@ -295,12 +294,12 @@ export class Pico {
     }
 
     handleMessage(payload: PicoMessage): void {
-        const { type, message } = payload
+        const { type } = payload
+        const message = String(payload.message)
         // First message means we're connected
         if (!this.responded) {
             this.responded = true
         }
-
         if (type === 'firmware') {
             this.firmwareConfirmed = true
             this.updateState({
@@ -312,6 +311,7 @@ export class Pico {
             this.updateState({ connectionStatus: ConnectionStatus.CONNECTED })
         } else if (type === 'console') {
             this.emit('console', { message })
+
         } else if (type === 'error') {
             this.emit('error', { message })
             this.restart()

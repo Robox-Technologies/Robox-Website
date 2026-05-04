@@ -87,7 +87,6 @@ export class BluetoothCommunication implements Communication {
             typeof target.value === 'undefined'
         )
             return
-
         const rawValue = target.value
         if (!rawValue || !(rawValue instanceof DataView)) return
 
@@ -95,11 +94,10 @@ export class BluetoothCommunication implements Communication {
         if (typeof value !== 'string') return
 
         this.buffer += value
-
         const { messages, remainder } = this.parent.parseBufferedMessages(
             this.buffer,
         )
-        console.debug('Parsed messages:', messages, 'Remainder:', remainder)
+
         this.buffer = remainder
 
         for (const message of messages) {

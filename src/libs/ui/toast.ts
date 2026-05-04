@@ -107,7 +107,6 @@ class ToastManager {
     }
 
     warning(input: ToastInput): string {
-        console.log('Warning toast:', input)
         return this.push('warning', input)
     }
 
