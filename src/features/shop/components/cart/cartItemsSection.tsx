@@ -4,11 +4,13 @@ import type { CartEntry } from '../../types/cart'
 export default function CartItemsSection({
     title,
     items,
+    imageSrcById,
     onInputChange,
     onRemove,
 }: {
     title: string
     items: CartEntry[]
+    imageSrcById: Record<string, string>
     onInputChange: (productId: string, value: number) => void
     onRemove: (productId: string) => void
 }) {
@@ -25,6 +27,7 @@ export default function CartItemsSection({
                         key={product.internalName}
                         item={product}
                         quantity={quantity}
+                        imageSrc={imageSrcById[product.internalName]}
                         onInputChange={(value) =>
                             onInputChange(product.internalName, value)
                         }

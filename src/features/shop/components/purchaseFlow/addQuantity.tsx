@@ -1,11 +1,11 @@
 import Button from '@components/button'
 import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { addToCart } from '@state/cartActions'
 import {
-    addToCart,
     clampQuantity,
     decrementQuantity,
     incrementQuantity,
-} from '@features/shop'
+} from '../../utils/quantity'
 import { toast } from '@libs/ui/toast'
 import clsx from 'clsx'
 import type { FormHTMLAttributes } from 'react'

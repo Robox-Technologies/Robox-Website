@@ -1,16 +1,18 @@
 import Button from '@components/button'
 import CartItem from './cartItem'
-import type { ProductWithImage } from '../../types/cart'
-import AddQuantity from '@features/shop/components/purchaseFlow/addQuantity'
+import AddQuantity from '../purchaseFlow/addQuantity'
+import type { Product } from '@/types/shop'
 
 export default function CartItemRow({
     item,
     quantity,
+    imageSrc,
     onInputChange,
     onRemove,
 }: {
-    item: ProductWithImage
+    item: Product
     quantity: number
+    imageSrc: string
     onInputChange: (value: number) => void
     onRemove: () => void
 }) {
@@ -19,7 +21,7 @@ export default function CartItemRow({
             <CartItem
                 product={item}
                 quantity={quantity}
-                imageSrc={item.imageSrc}
+                imageSrc={imageSrc}
             />
             <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
                 <AddQuantity

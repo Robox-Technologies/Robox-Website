@@ -2,9 +2,7 @@
 import type { Workspace, WorkspaceSvg } from 'blockly/core'
 import {
     getProject,
-    getProjects,
     isValidProjectId,
-    isProtoPollution,
     sanitizeImageDataUrl,
     editProject,
 } from '@utils/serialization'
@@ -12,7 +10,7 @@ import * as Blockly from 'blockly'
 import { workspaceToPng_ } from './screenshot'
 import dayjs from 'dayjs'
 import type { ExtensionKey } from 'src/types/extensions'
-import type { PinsOf, SensorKey } from 'src/types/extraSensors'
+import type { SensorKey } from 'src/types/extraSensors'
 import type {
     UserExtensions,
     UserSensor,

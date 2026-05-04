@@ -1,22 +1,20 @@
 import Button from '@components/button'
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
-import { cartItems } from '../../state/cart.client'
-import { useStore } from '@nanostores/react'
-import { useHydrated } from '../../hooks/useHydrated'
+import { useEffect, useState } from 'react'
+import { useCartQuantity } from '../../hooks/useCartQuantity'
 
 export default function CartIcon() {
-    const mounted = useHydrated()
-    const $cartItems = useStore(cartItems)
+    const [mounted, setMounted] = useState(false)
+    const quantityInCart = useCartQuantity()
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     if (!mounted) {
-        // SSR + first client render match → no mismatch
         return null
     }
 
-    const quantityInCart = Object.values($cartItems).reduce(
-        (acc, item) => acc + item.quantity,
-        0,
-    )
     if (quantityInCart === 0) {
         return null
     }

@@ -3,25 +3,32 @@ import CartItemsSection from './cartItemsSection'
 import SummaryCard, {
     SummaryPrimaryAction,
 } from '../shared/summaryCard'
-import { useHydrated } from '../../hooks/useHydrated'
-import { useCartViewModel } from '../../hooks/useCartViewModel'
-import type { ProductWithImage } from '../../types/cart'
+import { useCartEntries } from '../../hooks/useCartEntries'
+import { useCartTotals } from '../../hooks/useCartTotals'
+import type { Product } from '@/types/shop'
+import { useEffect, useState } from 'react'
 
 export default function CartView({
     products,
+    imageSrcById,
 }: {
-    products: ProductWithImage[]
+    products: Product[]
+    imageSrcById: Record<string, string>
 }) {
-    const mounted = useHydrated()
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     const {
         activeEntries,
         availableItems,
         preorderItems,
-        summaryLines,
         updateQuantity,
         removeItem,
-    } = useCartViewModel(products)
+    } = useCartEntries(products)
+    const summaryLines = useCartTotals(products)
 
     const sections = [
         { title: 'Available Now', items: availableItems },
@@ -63,6 +70,7 @@ export default function CartView({
                                 key={section.title}
                                 title={section.title}
                                 items={section.items}
+                                imageSrcById={imageSrcById}
                                 onInputChange={updateQuantity}
                                 onRemove={removeItem}
                             />

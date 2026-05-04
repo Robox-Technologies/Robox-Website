@@ -1,30 +1,26 @@
-import type { SummaryLine } from '../components/shared/summaryCard'
-import type { CartEntry, ProductWithImage } from '../types/cart'
-import {
-    cartItems,
-    removeFromCart,
-    setCartQuantity,
-} from '../state/cart.client'
-import { clampQuantity } from '../utils/quantity'
-import { calculateSubtotalCents } from '../utils/pricing'
+import { cartItems } from '@state/cartStore'
+import { removeFromCart, setCartQuantity } from '@state/cartActions'
 import { toast } from '@libs/ui/toast'
 import { useStore } from '@nanostores/react'
 import { useEffect, useMemo } from 'react'
+import type { CartEntry } from '../types/cart'
+import type { Product } from '@/types/shop'
+import { clampQuantity } from '../utils/quantity'
 
-export function useCartViewModel(products: ProductWithImage[]) {
+function buildProductsById(products: Product[]) {
+    return products.reduce(
+        (acc, product) => {
+            acc[product.internalName] = product
+            return acc
+        },
+        {} as Record<string, Product>,
+    )
+}
+
+export function useCartEntries(products: Product[]) {
     const currentCart = useStore(cartItems)
 
-    const productsById = useMemo(
-        () =>
-            products.reduce(
-                (acc, product) => {
-                    acc[product.internalName] = product
-                    return acc
-                },
-                {} as Record<string, ProductWithImage>,
-            ),
-        [products],
-    )
+    const productsById = useMemo(() => buildProductsById(products), [products])
 
     useEffect(() => {
         const invalidIds = Object.keys(currentCart).filter((id) => {
@@ -75,21 +71,6 @@ export function useCartViewModel(products: ProductWithImage[]) {
         ({ product }) => product.status === 'preorder',
     )
 
-    const totals = calculateSubtotalCents(currentCart, productsById)
-    const summaryLines: SummaryLine[] = [
-        {
-            id: 'subtotal',
-            label: 'Subtotal',
-            amountCents: totals.subtotalCents,
-        },
-        {
-            id: 'total',
-            label: 'Total',
-            amountCents: totals.subtotalCents,
-            highlighted: true,
-        },
-    ]
-
     const updateQuantity = (productId: string, nextValue: number) => {
         setCartQuantity(productId, clampQuantity(nextValue))
     }
@@ -102,7 +83,6 @@ export function useCartViewModel(products: ProductWithImage[]) {
         activeEntries,
         availableItems,
         preorderItems,
-        summaryLines,
         updateQuantity,
         removeItem,
     }
