@@ -1,5 +1,5 @@
-import CartItemRow from './cartItemRow'
-import type { CartEntry } from '../../types/cart'
+import CartItemRow from './CartItemRow'
+import type { CartEntry } from '../types/cart'
 
 export default function CartItemsSection({
     title,

@@ -1,5 +1,5 @@
 import { useState, useRef, type Dispatch, type SetStateAction } from 'react'
-import AddToCartButton from './addToCartButton'
+import AddToCartButton from './AddToCartButton'
 import Dialog, {
     DialogBody,
     DialogFooter,
@@ -8,9 +8,10 @@ import Dialog, {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
 import type { Product } from '@/types/shop'
-import AddQuantity from './addQuantity'
-import { formatPrice } from '../../utils/shop'
+import AddQuantity from './AddQuantity'
+import { formatPrice } from '@utils/formatPrice'
 import Button from '@components/button'
+import type { ImageMetadata } from 'astro'
 
 export default function ProductCartModal({
     product,
@@ -76,6 +77,7 @@ export default function ProductCartModal({
         </Dialog>
     )
 }
+
 function OpenElement({
     quantity,
     setQuantity,

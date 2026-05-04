@@ -3,8 +3,8 @@ import { removeFromCart, setCartQuantity } from '@state/cartActions'
 import { toast } from '@libs/ui/toast'
 import { useStore } from '@nanostores/react'
 import { useEffect, useMemo } from 'react'
-import type { CartEntry } from '../types/cart'
 import type { Product } from '@/types/shop'
+import type { CartEntry } from '../types/cart'
 import { clampQuantity } from '../utils/quantity'
 
 function buildProductsById(products: Product[]) {

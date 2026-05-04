@@ -1,5 +1,5 @@
 import Button from '@components/button'
-import { formatPrice } from '@features/shop/utils/shop'
+import { formatPrice } from '@utils/formatPrice'
 import { twMerge } from 'tailwind-merge'
 import type { ReactNode } from 'react'
 

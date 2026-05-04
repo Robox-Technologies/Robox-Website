@@ -1,6 +1,7 @@
-import { formatPrice, formatStatus } from '@features/shop/utils/shop'
+import { formatPrice } from '@utils/formatPrice'
+import { formatStatus } from '@features/catalog/utils/formatStatus'
 import type { ImageMetadata } from 'astro'
-import type { Product } from 'src/types/shop'
+import type { Product } from '@/types/shop'
 
 export default function ProductCard({
     product,

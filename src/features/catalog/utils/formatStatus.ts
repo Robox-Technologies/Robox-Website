@@ -1,19 +1,5 @@
 import type { ProductStatus } from '@/types/shop'
 
-export enum DiscountStatus {
-    Success,
-    Error,
-    Stale,
-    Unset,
-}
-
-export function formatPrice(
-    price: number,
-    forceCents: boolean = false,
-): string {
-    return `AU$${(price / 100).toFixed(!forceCents && Number.isInteger(price) ? 0 : 2)}`
-}
-
 export function formatStatus(status: ProductStatus): {
     text: string
     color: string

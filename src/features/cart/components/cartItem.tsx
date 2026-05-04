@@ -1,5 +1,6 @@
-import { formatPrice } from '@features/shop/utils/shop'
-import type { Product } from 'src/types/shop'
+import { formatPrice } from '@utils/formatPrice'
+import type { Product } from '@/types/shop'
+
 export default function CartItem({
     product,
     quantity,

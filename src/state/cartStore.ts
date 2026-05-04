@@ -1,5 +1,5 @@
 import { map } from 'nanostores'
-import type { CartItems } from '@features/shop/types/cart'
+import type { CartItems } from '@features/cart/types/cart'
 
 const cartKey = 'roboxCart'
 

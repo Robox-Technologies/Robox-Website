@@ -1,8 +1,8 @@
 import { cartItems } from '@state/cartStore'
 import { useStore } from '@nanostores/react'
 import { useMemo } from 'react'
-import type { SummaryLine } from '../components/shared/summaryCard'
 import type { Product } from '@/types/shop'
+import type { SummaryLine } from '@components/shop/summary/SummaryCard'
 import { calculateSubtotalCents } from '../utils/pricing'
 
 function buildProductsById(products: Product[]) {

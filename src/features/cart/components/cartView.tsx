@@ -1,10 +1,10 @@
 import CartEmptyState from './cartEmptyState'
-import CartItemsSection from './cartItemsSection'
+import CartItemsSection from './CartItemsSection'
 import SummaryCard, {
     SummaryPrimaryAction,
-} from '../shared/summaryCard'
-import { useCartEntries } from '../../hooks/useCartEntries'
-import { useCartTotals } from '../../hooks/useCartTotals'
+} from '@components/shop/summary/SummaryCard'
+import { useCartEntries } from '../hooks/useCartEntries'
+import { useCartTotals } from '../hooks/useCartTotals'
 import type { Product } from '@/types/shop'
 import { useEffect, useState } from 'react'
 

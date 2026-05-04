@@ -1,14 +1,14 @@
 import Button from '@components/button'
 import {
-    faChevronCircleRight,
-    faChevronCircleLeft,
-    faChevronRight,
     faChevronLeft,
+    faChevronRight,
 } from '@fortawesome/free-solid-svg-icons'
+import type { ImageMetadata } from 'astro'
 import { useState } from 'react'
+
 export default function Carousel({ images }: { images: ImageMetadata[] }) {
     const [currentIndex, setCurrentIndex] = useState(0)
-    //TODO: Make all the images the same size
+
     return (
         <div className="carousel flex flex-row h-[60vh] gap-4">
             <CarouselSideBar
@@ -43,6 +43,7 @@ export default function Carousel({ images }: { images: ImageMetadata[] }) {
         </div>
     )
 }
+
 function CarouselSideBar({
     images,
     currentIndex,
@@ -67,6 +68,7 @@ function CarouselSideBar({
         </div>
     )
 }
+
 function CarouselSideBarItem({
     image,
     isActive,

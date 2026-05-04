@@ -3,7 +3,7 @@ import { getAllProducts } from '@utils/server/stripe.server'
 import type { ImageMetadata } from 'astro'
 import StandardLayout from '@layouts/StandardLayout.astro'
 import Article from '@components/article/Article'
-import CartView from '@features/shop/components/cart/cartView'
+import CartView from '@features/cart/components/cartView'
 
 const products = await getAllProducts()
 const images = import.meta.glob<{ default: ImageMetadata }>(
@@ -30,6 +30,7 @@ const imageSrcById = products.reduce(
     <Article className="w-full px-6! py-6! lg:flex lg:h-[calc(100vh-8rem)] lg:flex-col lg:px-8!">
         <a
             href="/shop"
+            class="mb-4 inline-flex items-center text-base font-semibold text-blue hover:underline"
         >
             ← Shop
         </a>
