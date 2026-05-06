@@ -1,36 +1,37 @@
-import { RoboxFlyout, RoboxToolbox } from "../libs/roboxStyling"
-import { ContinuousMetrics } from "@blockly/continuous-toolbox"
-import theme from "./roboxTheme"
-import toolbox from "../utils/toolbox"
+import { RoboxFlyout, RoboxToolbox } from '../libs/roboxStyling'
+import { ContinuousMetrics } from '@blockly/continuous-toolbox'
+import theme from './roboxTheme'
+import toolbox from '../utils/toolbox'
 
 export const BlocklyConfig = {
     toolbox: toolbox(),
     theme: theme,
     plugins: {
-        'flyoutsVerticalToolbox': RoboxFlyout,
-        'toolbox': RoboxToolbox,
-        "MetricsManager": ContinuousMetrics
+        flyoutsVerticalToolbox: RoboxFlyout,
+        toolbox: RoboxToolbox,
+        MetricsManager: ContinuousMetrics,
     },
+    modalInputs: false,
     zoom: {
         controls: false,
         maxScale: 2.5,
         minScale: 0.2,
         scaleSpeed: 1.5,
         startScale: 1.0,
-        pinch: true
+        pinch: true,
     },
-    move:{
+    move: {
         scrollbars: {
             horizontal: true,
-            vertical: true
+            vertical: true,
         },
         drag: true,
-        wheel: false
+        wheel: false,
     },
     grid: {
         spacing: 20,
         length: 5,
-        colour: "#ccc",
+        colour: '#ccc',
     },
     renderer: 'Zelos',
     trashcan: false,

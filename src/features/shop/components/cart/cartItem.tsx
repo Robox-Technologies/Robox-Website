@@ -1,0 +1,30 @@
+import { formatPrice } from '@features/shop/utils/shop'
+import type { Product } from 'src/types/shop'
+export default function CartItem({
+    product,
+    quantity,
+    imageSrc,
+}: {
+    product: Product
+    quantity: number
+    imageSrc: string
+}) {
+    return (
+        <div className="flex flex-row gap-4">
+            <img
+                src={imageSrc}
+                alt={product.name}
+                className="w-24 aspect-video object-cover rounded-lg"
+            />
+            <div className="flex flex-col gap-2">
+                <h3 className="text-lg font-semibold">{product.name}</h3>
+                <p className="text-gray-600">
+                    {formatPrice(product.price * quantity)}
+                </p>
+                <p className="text-gray-600">
+                    {formatPrice(product.price)}/each
+                </p>
+            </div>
+        </div>
+    )
+}

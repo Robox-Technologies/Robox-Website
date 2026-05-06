@@ -1,4 +1,3 @@
-
 $navEdges: #717171;
 $componentHeight: 48px;
 
@@ -29,7 +28,7 @@ $barHeight: 75px;
 $topButtonsDropShadowMult: 1;
 $dropShadowColour: rgb(47, 47, 47);
 
-$backgroundColour: #E6F0FF;
+$backgroundColour: #e6f0ff;
 
 $barPadding: 2.5%;
 $topBarButtonGap: 10px;
@@ -38,7 +37,7 @@ $downloadButtonSize: 60px;
 
 @mixin extendTransition {
     transition-property: width, margin-left;
-    transition-duration: .5s;
+    transition-duration: 0.5s;
 }
 #blockly-0 {
     .extender {
@@ -60,10 +59,10 @@ body {
     color: white;
     font-size: large;
 }
-.side-arch > svg > path{
-    fill: rgba(0,0,0,0)
+.side-arch > svg > path {
+    fill: rgba(0, 0, 0, 0);
 }
-.categoryIcon { 
+.categoryIcon {
     @include extendTransition;
     height: $iconHeight;
     width: $iconHeight;
@@ -73,7 +72,7 @@ body {
     margin-left: 0px;
 }
 
-.categoryIcon::before { 
+.categoryIcon::before {
     font-size: $iconHeight;
 }
 .blocklyTreeSeparator {
@@ -89,14 +88,14 @@ body {
 
 /* Adds space between the categories, rounds the corners and adds space around the label. */
 .blocklyToolboxCategory {
-    border-top: $seperatorStrokeSize solid #F5F5F5;
+    border-top: $seperatorStrokeSize solid #f5f5f5;
     cursor: pointer;
-    
+
     &:last-child {
-        border-bottom: $seperatorStrokeSize solid #F5F5F5;
+        border-bottom: $seperatorStrokeSize solid #f5f5f5;
     }
 }
-.blocklyTreeLabel { 
+.blocklyTreeLabel {
     color: black;
 }
 .customIcon {
@@ -109,9 +108,9 @@ body {
     border-right: $seperatorStrokeSize solid $navEdges;
 }
 
-.injectionDiv > .blocklyFlyout { 
+.injectionDiv > .blocklyFlyout {
     border-right: $seperatorStrokeSize solid $navEdges;
-    background-color: rgb(245, 245, 245);;
+    background-color: rgb(245, 245, 245);
 }
 .blocklyMutatorBackground {
     fill: #fff !important;
@@ -123,7 +122,7 @@ body {
     align-items: center;
     flex-direction: row;
 }
-.blocklyTreeRowContentContainer >svg >path {
+.blocklyTreeRowContentContainer > svg > path {
     fill: white;
 }
 .blocklyToolboxCategory {
@@ -148,7 +147,7 @@ body {
     }
 }
 
-.blocklyTreeRow { 
+.blocklyTreeRow {
     margin-bottom: 0;
 }
 #blocklyDiv {
@@ -207,13 +206,13 @@ body {
 }
 
 #project-name-form {
-
     background-color: white;
     display: flex;
     justify-content: space-between;
     border-radius: 7px;
 }
-#bluetooth, #learn {
+#bluetooth,
+#learn {
     font-size: 20px;
 }
 #project-name {
@@ -246,11 +245,8 @@ body {
     width: 270px;
     padding: 0 40px 0 40px;
     border-right: $seperatorStrokeSize solid white;
-
 }
 #connection-management {
-
-
     display: flex;
     pointer-events: auto;
 
@@ -269,7 +265,6 @@ body {
     font-size: 20px;
     padding: 0 15px 0 15px;
     color: white;
-    
 }
 .categoryLabel > .blocklyFlyoutLabelText {
     font: 400 24px sans-serif !important;
@@ -296,12 +291,13 @@ $zoomButtonsGap: 10px;
     border-radius: 0 7px 7px 0;
 }
 
-#calibrate-button, #calibrate-outcome-button {
+#calibrate-button,
+#calibrate-outcome-button {
     svg {
         display: none;
     }
 }
-.calibrate-button{
+.calibrate-button {
     width: 100px;
     height: 37px;
     min-height: 37px;
@@ -310,7 +306,8 @@ $zoomButtonsGap: 10px;
     }
 }
 
-#calibrate-outcome-button[calibrating], #calibrate-button[calibrating] {
+#calibrate-outcome-button[calibrating],
+#calibrate-button[calibrating] {
     font-size: 0;
     width: 76px;
     max-height: 37px !important;
@@ -323,11 +320,10 @@ button[calibrating]:hover {
     cursor: not-allowed;
 }
 .uiButtons {
-
     background-color: white;
     color: blue;
     border: $seperatorStrokeSize solid blue;
-    font-size: calc((30px/$blocklyUIIconSize)*$blocklyUIIconSize);
+    font-size: calc((30px / $blocklyUIIconSize) * $blocklyUIIconSize);
     width: $blocklyUIIconSize;
     height: $blocklyUIIconSize;
     display: flex;
@@ -376,7 +372,6 @@ button[calibrating]:hover {
         color: #717171;
         border: 3px solid #717171;
     }
-    
 }
 #console {
     .modal-content {
@@ -385,12 +380,10 @@ button[calibrating]:hover {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        :first-child
-        {
+        :first-child {
             margin-top: auto;
         }
     }
-
 }
 
 #connection-management {
@@ -425,7 +418,7 @@ button[calibrating]:hover {
     }
 }
 
-#connection-management[status="disconnected"] {
+#connection-management[status='disconnected'] {
     background-color: blue;
     #connect-robox-button {
         display: block;
@@ -434,12 +427,12 @@ button[calibrating]:hover {
     }
 }
 
-#connection-management[status="downloaded"] {
+#connection-management[status='downloaded'] {
     background-color: green;
     #run-robox-button {
         display: block;
     }
-    
+
     #download {
         display: block;
     }
@@ -447,7 +440,7 @@ button[calibrating]:hover {
 #robox-project-download .fa-download {
     color: green;
 }
-#connection-management[status="running"] {
+#connection-management[status='running'] {
     background-color: red;
     #stop-robox-button {
         display: block;
@@ -460,13 +453,13 @@ $settingsToolbarWidth: 200px;
     width: $settingsToolbarWidth;
     position: absolute;
     bottom: 0;
-    left: calc(10px - $settingsToolbarWidth );
+    left: calc(10px - $settingsToolbarWidth);
     top: 35px;
 }
 #robox-settings-calibrate > svg {
     color: blue;
 }
-#connection-management[status="no-serial"] {
+#connection-management[status='no-serial'] {
     background-color: yellow;
     border-right: unset;
 
@@ -480,7 +473,7 @@ $settingsToolbarWidth: 200px;
     }
 }
 
-#connection-management[loading="true"] {
+#connection-management[loading='true'] {
     #download-robox-button {
         display: none;
     }
@@ -506,16 +499,16 @@ $settingsToolbarWidth: 200px;
     #download {
         display: none;
     }
-    
+
     #loading {
         display: block;
         width: 100%;
         font-size: 20px;
         border-right: unset;
     }
-
 }
-#robox-settings-button, #robox-extension-button {
+#robox-settings-button,
+#robox-extension-button {
     font-size: 20px;
     cursor: pointer;
 }
@@ -527,7 +520,7 @@ $settingsToolbarWidth: 200px;
         align-content: flex-start;
         gap: 32px;
     }
-    .card { 
+    .card {
         flex: 0 0 30%;
         width: 30%;
 
@@ -559,8 +552,8 @@ dialog[loading] #open-file::hover {
     cursor: not-allowed;
 }
 .extension-card img {
-    pointer-events: none;      /* optional if you really need it */
-    user-select: none;         /* <- prevents selection */
-    -webkit-user-drag: none;   /* <- prevents dragging ghost image */
-    draggable: false;          /* HTML attribute alternative */
+    pointer-events: none; /* optional if you really need it */
+    user-select: none; /* <- prevents selection */
+    -webkit-user-drag: none; /* <- prevents dragging ghost image */
+    draggable: false; /* HTML attribute alternative */
 }

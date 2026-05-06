@@ -1,7 +1,8 @@
+import type { BleDevice } from '@capacitor-community/bluetooth-le'
 export interface Communication {
     destroyed: boolean
     request(): Promise<void>
-    connect(port: SerialPort | BluetoothDevice): Promise<void>
+    connect(port: SerialPort | BluetoothDevice | BleDevice): Promise<void>
     disconnect(): Promise<void>
     destroy(): Promise<void>
     write(message: string | string[]): Promise<void>
@@ -10,29 +11,29 @@ export interface Communication {
 }
 // Enums for better type safety
 export enum ConnectionStatus {
-    DISCONNECTED = "disconnected",
-    DISCONNECTING = "disconnecting",
-    RESTARTING = "restarting",
-    CONNECTING = "connecting",
-    CONNECTED = "connected",
-    LOADING = "loading",
-    RUNNING = "running",
+    DISCONNECTED = 'disconnected',
+    DISCONNECTING = 'disconnecting',
+    RESTARTING = 'restarting',
+    CONNECTING = 'connecting',
+    CONNECTED = 'connected',
+    LOADING = 'loading',
+    RUNNING = 'running',
 }
 
 export enum FirmwareStatus {
-    UNKNOWN = "unknown",
-    CHECKING = "checking",
-    UP_TO_DATE = "upToDate",
-    OUT_OF_DATE = "outOfDate",
-    NO_RESPONSE = "noResponse"
+    UNKNOWN = 'unknown',
+    CHECKING = 'checking',
+    UP_TO_DATE = 'upToDate',
+    OUT_OF_DATE = 'outOfDate',
+    NO_RESPONSE = 'noResponse',
 }
 
-export type CommunicationMethod = "USB" | "Bluetooth" | null
+export type CommunicationMethod = "USB" | "WebBluetooth" | "iOSBluetooth" | null
 
 // Types
 export interface PicoMessage {
-    type: "console" | "download" | "error" | "firmware" | "connect"
-    message: string
+    type: 'console' | 'download' | 'error' | 'firmware' | 'connect'
+    message: unknown
 }
 
 export interface PicoState {
@@ -49,6 +50,5 @@ export interface PicoEventMap {
     calibrated: { message: string }
     downloaded: object
     error: { message: string }
-    firmware: { status: FirmwareStatus, version: string }
-    revert: object
+    firmware: { status: FirmwareStatus; version: string }
 }
