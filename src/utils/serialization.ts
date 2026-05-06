@@ -20,11 +20,11 @@ export function getProjects(): Record<string, UserProject> {
         return {}
     }
 }
-export function createProject(): string {
+export function createProject(type: 'block' | 'python' = 'block'): string {
     const projects = getProjects()
     const id = crypto.randomUUID()
 
-    projects[id] = generateEmptyProject()
+    projects[id] = generateEmptyProject(type)
     localStorage.setItem('roboxProjects', JSON.stringify(projects))
     return id
 }
@@ -51,7 +51,7 @@ export function deleteProject(id: string): boolean {
     return false
 }
 
-function generateEmptyProject(): UserProject {
+function generateEmptyProject(type: 'block' | 'python' = 'block'): UserProject {
     const userExtensions = ExtensionKeys.reduce(
         (acc, key) => {
             acc[key] = false
@@ -66,6 +66,7 @@ function generateEmptyProject(): UserProject {
         thumbnail: null,
         extensions: userExtensions,
         sensors: {},
+        type,
     }
 }
 export function editProject(id: string, data: Partial<UserProject>): boolean {

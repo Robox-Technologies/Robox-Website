@@ -9,6 +9,7 @@ interface UserProject {
     thumbnail: string | null
     extensions: UserExtensions
     sensors: UserSensors
+    type: 'block' | 'python'
 }
 export type UserExtensions = Record<ExtensionKey, boolean>
 
