@@ -3,8 +3,8 @@ import "../styles/toolbox.scss";
 import EditorButtons from "./editorButtons/editorButtons.astro";
 ---
 
-<div class="flex-1 flex relative">
-    <div id="blocklyDiv" class="flex-1">
+<div class="flex-1 flex relative w-full h-full">
+    <div id="blocklyDiv" class="flex-1 w-full h-full">
         
     </div>
     <EditorButtons />
@@ -32,7 +32,6 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
     // Dynamically import all blocks in the blocks directory
     import.meta.glob('../config/blocks/*.ts', { eager: true });
     import.meta.glob('../config/generators/*.ts', { eager: true });
-
     const workspace = Blockly.inject('blocklyDiv', BlocklyConfig);
     loadBlockly(workspace)
     // Saving every time a change is made to the workspace, except for UI events (like dragging blocks)

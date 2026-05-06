@@ -2,9 +2,7 @@
 import EditorLayout from "@layouts/EditorLayout.astro";
 import ProjectHeader from "@features/blockEditor/components/editor/projectHeader.astro";
 import BlocklyEditor from "@features/blockEditor/components/editor.astro";
-import TerminalDialog from "@features/blockEditor/components/terminalDialog";
-import ExtensionsDialog from "@features/blockEditor/components/extensionsDialog";
-import PythonEditor from "@features/pythonEditor/components/pythonEditor";
+import PythonEditorShell from "@features/pythonEditor/components/pythonEditorShell.astro";
 ---
 <style>
     html, body {
@@ -13,11 +11,43 @@ import PythonEditor from "@features/pythonEditor/components/pythonEditor";
     }
 </style>
 <EditorLayout title="editor">
-
     <div class="w-full h-full flex flex-col">
         <ProjectHeader />
-        <PythonEditor client:only="react"/>
-        <!-- <BlocklyEditor /> -->
-
+        <div id="block-editor-shell" class="flex-1">
+            <BlocklyEditor />
+        </div>
+        <PythonEditorShell />
     </div>
+
+    <script is:inline>
+        const projectId = new URLSearchParams(window.location.search).get('id')
+        let projectType = 'block'
+
+        try {
+            const projects = JSON.parse(localStorage.getItem('roboxProjects') ?? '{}')
+            if (projectId && projects?.[projectId]?.type === 'python') {
+                projectType = 'python'
+            }
+        } catch {
+            projectType = 'block'
+        }
+
+        document.documentElement.dataset.projectType = projectType
+
+        const blockEditorShell = document.getElementById('block-editor-shell')
+        const pythonEditorShell = document.getElementById('python-editor-shell')
+
+        if (projectType === 'python') {
+            blockEditorShell?.setAttribute('style', 'display:none;')
+            pythonEditorShell?.setAttribute('style', 'display:flex;flex:1;')
+        } else {
+            blockEditorShell?.setAttribute('style', 'display:flex;flex:1;')
+            pythonEditorShell?.setAttribute('style', 'display:none;')
+        }
+
+        // Trigger resize event after layout settles
+        requestAnimationFrame(() => {
+            window.dispatchEvent(new Event('resize'))
+        })
+    </script>
 </EditorLayout>
