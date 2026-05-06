@@ -1,5 +1,5 @@
 import Card from '@components/card'
-import { faSquareBinary } from '@fortawesome/free-solid-svg-icons'
+import { faCube, faCode } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ProjectSettings from './projectSettings'
 import { useStore } from '@nanostores/react'
@@ -15,6 +15,8 @@ export function ProjectCard({ id }: { id: string }) {
     const $editingProject = useStore(editingProject)
     const project = getProject(id)
     if (!project) return null
+    const projectType = project.type ?? 'block'
+    const projectTypeIcon = projectType === 'python' ? faCode : faCube
     const isSelected = $selectedProject === id
     const isEditing = $editingProject === id
 
@@ -35,11 +37,13 @@ export function ProjectCard({ id }: { id: string }) {
             <Card
                 className={`project-card overflow-visible relative bg-white w-62.5 border-transparent border-4 transition-transform hover:-translate-y-0.5 hover:border-blue duration-100 hover:cursor-pointer ${isSelected ? '-translate-y-0.5! border-green! z-99' : ''}`}
                 image={
-                    <img
-                        src={project.thumbnail || ''}
-                        alt="Project Image"
-                        className="w-full object-cover bg-tone3 aspect-video"
-                    />
+                    <div className="relative">
+                        <img
+                            src={project.thumbnail || ''}
+                            alt="Project Image"
+                            className="w-full object-cover bg-tone3 aspect-video"
+                        />
+                    </div>
                 }
                 title={
                     <>
@@ -53,8 +57,8 @@ export function ProjectCard({ id }: { id: string }) {
                             ) : (
                                 <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
                                     <FontAwesomeIcon
-                                        className="h-6 w-5 text-blue -transform-y-1"
-                                        icon={faSquareBinary}
+                                        className={`h-6 w-5 -transform-y-1 text-blue`}
+                                        icon={projectTypeIcon}
                                     />
                                     <h3 className="truncate whitespace-nowrap text-xl font-bold">
                                         {project.name || 'Untitled'}
