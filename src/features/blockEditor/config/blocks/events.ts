@@ -14,6 +14,8 @@ const events = [
             },
         ],
         style: 'event_blocks',
+        deletable: false,
+        movable: false,
         tooltip: 'Code to run when the event starts.',
         helpUrl: '',
         hat: 'cap',

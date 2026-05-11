@@ -1,5 +1,5 @@
 // This file exists to seperate out the Blockly library (as it does not support tree shaking) from the rest of the codebase
-import type { Workspace, WorkspaceSvg } from 'blockly/core'
+import type { WorkspaceSvg } from 'blockly/core'
 import {
     getProject,
     isValidProjectId,
@@ -32,7 +32,7 @@ export function getProjectIdFromURL(): string | null {
     }
     return null
 }
-export async function loadBlockly(workspace: Workspace) {
+export async function loadBlockly(workspace: WorkspaceSvg) {
 
     const projectId = getProjectIdFromURL()
     if (!projectId) return
@@ -40,12 +40,33 @@ export async function loadBlockly(workspace: Workspace) {
     const project = getProject(projectId)
     if (!project) return
     const workspaceData = project.workspace
-    if (!workspaceData) return
     Blockly.Events.disable()
-    Blockly.serialization.workspaces.load(workspaceData, workspace, {
-        recordUndo: true,
-    })
-    Blockly.Events.enable()
+
+    try {
+        if (workspaceData) {
+            Blockly.serialization.workspaces.load(workspaceData, workspace, {
+                recordUndo: true,
+            })
+        }
+    } finally {
+        Blockly.Events.enable()
+    }
+
+    const starterBlock = workspace.getBlocksByType('event_begin', false)[0]
+    if (!starterBlock) {
+        const block = workspace.newBlock('event_begin') as Blockly.BlockSvg
+        block.setDeletable(false)
+        block.setMovable(false)
+        block.initSvg()
+        block.render()
+        block.moveBy(40, 40)
+        saveBlockly(workspace)
+        return
+    }
+
+    if (!workspaceData) {
+        saveBlockly(workspace)
+    }
 }
 export async function saveBlockly(workspace: WorkspaceSvg) {
     const projectId = getProjectIdFromURL()

@@ -50,23 +50,6 @@ export const BaseToolbox: ToolboxDefinition = {
     contents: [
         {
             kind: 'category',
-            name: 'Events',
-            cssconfig: {
-                icon: 'categoryIcon fa fa-flag',
-            },
-            categorystyle: 'events_category',
-            contents: [
-                {
-                    kind: 'block',
-                    type: 'event_begin',
-                },
-            ],
-        },
-        {
-            kind: 'sep',
-        },
-        {
-            kind: 'category',
             name: 'Logic',
             cssconfig: {
                 icon: 'categoryIcon fa fa-cog',
