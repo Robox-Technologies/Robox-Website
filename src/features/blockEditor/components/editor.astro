@@ -40,6 +40,7 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
         if (event.isUiEvent) return;
         saveBlockly(workspace);
     });
+    workspace.addChangeListener(Blockly.Events.disableOrphans);
     registerControls(workspace);
 
 
