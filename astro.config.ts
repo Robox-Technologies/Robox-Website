@@ -33,6 +33,12 @@ export default defineConfig({
     },
     vite: {
         plugins: [tailwindcss(), svgr()],
+        preview: {
+            allowedHosts: [
+                'dev.robox.com.au',
+                'robox.com.au',
+            ],
+        },
     },
     markdown: {
         remarkPlugins: [RoboxSectionize],
