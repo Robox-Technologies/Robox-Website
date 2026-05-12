@@ -84,7 +84,7 @@ export async function saveBlockly(workspace: WorkspaceSvg) {
         editProject(projectId, project)
     })
 }
-export function generateCode(workspace: Workspace) {
+export function generateCode(workspace: WorkspaceSvg) {
     const projectId = getProjectIdFromURL()
     if (!projectId) throw new Error('No project ID found')
     const project = getProject(projectId)

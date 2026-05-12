@@ -13,13 +13,13 @@ import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
 
 export default defineConfig({
     srcDir: 'src',
+    "output": "static",
     integrations: [
         react(),
         mdx(),
         process.env.IOS_BUILD === 'true' ? transformIOSBuild() : undefined,
     ],
     vite: {
-        //@ts-expect-error this is fixed in astro 6
         plugins: [tailwindcss(), svgr()],
     },
     markdown: {
