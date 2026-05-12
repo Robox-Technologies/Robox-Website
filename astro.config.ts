@@ -34,12 +34,14 @@ export default defineConfig({
     vite: {
         plugins: [tailwindcss(), svgr()],
         server: {
+            host: true,
             allowedHosts: [
                 'dev.robox.com.au',
                 'robox.com.au',
             ],
         },
         preview: {
+            host: true,
             allowedHosts: [
                 'dev.robox.com.au',
                 'robox.com.au',
