@@ -6,8 +6,9 @@
         "build:ios": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" IOS_BUILD=true npm run build && npx cap sync && npx cap open ios",
         "start:ios": "npx cap add ios",
         "ios": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" IOS_BUILD=true npm run build && npx cap sync && npx cap run ios",
-        "preview": "astro preview --port 3000",
-        "dev": "astro dev --port 3000",
+        "preview": "astro preview --port ${PORT:-3000}",
+        "dev": "astro dev --port ${PORT:-3000}",
+        "build:preview": "astro build && astro preview --port ${PORT:-3000}",
         "build": "astro check && astro build",
         "fix": "prettier --write . && eslint --fix ."
     },
