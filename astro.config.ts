@@ -19,6 +19,18 @@ export default defineConfig({
         mdx(),
         process.env.IOS_BUILD === 'true' ? transformIOSBuild() : undefined,
     ],
+    security: {
+        allowedDomains: [
+            {
+                hostname: 'dev.robox.com.au',
+                protocol: 'https:',
+            },
+            {
+                hostname: 'robox.com.au',
+                protocol: 'https:',
+            }
+        ],
+    },
     vite: {
         plugins: [tailwindcss(), svgr()],
     },
