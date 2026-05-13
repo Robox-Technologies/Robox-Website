@@ -11,10 +11,12 @@ interface Props {
     header?: 'standard' | 'workshop';
 };
 const { title, header='standard' } = Astro.props as Props;
+import { ClientRouter } from "astro:transitions";
 ---
 <html lang="en">
     <head>
         <Meta title={title} />
+        <!-- {isIOSBuild && <ClientRouter />} -->
     </head>
     <body>
         {!isIOSBuild && <Header type={header} client:load />}

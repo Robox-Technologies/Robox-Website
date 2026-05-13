@@ -16,10 +16,10 @@
     {
       "layers" : [
         {
-          "image-name" : "robox 3.svg",
-          "name" : "robox 3",
+          "image-name" : "roboxlogo.png",
+          "name" : "roboxlogo",
           "position" : {
-            "scale" : 4.65,
+            "scale" : 0.77,
             "translation-in-points" : [
               0,
               0
