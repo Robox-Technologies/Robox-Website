@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
     appId: 'com.robox.app',
-    appName: 'Robox Learning App',
+    appName: 'Ro/Box',
     webDir: 'dist',
 }
 
