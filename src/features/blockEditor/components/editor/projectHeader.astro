@@ -4,9 +4,22 @@ import ProjectRename from "@features/blockEditor/components/editor/projectRename
 import ProjectSettings from "@features/blockEditor/components/editor/projectSettings";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import ExtensionsDialog from "@features/blockEditor/components/extensionsDialog";
+
+const isIOSBuild = process.env.IOS_BUILD === 'true';
 ---
 <div class="editorHeader flex flex-row justify-between items-center h-18 bg-red border-b-2 border-black px-8">
-    <Button href="../" icon={faChevronLeft} iconStyle="fa-xl" className="text-white h-8 w-8 p-0! flex justify-center items-center"/>
+    <Button 
+        href="../"
+        icon={faChevronLeft}
+        iconStyle="fa-xl"
+        className="text-white h-8 w-8 p-0! flex justify-center items-center"
+        onClick={isIOSBuild ? (event: React.MouseEvent<HTMLButtonElement>) => {
+            // Pop from navigation stack
+            console.log("Attempting pop")
+            event.preventDefault(); 
+            window.history.back();
+        } : undefined}
+    />
     <ProjectRename client:load />
     <div class="flex flex-row gap-4">
         <ExtensionsDialog client:only="react" />
