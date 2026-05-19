@@ -9,8 +9,9 @@ export default function ProjectExtensions({
 }) {
     return (
         <Button
-            className="text-white h-4 w-4 p-0! flex justify-center items-center"
+            className="text-white h-8 w-8 p-0! flex justify-center items-center"
             icon={faPuzzlePiece}
+            iconStyle='fa-xl'
             onClick={() => {
                 setIsOpen(true)
             }}

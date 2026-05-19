@@ -9,7 +9,7 @@ import StudentProjects from '@features/studentHub/studentProjects/studentProject
 import { Image } from 'astro:assets';
 const isIOSBuild = process.env.IOS_BUILD === 'true';
 ---
-<StandardLayout title="Student Resources" header="workshop">
+<StandardLayout title="Ro/Box Hub" header="workshop">
     {isIOSBuild ?
         <div class="relative w-full h-[25vh]">
             <Image src={HeroMobile} alt="Hero image background" class="w-full h-full object-cover object-left"/>

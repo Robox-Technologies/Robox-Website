@@ -26,6 +26,7 @@ const Settings = {
 
 export default function ProjectSettings() {
     const dialogRef = useRef<HTMLDialogElement>(null)
+
     const handleClickOutside = (event: MouseEvent) => {
         if (
             dialogRef.current &&
@@ -34,7 +35,8 @@ export default function ProjectSettings() {
             !event.target.closest('.modal')
         ) {
             dialogRef.current.close()
-            setGearRotation((prev) => prev + 45) // Rotate the gear by 90 degrees on each click
+            setGearRotation((prev) => prev - 45) // Rotate the gear on each click
+            dialogRef.current?.classList.remove("open");
         }
     }
     const [gearRotation, setGearRotation] = useState(0)
@@ -48,12 +50,22 @@ export default function ProjectSettings() {
         <div className="project-settings relative">
             <Button
                 onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                    dialogRef.current?.show()
+                    const isOpen = dialogRef.current?.classList.contains("open");
+                    
+                    if (isOpen) {
+                        dialogRef.current?.classList.remove("open");
+                        dialogRef.current?.close()
+                    } else {
+                        dialogRef.current?.classList.add("open");
+                        dialogRef.current?.show()
+                    }
+
                     event.stopPropagation() // Prevent the click from propagating to the document
-                    setGearRotation((prev) => prev + 45) // Rotate the gear by 90 degrees on each click
+                    setGearRotation((prev) => prev + 45 * (isOpen ? -1 : 1)) // Rotate the gear on each click
                 }}
                 icon={faGear}
-                className="text-white h-4 w-4 p-0! flex justify-center items-center transition-transform duration-300 ease-in-out"
+                iconStyle='fa-xl'
+                className="text-white h-8 w-8 p-0! flex justify-center items-center transition-transform duration-300 ease-in-out"
                 style={{ transform: `rotate(${gearRotation}deg)` }}
             />
             <dialog

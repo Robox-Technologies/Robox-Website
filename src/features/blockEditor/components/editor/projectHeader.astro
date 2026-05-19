@@ -6,7 +6,7 @@ import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import ExtensionsDialog from "@features/blockEditor/components/extensionsDialog";
 ---
 <div class="editorHeader flex flex-row justify-between items-center h-18 bg-red border-b-2 border-black px-8">
-    <Button href="/student" icon={faChevronLeft} className="text-white h-4 w-4 p-0! flex justify-center items-center"/>
+    <Button href="../" icon={faChevronLeft} iconStyle="fa-xl" className="text-white h-8 w-8 p-0! flex justify-center items-center"/>
     <ProjectRename client:load />
     <div class="flex flex-row gap-4">
         <ExtensionsDialog client:only="react" />

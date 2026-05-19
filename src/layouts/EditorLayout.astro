@@ -10,12 +10,12 @@ interface Props {
     title: string
 };
 const { title } = Astro.props as Props;
-import { ClientRouter } from "astro:transitions";
+// import { ClientRouter } from "astro:transitions";
 ---
 <html lang="en">
     <head>
-        <Meta title={title} />
         <!-- {isIOSBuild && <ClientRouter />} -->
+        <Meta title={title} />
     </head>
     <body class="flex flex-col">
         {!isIOSBuild && <Header type="workshop" />}

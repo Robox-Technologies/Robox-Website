@@ -31,7 +31,7 @@ export function ProjectCard({ id }: { id: string }) {
         editingProject.set(null)
     }
     return (
-        <a href={`/student/editor/index.html?id=${id}`} onClick={(e) => isEditing && e.preventDefault()}>
+        <a href={`./editor/index.html?id=${id}`} onClick={(e) => isEditing && e.preventDefault()}>
             <Card
                 className={`project-card overflow-visible relative bg-white w-62.5 border-transparent border-4 transition-transform hover:-translate-y-0.5 hover:border-blue duration-100 hover:cursor-pointer ${isSelected ? '-translate-y-0.5! border-green! z-99' : ''}`}
                 image={
