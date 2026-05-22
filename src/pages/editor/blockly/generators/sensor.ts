@@ -24,7 +24,6 @@ pythonGenerator.forBlock['sensor_bool'] = function (block) {
     const colour_colour = block.getFieldValue('colour');
     console.log('Colour value from block:', colour_colour);
     const code = `${colour_colour === "#ffffff" ? "" : "not"} line.read_line_position()[${dropdown_sensor}] == 0`;
-    console.log('Generated code:', code);
     return [code, Order.NONE];
 }
 pythonGenerator.forBlock['distance_bool'] = function(block, generator) {
