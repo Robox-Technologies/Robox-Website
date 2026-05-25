@@ -5,7 +5,7 @@ import Header from '@components/header/Header'
 const isIOSBuild = process.env.IOS_BUILD === 'true';
 import ToastHost from '@components/toast/ToastHost'
 
-// Manual fa css injection (solves transition issue)
+// Manual fa css injection
 import { config } from '@fortawesome/fontawesome-svg-core';
 config.autoAddCss = false; 
 import '@fortawesome/fontawesome-svg-core/styles.css';
@@ -15,14 +15,12 @@ interface Props {
     title: string
 };
 const { title } = Astro.props as Props;
-import { ClientRouter } from "astro:transitions";
 ---
 <html lang="en">
     <head>
-        {isIOSBuild && <ClientRouter />}
         <Meta title={title} />
     </head>
-    <body class="flex flex-col" transition:animate="slide">
+    <body class="flex flex-col">
         {!isIOSBuild && <Header type="workshop" />}
         
         <slot />

@@ -1,5 +1,7 @@
 @import 'tailwindcss';
-
+@view-transition {
+    navigation: auto;
+}
 @theme {
     --color-blue: #2588c7;
     --color-green: #91cc31;
