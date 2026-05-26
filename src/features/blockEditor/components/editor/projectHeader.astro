@@ -14,8 +14,6 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         iconStyle="fa-xl"
         className="text-white h-8 w-8 p-0! flex justify-center items-center"
         onClick={isIOSBuild ? (event: React.MouseEvent<HTMLButtonElement>) => {
-            // Pop from navigation stack
-            console.log("Attempting pop")
             event.preventDefault(); 
             window.history.back();
         } : undefined}
