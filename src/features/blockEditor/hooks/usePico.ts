@@ -43,7 +43,7 @@ export function usePico() {
     }, [])
 
     const sendCode = useCallback(async () => {
-        const code = generateCode(Blockly.getMainWorkspace())
+        const code = generateCode(Blockly.getMainWorkspace() as Blockly.WorkspaceSvg)
         await pico.sendCode(code)
     }, [])
 

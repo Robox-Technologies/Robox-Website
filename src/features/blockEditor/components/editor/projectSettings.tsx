@@ -3,42 +3,28 @@ import {
     faEyeDropper,
     faDownload,
     faScrewdriverWrench,
+    faLink,
 } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import Button from '@components/button'
 import { useEffect, useRef, useState } from 'react'
-
-const Settings = {
-    'Calibrate Colour': {
-        icon: faEyeDropper,
-        color: 'text-blue',
-    },
-    'Update Firmware': {
-        icon: faScrewdriverWrench,
-        color: 'text-black',
-    },
-    'Download Project': {
-        icon: faDownload,
-        color: 'text-green',
-    },
-}
+import CommunicationMethodDialog from './communicationMethodDialog'
 
 export default function ProjectSettings() {
-    const dialogRef = useRef<HTMLDialogElement>(null)
+    const settingsDialogRef = useRef<HTMLDialogElement>(null)
 
     const handleClickOutside = (event: MouseEvent) => {
         if (
-            dialogRef.current &&
-            dialogRef.current.open &&
+            settingsDialogRef.current &&
+            settingsDialogRef.current.open &&
             event.target instanceof Element &&
             !event.target.closest('.modal')
         ) {
-            dialogRef.current.close()
-            setGearRotation((prev) => prev - 45) // Rotate the gear on each click
-            dialogRef.current?.classList.remove("open");
+            settingsDialogRef.current.close()
+            setGearRotation((prev) => prev + 45) // Rotate the gear by 90 degrees on each click
         }
     }
+
     const [gearRotation, setGearRotation] = useState(0)
     useEffect(() => {
         document.addEventListener('click', handleClickOutside)
@@ -50,16 +36,17 @@ export default function ProjectSettings() {
         <div className="project-settings relative">
             <Button
                 onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
-                    const isOpen = dialogRef.current?.classList.contains("open");
+                    const isOpen = settingsDialogRef.current?.classList.contains("open");
                     
                     if (isOpen) {
-                        dialogRef.current?.classList.remove("open");
-                        dialogRef.current?.close()
+                        settingsDialogRef.current?.classList.remove("open");
+                        settingsDialogRef.current?.close()
                     } else {
-                        dialogRef.current?.classList.add("open");
-                        dialogRef.current?.show()
+                        settingsDialogRef.current?.classList.add("open");
+                        settingsDialogRef.current?.show()
                     }
 
+                    settingsDialogRef.current?.show()
                     event.stopPropagation() // Prevent the click from propagating to the document
                     setGearRotation((prev) => prev + 45 * (isOpen ? -1 : 1)) // Rotate the gear on each click
                 }}
@@ -69,19 +56,38 @@ export default function ProjectSettings() {
                 style={{ transform: `rotate(${gearRotation}deg)` }}
             />
             <dialog
-                ref={dialogRef}
+                ref={settingsDialogRef}
                 className="modal absolute top-1/2 right-full -translate-x-full rounded drop-shadow-xl ml-2 transform border-2 border-black p-0! z-50"
             >
-                <div className="modal-content bg-white h-25 w-45 rounded flex flex-col p-2! justify-between">
-                    {Object.entries(Settings).map(([name, { icon, color }]) => (
-                        <ProjectSettingButton
-                            key={name}
-                            icon={icon}
-                            color={color}
-                        >
-                            {name}
-                        </ProjectSettingButton>
-                    ))}
+                <div className="modal-content bg-white min-h-25 w-45 rounded flex flex-col p-2! gap-1">
+                    <ProjectSettingButton icon={faEyeDropper} color="text-blue">
+                        Calibrate Colour
+                    </ProjectSettingButton>
+                    <ProjectSettingButton
+                        icon={faScrewdriverWrench}
+                        color="text-black"
+                    >
+                        Update Firmware
+                    </ProjectSettingButton>
+                    <ProjectSettingButton icon={faDownload} color="text-green">
+                        Download Project
+                    </ProjectSettingButton>
+                    <CommunicationMethodDialog
+                        trigger={(open) => (
+                            <ProjectSettingButton
+                                icon={faLink}
+                                color="text-black"
+                                onClick={(
+                                    event: React.MouseEvent<HTMLButtonElement>,
+                                ) => {
+                                    event.stopPropagation()
+                                    open()
+                                }}
+                            >
+                                Connection Type
+                            </ProjectSettingButton>
+                        )}
+                    />
                 </div>
             </dialog>
         </div>
@@ -91,16 +97,19 @@ function ProjectSettingButton({
     color,
     icon,
     children,
+    onClick,
 }: {
     color: string
     icon: IconProp
     children: React.ReactNode
+    onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
 }) {
     return (
         <Button
             icon={icon}
             iconStyle={color}
             className={`text-black! text-sm p-0! text-left flex items-center gap-2`}
+            onClick={onClick}
         >
             {children}
         </Button>

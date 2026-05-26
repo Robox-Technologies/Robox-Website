@@ -13,14 +13,40 @@ import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
 
 export default defineConfig({
     srcDir: 'src',
+    "output": "static",
     integrations: [
         react(),
         mdx(),
         process.env.IOS_BUILD === 'true' ? transformIOSBuild() : undefined,
     ],
+    security: {
+        allowedDomains: [
+            {
+                hostname: 'dev.robox.com.au',
+                protocol: 'https:',
+            },
+            {
+                hostname: 'robox.com.au',
+                protocol: 'https:',
+            }
+        ],
+    },
     vite: {
-        //@ts-expect-error this is fixed in astro 6
         plugins: [tailwindcss(), svgr()],
+        server: {
+            host: true,
+            allowedHosts: [
+                'dev.robox.com.au',
+                'robox.com.au',
+            ],
+        },
+        preview: {
+            host: true,
+            allowedHosts: [
+                'dev.robox.com.au',
+                'robox.com.au',
+            ],
+        },
     },
     markdown: {
         remarkPlugins: [RoboxSectionize],

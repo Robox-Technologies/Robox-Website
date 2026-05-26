@@ -50,23 +50,6 @@ export const BaseToolbox: ToolboxDefinition = {
     contents: [
         {
             kind: 'category',
-            name: 'Events',
-            cssconfig: {
-                icon: 'categoryIcon fa fa-flag',
-            },
-            categorystyle: 'events_category',
-            contents: [
-                {
-                    kind: 'block',
-                    type: 'event_begin',
-                },
-            ],
-        },
-        {
-            kind: 'sep',
-        },
-        {
-            kind: 'category',
             name: 'Logic',
             cssconfig: {
                 icon: 'categoryIcon fa fa-cog',
@@ -80,6 +63,24 @@ export const BaseToolbox: ToolboxDefinition = {
                 {
                     kind: 'block',
                     type: 'logic_compare',
+                    inputs: {
+                        A: {
+                            shadow: {
+                                type: 'math_number',
+                                fields: {
+                                    NUM: 0,
+                                },
+                            },
+                        },
+                        B: {
+                            shadow: {
+                                type: 'math_number',
+                                fields: {
+                                    NUM: 0,
+                                },
+                            },
+                        },
+                    },
                 },
                 {
                     kind: 'block',
