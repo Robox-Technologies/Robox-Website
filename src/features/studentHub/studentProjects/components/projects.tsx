@@ -1,8 +1,7 @@
-import { createContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ProjectCard } from './projectCard/projectCard'
 import CreateCard from './createCard'
 import { openProject } from '../stores/projectSettingsModal'
-import { useStore } from '@nanostores/react'
 import { getProjects } from '@utils/serialization'
 import type { UserProject } from 'src/types/projects'
 export default function Projects() {

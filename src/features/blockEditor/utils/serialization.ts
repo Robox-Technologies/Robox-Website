@@ -71,7 +71,9 @@ export async function loadBlockly(workspace: WorkspaceSvg) {
 export async function saveBlockly(workspace: WorkspaceSvg) {
     const projectId = getProjectIdFromURL()
     if (!projectId) return
-    workspaceToPng_(workspace, (thumburi: string) => {
+    workspaceToPng_(
+        workspace,
+        (thumburi: string) => {
         if (!isValidProjectId(projectId))
             throw new Error('Invalid project UUID')
 
@@ -82,7 +84,9 @@ export async function saveBlockly(workspace: WorkspaceSvg) {
         project['workspace'] = data
         project['thumbnail'] = sanitizeImageDataUrl(thumburi)
         editProject(projectId, project)
-    })
+        },
+        '',
+    )
 }
 export function generateCode(workspace: WorkspaceSvg) {
     const projectId = getProjectIdFromURL()

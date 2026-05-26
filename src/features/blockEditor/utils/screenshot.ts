@@ -59,7 +59,7 @@ export function workspaceToPng_(
         textAreas[i].textContent = textAreas[i].value
     }
 
-    const bBox = workspace.getBlocksBoundingBox()
+    const bBox = getBlocksBoundingBox(workspace)
     let x = bBox.left
     let y = bBox.top
     let width = bBox.right - x
@@ -83,6 +83,7 @@ export function workspaceToPng_(
 
     const clone = blockCanvas.cloneNode(true) as SVGElement
     clone.removeAttribute('transform')
+    removeExcludedBlocksFromClone(workspace, clone)
 
     // Add padding
     x -= padding
@@ -148,4 +149,104 @@ export function workspaceToPng_(
     const data = 'data:image/svg+xml,' + encodeURIComponent(svgAsXML)
 
     svgToPng_(data, width, height, callback)
+}
+
+export function workspaceToPng(
+    workspace: WorkspaceSvg,
+    customCss = '',
+): Promise<string> {
+    return new Promise((resolve, reject) => {
+        workspaceToPng_(
+            workspace,
+            (url) => {
+                if (!url) {
+                    reject(new Error('Failed to convert workspace to png'))
+                    return
+                }
+                resolve(url)
+            },
+            customCss,
+        )
+    })
+}
+
+export async function downloadWorkspacePng(
+    workspace: WorkspaceSvg,
+    customCss = '',
+    fileName = `workspace-${Date.now()}.png`,
+) {
+    const url = await workspaceToPng(workspace, customCss)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    link.click()
+    return url
+}
+
+function getBlocksBoundingBox(workspace: WorkspaceSvg) {
+    const includedBlocks = getIncludedBlocks(workspace)
+
+    if (includedBlocks.length === 0) {
+        return workspace.getBlocksBoundingBox()
+    }
+
+    let left = Number.POSITIVE_INFINITY
+    let top = Number.POSITIVE_INFINITY
+    let right = Number.NEGATIVE_INFINITY
+    let bottom = Number.NEGATIVE_INFINITY
+
+    for (const block of includedBlocks) {
+        const position = block.getRelativeToSurfaceXY()
+        const size = block.getHeightWidth()
+
+        left = Math.min(left, position.x)
+        top = Math.min(top, position.y)
+        right = Math.max(right, position.x + size.width)
+        bottom = Math.max(bottom, position.y + size.height)
+    }
+
+    return { left, top, right, bottom }
+}
+
+function removeExcludedBlocksFromClone(workspace: WorkspaceSvg, clone: SVGElement) {
+    const includedBlockIds = new Set(
+        getIncludedBlocks(workspace).map((block) => block.id),
+    )
+    const hiddenBlockIds = workspace
+        .getAllBlocks(false)
+        .filter((block) => !includedBlockIds.has(block.id))
+        .map((block) => block.id)
+
+    for (const id of hiddenBlockIds) {
+        const escaped = escapeAttributeValue(id)
+        const matches = clone.querySelectorAll(`[data-id="${escaped}"]`)
+        for (const node of matches) {
+            node.remove()
+        }
+    }
+}
+
+function getIncludedBlocks(workspace: WorkspaceSvg) {
+    const starterBlocks = workspace.getBlocksByType('event_begin', false)
+    if (starterBlocks.length > 0) {
+        const includedBlockIds = new Set(
+            starterBlocks
+                .flatMap((block) => block.getDescendants(false))
+                .map((block) => block.id),
+        )
+
+        return workspace
+            .getAllBlocks(false)
+            .filter((block) => includedBlockIds.has(block.id))
+    }
+
+    return workspace.getAllBlocks(false).filter((block) => block.isEnabled())
+}
+
+function escapeAttributeValue(value: string) {
+    if (typeof CSS !== 'undefined' && CSS.escape) {
+        return CSS.escape(value)
+    }
+
+    return value.replace(/(["\\])/g, '\\$1')
 }
