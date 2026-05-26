@@ -1,15 +1,16 @@
-import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
 import { editProject, getProject } from '@utils/serialization'
 import { getProjectIdFromURL } from '@features/blockEditor/utils/serialization'
 export default function ProjectRename() {
     const projectId = getProjectIdFromURL()
-    const [projectName, setProjectName] = useState('')
+    const [projectName, setProjectName] = useState('Untitled')
+
     useEffect(() => {
+
         if (projectId) {
             const project = getProject(projectId)
             if (project) {
-                setProjectName(project.name)
+                setProjectName(project.name || 'Untitled')
             }
         }
     }, [projectId])
