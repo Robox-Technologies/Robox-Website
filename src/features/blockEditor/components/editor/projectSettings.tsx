@@ -3,12 +3,10 @@ import {
     faEyeDropper,
     faDownload,
     faScrewdriverWrench,
-    faLink,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import Button from '@components/button'
 import { useEffect, useRef, useState } from 'react'
-import CommunicationMethodDialog from './communicationMethodDialog'
 
 export default function ProjectSettings() {
     const settingsDialogRef = useRef<HTMLDialogElement>(null)
@@ -48,7 +46,7 @@ export default function ProjectSettings() {
                 ref={settingsDialogRef}
                 className="modal absolute top-1/2 right-full -translate-x-full rounded drop-shadow-xl ml-2 transform border-2 border-black p-0! z-50"
             >
-                <div className="modal-content bg-white min-h-25 w-45 rounded flex flex-col p-2! gap-1">
+                <div className="modal-content bg-white w-45 rounded flex justify-content flex-col p-2! gap-2">
                     <ProjectSettingButton icon={faEyeDropper} color="text-blue">
                         Calibrate Colour
                     </ProjectSettingButton>
@@ -61,22 +59,6 @@ export default function ProjectSettings() {
                     <ProjectSettingButton icon={faDownload} color="text-green">
                         Download Project
                     </ProjectSettingButton>
-                    <CommunicationMethodDialog
-                        trigger={(open) => (
-                            <ProjectSettingButton
-                                icon={faLink}
-                                color="text-black"
-                                onClick={(
-                                    event: React.MouseEvent<HTMLButtonElement>,
-                                ) => {
-                                    event.stopPropagation()
-                                    open()
-                                }}
-                            >
-                                Connection Type
-                            </ProjectSettingButton>
-                        )}
-                    />
                 </div>
             </dialog>
         </div>
