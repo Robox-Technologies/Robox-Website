@@ -8,7 +8,12 @@ import {
 
 export const createPaymentIntent = defineAction({
     input: z.object({
-        products: z.record(z.string(), z.number().int().nonnegative()),
+        products: z.record(
+            z.string(),
+            z.object({
+                quantity: z.number().int().nonnegative(),
+            }),
+        ),
         shippingInfo: z
             .object({
                 country: z.string().trim().min(2).max(2),
