@@ -4,7 +4,12 @@ import { calculateCheckoutTotals } from '../utils/checkoutPricing.server'
 
 export const getShippingQuote = defineAction({
     input: z.object({
-        products: z.record(z.string(), z.number().int().nonnegative()),
+        products: z.record(
+            z.string(),
+            z.object({
+                quantity: z.number().int().nonnegative(),
+            }),
+        ),
         shippingInfo: z.object({
             country: z.string().trim().min(2).max(2),
             postcode: z.string().trim().max(16),

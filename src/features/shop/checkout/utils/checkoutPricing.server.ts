@@ -1,4 +1,5 @@
 import { getAllProducts } from '@utils/server/stripe.server'
+import type { CartItems } from '@features/shop/cart/types/cart'
 import { calculateAuspostShippingCents } from './auspost.server'
 
 const MIN_CHARGE_CENTS = 50
@@ -23,19 +24,26 @@ type ResolvedEntry = {
     unitVolume: number
 }
 
-function sanitizeCart(
-    cart: Record<string, number>,
-): Array<{ productKey: string; quantity: number }> {
+type CartLike = Record<string, number> | CartItems
+
+function sanitizeCart(cart: CartLike): Array<{ productKey: string; quantity: number }> {
     return Object.entries(cart)
-        .map(([productKey, quantity]) => ({
+        .map(([productKey, value]) => ({
             productKey,
-            quantity: Number.isFinite(quantity) ? Math.floor(quantity) : 0,
+            quantity:
+                typeof value === 'number'
+                    ? Number.isFinite(value)
+                        ? Math.floor(value)
+                        : 0
+                    : Number.isFinite(value.quantity)
+                        ? Math.floor(value.quantity)
+                        : 0,
         }))
         .filter((entry) => entry.quantity > 0)
 }
 
 async function resolveEntries(
-    cart: Record<string, number>,
+    cart: CartLike,
 ): Promise<ResolvedEntry[]> {
     const allProducts = await getAllProducts()
 
@@ -71,7 +79,7 @@ async function resolveEntries(
 }
 
 export async function calculateCheckoutTotals(
-    cart: Record<string, number>,
+    cart: CartLike,
     shippingInfo?: ShippingInfo | null,
 ): Promise<CheckoutTotals> {
     const entries = await resolveEntries(cart)
@@ -126,7 +134,7 @@ export async function calculateCheckoutTotals(
 }
 
 export async function normalizeCartMetadata(
-    cart: Record<string, number>,
+    cart: CartLike,
 ): Promise<string> {
     const entries = await resolveEntries(cart)
     return entries
