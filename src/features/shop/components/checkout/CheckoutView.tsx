@@ -14,14 +14,14 @@ export default function CheckoutView({ products }: { products: Product[] }) {
         setMounted(true)
     }, [])
 
-    const { activeEntries } = useCartEntries(products)
+    const { entries } = useCartEntries(products)
     const summaryLines = useCartTotals(products)
-    const hasItems = mounted && activeEntries.length > 0
+    const hasItems = mounted && entries.length > 0
 
     return (
         <div className="flex h-full flex-col gap-8 lg:flex-row lg:items-start">
             <div className="flex w-full flex-1 flex-col gap-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm lg:min-h-168 lg:overflow-y-auto">
-                {mounted ? <StripeCheckoutPlaceholder /> : <CheckoutLoadingState />}
+                {mounted ? <StripeCheckoutPlaceholder                     /> : <CheckoutLoadingState />}
             </div>
 
             <div className="w-full lg:w-96 lg:shrink-0 lg:self-stretch">

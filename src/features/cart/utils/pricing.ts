@@ -8,11 +8,13 @@ export type CartTotals = {
 
 export function calculateSubtotalCents(
     cart: CartItems | Record<string, number>,
-    productsById: Record<string, Product>,
+    products: Product[],
 ): CartTotals {
     return Object.entries(cart).reduce(
         (acc, [productId, value]) => {
-            const product = productsById[productId]
+            const product = products.find(
+                ({ internalName }) => internalName === productId,
+            )
             if (!product) {
                 return acc
             }

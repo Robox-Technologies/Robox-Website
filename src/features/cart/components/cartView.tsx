@@ -22,19 +22,12 @@ export default function CartView({
     }, [])
 
     const {
-        activeEntries,
-        availableItems,
-        preorderItems,
+        entries,
         updateQuantity,
         removeItem,
     } = useCartEntries(products)
     const summaryLines = useCartTotals(products)
-    const showSummaryContent = mounted && activeEntries.length > 0
-
-    const sections = [
-        { title: 'Available Now', items: availableItems },
-        { title: 'Preorder Now', items: preorderItems },
-    ]
+    const showSummaryContent = mounted && entries.length > 0
 
     if (!mounted) {
         return (
@@ -68,21 +61,16 @@ export default function CartView({
     return (
         <div className="flex h-full flex-col gap-8 lg:flex-row lg:items-stretch">
             <div className="flex w-full flex-1 flex-col gap-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm lg:h-full lg:overflow-y-auto">
-                {activeEntries.length === 0 ? (
+                {entries.length === 0 ? (
                     <CartEmptyState />
                 ) : (
-                    <>
-                        {sections.map((section) => (
-                            <CartItemsSection
-                                key={section.title}
-                                title={section.title}
-                                items={section.items}
-                                imageSrcById={imageSrcById}
-                                onInputChange={updateQuantity}
-                                onRemove={removeItem}
-                            />
-                        ))}
-                    </>
+                    <CartItemsSection
+                        title="Cart Items"
+                        items={entries}
+                        imageSrcById={imageSrcById}
+                        onInputChange={updateQuantity}
+                        onRemove={removeItem}
+                    />
                 )}
             </div>
 
