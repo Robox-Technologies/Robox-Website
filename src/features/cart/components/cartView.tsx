@@ -1,12 +1,12 @@
 import CartEmptyState from './cartEmptyState'
 import CartItemsSection from './CartItemsSection'
-import SummaryCard, {
-    SummaryPrimaryAction,
-} from '@components/shop/summary/SummaryCard'
+import SummaryCard from '@components/shop/summary/SummaryCard'
+import SummaryLineList from '@components/shop/summary/SummaryLineList'
 import { useCartEntries } from '../hooks/useCartEntries'
 import { useCartTotals } from '../hooks/useCartTotals'
 import type { Product } from '@/types/shop'
 import { useEffect, useState } from 'react'
+import CartSummaryFooter from './CartSummaryFooter'
 
 export default function CartView({
     products,
@@ -29,6 +29,7 @@ export default function CartView({
         removeItem,
     } = useCartEntries(products)
     const summaryLines = useCartTotals(products)
+    const showSummaryContent = mounted && activeEntries.length > 0
 
     const sections = [
         { title: 'Available Now', items: availableItems },
@@ -50,9 +51,15 @@ export default function CartView({
                     <SummaryCard
                         title="Order Summary"
                         className="w-full lg:h-full"
-                        lines={[]}
                         emptyMessage="Add products to build your checkout summary."
-                    />
+                    >
+                        {showSummaryContent ? (
+                            <>
+                                <SummaryLineList lines={summaryLines} />
+                                <CartSummaryFooter />
+                            </>
+                        ) : null}
+                    </SummaryCard>
                 </div>
             </div>
         )
@@ -83,31 +90,15 @@ export default function CartView({
                 <SummaryCard
                     title="Order Summary"
                     className="w-full lg:h-full"
-                    lines={activeEntries.length > 0 ? summaryLines : []}
                     emptyMessage="Add products to build your checkout summary."
-                    footer={
-                        activeEntries.length > 0 ? (
-                            <div className="flex flex-col gap-4">
-                                <p className="mb-0 text-sm text-gray-600">
-                                    Shipping calculated at checkout.
-                                </p>
-                                <p className="mb-0 text-sm text-gray-600">
-                                    Bulk order? Please email us at{' '}
-                                    <a
-                                        href="mailto:hello@robox.com.au"
-                                        className="font-semibold text-blue hover:underline"
-                                    >
-                                        hello@robox.com.au
-                                    </a>{' '}
-                                    for invoicing.
-                                </p>
-                                <SummaryPrimaryAction disabled>
-                                    Checkout Coming Soon
-                                </SummaryPrimaryAction>
-                            </div>
-                        ) : null
-                    }
-                />
+                >
+                    {showSummaryContent ? (
+                        <>
+                            <SummaryLineList lines={summaryLines} />
+                            <CartSummaryFooter />
+                        </>
+                    ) : null}
+                </SummaryCard>
             </div>
         </div>
     )

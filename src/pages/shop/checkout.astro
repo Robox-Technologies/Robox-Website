@@ -1,0 +1,23 @@
+---
+import { getAllProducts } from '@utils/server/stripe.server'
+import StandardLayout from '@layouts/StandardLayout.astro'
+import Article from '@components/article/Article'
+import CheckoutView from '@features/shop/components/checkout/CheckoutView'
+
+const products = await getAllProducts()
+---
+<StandardLayout title="Checkout">
+    <Article className="w-full px-6! py-6! lg:flex lg:min-h-[calc(100vh-8rem)] lg:h-auto lg:flex-col lg:px-8!">
+        <a
+            href="/shop/cart"
+            class="mb-4 inline-flex items-center text-base font-semibold text-blue hover:underline"
+        >
+            ← Cart
+        </a>
+        <h1 class="mb-8 text-5xl font-bold">Checkout</h1>
+
+        <div class="min-h-0 flex-1">
+            <CheckoutView products={products} client:load />
+        </div>
+    </Article>
+</StandardLayout>
