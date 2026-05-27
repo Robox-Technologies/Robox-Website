@@ -2,8 +2,8 @@ import { cartItems } from '@state/cartStore'
 import { removeFromCart, setCartQuantity } from '@state/cartActions'
 import { useStore } from '@nanostores/react'
 import type { Product } from '@/types/shop'
-import type { CartEntry } from '../types/cart'
-import { clampQuantity } from '../utils/quantity'
+import type { CartEntry } from '../cart/types/cart'
+import { clampQuantity } from '../cart/utils/quantity'
 
 export function useCartEntries(products: Product[]) {
     const currentCart = useStore(cartItems)

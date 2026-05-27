@@ -1,6 +1,6 @@
 import SummaryCard from '@components/shop/summary/SummaryCard'
-import { useCartEntries } from '@features/shop/cart/hooks/useCartEntries'
-import { useCartTotals } from '@features/shop/cart/hooks/useCartTotals'
+import { useCartEntries } from '@features/shop/hooks/useCartEntries'
+import { useCartTotals } from '@features/shop/hooks/useCartTotals'
 import type { Product } from '@/types/shop'
 import { useEffect, useState } from 'react'
 import CheckoutLoadingState from './CheckoutLoadingState'
@@ -15,8 +15,21 @@ export default function CheckoutView({ products }: { products: Product[] }) {
     }, [])
 
     const { entries } = useCartEntries(products)
-    const summaryLines = useCartTotals(products)
+    const subtotalCents = useCartTotals(products)
     const hasItems = mounted && entries.length > 0
+    const summaryLines = [
+        {
+            id: 'subtotal',
+            label: 'Subtotal',
+            amountCents: subtotalCents,
+        },
+        {
+            id: 'total',
+            label: 'Total',
+            amountCents: subtotalCents,
+            highlighted: true,
+        },
+    ]
 
     return (
         <div className="flex h-full flex-col gap-8 lg:flex-row lg:items-start">

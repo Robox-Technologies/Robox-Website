@@ -1,7 +1,7 @@
 import Button from '@components/button'
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
 import { useEffect, useState } from 'react'
-import { useCartQuantity } from '@features/shop/cart/hooks/useCartQuantity'
+import { useCartQuantity } from '@features/shop/hooks/useCartQuantity'
 
 export default function CartIcon() {
     const [mounted, setMounted] = useState(false)

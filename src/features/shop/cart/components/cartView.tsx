@@ -2,8 +2,8 @@ import CartEmptyState from './cartEmptyState'
 import CartItemsSection from './CartItemsSection'
 import SummaryCard from '@components/shop/summary/SummaryCard'
 import SummaryLineList from '@components/shop/summary/SummaryLineList'
-import { useCartEntries } from '../hooks/useCartEntries'
-import { useCartTotals } from '../hooks/useCartTotals'
+import { useCartEntries } from '../../hooks/useCartEntries'
+import { useCartTotals } from '../../hooks/useCartTotals'
 import type { Product } from '@/types/shop'
 import { useEffect, useState } from 'react'
 import CartSummaryFooter from './CartSummaryFooter'
@@ -26,8 +26,21 @@ export default function CartView({
         updateQuantity,
         removeItem,
     } = useCartEntries(products)
-    const summaryLines = useCartTotals(products)
+    const subtotalCents = useCartTotals(products)
     const showSummaryContent = mounted && entries.length > 0
+    const summaryLines = [
+        {
+            id: 'subtotal',
+            label: 'Subtotal',
+            amountCents: subtotalCents,
+        },
+        {
+            id: 'total',
+            label: 'Total',
+            amountCents: subtotalCents,
+            highlighted: true,
+        },
+    ]
 
     if (!mounted) {
         return (
