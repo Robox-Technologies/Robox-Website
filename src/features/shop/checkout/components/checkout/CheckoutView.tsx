@@ -1,6 +1,6 @@
 import SummaryCard from '@components/shop/summary/SummaryCard'
-import { useCartEntries } from '@features/cart/hooks/useCartEntries'
-import { useCartTotals } from '@features/cart/hooks/useCartTotals'
+import { useCartEntries } from '@features/shop/cart/hooks/useCartEntries'
+import { useCartTotals } from '@features/shop/cart/hooks/useCartTotals'
 import type { Product } from '@/types/shop'
 import { useEffect, useState } from 'react'
 import CheckoutLoadingState from './CheckoutLoadingState'

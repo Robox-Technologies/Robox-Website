@@ -2,7 +2,7 @@
 import { getAllProducts } from '@utils/server/stripe.server'
 import StandardLayout from '@layouts/StandardLayout.astro'
 import Article from '@components/article/Article'
-import CheckoutView from '@features/shop/components/checkout/CheckoutView'
+import CheckoutView from '@features/shop/checkout/components/checkout/CheckoutView'
 
 const products = await getAllProducts()
 ---

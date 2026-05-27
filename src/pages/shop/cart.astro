@@ -3,7 +3,7 @@ import { getAllProducts } from '@utils/server/stripe.server'
 import type { ImageMetadata } from 'astro'
 import StandardLayout from '@layouts/StandardLayout.astro'
 import Article from '@components/article/Article'
-import CartView from '@features/cart/components/cartView'
+import CartView from '@features/shop/cart/components/cartView'
 
 const products = await getAllProducts()
 const images = import.meta.glob<{ default: ImageMetadata }>(

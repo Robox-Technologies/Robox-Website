@@ -5,7 +5,7 @@ import {
     clampQuantity,
     decrementQuantity,
     incrementQuantity,
-} from '@features/cart/utils/quantity'
+} from '@features/shop/cart/utils/quantity'
 import { toast } from '@libs/ui/toast'
 import clsx from 'clsx'
 import type { FormHTMLAttributes } from 'react'
