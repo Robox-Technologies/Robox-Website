@@ -34,7 +34,7 @@ export default function CheckoutView({ products }: { products: Product[] }) {
     ]
 
     return (
-        <div className="flex h-full flex-col gap-8 lg:flex-row lg:items-start">
+        <div className="flex h-full flex-col gap-8 lg:flex-row lg:items-stretch">
             <div className="flex w-full flex-1 flex-col gap-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm lg:h-full lg:min-h-168 lg:overflow-y-auto">
                 {mounted ? (
                     <StripeCheckoutForm clientSecret={clientSecret} />
@@ -42,11 +42,10 @@ export default function CheckoutView({ products }: { products: Product[] }) {
                     <CheckoutLoadingState />
                 )}
             </div>
-
-            <div className="w-full lg:w-96 lg:shrink-0 lg:self-stretch">
+            <div className="w-full lg:w-96 lg:shrink-0 lg:self-stretch lg:h-full">
                 <SummaryCard
                     title="Order Summary"
-                    className="w-full lg:min-h-168"
+                    className="w-full h-full"
                     emptyMessage="Add products to build your checkout summary."
                 >
                     {hasItems ? (
