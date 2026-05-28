@@ -14,7 +14,12 @@ export function getProjects(): Record<string, UserProject> {
     }
     try {
         const projects: Record<string, UserProject> = JSON.parse(projectsJSON)
-        return projects
+
+        const sortedProjects = Object.fromEntries(
+            Object.entries(projects).sort(([, a], [, b]) => dayjs(b.time).diff(dayjs(a.time)))
+        );
+
+        return sortedProjects
     } catch (e) {
         console.error('Failed to parse user projects from localStorage:', e)
         return {}

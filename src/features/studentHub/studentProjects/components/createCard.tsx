@@ -6,7 +6,7 @@ export default function CreateCard() {
     const onClick = () => {
         const id = createProject()
 
-        window.location.assign(`/student/editor/index.html?id=${id}`)
+        window.location.assign(`./editor/index.html?id=${id}`)
     }
     return (
         <Button
