@@ -20,8 +20,9 @@ export default function ProjectSettings() {
             event.target instanceof Element &&
             !event.target.closest('.modal')
         ) {
-            settingsDialogRef.current.close()
-            setGearRotation((prev) => prev + 45) // Rotate the gear by 90 degrees on each click
+            settingsDialogRef.current.close();
+            settingsDialogRef.current?.classList.remove("open");
+            setGearRotation((prev) => prev - 45);
         }
     }
 
@@ -45,10 +46,9 @@ export default function ProjectSettings() {
                         settingsDialogRef.current?.classList.add("open");
                         settingsDialogRef.current?.show()
                     }
-
-                    settingsDialogRef.current?.show()
+                    
                     event.stopPropagation() // Prevent the click from propagating to the document
-                    setGearRotation((prev) => prev + 45 * (isOpen ? -1 : 1)) // Rotate the gear on each click
+                    setGearRotation((prev) => prev + 45 * (isOpen ? -1 : 1)); // Rotate the gear on each click
                 }}
                 icon={faGear}
                 iconStyle='fa-xl'
@@ -57,9 +57,9 @@ export default function ProjectSettings() {
             />
             <dialog
                 ref={settingsDialogRef}
-                className="modal absolute top-1/2 right-full -translate-x-full rounded drop-shadow-xl ml-2 transform border-2 border-black p-0! z-50"
+                className="modal absolute top-1/2 right-full -translate-x-full rounded-lg drop-shadow-xl ml-2 transform border-2 border-black p-0! z-50"
             >
-                <div className="modal-content bg-white min-h-25 w-45 rounded flex flex-col p-2! gap-1">
+                <div className="modal-content bg-white min-h-25 w-50 rounded flex flex-col p-4! gap-4">
                     <ProjectSettingButton icon={faEyeDropper} color="text-blue">
                         Calibrate Colour
                     </ProjectSettingButton>
@@ -108,7 +108,7 @@ function ProjectSettingButton({
         <Button
             icon={icon}
             iconStyle={color}
-            className={`text-black! text-sm p-0! text-left flex items-center gap-2`}
+            className={`text-black! text-md p-0! text-left flex items-center gap-2`}
             onClick={onClick}
         >
             {children}

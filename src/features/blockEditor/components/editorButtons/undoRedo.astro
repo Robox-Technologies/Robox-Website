@@ -2,10 +2,10 @@
 import { faRedo, faUndo } from "@fortawesome/free-solid-svg-icons";
 import Button from "@components/button";
 ---
-<div class="flex flex-row bg-white rounded border-[3px] border-blue box-shadow">
-    <Button icon={faUndo} id="undoButton" className="flex items-center justify-center px-0.5 py-1! border-r-2 border-blue rounded-none! w-1/2 pointer-events-auto" iconStyle="text-blue text-2xl"/>
+<div class="flex flex-row bg-white rounded-lg border-[3px] border-blue box-shadow">
+    <Button icon={faUndo} id="undoButton" className="flex items-center justify-center border-r-2 border-blue rounded-none! w-1/2 pointer-events-auto p-2" iconStyle="text-blue text-2xl"/>
         
-    <Button icon={faRedo} id="redoButton" className="flex items-center justify-center px-0.5 py-1! border-l-2 border-blue rounded-none! w-1/2 pointer-events-auto" iconStyle="text-blue text-2xl"/>
+    <Button icon={faRedo} id="redoButton" className="flex items-center justify-center border-l-2 border-blue rounded-none! w-1/2 pointer-events-auto p-2" iconStyle="text-blue text-2xl"/>
 </div>
 <script>
     import * as Blockly from 'blockly/core';
