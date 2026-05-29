@@ -1,6 +1,6 @@
 ---
 import Meta from '@components/Meta'
-import Header from '@components/header/Header'
+import Header from '@components/header/Header.astro'
 import Footer from '@components/footer/footer'
 import { config } from '@fortawesome/fontawesome-svg-core'
 
@@ -20,7 +20,7 @@ const { title, header='standard' } = Astro.props as Props;
         <Meta title={title} />
     </head>
     <body>
-        {!isIOSBuild && <Header type={header} client:load />}
+        {!isIOSBuild && <Header type={header} />}
         
         
         <slot />
