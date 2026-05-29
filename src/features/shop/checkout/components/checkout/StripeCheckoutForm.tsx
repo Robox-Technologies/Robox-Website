@@ -38,19 +38,8 @@ function PaymentForm() {
 
     return (
         <form className="flex w-full flex-col gap-4 h-full" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 gap-3">
-                <label className="flex flex-col">
-                    {/* Rely on Stripe's ContactDetailsElement for name/email */}
-                </label>
-
-                <label className="flex flex-col">
-                    <ContactDetailsElement />
-                </label>
-
-                <label className="flex flex-col">
-                    <AddressElement options={{ mode: 'billing' }} />
-                </label>
-            </div>
+            <ContactDetailsElement />
+            <AddressElement options={{ mode: 'billing' }} />
 
             <PaymentElement />
 
@@ -107,9 +96,9 @@ export default function StripeCheckoutForm({
     const elementsOptions: StripeElementsOptions = {
         clientSecret,
         appearance: {
-            theme: 'stripe' as const,
+            theme: 'stripe',
             variables: {
-                colorBackground: '#F9FAFB',
+                colorBackground: '#f8f8f8',
                 colorPrimaryText: '#262626',
                 colorText: '#0f172a',
                 colorPrimary: '#2563eb',
@@ -117,20 +106,23 @@ export default function StripeCheckoutForm({
                     'Nunito, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
                 fontSizeBase: '16px',
             },
+            rules: {
+                '.AccordionItem': {
+                    border: 'none',
+                    padding: '0',
+                },
+                '.Input': {
+                    backgroundColor: '#fff',
+                }
+            }
         },
     }
 
     return (
         <Elements stripe={stripePromise} options={elementsOptions}>
             <section className="flex h-full min-h-128 flex-col gap-6">
-                <p className="mb-0 text-gray-600">
-                    Complete payment using Stripe Elements.
-                </p>
-
-                <div className="flex flex-1 items-stretch px-0 py-2">
-                    <div className="w-full">
-                        <PaymentForm />
-                    </div>
+                <div className="flex flex-1 items-stretch px-0">
+                    <PaymentForm />
                 </div>
             </section>
         </Elements>
