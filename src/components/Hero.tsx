@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { HTMLAttributes } from 'react'
 import { twMerge } from 'tailwind-merge'
 interface HeroProps {
-    hero: ImageMetadata
+    hero: string,
     children?: React.ReactNode
     scrollIndicator?: boolean
     imageClassName?: string
@@ -31,8 +31,9 @@ export default function Hero({
                         'h-full w-full object-cover',
                         imageClassName,
                     )}
-                    src={hero.src}
+                    src={hero}
                     alt="Hero Image"
+                    fetchPriority="high"
                 />
             </div>
             {children}

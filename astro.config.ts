@@ -51,6 +51,9 @@ export default defineConfig({
                 'robox.com.au',
             ],
         },
+        build: {
+            assetsInlineLimit: 1024,
+        },
     },
     markdown: {
         remarkPlugins: [RoboxSectionize],
