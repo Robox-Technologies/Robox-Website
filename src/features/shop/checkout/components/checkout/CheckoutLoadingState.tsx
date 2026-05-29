@@ -7,7 +7,8 @@ export default function CheckoutLoadingState() {
             <FontAwesomeIcon
                 icon={faSpinner}
                 spin
-                className="h-8 w-8 text-black/80"
+                size="4x"
+                className="text-black/80"
             />
         </div>
     )

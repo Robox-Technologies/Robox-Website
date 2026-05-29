@@ -3,22 +3,14 @@ import { useCartEntries } from '@features/shop/hooks/useCartEntries'
 import { useCartTotals } from '@features/shop/hooks/useCartTotals'
 import { usePaymentID } from '@features/shop/checkout/hooks/usePaymentID'
 import type { Product } from '@/types/shop'
-import { useEffect, useState } from 'react'
-import CheckoutLoadingState from './CheckoutLoadingState'
 import CheckoutSummaryBody from './CheckoutSummaryBody'
 import StripeCheckoutForm from './StripeCheckoutForm'
 
 export default function CheckoutView({ products }: { products: Product[] }) {
-    const [mounted, setMounted] = useState(false)
-
-    useEffect(() => {
-        setMounted(true)
-    }, [])
-
     const { entries } = useCartEntries(products)
     const subtotalCents = useCartTotals(products)
     const { clientSecret } = usePaymentID(products)
-    const hasItems = mounted && entries.length > 0
+    const hasItems = entries.length > 0
     const summaryLines = [
         {
             id: 'subtotal',
@@ -36,11 +28,7 @@ export default function CheckoutView({ products }: { products: Product[] }) {
     return (
         <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch">
             <section className="flex w-full min-h-0 flex-1 flex-col gap-6 overflow-hidden lg:h-full lg:min-h-168 lg:overflow-visible">
-                {mounted ? (
-                    <StripeCheckoutForm clientSecret={clientSecret} />
-                ) : (
-                    <CheckoutLoadingState />
-                )}
+                <StripeCheckoutForm clientSecret={clientSecret} />
             </section>
             <SummaryCard
                 title="Order Summary"

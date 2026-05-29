@@ -2,7 +2,7 @@ import { Elements, PaymentElement, AddressElement, ContactDetailsElement, useEle
 import type { StripeElementsOptions } from '@stripe/stripe-js'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons/faSpinner'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { stripePromise } from '../../utils/stripe.client'
 import CheckoutLoadingState from './CheckoutLoadingState'
 
@@ -72,10 +72,6 @@ export default function StripeCheckoutForm({
 }) {
     const [ready, setReady] = useState(false)
 
-    useEffect(() => {
-        setReady(false)
-    }, [clientSecret])
-
     if (!clientSecret) {
         return (
             <section className="flex min-h-72 items-center justify-center">
@@ -86,7 +82,6 @@ export default function StripeCheckoutForm({
 
     const elementsOptions: StripeElementsOptions = {
         clientSecret,
-        loader: 'always',
         appearance: {
             theme: 'stripe',
             variables: {
@@ -111,7 +106,7 @@ export default function StripeCheckoutForm({
     }
 
     return (
-        <Elements key={clientSecret} stripe={stripePromise} options={elementsOptions}>
+        <Elements stripe={stripePromise} options={elementsOptions}>
             <section className="relative flex min-h-72 flex-col gap-6">
                 {!ready ? (
                     <div className="absolute inset-0 z-10 flex items-center justify-center">
