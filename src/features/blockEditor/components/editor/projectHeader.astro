@@ -21,7 +21,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     <ProjectRename client:load />
     <div class="flex flex-row gap-4">
         <ExtensionsDialog client:only="react" />
-        <ProjectSettings client:load/>
+        {!isIOSBuild && <ProjectSettings client:load/>}
 
     </div>
     
