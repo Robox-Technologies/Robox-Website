@@ -1,17 +1,23 @@
-import { Elements, PaymentElement, AddressElement, ContactDetailsElement, useElements, useStripe } from '@stripe/react-stripe-js'
+import {
+    Elements,
+    PaymentElement,
+    AddressElement,
+    ContactDetailsElement,
+    useElements,
+    useStripe,
+} from '@stripe/react-stripe-js'
 import type { StripeElementsOptions } from '@stripe/stripe-js'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons/faSpinner'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useState } from 'react'
 import { stripePromise } from '../../utils/stripe.client'
-import CheckoutLoadingState from './CheckoutLoadingState'
+import CheckoutPaymentLoadingState from './CheckoutPaymentLoadingState'
 
 function PaymentForm({ onReady }: { onReady: () => void }) {
     const stripe = useStripe()
     const elements = useElements()
     const [submitting, setSubmitting] = useState(false)
     const [message, setMessage] = useState<string | null>(null)
-    
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -54,7 +60,11 @@ function PaymentForm({ onReady }: { onReady: () => void }) {
             >
                 {submitting ? (
                     <span className="inline-flex items-center gap-2">
-                        <FontAwesomeIcon icon={faSpinner} spin className="text-sm" />
+                        <FontAwesomeIcon
+                            icon={faSpinner}
+                            spin
+                            className="text-sm"
+                        />
                         Processing...
                     </span>
                 ) : (
@@ -73,11 +83,7 @@ export default function StripeCheckoutForm({
     const [ready, setReady] = useState(false)
 
     if (!clientSecret) {
-        return (
-            <section className="flex min-h-72 items-center justify-center">
-                <CheckoutLoadingState />
-            </section>
-        )
+        return <CheckoutPaymentLoadingState />
     }
 
     const elementsOptions: StripeElementsOptions = {
@@ -100,8 +106,8 @@ export default function StripeCheckoutForm({
                 },
                 '.Input': {
                     backgroundColor: '#fff',
-                }
-            }
+                },
+            },
         },
     }
 
@@ -110,11 +116,13 @@ export default function StripeCheckoutForm({
             <section className="relative flex min-h-72 flex-col gap-6">
                 {!ready ? (
                     <div className="absolute inset-0 z-10 flex items-center justify-center">
-                        <CheckoutLoadingState />
+                        <CheckoutPaymentLoadingState />
                     </div>
                 ) : null}
 
-                <div className={ready ? 'opacity-100' : 'opacity-0 pointer-events-none'}>
+                <div
+                    className={ready ? 'opacity-100' : 'pointer-events-none opacity-0'}
+                >
                     <PaymentForm onReady={() => setReady(true)} />
                 </div>
             </section>

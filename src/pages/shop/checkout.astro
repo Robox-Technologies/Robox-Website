@@ -2,8 +2,12 @@
 import { getAllProducts } from '@utils/server/stripe.server'
 import StandardLayout from '@layouts/StandardLayout.astro'
 import Article from '@components/article/Article'
-import CheckoutView from '@features/shop/checkout/components/checkout/CheckoutView'
-import CheckoutLoadingState from '@features/shop/checkout/components/checkout/CheckoutLoadingState'
+import {
+    CheckoutPaymentLoadingState,
+    CheckoutPaymentSection,
+    CheckoutSummaryCard,
+    CheckoutSummaryLoadingState,
+} from '@features/shop/checkout'
 
 const products = await getAllProducts()
 ---
@@ -17,10 +21,13 @@ const products = await getAllProducts()
         </a>
         <h1 class="mb-8 text-5xl font-bold">Checkout</h1>
 
-        <div class="min-h-0 flex-1">
-            <CheckoutView products={products} client:only="react">
-                <CheckoutLoadingState slot="fallback" />
-            </CheckoutView>
+        <div class="flex min-h-0 flex-1 flex-col gap-8 lg:flex-row lg:items-stretch">
+            <CheckoutPaymentSection products={products} client:only="react">
+                <CheckoutPaymentLoadingState slot="fallback" />
+            </CheckoutPaymentSection>
+            <CheckoutSummaryCard products={products} client:only="react">
+                <CheckoutSummaryLoadingState slot="fallback" />
+            </CheckoutSummaryCard>
         </div>
     </Article>
 </StandardLayout>
