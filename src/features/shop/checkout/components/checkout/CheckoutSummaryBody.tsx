@@ -19,20 +19,19 @@ export default function CheckoutSummaryBody({
 
     return (
         <div className="flex flex-1 flex-col gap-4">
-            <div className="flex flex-col gap-2">
-                <CheckoutSummaryRow
-                    label="Subtotal"
-                    value={formatPrice(subtotalLine.amountCents, true)}
-                />
-                <CheckoutSummaryRow
-                    label="Shipping"
-                    value="Calculated at checkout"
-                />
-            </div>
+            <CheckoutSummaryRow
+                label="Subtotal"
+                value={formatPrice(subtotalLine.amountCents, true)}
+            />
+            <CheckoutSummaryRow
+                label="Shipping"
+                value="Calculated at checkout"
+            />
 
             <CheckoutVoucher />
 
-            <div className="mt-auto border-t-2 border-black/80 pt-3">
+            <div className="mt-auto">
+                <hr className="mb-4 border-t border-gray-200" />
                 <CheckoutSummaryRow
                     label="Total"
                     value={formatPrice(totalLine.amountCents, true)}

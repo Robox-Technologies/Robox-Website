@@ -37,10 +37,9 @@ function PaymentForm() {
     }
 
     return (
-        <form className="flex w-full flex-col gap-4 h-full" onSubmit={handleSubmit}>
+        <form className="flex w-full flex-col gap-4" onSubmit={handleSubmit}>
             <ContactDetailsElement />
             <AddressElement options={{ mode: 'billing' }} />
-
             <PaymentElement />
 
             {message ? (
@@ -72,20 +71,17 @@ export default function StripeCheckoutForm({
 }) {
     if (!clientSecret) {
         return (
-            <section className="min-h-128 flex flex-col gap-6">
+            <section className="flex flex-col gap-6">
                 <p className="mb-0 text-gray-600">Preparing payment form...</p>
 
-                <div className="items-center justify-center rounded-xl border border-dashed border-black/20 bg-gray-50 p-6 text-center">
-                    <div className="max-w-md mx-auto">
+                <div className="flex items-center justify-center rounded-xl border border-dashed border-black/20 bg-gray-50 p-6 text-center">
+                    <div className="mx-auto max-w-md">
                         <div className="mb-4 flex justify-center">
                             <FontAwesomeIcon icon={faSpinner} spin className="text-4xl text-black/70" />
                         </div>
-                        <p className="mb-2 text-lg font-semibold text-black">
-                            Payment form loading
-                        </p>
+                        <p className="mb-2 text-lg font-semibold text-black">Payment form loading</p>
                         <p className="mb-0 text-sm text-gray-600">
-                            Stripe Elements will mount once the payment intent
-                            is ready.
+                            Stripe Elements will mount once the payment intent is ready.
                         </p>
                     </div>
                 </div>
@@ -120,10 +116,8 @@ export default function StripeCheckoutForm({
 
     return (
         <Elements stripe={stripePromise} options={elementsOptions}>
-            <section className="flex h-full min-h-128 flex-col gap-6">
-                <div className="flex flex-1 items-stretch px-0">
-                    <PaymentForm />
-                </div>
+            <section className="flex flex-col gap-6">
+                <PaymentForm />
             </section>
         </Elements>
     )

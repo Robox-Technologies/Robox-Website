@@ -13,7 +13,7 @@ export default function CheckoutSummaryRow({
         <div
             className={twMerge(
                 'flex items-center justify-between text-base text-gray-700',
-                emphasized && 'pt-3 text-lg font-semibold text-black',
+                emphasized && 'text-lg font-semibold text-black',
             )}
         >
             <span>{label}</span>
