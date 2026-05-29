@@ -6,7 +6,8 @@ import react from '@astrojs/react'
 import tailwindcss from '@tailwindcss/vite'
 import svgr from 'vite-plugin-svgr'
 import type { AstroIntegration } from 'astro'
-import { resolve, join } from 'path'
+import {  join } from 'path'
+import node from '@astrojs/node';
 import { promises as fs } from 'fs'
 import mdx from '@astrojs/mdx'
 import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
@@ -19,6 +20,9 @@ export default defineConfig({
         mdx(),
         process.env.IOS_BUILD === 'true' ? transformIOSBuild() : undefined,
     ],
+    adapter: node({
+        mode: 'standalone',
+    }),
     security: {
         allowedDomains: [
             {

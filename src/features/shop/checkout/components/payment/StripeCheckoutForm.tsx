@@ -7,7 +7,7 @@ import {
     useStripe,
 } from '@stripe/react-stripe-js'
 import type { StripeElementsOptions } from '@stripe/stripe-js'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons/faSpinner'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useState } from 'react'
 import { stripePromise } from '../../utils/stripe.client'

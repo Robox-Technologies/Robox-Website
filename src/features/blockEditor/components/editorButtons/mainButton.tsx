@@ -1,7 +1,7 @@
 import Button from '@components/button'
 import { usePico } from '@features/blockEditor/hooks/usePico'
 import { ConnectionStatus, type CommunicationMethod } from 'src/types/communication'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons/faSpinner'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect } from 'react'
 import { twMerge } from 'tailwind-merge'
