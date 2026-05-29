@@ -2,6 +2,9 @@
 import Meta from '@components/Meta'
 import Header from '@components/header/Header'
 import Footer from '@components/footer/footer'
+import { config } from '@fortawesome/fontawesome-svg-core'
+
+config.autoAddCss = false
 const isIOSBuild = process.env.IOS_BUILD === 'true';
 import ToastHost from '@components/toast/ToastHost'
 

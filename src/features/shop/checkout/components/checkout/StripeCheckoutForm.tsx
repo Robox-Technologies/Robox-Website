@@ -2,10 +2,11 @@ import { Elements, PaymentElement, AddressElement, ContactDetailsElement, useEle
 import type { StripeElementsOptions } from '@stripe/stripe-js'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons/faSpinner'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { stripePromise } from '../../utils/stripe.client'
+import CheckoutLoadingState from './CheckoutLoadingState'
 
-function PaymentForm() {
+function PaymentForm({ onReady }: { onReady: () => void }) {
     const stripe = useStripe()
     const elements = useElements()
     const [submitting, setSubmitting] = useState(false)
@@ -40,7 +41,7 @@ function PaymentForm() {
         <form className="flex w-full flex-col gap-4" onSubmit={handleSubmit}>
             <ContactDetailsElement />
             <AddressElement options={{ mode: 'billing' }} />
-            <PaymentElement />
+            <PaymentElement onReady={onReady} />
 
             {message ? (
                 <p className="mb-0 text-sm text-red-600">{message}</p>
@@ -69,28 +70,23 @@ export default function StripeCheckoutForm({
 }: {
     clientSecret: string | null
 }) {
+    const [ready, setReady] = useState(false)
+
+    useEffect(() => {
+        setReady(false)
+    }, [clientSecret])
+
     if (!clientSecret) {
         return (
-            <section className="flex flex-col gap-6">
-                <p className="mb-0 text-gray-600">Preparing payment form...</p>
-
-                <div className="flex items-center justify-center rounded-xl border border-dashed border-black/20 bg-gray-50 p-6 text-center">
-                    <div className="mx-auto max-w-md">
-                        <div className="mb-4 flex justify-center">
-                            <FontAwesomeIcon icon={faSpinner} spin className="text-4xl text-black/70" />
-                        </div>
-                        <p className="mb-2 text-lg font-semibold text-black">Payment form loading</p>
-                        <p className="mb-0 text-sm text-gray-600">
-                            Stripe Elements will mount once the payment intent is ready.
-                        </p>
-                    </div>
-                </div>
+            <section className="flex min-h-72 items-center justify-center">
+                <CheckoutLoadingState />
             </section>
         )
     }
 
     const elementsOptions: StripeElementsOptions = {
         clientSecret,
+        loader: 'always',
         appearance: {
             theme: 'stripe',
             variables: {
@@ -115,9 +111,17 @@ export default function StripeCheckoutForm({
     }
 
     return (
-        <Elements stripe={stripePromise} options={elementsOptions}>
-            <section className="flex flex-col gap-6">
-                <PaymentForm />
+        <Elements key={clientSecret} stripe={stripePromise} options={elementsOptions}>
+            <section className="relative flex min-h-72 flex-col gap-6">
+                {!ready ? (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center">
+                        <CheckoutLoadingState />
+                    </div>
+                ) : null}
+
+                <div className={ready ? 'opacity-100' : 'opacity-0 pointer-events-none'}>
+                    <PaymentForm onReady={() => setReady(true)} />
+                </div>
             </section>
         </Elements>
     )
