@@ -1,4 +1,4 @@
-export default function CheckoutVoucherPlaceholder() {
+export default function CheckoutVoucher() {
     return (
         <div className="flex flex-col gap-3 rounded-xl border border-black/10 bg-gray-50 p-4">
             <label

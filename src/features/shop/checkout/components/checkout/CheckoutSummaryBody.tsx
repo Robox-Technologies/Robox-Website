@@ -1,5 +1,5 @@
 import CheckoutSummaryRow from './CheckoutSummaryRow'
-import CheckoutVoucherPlaceholder from './CheckoutVoucherPlaceholder'
+import CheckoutVoucher from './CheckoutVoucher'
 import type { SummaryLine } from '@components/shop/summary/SummaryLineList'
 import { formatPrice } from '@utils/formatPrice'
 
@@ -30,7 +30,7 @@ export default function CheckoutSummaryBody({
                 />
             </div>
 
-            <CheckoutVoucherPlaceholder />
+            <CheckoutVoucher />
 
             <div className="mt-auto border-t-2 border-black/80 pt-3">
                 <CheckoutSummaryRow
