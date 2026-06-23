@@ -7,7 +7,7 @@ import type {
 } from 'src/types/communication'
 
 import { ConnectionStatus, FirmwareStatus } from 'src/types/communication'
-import { toast } from '@libs/ui/toast'
+import { toast } from '@/libs/ui/toast'
 
 import { USBCommunication } from './usb'
 import { BluetoothCommunication } from './webBle'

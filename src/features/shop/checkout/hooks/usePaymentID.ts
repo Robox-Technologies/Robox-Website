@@ -1,9 +1,9 @@
 import { actions } from 'astro:actions'
 import { useStore } from '@nanostores/react'
-import { cartItems } from '@state/cartStore'
+import { cartItems } from '@/state/cartStore'
 import { useEffect, useState } from 'react'
 import type { Product } from '@/types/shop'
-import { useCartTotals } from '@features/shop/hooks/useCartTotals'
+import { useCartTotals } from '@/features/shop/hooks/useCartTotals'
 
 type ShippingAddress = {
     country: string

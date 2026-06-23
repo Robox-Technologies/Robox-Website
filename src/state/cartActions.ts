@@ -1,5 +1,5 @@
 import { cartItems } from './cartStore'
-import { clampQuantity, toQuantity } from '@features/shop/cart/utils/quantity'
+import { clampQuantity, toQuantity } from '@/features/shop/cart/utils/quantity'
 
 export function addToCart(productId: string, quantity = 1) {
     const cart = cartItems.get()

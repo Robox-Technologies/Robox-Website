@@ -13,7 +13,7 @@
         "module": "ESNext",
         "baseUrl": "./",
         "paths": {
-            "@*": ["src/*"]
+            "@/*": ["./src/*"]
         },
         "typeRoots": ["node_modules/@types"],
         "plugins": [

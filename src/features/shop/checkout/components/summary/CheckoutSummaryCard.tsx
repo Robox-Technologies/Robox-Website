@@ -1,6 +1,6 @@
-import SummaryCard from '@components/shop/summary/SummaryCard'
-import { useCartEntries } from '@features/shop/hooks/useCartEntries'
-import { useCartTotals } from '@features/shop/hooks/useCartTotals'
+import SummaryCard from '@/components/shop/summary/SummaryCard'
+import { useCartEntries } from '@/features/shop/hooks/useCartEntries'
+import { useCartTotals } from '@/features/shop/hooks/useCartTotals'
 import type { Product } from '@/types/shop'
 import CheckoutSummaryBody from './CheckoutSummaryBody'
 

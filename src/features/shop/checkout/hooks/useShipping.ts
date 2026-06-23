@@ -1,7 +1,7 @@
 import { actions } from 'astro:actions'
 import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
-import { cartItems } from '@state/cartStore'
+import { cartItems } from '@/state/cartStore'
 
 type ShippingAddress = {
     country: string

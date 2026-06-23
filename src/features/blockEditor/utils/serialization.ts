@@ -5,7 +5,7 @@ import {
     isValidProjectId,
     sanitizeImageDataUrl,
     editProject,
-} from '@utils/serialization'
+} from '@/utils/serialization'
 import * as Blockly from 'blockly'
 import { workspaceToPng_ } from './screenshot'
 import dayjs from 'dayjs'

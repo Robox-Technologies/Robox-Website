@@ -5,7 +5,7 @@ import {
     faScrewdriverWrench,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconProp } from '@fortawesome/fontawesome-svg-core'
-import Button from '@components/button'
+import Button from '@/components/button'
 import { useEffect, useRef, useState } from 'react'
 
 export default function ProjectSettings() {

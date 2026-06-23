@@ -1,6 +1,6 @@
-import Button from '@components/button'
+import Button from '@/components/button'
 import CartItem from './cartItem'
-import AddQuantity from '@components/shop/purchase/AddQuantity'
+import AddQuantity from '@/components/shop/purchase/AddQuantity'
 import type { Product } from '@/types/shop'
 
 export default function CartItemRow({

@@ -1,13 +1,13 @@
 ---
 import type { GetStaticPaths } from 'astro'
-import { getAllProducts } from '@utils/server/stripe.server'
+import { getAllProducts } from '@/utils/server/stripe.server'
 import type { ImageMetadata } from 'astro'
-import StandardLayout from '@layouts/StandardLayout.astro'
-import Article from '@components/article/Article'
-import Carousel from '@features/catalog/components/Carousel'
-import ProductCartModal from '@components/shop/purchase/ProductCartModal'
-import { formatStatus } from '@features/catalog/utils/formatStatus'
-import { formatPrice } from '@utils/formatPrice'
+import StandardLayout from '@/layouts/StandardLayout.astro'
+import Article from '@/components/article/Article'
+import Carousel from '@/features/catalog/components/Carousel'
+import ProductCartModal from '@/components/shop/purchase/ProductCartModal'
+import { formatStatus } from '@/features/catalog/utils/formatStatus'
+import { formatPrice } from '@/utils/formatPrice'
 
 export const getStaticPaths = (async () => {
     const products = await getAllProducts()

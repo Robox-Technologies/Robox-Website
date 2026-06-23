@@ -4,13 +4,13 @@ import Dialog, {
     DialogBody,
     DialogFooter,
     DialogHeader,
-} from '@components/dialog'
+} from '@/components/dialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
 import type { Product } from '@/types/shop'
 import AddQuantity from './AddQuantity'
-import { formatPrice } from '@utils/formatPrice'
-import Button from '@components/button'
+import { formatPrice } from '@/utils/formatPrice'
+import Button from '@/components/button'
 import type { ImageMetadata } from 'astro'
 
 export default function ProductCartModal({

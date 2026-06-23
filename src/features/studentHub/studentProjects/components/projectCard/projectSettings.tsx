@@ -2,7 +2,7 @@ import { faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useStore } from '@nanostores/react'
 import { openProject } from '../../stores/projectSettingsModal'
-import Button from '@components/button'
+import Button from '@/components/button'
 
 export default function ProjectSettings({ id }: { id: string }) {
     const $selectedProject = useStore(openProject)

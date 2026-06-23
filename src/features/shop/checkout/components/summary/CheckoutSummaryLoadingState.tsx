@@ -1,4 +1,4 @@
-import SummaryCard from '@components/shop/summary/SummaryCard'
+import SummaryCard from '@/components/shop/summary/SummaryCard'
 
 function SkeletonLine({ className = 'h-4 w-24' }: { className?: string }) {
     return (

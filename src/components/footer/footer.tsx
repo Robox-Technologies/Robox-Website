@@ -1,4 +1,4 @@
-import Clipper from '@components/Clipper'
+import Clipper from '@/components/Clipper'
 import FooterLink from './footerLink'
 
 import {

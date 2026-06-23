@@ -1,5 +1,5 @@
-import { cartItems } from '@state/cartStore'
-import { removeFromCart, setCartQuantity } from '@state/cartActions'
+import { cartItems } from '@/state/cartStore'
+import { removeFromCart, setCartQuantity } from '@/state/cartActions'
 import { useStore } from '@nanostores/react'
 import type { Product } from '@/types/shop'
 import type { CartEntry } from '../cart/types/cart'

@@ -1,4 +1,4 @@
-import { SummaryPrimaryAction } from '@components/shop/summary/SummaryCard'
+import { SummaryPrimaryAction } from '@/components/shop/summary/SummaryCard'
 
 export default function CartSummaryFooter() {
     return (

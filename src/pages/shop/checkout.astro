@@ -1,13 +1,13 @@
 ---
-import { getAllProducts } from '@utils/server/stripe.server'
-import StandardLayout from '@layouts/StandardLayout.astro'
-import Article from '@components/article/Article'
+import { getAllProducts } from '@/utils/server/stripe.server'
+import StandardLayout from '@/layouts/StandardLayout.astro'
+import Article from '@/components/article/Article'
 import {
     CheckoutPaymentLoadingState,
     CheckoutPaymentSection,
     CheckoutSummaryCard,
     CheckoutSummaryLoadingState,
-} from '@features/shop/checkout'
+} from '@/features/shop/checkout'
 
 const products = await getAllProducts()
 ---

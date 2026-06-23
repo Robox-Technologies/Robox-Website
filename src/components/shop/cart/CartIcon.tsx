@@ -1,6 +1,6 @@
-import Button from '@components/button'
+import Button from '@/components/button'
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons'
-import { useCartQuantity } from '@features/shop/hooks/useCartQuantity'
+import { useCartQuantity } from '@/features/shop/hooks/useCartQuantity'
 
 export default function CartIcon() {
     const quantityInCart = useCartQuantity()

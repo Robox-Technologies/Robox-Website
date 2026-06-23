@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { editProject, getProject } from '@utils/serialization'
-import { getProjectIdFromURL } from '@features/blockEditor/utils/serialization'
+import { editProject, getProject } from '@/utils/serialization'
+import { getProjectIdFromURL } from '@/features/blockEditor/utils/serialization'
 export default function ProjectRename() {
     const projectId = getProjectIdFromURL()
     const [projectName, setProjectName] = useState('Untitled')

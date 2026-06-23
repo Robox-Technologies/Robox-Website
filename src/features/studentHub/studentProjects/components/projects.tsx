@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { ProjectCard } from './projectCard/projectCard'
 import CreateCard from './createCard'
 import { openProject } from '../stores/projectSettingsModal'
-import { getProjects } from '@utils/serialization'
+import { getProjects } from '@/utils/serialization'
 import type { UserProject } from 'src/types/projects'
 export default function Projects() {
     const [projects, setProjects] = useState<Record<string, UserProject>>({})

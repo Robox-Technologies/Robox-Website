@@ -1,4 +1,4 @@
-import { formatPrice } from '@utils/formatPrice'
+import { formatPrice } from '@/utils/formatPrice'
 import { twMerge } from 'tailwind-merge'
 
 export type SummaryLine = {

@@ -1,7 +1,7 @@
-import Button from '@components/button'
+import Button from '@/components/button'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { createProject } from '@utils/serialization'
+import { createProject } from '@/utils/serialization'
 export default function CreateCard() {
     const onClick = () => {
         const id = createProject()

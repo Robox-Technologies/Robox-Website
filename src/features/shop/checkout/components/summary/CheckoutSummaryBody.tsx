@@ -1,7 +1,7 @@
 import CheckoutSummaryRow from './CheckoutSummaryRow'
 import CheckoutVoucher from './CheckoutVoucher'
-import type { SummaryLine } from '@components/shop/summary/SummaryLineList'
-import { formatPrice } from '@utils/formatPrice'
+import type { SummaryLine } from '@/components/shop/summary/SummaryLineList'
+import { formatPrice } from '@/utils/formatPrice'
 
 function getLine(lines: SummaryLine[], id: string) {
     return lines.find((line) => line.id === id)

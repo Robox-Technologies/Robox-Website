@@ -1,4 +1,4 @@
-import { cartItems } from '@state/cartStore'
+import { cartItems } from '@/state/cartStore'
 import { useStore } from '@nanostores/react'
 
 export function useCartQuantity() {

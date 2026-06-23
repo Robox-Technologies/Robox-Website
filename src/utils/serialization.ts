@@ -1,6 +1,6 @@
 import type { UserProject } from 'src/types/projects'
 import type { ExtensionKey } from 'src/types/extensions'
-import extensions from '@data/extensions.json'
+import extensions from '@/data/extensions.json'
 import DOMPurify from 'dompurify'
 import dayjs from 'dayjs'
 

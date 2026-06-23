@@ -1,26 +1,26 @@
 ---
-import StandardLayout from '@layouts/StandardLayout.astro'
+import StandardLayout from '@/layouts/StandardLayout.astro'
 
-import Hero from '@components/Hero'
+import Hero from '@/components/Hero'
 
 import { getImage } from 'astro:assets' 
-import ArticleSection from '@components/article/ArticleSection'
-import ArticleText from '@components/article/ArticleText'
-import Article from '@components/article/Article'
-import Button from '@components/button'
-import hero from '@images/index/hero.jpg'
+import ArticleSection from '@/components/article/ArticleSection'
+import ArticleText from '@/components/article/ArticleText'
+import Article from '@/components/article/Article'
+import Button from '@/components/button'
+import hero from '@/images/index/hero.jpg'
 import { Image } from 'astro:assets'
-import article1 from '@images/index/article1.png'
-import article2 from '@images/index/article2.png'
+import article1 from '@/images/index/article1.png'
+import article2 from '@/images/index/article2.png'
 
-// import roboxHubCard1 from '@images/index/roboxHubCard1.png'
-// import roboxHubCard2 from '@images/index/roboxHubCard2.png'
-// import roboxHubCard3 from '@images/index/roboxHubCard3.png'
+// import roboxHubCard1 from '@/images/index/roboxHubCard1.png'
+// import roboxHubCard2 from '@/images/index/roboxHubCard2.png'
+// import roboxHubCard3 from '@/images/index/roboxHubCard3.png'
 
-import BoxToBot from '@features/home/boxToBot/components/boxToBot.astro'
+import BoxToBot from '@/features/home/boxToBot/components/boxToBot.astro'
 
-import EmpoweringStudents from '@features/home/empoweringStudents/empoweringStudents.astro'
-import CheckOutOurKits from '@features/home/checkOutOurKits/checkOutOurKits.astro'
+import EmpoweringStudents from '@/features/home/empoweringStudents/empoweringStudents.astro'
+import CheckOutOurKits from '@/features/home/checkOutOurKits/checkOutOurKits.astro'
 const heroImage = await getImage({src: hero, priority: true, width: 1200, height: 800})
 ---
 <!-- TODO: Make the image work like the normal website, and make the title work better -->

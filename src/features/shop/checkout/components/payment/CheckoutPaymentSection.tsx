@@ -1,4 +1,4 @@
-import { usePaymentID } from '@features/shop/checkout/hooks/usePaymentID'
+import { usePaymentID } from '@/features/shop/checkout/hooks/usePaymentID'
 import type { Product } from '@/types/shop'
 import StripeCheckoutForm from './StripeCheckoutForm'
 

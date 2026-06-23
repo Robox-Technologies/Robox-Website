@@ -1,16 +1,16 @@
-import { DialogHeader, DialogBody, DialogFooter } from '@components/dialog'
-import Dialog from '@components/dialog'
+import { DialogHeader, DialogBody, DialogFooter } from '@/components/dialog'
+import Dialog from '@/components/dialog'
 import { faPuzzlePiece } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { ExtensionKey, ExtensionTags } from 'src/types/extensions'
-import extensions from '@data/extensions.json'
-import { Toggle } from '@components/toggle'
+import extensions from '@/data/extensions.json'
+import { Toggle } from '@/components/toggle'
 import { useEffect, useState } from 'react'
 import generateToolbox from '../utils/toolbox'
 import { getProjectIdFromURL, setUserExtension } from '../utils/serialization'
 import * as Blockly from 'blockly'
-import { getProject } from '@utils/serialization'
-import ProjectExtensions from '@features/blockEditor/components/editor/projectExtensions'
+import { getProject } from '@/utils/serialization'
+import ProjectExtensions from '@/features/blockEditor/components/editor/projectExtensions'
 
 export default function ExtensionsDialog() {
     const extensionKeys = Object.keys(extensions) as (keyof typeof extensions)[]
