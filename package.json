@@ -40,6 +40,7 @@
         "dotenv": "^17.2.4",
         "globals": "^17.4.0",
         "jiti": "^2.6.1",
+        "jsx-email": "^3.2.1",
         "nanostores": "^1.1.0",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
