@@ -44,7 +44,7 @@ function PaymentForm({ onReady }: { onReady: () => void }) {
     }
 
     return (
-        <form className="flex w-full flex-col gap-4" onSubmit={handleSubmit}>
+        <form className="flex w-full flex-col gap-4 bg-white rounded-xl border border-black/10 p-6 shadow-sm" onSubmit={handleSubmit}>
             <ContactDetailsElement />
             <AddressElement options={{ mode: 'billing' }} />
             <PaymentElement onReady={onReady} />
@@ -91,7 +91,6 @@ export default function StripeCheckoutForm({
         appearance: {
             theme: 'stripe',
             variables: {
-                colorBackground: '#f8f8f8',
                 colorPrimaryText: '#262626',
                 colorText: '#0f172a',
                 colorPrimary: '#2563eb',
@@ -102,7 +101,8 @@ export default function StripeCheckoutForm({
             rules: {
                 '.AccordionItem': {
                     border: 'none',
-                    padding: '0',
+                    paddingTop: '0',
+                    paddingLeft: '0',
                 },
                 '.Input': {
                     backgroundColor: '#fff',
