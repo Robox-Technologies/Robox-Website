@@ -14,7 +14,7 @@ import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
 
 export default defineConfig({
     srcDir: 'src',
-    "output": "static",
+    output: "static",
     integrations: [
         react(),
         mdx(),
@@ -22,6 +22,7 @@ export default defineConfig({
     ],
     adapter: node({
         mode: 'standalone',
+        staticHeaders: true,
     }),
     security: {
         allowedDomains: [
@@ -37,20 +38,20 @@ export default defineConfig({
     },
     vite: {
         plugins: [tailwindcss(), svgr()],
-        server: {
-            host: true,
-            allowedHosts: [
-                'dev.robox.com.au',
-                'robox.com.au',
-            ],
-        },
-        preview: {
-            host: true,
-            allowedHosts: [
-                'dev.robox.com.au',
-                'robox.com.au',
-            ],
-        },
+        // server: {
+        //     host: true,
+        //     allowedHosts: [
+        //         'dev.robox.com.au',
+        //         'robox.com.au',
+        //     ],
+        // },
+        // preview: {
+        //     host: true,
+        //     allowedHosts: [
+        //         'dev.robox.com.au',
+        //         'robox.com.au',
+        //     ],
+        // },
         build: {
             assetsInlineLimit: 1024,
         },

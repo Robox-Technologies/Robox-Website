@@ -33,7 +33,7 @@
         "@tailwindcss/vite": "^4.2.1",
         "@types/react": "^19.2.6",
         "@types/react-dom": "^19.2.3",
-        "astro": "^6.4.2",
+        "astro": "^7.0.0",
         "blockly": "^12.3.1",
         "dayjs": "^1.11.19",
         "dompurify": "^3.3.1",
