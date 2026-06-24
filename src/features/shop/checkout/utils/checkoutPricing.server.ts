@@ -1,4 +1,4 @@
-import { getAllProducts } from '@/utils/server/stripe.server'
+import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 import type { CartItems } from '@/features/shop/cart/types/cart'
 import { calculateAuspostShippingCents } from './auspost.server'
 

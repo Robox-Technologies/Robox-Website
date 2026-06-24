@@ -1,6 +1,6 @@
 import { defineAction } from 'astro:actions'
 import { z } from 'astro/zod'
-import { stripeAPI } from '@/utils/server/stripe.server'
+import { stripeAPI } from '@/utils/server/stripe/index.server'
 import {
     calculateCheckoutTotals,
     normalizeCartMetadata,
