@@ -1,51 +1,79 @@
-import type { APIRoute } from "astro";
-import { stripeAPI } from "@/utils/server/stripe/index.server"
-import {Stripe} from 'stripe';
-import { sendOrderEmail } from "@/features/emails/utils/sendOrderEmail.server";
-import { getAllProducts } from "@/utils/server/stripe/getAllProducts.server";
-import type { Product } from "@/types/shop";
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-if (!endpointSecret) {
-    throw new Error("Stripe Webhook secret not specified in .env")
-}
+export const prerender = false
+import type { APIRoute } from 'astro'
+import { Stripe } from 'stripe'
+import { stripeAPI } from '@/utils/server/stripe/index.server'
+import { sendOrderEmail } from '@/features/emails/utils/sendOrderEmail.server'
+import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
+import type { Product } from '@/types/shop'
+
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
 
 export const POST = (async ({ request }) => {
-    console.log('Received webhook event');
+    console.log('[stripe-webhook] received POST /api/shop/webhook')
+
+    if (!endpointSecret) {
+        console.error('[stripe-webhook] STRIPE_WEBHOOK_SECRET is not configured')
+        return new Response('Stripe webhook secret not configured', {
+            status: 500,
+        })
+    }
+
     const allProducts = await getAllProducts()
 
-    const verifiedProducts: Record<string, Product> = Object.fromEntries(allProducts.map((product) => [product.item_id, product]))
-    const signature = request.headers.get('stripe-signature');
-    let event: Stripe.Event; 
+    const verifiedProducts: Record<string, Product> = Object.fromEntries(
+        allProducts.map((product) => [product.item_id, product]),
+    )
+
+    const signature = request.headers.get('stripe-signature')
+    let event: Stripe.Event
     try {
-        if (!request.body || !signature) {
-            throw new Error("Request body not specified")
+        if (!signature) {
+            throw new Error('Stripe signature header not specified')
         }
-        const body = await request.text();
-        event = stripeAPI.webhooks.constructEvent(body, signature, endpointSecret);
+        const body = await request.text()
+        event = stripeAPI.webhooks.constructEvent(body, signature, endpointSecret)
     } catch (err) {
-        console.error('⚠️  Webhook signature verification failed.', (err as Error).message);
+        console.error(
+            '[stripe-webhook] signature verification failed:',
+            (err as Error).message,
+        )
         return new Response('Webhook signature verification failed.', {
             status: 400,
-        });
+        })
     }
+    let paymentIntent: Stripe.PaymentIntent | null = null
+    let succeeded = false
+
     switch (event.type) {
+        case 'payment_intent.succeeded':
+            paymentIntent = event.data.object as Stripe.PaymentIntent
+            succeeded = true
+            break
         case 'payment_intent.payment_failed':
-        case 'payment_intent.succeeded': {
-            const paymentIntent = event.data.object;
-            if (!paymentIntent.receipt_email) {
-                console.error('No receipt email provided for payment intent:', paymentIntent.id);
-                return new Response("No receipt email provided", {
-                    status: 400,
-                })
+            paymentIntent = event.data.object as Stripe.PaymentIntent
+            succeeded = false
+            break
+        case 'charge.updated':
+        case 'charge.succeeded': {
+            const charge = event.data.object as Stripe.Charge
+            if (typeof charge.payment_intent === 'string') {
+                paymentIntent = await stripeAPI.paymentIntents.retrieve(
+                    charge.payment_intent,
+                )
+                succeeded = charge.paid && charge.status === 'succeeded'
             }
-            try {
-                await sendOrderEmail(paymentIntent, verifiedProducts, event.type === 'payment_intent.succeeded');
-            } catch (error) {
-                console.error('Error processing email:', error);
-            }
-            break;
+            break
         }
     }
-    return new Response(null, { status: 200 });
-}) satisfies APIRoute;
+
+    if (paymentIntent) {
+        try {
+            await sendOrderEmail(paymentIntent, verifiedProducts, succeeded)
+        } catch (error) {
+            console.error('[stripe-webhook] error processing email:', error)
+        }
+    }
+
+    return new Response(null, { status: 200 })
+}) satisfies APIRoute
 

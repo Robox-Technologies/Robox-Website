@@ -46,13 +46,13 @@ export async function sendOrderEmail(paymentIntent: Stripe.PaymentIntent, verifi
     const html = await render(element);
     const text = await render(element, { plainText: true });
     await resend.emails.send({
-        from: 'Ro/Box <no-reply@robox.com.au>',
+        from: 'Ro/Box <hello@store.robox.com.au>',
         to: [orderData.to],
         subject,
         html,
         text
     });
 
-
+    console.log("Hi")
     return { sent: true, to: orderData.to };
 }

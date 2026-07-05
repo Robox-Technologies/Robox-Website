@@ -137,7 +137,9 @@ export async function normalizeCartMetadata(
     cart: CartLike,
 ): Promise<string> {
     const entries = await resolveEntries(cart)
-    return entries
-        .map((entry) => `${entry.itemId}:${entry.quantity}`)
-        .join(',')
+    const products: Record<string, number> = {}
+    for (const entry of entries) {
+        products[entry.itemId] = entry.quantity
+    }
+    return JSON.stringify(products)
 }

@@ -36,6 +36,5 @@ export function processPaymentIntent(
             price: product.price * quantity
         };
     }
- 
     return [paymentIntent.receipt_email ?? '', emailProducts];
 }
