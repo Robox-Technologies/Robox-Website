@@ -39,7 +39,7 @@ const aliasPaths = Object.fromEntries(
 );
 // To dynamically link the location to a file
 const CMSLocationMapping: Record<ArticleLocation, string> = {
-    "Student Resources": "student/index.html",
+    "Student Resources": "hub/index.html",
     "Teacher Resources": "teacher/index.html",
     "Newsletter": "newsletter/index.html"
 }
