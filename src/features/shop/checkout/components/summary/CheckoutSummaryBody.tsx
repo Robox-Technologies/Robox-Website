@@ -9,8 +9,14 @@ function getLine(lines: SummaryLine[], id: string) {
 
 export default function CheckoutSummaryBody({
     lines,
+    shippingCents,
+    shippingLoading,
+    shippingError,
 }: {
     lines: SummaryLine[]
+    shippingCents: number | null
+    shippingLoading: boolean
+    shippingError: string | null
 }) {
     const subtotalLine = getLine(lines, 'subtotal')
     const totalLine = getLine(lines, 'total')
@@ -25,7 +31,15 @@ export default function CheckoutSummaryBody({
             />
             <CheckoutSummaryRow
                 label="Shipping"
-                value="Calculated at checkout"
+                value={
+                    shippingError
+                        ? shippingError
+                        : shippingLoading
+                            ? 'Calculating...'
+                            : shippingCents !== null
+                                ? formatPrice(shippingCents, true)
+                                : 'Calculated at checkout'
+                }
             />
 
             <CheckoutVoucher />

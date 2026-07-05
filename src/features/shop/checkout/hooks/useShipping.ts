@@ -2,31 +2,32 @@ import { actions } from 'astro:actions'
 import { useStore } from '@nanostores/react'
 import { useEffect, useState } from 'react'
 import { cartItems } from '@/state/cartStore'
+import type { Product } from '@/types/shop'
 
-type ShippingAddress = {
-    country: string
-    postcode: string
-}
+import {
+    shippingAddress,
+    shippingQuote,
+} from '../state/shippingStore'
 
-type ShippingQuote = {
-    subtotal: number
-    shipping: number
-    total: number
-    currency: 'aud'
-}
-
-export function useShipping(address: ShippingAddress | null) {
+export function useShipping(products?: Product[]) {
     const currentCart = useStore(cartItems)
-    const [quote, setQuote] = useState<ShippingQuote | null>(null)
+    const address = useStore(shippingAddress)
+    const quote = useStore(shippingQuote)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
+        if (!products) {
+            setLoading(false)
+            setError(null)
+            return
+        }
+
         const country = address?.country.trim()
         const postcode = address?.postcode.trim()
 
         if (!country || !postcode) {
-            setQuote(null)
+            shippingQuote.set(null)
             setLoading(false)
             setError(null)
             return
@@ -51,23 +52,25 @@ export function useShipping(address: ShippingAddress | null) {
             }
 
             if (result.error) {
-                setQuote(null)
+                shippingQuote.set(null)
                 setError(result.error.message)
                 setLoading(false)
                 return
             }
 
-            setQuote(result.data)
+            shippingQuote.set(result.data)
             setLoading(false)
         })()
 
         return () => {
             cancelled = true
         }
-    }, [address?.country, address?.postcode, currentCart])
+    }, [address?.country, address?.postcode, currentCart, products])
 
     return {
         quote,
+        shippingInfo: address,
+        setShippingInfo: shippingAddress.set,
         loading,
         error,
     }

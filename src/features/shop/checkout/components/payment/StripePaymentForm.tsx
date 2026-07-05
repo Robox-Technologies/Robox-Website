@@ -5,15 +5,40 @@ import {
     useElements,
     useStripe,
 } from '@stripe/react-stripe-js'
+import type { StripeAddressElementChangeEvent } from '@stripe/stripe-js'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useState, type SetStateAction } from 'react'
 import type { Dispatch } from 'react'
-export function StripePaymentForm({setReady}: {setReady: Dispatch<SetStateAction<boolean>>}) {
+import { useShipping } from '../../hooks/useShipping'
+
+export function StripePaymentForm({
+    setReady,
+}: {
+    setReady: Dispatch<SetStateAction<boolean>>
+}) {
     const stripe = useStripe()
     const elements = useElements()
+    const { setShippingInfo } = useShipping()
     const [submitting, setSubmitting] = useState(false)
     const [message, setMessage] = useState<string | null>(null)
+
+    const handleAddressChange = (
+        event: StripeAddressElementChangeEvent,
+    ) => {
+        const country = event.value.address.country.trim()
+        const postcode = event.value.address.postal_code.trim()
+
+        if (!country || !postcode) {
+            setShippingInfo(null)
+            return
+        }
+
+        setShippingInfo({
+            country,
+            postcode,
+        })
+    }
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -39,10 +64,13 @@ export function StripePaymentForm({setReady}: {setReady: Dispatch<SetStateAction
         setSubmitting(false)
     }
     return (
-        <form className="flex w-full flex-col gap-4 bg-white rounded-xl border border-black/10 p-6 shadow-sm" onSubmit={handleSubmit}>
+        <form
+            className="flex w-full flex-col gap-4 rounded-xl border border-black/10 bg-white p-6 shadow-sm"
+            onSubmit={handleSubmit}
+        >
             <ContactDetailsElement />
-            <AddressElement options={{ mode: 'billing' }} />
-            <PaymentElement onReady={() => {setReady(true)}} />
+            <AddressElement options={{ mode: 'billing' }} onChange={handleAddressChange} />
+            <PaymentElement onReady={() => { setReady(true) }} />
 
             {message ? (
                 <p className="mb-0 text-sm text-red-600">{message}</p>

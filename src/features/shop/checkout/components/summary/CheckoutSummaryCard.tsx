@@ -3,6 +3,7 @@ import { useCartEntries } from '@/features/shop/hooks/useCartEntries'
 import { useCartTotals } from '@/features/shop/hooks/useCartTotals'
 import type { Product } from '@/types/shop'
 import CheckoutSummaryBody from './CheckoutSummaryBody'
+import { useShipping } from '../../hooks/useShipping'
 
 export default function CheckoutSummaryCard({
     products,
@@ -11,6 +12,7 @@ export default function CheckoutSummaryCard({
 }) {
     const { entries } = useCartEntries(products)
     const subtotalCents = useCartTotals(products)
+    const { quote, loading, error } = useShipping(products)
     const summaryLines = [
         {
             id: 'subtotal',
@@ -20,7 +22,7 @@ export default function CheckoutSummaryCard({
         {
             id: 'total',
             label: 'Total',
-            amountCents: subtotalCents,
+            amountCents: quote?.total ?? subtotalCents,
             highlighted: true,
         },
     ]
@@ -32,7 +34,12 @@ export default function CheckoutSummaryCard({
             emptyMessage="Add products to build your checkout summary."
         >
             {entries.length > 0 ? (
-                <CheckoutSummaryBody lines={summaryLines} />
+                <CheckoutSummaryBody
+                    lines={summaryLines}
+                    shippingCents={quote?.shipping ?? null}
+                    shippingLoading={loading}
+                    shippingError={error}
+                />
             ) : null}
         </SummaryCard>
     )
