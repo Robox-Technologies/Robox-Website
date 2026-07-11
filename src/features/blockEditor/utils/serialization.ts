@@ -5,7 +5,7 @@ import {
     isValidProjectId,
     sanitizeImageDataUrl,
     editProject,
-} from '@utils/serialization'
+} from '@/utils/serialization'
 import * as Blockly from 'blockly'
 import { workspaceToPng_ } from './screenshot'
 import dayjs from 'dayjs'
@@ -52,18 +52,6 @@ export async function loadBlockly(workspace: WorkspaceSvg) {
         Blockly.Events.enable()
     }
 
-    const starterBlock = workspace.getBlocksByType('event_begin', false)[0]
-    if (!starterBlock) {
-        const block = workspace.newBlock('event_begin') as Blockly.BlockSvg
-        block.setDeletable(false)
-        block.setMovable(false)
-        block.initSvg()
-        block.render()
-        block.moveBy(40, 40)
-        saveBlockly(workspace)
-        return
-    }
-
     if (!workspaceData) {
         saveBlockly(workspace)
     }
@@ -71,18 +59,22 @@ export async function loadBlockly(workspace: WorkspaceSvg) {
 export async function saveBlockly(workspace: WorkspaceSvg) {
     const projectId = getProjectIdFromURL()
     if (!projectId) return
-    workspaceToPng_(workspace, (thumburi: string) => {
-        if (!isValidProjectId(projectId))
-            throw new Error('Invalid project UUID')
+    workspaceToPng_(
+        workspace,
+        (thumburi: string) => {
+            if (!isValidProjectId(projectId))
+                throw new Error('Invalid project UUID')
 
-        const data = Blockly.serialization.workspaces.save(workspace)
-        const project = getProject(projectId)
-        if (!project) throw new Error('Project not found')
-        project['time'] = dayjs()
-        project['workspace'] = data
-        project['thumbnail'] = sanitizeImageDataUrl(thumburi)
-        editProject(projectId, project)
-    })
+            const data = Blockly.serialization.workspaces.save(workspace)
+            const project = getProject(projectId)
+            if (!project) throw new Error('Project not found')
+            project['time'] = dayjs()
+            project['workspace'] = data
+            project['thumbnail'] = sanitizeImageDataUrl(thumburi)
+            editProject(projectId, project)
+        },
+        '',
+    )
 }
 export function generateCode(workspace: WorkspaceSvg) {
     const projectId = getProjectIdFromURL()

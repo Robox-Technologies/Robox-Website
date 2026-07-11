@@ -1,11 +1,11 @@
-import sensors from '@data/sensors.json'
+import sensors from '@/data/sensors.json'
 const sensorsConfig = sensors as const
 
 export type SensorKey = keyof typeof sensorsConfig
 export type PinsOf<S extends SensorKey> =
     keyof (typeof sensorsConfig)[S]['pins']
 
-declare module '@data/sensors.json' {
+declare module '@/data/sensors.json' {
     export interface Sensor {
         name: string
         pins: Record<PinsOf<SensorKey>, SensorPin>

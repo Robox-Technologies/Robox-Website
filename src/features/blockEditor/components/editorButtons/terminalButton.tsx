@@ -1,6 +1,6 @@
-import Button from '@components/button'
+import Button from '@/components/button'
 import { faTerminal } from '@fortawesome/free-solid-svg-icons'
-import { usePico } from '@features/blockEditor/hooks/usePico'
+import { usePico } from '@/features/blockEditor/hooks/usePico'
 import type { Dispatch, SetStateAction } from 'react'
 import { ConnectionStatus } from '@/types/communication'
 

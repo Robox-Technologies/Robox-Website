@@ -1,5 +1,5 @@
 import { type Dispatch, type SetStateAction } from 'react'
-import Button from '@components/button'
+import Button from '@/components/button'
 
 export default function AddToCartButton({
     setIsOpen,

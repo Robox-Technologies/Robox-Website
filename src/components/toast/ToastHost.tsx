@@ -9,7 +9,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { twMerge } from 'tailwind-merge'
-import { toast, type Toast, type ToastVariant } from '@libs/ui/toast'
+import { toast, type Toast, type ToastVariant } from '@/libs/ui/toast'
 
 const VARIANT_STYLES: Record<
     ToastVariant,

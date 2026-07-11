@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { DialogHeader, DialogBody, DialogFooter } from '@components/dialog'
-import Dialog from '@components/dialog'
+import { DialogHeader, DialogBody, DialogFooter } from '@/components/dialog'
+import Dialog from '@/components/dialog'
 import { faTerminal } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Button from '@components/button'
-import { pico } from '@libs/communication/communicate'
+import Button from '@/components/button'
+import { pico } from '@/libs/communication/communicate'
 import TerminalButton from './editorButtons/terminalButton'
 export default function TerminalDialog() {
     const [logs, setLogs] = useState<string[]>([])

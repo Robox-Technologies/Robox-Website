@@ -1,0 +1,88 @@
+---
+import Clipper from '../Clipper'
+import HeaderLink from './HeaderLink'
+import Logo from '@/images/logo-full.svg?react'
+import WorkshopLogo from '@/images/logo-workshop.svg?react'
+import { faCompass, faGraduationCap } from '@fortawesome/free-solid-svg-icons'
+import StoreLink from './StoreLink'
+import CartIcon from '@/components/shop/cart/CartIcon'
+
+interface Props {
+    type?: 'standard' | 'workshop'
+}
+
+const { type = 'standard' } = Astro.props as Props
+
+const headerHeight = 64
+const headerEndPadding = 16
+const extraClipperPadding = 32
+const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
+---
+
+<header
+    class={`sticky top-0 z-50 flex w-full items-center justify-between ${type === 'workshop' ? 'bg-blue' : 'bg-primary'}`}
+    style={`height: ${headerHeight}px`}
+>
+    <nav
+        class="flex h-full w-full flex-row items-center font-medium text-lg"
+        style={`margin-left: ${headerEndPadding}px`}
+    >
+        <div class="flex flex-row items-center space-x-6">
+            <a href="/" class="flex items-center p-4">
+                {type === 'workshop' ? (
+                    <WorkshopLogo className="h-8 w-auto" />
+                ) : (
+                    <Logo className="h-8 w-auto" />
+                )}
+            </a>
+            <HeaderLink
+                href="/about/index.html"
+                className={type === 'workshop' ? 'text-white' : ''}
+            >
+                About
+            </HeaderLink>
+            <HeaderLink
+                href="/"
+                className={type === 'workshop' ? 'text-white' : ''}
+            >
+                Contact
+            </HeaderLink>
+        </div>
+        <Clipper
+            className={`ml-auto h-full ${type === 'workshop' ? 'bg-red' : 'bg-blue'}`}
+            gradient="positive"
+            side="left"
+            overhang={overhang}
+        >
+            <div
+                class="links flex h-full items-center space-x-6 text-white"
+                style={`padding-left: ${headerEndPadding + extraClipperPadding}px; padding-right: ${headerEndPadding + extraClipperPadding}px`}
+            >
+                <HeaderLink
+                    icon={faCompass}
+                    className="text-white"
+                    href="/student/index.html"
+                >
+                    Ro/Box Hub
+                </HeaderLink>
+                <HeaderLink
+                    icon={faGraduationCap}
+                    className="text-white"
+                    href="/teacher/index.html"
+                >
+                    Teacher Resources
+                </HeaderLink>
+                {type === 'standard' && <StoreLink />}
+                {type !== 'workshop' ? (
+                    <CartIcon client:only="react">
+                        <span
+                            slot="fallback"
+                            class="block h-10 w-10"
+                            aria-hidden="true"
+                        ></span>
+                    </CartIcon>
+                ) : null}
+            </div>
+        </Clipper>
+    </nav>
+</header>

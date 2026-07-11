@@ -3,12 +3,10 @@ import {
     faEyeDropper,
     faDownload,
     faScrewdriverWrench,
-    faLink,
 } from '@fortawesome/free-solid-svg-icons'
 import type { IconProp } from '@fortawesome/fontawesome-svg-core'
-import Button from '@components/button'
+import Button from '@/components/button'
 import { useEffect, useRef, useState } from 'react'
-import CommunicationMethodDialog from './communicationMethodDialog'
 
 export default function ProjectSettings() {
     const settingsDialogRef = useRef<HTMLDialogElement>(null)
@@ -72,22 +70,6 @@ export default function ProjectSettings() {
                     <ProjectSettingButton icon={faDownload} color="text-green">
                         Download Project
                     </ProjectSettingButton>
-                    <CommunicationMethodDialog
-                        trigger={(open) => (
-                            <ProjectSettingButton
-                                icon={faLink}
-                                color="text-black"
-                                onClick={(
-                                    event: React.MouseEvent<HTMLButtonElement>,
-                                ) => {
-                                    event.stopPropagation()
-                                    open()
-                                }}
-                            >
-                                Connection Type
-                            </ProjectSettingButton>
-                        )}
-                    />
                 </div>
             </dialog>
         </div>

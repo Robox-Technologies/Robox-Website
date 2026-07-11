@@ -1,4 +1,4 @@
-import Button from '@components/button'
+import Button from '@/components/button'
 
 import { faPuzzlePiece } from '@fortawesome/free-solid-svg-icons/faPuzzlePiece'
 import type { Dispatch, SetStateAction } from 'react'

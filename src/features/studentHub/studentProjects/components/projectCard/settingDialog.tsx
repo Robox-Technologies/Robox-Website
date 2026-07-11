@@ -1,4 +1,4 @@
-import Button from '@components/button'
+import Button from '@/components/button'
 import { faPencil } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import DeleteDialog from '../deleteDialog'

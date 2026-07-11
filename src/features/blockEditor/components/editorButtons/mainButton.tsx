@@ -1,24 +1,16 @@
-import Button from '@components/button'
-import { usePico } from '@features/blockEditor/hooks/usePico'
-import {
-    ConnectionStatus,
-    type CommunicationMethod,
-} from 'src/types/communication'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons/faSpinner'
+import Button from '@/components/button'
+import { usePico } from '@/features/blockEditor/hooks/usePico'
+import { ConnectionStatus, type CommunicationMethod } from 'src/types/communication'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { useEffect } from 'react'
 import { twMerge } from 'tailwind-merge'
 
-const COMMUNICATION_PREFERENCE_KEY = 'robox.communicationMethod'
-const DEFAULT_COMMUNICATION_METHOD: CommunicationMethod = 'WebBluetooth'
-
-function getPreferredCommunicationMethod(): CommunicationMethod {
-    if (typeof window === 'undefined') return DEFAULT_COMMUNICATION_METHOD
-    const method = localStorage.getItem(COMMUNICATION_PREFERENCE_KEY)
-    if (method === 'USB' || method === 'WebBluetooth') {
-        return method
+function getDefaultCommunicationMethod(): CommunicationMethod {
+    if (typeof window !== 'undefined' && 'Capacitor' in window) {
+        return 'iOSBluetooth'
     }
-    return DEFAULT_COMMUNICATION_METHOD
+    return 'WebBluetooth'
 }
 
 const statusStyling: Record<
@@ -65,8 +57,8 @@ export default function MainButton() {
     } = usePico()
     const { className, children } = statusStyling[connectionStatus]
     useEffect(() => {
-        setCommunicationMethod('iOSBluetooth')
-    }, [])
+        void setCommunicationMethod(getDefaultCommunicationMethod())
+    }, [setCommunicationMethod])
     const stateClickHandlers: Partial<Record<ConnectionStatus, () => void>> = {
         [ConnectionStatus.DISCONNECTED]: () => {
             connect()

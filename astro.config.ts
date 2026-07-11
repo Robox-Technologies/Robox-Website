@@ -6,19 +6,24 @@ import react from '@astrojs/react'
 import tailwindcss from '@tailwindcss/vite'
 import svgr from 'vite-plugin-svgr'
 import type { AstroIntegration } from 'astro'
-import { resolve, join } from 'path'
+import {  join } from 'path'
+import node from '@astrojs/node';
 import { promises as fs } from 'fs'
 import mdx from '@astrojs/mdx'
 import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
 
 export default defineConfig({
     srcDir: 'src',
-    "output": "static",
+    output: "static",
     integrations: [
         react(),
         mdx(),
         process.env.IOS_BUILD === 'true' ? transformIOSBuild() : undefined,
     ],
+    adapter: node({
+        mode: 'standalone',
+        staticHeaders: true,
+    }),
     security: {
         allowedDomains: [
             {
@@ -33,19 +38,22 @@ export default defineConfig({
     },
     vite: {
         plugins: [tailwindcss(), svgr()],
-        server: {
-            host: true,
-            allowedHosts: [
-                'dev.robox.com.au',
-                'robox.com.au',
-            ],
-        },
-        preview: {
-            host: true,
-            allowedHosts: [
-                'dev.robox.com.au',
-                'robox.com.au',
-            ],
+        // server: {
+        //     host: true,
+        //     allowedHosts: [
+        //         'dev.robox.com.au',
+        //         'robox.com.au',
+        //     ],
+        // },
+        // preview: {
+        //     host: true,
+        //     allowedHosts: [
+        //         'dev.robox.com.au',
+        //         'robox.com.au',
+        //     ],
+        // },
+        build: {
+            assetsInlineLimit: 1024,
         },
     },
     markdown: {

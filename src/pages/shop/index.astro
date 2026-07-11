@@ -1,12 +1,12 @@
 ---
-import { getAllProducts } from '@utils/server/stripe.server'
+import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 import type { ImageMetadata } from 'astro'
-import StandardLayout from '@layouts/StandardLayout.astro'
-import PageHero from '@components/pageHero'
-import Hero from '@images/shop/hero.jpg'
+import StandardLayout from '@/layouts/StandardLayout.astro'
+import PageHero from '@/components/pageHero'
+import Hero from '@/images/shop/hero.jpg'
 import { Image } from 'astro:assets'
-import Article from '@components/article/Article'
-import ProductCard from '@features/catalog/components/ProductCard'
+import Article from '@/components/article/Article'
+import ProductCard from '@/features/catalog/components/ProductCard'
 
 const products = await getAllProducts()
 const images = import.meta.glob<{ default: ImageMetadata }>(

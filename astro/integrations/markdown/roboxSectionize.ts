@@ -47,7 +47,7 @@ function transform(tree: Root): void {
             data: {
                 hName: 'div',
                 hProperties: {
-                    className: 'text',
+                    className: ['text'],
                 },
             },
             children: textSlice,
@@ -70,7 +70,7 @@ function transform(tree: Root): void {
             data: {
                 hName: 'section',
                 hProperties: {
-                    className: `articleSection ${direction}${endIsImage ? ' equalWidth' : ''}`,
+                    className: ["articleSection", `${direction}${endIsImage ? 'equalWidth' : ''}`],
                 },
             },
             children: sectionChildren,

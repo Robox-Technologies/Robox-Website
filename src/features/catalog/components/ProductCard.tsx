@@ -1,5 +1,5 @@
-import { formatPrice } from '@utils/formatPrice'
-import { formatStatus } from '@features/catalog/utils/formatStatus'
+import { formatPrice } from '@/utils/formatPrice'
+import { formatStatus } from '@/features/catalog/utils/formatStatus'
 import type { ImageMetadata } from 'astro'
 import type { Product } from '@/types/shop'
 

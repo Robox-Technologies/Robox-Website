@@ -1,10 +1,10 @@
-import { DialogBody, DialogFooter, DialogHeader } from '@components/dialog'
-import Dialog from '@components/dialog'
-import Button from '@components/button'
+import { DialogBody, DialogFooter, DialogHeader } from '@/components/dialog'
+import Dialog from '@/components/dialog'
+import Button from '@/components/button'
 import { faWarning } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { openProject } from '../stores/projectSettingsModal'
-import { deleteProject } from '@utils/serialization'
+import { deleteProject } from '@/utils/serialization'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
 export default function DeleteDialog() {
     const onDeleteProject = () => {

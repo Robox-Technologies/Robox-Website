@@ -1,7 +1,7 @@
 {
     "extends": "astro/tsconfigs/strict",
     "include": [".astro/types.d.ts", "src/types/**/*.d.ts", "**/*"],
-    "exclude": ["dist", "ios"],
+    "exclude": ["dist", "ios", "build"],
     "compilerOptions": {
         "jsx": "react-jsx",
         "jsxImportSource": "react",
@@ -13,7 +13,7 @@
         "module": "ESNext",
         "baseUrl": "./",
         "paths": {
-            "@*": ["src/*"]
+            "@/*": ["./src/*"]
         },
         "typeRoots": ["node_modules/@types"],
         "plugins": [
