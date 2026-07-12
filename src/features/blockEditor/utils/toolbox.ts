@@ -8,10 +8,10 @@ import type { ExtensionKey } from 'src/types/extensions'
 import { getProjectIdFromURL } from './serialization'
 
 //TODO: Make this dynamic
-export default function generateToolbox(): ToolboxDefinition {
+export default async function generateToolbox(): Promise<ToolboxDefinition> {
     const projectId = getProjectIdFromURL()
     if (!projectId) return BaseToolbox
-    const project = getProject(projectId)
+    const project = await getProject(projectId)
     if (!project) return BaseToolbox
     const extensions = project.extensions
     const toolbox = structuredClone(BaseToolbox)

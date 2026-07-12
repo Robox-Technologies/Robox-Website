@@ -37,7 +37,7 @@ export async function loadBlockly(workspace: WorkspaceSvg) {
     const projectId = getProjectIdFromURL()
     if (!projectId) return
 
-    const project = getProject(projectId)
+    const project = await getProject(projectId)
     if (!project) return
     const workspaceData = project.workspace
     Blockly.Events.disable()
@@ -61,25 +61,25 @@ export async function saveBlockly(workspace: WorkspaceSvg) {
     if (!projectId) return
     workspaceToPng_(
         workspace,
-        (thumburi: string) => {
+        async (thumburi: string) => {
             if (!isValidProjectId(projectId))
                 throw new Error('Invalid project UUID')
 
             const data = Blockly.serialization.workspaces.save(workspace)
-            const project = getProject(projectId)
+            const project = await getProject(projectId)
             if (!project) throw new Error('Project not found')
             project['time'] = dayjs()
             project['workspace'] = data
             project['thumbnail'] = sanitizeImageDataUrl(thumburi)
-            editProject(projectId, project)
+            await editProject(projectId, project)
         },
         '',
     )
 }
-export function generateCode(workspace: WorkspaceSvg) {
+export async function generateCode(workspace: WorkspaceSvg) {
     const projectId = getProjectIdFromURL()
     if (!projectId) throw new Error('No project ID found')
-    const project = getProject(projectId)
+    const project = await getProject(projectId)
     if (!project) throw new Error('Project not found')
     const extensionsPreamble = generateExtensionsPreamble(
         project.extensions ?? {},
@@ -100,7 +100,7 @@ export function generateCode(workspace: WorkspaceSvg) {
 function generateExtensionsPreamble(userExtensions: UserExtensions): string {
     return Object.values(userExtensions)
         .filter((ext) => ext === true)
-        .map((ext, index) => {
+        .map((_, index) => {
             const extKey = Object.keys(userExtensions)[index] as ExtensionKey
             return ExtensionsPreamble[extKey]
         })
@@ -117,14 +117,17 @@ function callSensorPreamble<K extends SensorKey>(
 ): string {
     return ExtraSensorsPreamble[sensor.type](sensor.pins)
 }
-export function setUserExtension(extension: ExtensionKey, enabled: boolean) {
+export async function setUserExtension(
+    extension: ExtensionKey,
+    enabled: boolean,
+) {
     const projectId = getProjectIdFromURL()
     if (!projectId) throw new Error('No project ID found')
-    const project = getProject(projectId)
+    const project = await getProject(projectId)
     if (!project) throw new Error('Project not found')
     const extensions = project.extensions
     extensions[extension] = enabled
-    editProject(projectId, {
+    await editProject(projectId, {
         ...project,
         extensions,
     })

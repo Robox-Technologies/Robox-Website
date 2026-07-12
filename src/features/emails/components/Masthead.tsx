@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { Column, Img, Link, Row, Section } from 'jsx-email';
 
 /**

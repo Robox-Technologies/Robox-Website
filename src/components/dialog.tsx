@@ -2,7 +2,6 @@ import {
     useState,
     useRef,
     useEffect,
-    type ComponentType,
     type Dispatch,
     type SetStateAction,
     type HTMLAttributes,

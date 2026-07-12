@@ -19,6 +19,12 @@ const { title, header='standard' } = Astro.props as Props;
 <html lang="en">
     <head>
         <Meta title={title} />
+        {/* iOS only: the native cross-document cross-fade hides the WKWebView
+           white flash between pages. Web build has no view transition. Uses
+           set:html so the raw CSS (with braces) isn't parsed as an expression. */}
+        {isIOSBuild && (
+            <style is:inline set:html="@view-transition { navigation: auto; }" />
+        )}
     </head>
     <body>
         {!isIOSBuild && <Header type={header} />}

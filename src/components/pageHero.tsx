@@ -20,7 +20,6 @@ export default function PageHero(props: PageHeroProps) {
         lineWidth = '10px',
     } = props
     const isGradientNegative = gradient === 'negative'
-    const sign = isGradientNegative ? 1 : -1
 
     const finalLeftWidth = `calc(${leftWidth} - ${lineWidth} / 2 + ${overlap} / 2)`
     const finalRightWidth = `calc(100% - ${leftWidth} - ${lineWidth} / 2 + ${overlap} / 2)`

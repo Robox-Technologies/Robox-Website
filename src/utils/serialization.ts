@@ -3,57 +3,67 @@ import type { ExtensionKey } from 'src/types/extensions'
 import extensions from '@/data/extensions.json'
 import DOMPurify from 'dompurify'
 import dayjs from 'dayjs'
+import { getDB, persist, PROJECTS_TABLE } from '@/utils/db'
 
 const ExtensionKeys = Object.keys(extensions) as ExtensionKey[]
 
-export function getProjects(): Record<string, UserProject> {
-    if (typeof window === 'undefined') return {}
-    const projectsJSON = localStorage.getItem('roboxProjects')
-    if (!projectsJSON) {
-        return {}
-    }
+function parseProject(id: string, data: string): UserProject | null {
     try {
-        const projects: Record<string, UserProject> = JSON.parse(projectsJSON)
-
-        const sortedProjects = Object.fromEntries(
-            Object.entries(projects).sort(([, a], [, b]) => dayjs(b.time).diff(dayjs(a.time)))
-        );
-
-        return sortedProjects
+        return JSON.parse(data) as UserProject
     } catch (e) {
-        console.error('Failed to parse user projects from localStorage:', e)
-        return {}
+        console.error('Failed to parse stored project:', id, e)
+        return null
     }
 }
-export function createProject(): string {
-    const projects = getProjects()
-    const id = crypto.randomUUID()
 
-    projects[id] = generateEmptyProject()
-    localStorage.setItem('roboxProjects', JSON.stringify(projects))
+export async function getProjects(): Promise<Record<string, UserProject>> {
+    if (typeof window === 'undefined') return {}
+    const db = await getDB()
+    const res = await db.query(`SELECT id, data FROM ${PROJECTS_TABLE};`)
+    const projects: Record<string, UserProject> = {}
+    for (const row of res.values ?? []) {
+        const project = parseProject(row.id, row.data)
+        if (project) projects[row.id] = project
+    }
+
+    // Most recently edited first.
+    return Object.fromEntries(
+        Object.entries(projects).sort(([, a], [, b]) =>
+            dayjs(b.time).diff(dayjs(a.time)),
+        ),
+    )
+}
+export async function createProject(): Promise<string> {
+    const db = await getDB()
+    const id = crypto.randomUUID()
+    await db.run(`INSERT INTO ${PROJECTS_TABLE} (id, data) VALUES (?, ?);`, [
+        id,
+        JSON.stringify(generateEmptyProject()),
+    ])
+    await persist()
     return id
 }
-export function getProject(id: string): UserProject | null {
-    const projects = getProjects()
-    return projects[id] || null
+export async function getProject(id: string): Promise<UserProject | null> {
+    if (typeof window === 'undefined') return null
+    const db = await getDB()
+    const res = await db.query(
+        `SELECT id, data FROM ${PROJECTS_TABLE} WHERE id = ?;`,
+        [id],
+    )
+    const row = res.values?.[0]
+    return row ? parseProject(row.id, row.data) : null
 }
-export function renameProject(id: string, newName: string): boolean {
-    const projects = getProjects()
-    if (projects[id]) {
-        projects[id].name = newName
-        localStorage.setItem('roboxProjects', JSON.stringify(projects))
-        return true
-    }
-    return false
+export async function renameProject(
+    id: string,
+    newName: string,
+): Promise<boolean> {
+    return editProject(id, { name: newName })
 }
-export function deleteProject(id: string): boolean {
-    const projects = getProjects()
-    if (projects[id]) {
-        delete projects[id]
-        localStorage.setItem('roboxProjects', JSON.stringify(projects))
-        return true
-    }
-    return false
+export async function deleteProject(id: string): Promise<boolean> {
+    const db = await getDB()
+    const res = await db.run(`DELETE FROM ${PROJECTS_TABLE} WHERE id = ?;`, [id])
+    await persist()
+    return (res.changes?.changes ?? 0) > 0
 }
 
 function generateEmptyProject(): UserProject {
@@ -73,17 +83,20 @@ function generateEmptyProject(): UserProject {
         sensors: {},
     }
 }
-export function editProject(id: string, data: Partial<UserProject>): boolean {
-    const projects = getProjects()
-    if (projects[id]) {
-        projects[id] = {
-            ...projects[id],
-            ...data,
-        }
-        localStorage.setItem('roboxProjects', JSON.stringify(projects))
-        return true
-    }
-    return false
+export async function editProject(
+    id: string,
+    data: Partial<UserProject>,
+): Promise<boolean> {
+    const existing = await getProject(id)
+    if (!existing) return false
+    const updated = { ...existing, ...data }
+    const db = await getDB()
+    await db.run(`UPDATE ${PROJECTS_TABLE} SET data = ? WHERE id = ?;`, [
+        JSON.stringify(updated),
+        id,
+    ])
+    await persist()
+    return true
 }
 export function isProtoPollution(key: string): boolean {
     const forbiddenKeys = ['__proto__', 'constructor', 'prototype']

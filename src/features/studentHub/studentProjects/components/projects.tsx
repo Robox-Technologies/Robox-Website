@@ -1,16 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useStore } from '@nanostores/react'
 import { ProjectCard } from './projectCard/projectCard'
 import CreateCard from './createCard'
 import { openProject } from '../stores/projectSettingsModal'
-import { getProjects } from '@/utils/serialization'
-import type { UserProject } from 'src/types/projects'
+import { projectsStore, reloadProjects } from '../stores/projectsStore'
 export default function Projects() {
-    const [projects, setProjects] = useState<Record<string, UserProject>>({})
+    const projects = useStore(projectsStore)
 
-    //Make sure the localstorage runs only on client side
+    // Load projects on the client (storage is unavailable during SSR).
     useEffect(() => {
-        const storedProjects = getProjects()
-        setProjects(storedProjects)
+        reloadProjects()
     }, [])
     // Close project settings modal when clicking outside
     useEffect(() => {
@@ -32,8 +31,8 @@ export default function Projects() {
     return (
         <>
             <CreateCard />
-            {Object.keys(projects).map((projectId) => (
-                <ProjectCard key={projectId} id={projectId} />
+            {Object.entries(projects).map(([projectId, project]) => (
+                <ProjectCard key={projectId} id={projectId} project={project} />
             ))}
         </>
     )

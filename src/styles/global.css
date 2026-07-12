@@ -1,9 +1,13 @@
 @import 'tailwindcss';
 @import '@fortawesome/fontawesome-svg-core/styles.css';
 
-@view-transition {
-    navigation: auto;
-}
+/*
+ * No cross-document view transitions on the web: plain navigation, no
+ * cross-fade. The iOS build re-enables the default cross-fade (in the layout
+ * head, gated on IOS_BUILD) because that fade is what hides the WKWebView white
+ * flash between pages; the matching webview background colour in
+ * capacitor.config.ts covers any residual gap.
+ */
 
 @theme {
     --color-blue: #2588c7;

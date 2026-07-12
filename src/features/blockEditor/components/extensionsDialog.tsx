@@ -46,9 +46,14 @@ function ExtensionCard({ extension }: { extension: ExtensionKey }) {
     useEffect(() => {
         const projectId = getProjectIdFromURL()
         if (!projectId) return
-        const project = getProject(projectId)
-        if (!project) return
-        setIsEnabled(project.extensions[extension] === true)
+        let active = true
+        getProject(projectId).then((project) => {
+            if (active && project)
+                setIsEnabled(project.extensions[extension] === true)
+        })
+        return () => {
+            active = false
+        }
     }, [extension])
     const extensionData = extensions[extension]
     return (
@@ -71,14 +76,14 @@ function ExtensionCard({ extension }: { extension: ExtensionKey }) {
         </div>
     )
 }
-function toggleExtension(
+async function toggleExtension(
     extension: ExtensionKey,
     enabled: boolean,
     setEnabled: (enabled: boolean) => void,
 ) {
     setEnabled(enabled)
-    setUserExtension(extension, enabled)
-    const toolbox = generateToolbox()
+    await setUserExtension(extension, enabled)
+    const toolbox = await generateToolbox()
     const workspace = Blockly.getMainWorkspace()
     if (!(workspace instanceof Blockly.WorkspaceSvg)) {
         console.error('Workspace is not of type Blockly.WorkspaceSvg')

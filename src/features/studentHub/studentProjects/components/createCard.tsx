@@ -3,8 +3,8 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { createProject } from '@/utils/serialization'
 export default function CreateCard() {
-    const onClick = () => {
-        const id = createProject()
+    const onClick = async () => {
+        const id = await createProject()
 
         window.location.assign(`./editor/index.html?id=${id}`)
     }

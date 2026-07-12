@@ -1,10 +1,12 @@
 import { RoboxFlyout, RoboxToolbox } from '../libs/roboxStyling'
 import { ContinuousMetrics } from '@blockly/continuous-toolbox'
 import theme from './roboxTheme'
-import toolbox from '../utils/toolbox'
+import { BaseToolbox } from './toolbox'
 
 export const BlocklyConfig = {
-    toolbox: toolbox(),
+    // Inject with the base toolbox synchronously; the editor replaces it with
+    // the project's extension-aware toolbox once storage has loaded.
+    toolbox: BaseToolbox,
     theme: theme,
     plugins: {
         flyoutsVerticalToolbox: RoboxFlyout,

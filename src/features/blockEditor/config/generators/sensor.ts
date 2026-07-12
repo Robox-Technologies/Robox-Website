@@ -30,18 +30,12 @@ pythonGenerator.forBlock['distance_bool'] = function (block, generator) {
     const code = `ultrasonic.distance() ${dropdown_equality} ${value_number}`
     return [code, Order.NONE]
 }
-pythonGenerator.forBlock['color_sensor_calibrate'] = function (
-    block,
-    generator,
-) {
+pythonGenerator.forBlock['color_sensor_calibrate'] = function () {
     const code = 'color_sensor.calibrate()\n'
     return code
 }
 
-pythonGenerator.forBlock['color_sensor_is_colour'] = function (
-    block,
-    generator,
-) {
+pythonGenerator.forBlock['color_sensor_is_colour'] = function (block) {
     const hex = block.getFieldValue('colour').toLowerCase()
 
     if (!isStandardHex(hex)) {
@@ -55,7 +49,7 @@ pythonGenerator.forBlock['color_sensor_is_colour'] = function (
     const code = `color_sensor.closest_colour_name() == '${colourName}'`
     return [code, Order.NONE]
 }
-pythonGenerator.forBlock['color_sensor_value'] = function (block, generator) {
+pythonGenerator.forBlock['color_sensor_value'] = function () {
     const code = 'color_sensor.closest_colour_name()'
     return [code, Order.ATOMIC]
 }

@@ -1,30 +1,29 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { editProject, getProject } from '@/utils/serialization'
 import { getProjectIdFromURL } from '@/features/blockEditor/utils/serialization'
 export default function ProjectRename() {
     const projectId = getProjectIdFromURL()
     const [projectName, setProjectName] = useState('Untitled')
+    // Guards against persisting the placeholder name before the stored one has
+    // loaded (the load is async, so the save effect can fire first otherwise).
+    const loaded = useRef(false)
 
     useEffect(() => {
-
-        if (projectId) {
-            const project = getProject(projectId)
-            if (project) {
-                setProjectName(project.name || 'Untitled')
-            }
+        if (!projectId) return
+        let active = true
+        getProject(projectId).then((project) => {
+            if (!active) return
+            if (project) setProjectName(project.name || 'Untitled')
+            loaded.current = true
+        })
+        return () => {
+            active = false
         }
     }, [projectId])
     useEffect(() => {
-        if (projectId) {
-            const project = getProject(projectId)
-            if (project) {
-                editProject(projectId, {
-                    ...project,
-                    name: projectName,
-                })
-            }
-        }
-    }, [projectName])
+        if (!projectId || !loaded.current) return
+        editProject(projectId, { name: projectName })
+    }, [projectName, projectId])
 
     return (
         <div className="project-rename flex items-center justify-center">

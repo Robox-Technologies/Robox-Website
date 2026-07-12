@@ -4,13 +4,15 @@ import Button from '@/components/button'
 import { faWarning } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { openProject } from '../stores/projectSettingsModal'
+import { reloadProjects } from '../stores/projectsStore'
 import { deleteProject } from '@/utils/serialization'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
 export default function DeleteDialog() {
-    const onDeleteProject = () => {
+    const onDeleteProject = async () => {
         const projectId = openProject.get()
-        deleteProject(projectId!)
+        if (projectId) await deleteProject(projectId)
         openProject.set(null)
+        await reloadProjects()
     }
     return (
         <Dialog

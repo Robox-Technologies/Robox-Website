@@ -15,11 +15,11 @@ pythonGenerator.forBlock['servo_rotate'] = function (block, generator) {
     const code = `servo.rotate_by_angle(${value_angle})\n`
     return code
 }
-pythonGenerator.forBlock['servo_get_angle'] = function (block, generator) {
+pythonGenerator.forBlock['servo_get_angle'] = function () {
     const code = 'servo.angle'
     return [code, Order.ATOMIC]
 }
-pythonGenerator.forBlock['servo_angle'] = function (block, generator) {
+pythonGenerator.forBlock['servo_angle'] = function (block) {
     const angle = block.getFieldValue('ANGLE') || '0'
     return [angle, Order.ATOMIC]
 }

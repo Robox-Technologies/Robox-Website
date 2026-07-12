@@ -6,32 +6,52 @@ import { useStore } from '@nanostores/react'
 import { openProject, editingProject } from '../../stores/projectSettingsModal'
 import SettingDialog from './settingDialog'
 import ProjectEditInput from './projectEditInput'
-import { getProject, editProject } from '@/utils/serialization'
+import { editProject } from '@/utils/serialization'
+import { reloadProjects } from '../../stores/projectsStore'
+import type { UserProject } from 'src/types/projects'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
-export function ProjectCard({ id }: { id: string }) {
+export function ProjectCard({
+    id,
+    project,
+}: {
+    id: string
+    project: UserProject
+}) {
     const $selectedProject = useStore(openProject)
     const $editingProject = useStore(editingProject)
-    const project = getProject(id)
     if (!project) return null
     const isSelected = $selectedProject === id
     const isEditing = $editingProject === id
 
-    const handleSaveName = (newName: string) => {
+    const handleSaveName = async (newName: string) => {
         if (newName.trim()) {
-            const success = editProject(id, { ...project, name: newName.trim() })
+            const success = await editProject(id, { name: newName.trim() })
             if (success) {
                 editingProject.set(null)
+                // Also clear the selection so the settings menu (shown while
+                // openProject === id) doesn't pop back up when editing ends.
+                openProject.set(null)
+                await reloadProjects()
             }
         }
     }
 
     const handleCancelEdit = () => {
         editingProject.set(null)
+        openProject.set(null)
     }
     return (
-        <a href={`./editor/index.html?id=${id}`} onClick={(e) => isEditing && e.preventDefault()}>
+        // Guard in the capture phase: children (e.g. the rename input) call
+        // stopPropagation, which would otherwise prevent a bubble-phase onClick
+        // here from cancelling navigation while editing.
+        <a
+            href={`./editor/index.html?id=${id}`}
+            onClickCapture={(e) => {
+                if (isEditing) e.preventDefault()
+            }}
+        >
             <Card
                 className={`project-card overflow-visible relative bg-white w-62.5 border-transparent border-4 transition-transform hover:-translate-y-0.5 hover:border-blue duration-100 hover:cursor-pointer ${isSelected ? '-translate-y-0.5! border-green! z-99' : ''}`}
                 image={

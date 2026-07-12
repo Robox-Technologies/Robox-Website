@@ -18,8 +18,9 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
 </script>
 <script>
     // Setting up Blockly
-    import * as Blockly from 'blockly/core'; 
+    import * as Blockly from 'blockly/core';
     import { loadBlockly, saveBlockly } from "../utils/serialization";
+    import generateToolbox from '../utils/toolbox';
     import { registerControls } from '../utils/controls';
     import { registerFieldColour } from '@blockly/field-colour';
     registerFieldColour();
@@ -34,9 +35,14 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
     import.meta.glob('../config/generators/*.ts', { eager: true });
 
     const workspace = Blockly.inject('blocklyDiv', BlocklyConfig);
-    loadBlockly(workspace)
+    // Load the saved workspace, then swap in the project's extension-aware
+    // toolbox once storage has resolved (both are async).
+    (async () => {
+        await loadBlockly(workspace);
+        workspace.updateToolbox(await generateToolbox());
+    })();
     // Saving every time a change is made to the workspace, except for UI events (like dragging blocks)
-    workspace.addChangeListener((event) => { 
+    workspace.addChangeListener((event) => {
         if (event.isUiEvent) return;
         saveBlockly(workspace);
     });
