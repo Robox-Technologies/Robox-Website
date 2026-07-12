@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-    appId: 'com.robox.app',
+    appId: 'com.robox.editor',
     appName: 'Ro/Box',
     // Astro's hybrid build (the /api route pulls in the node adapter) emits the
     // client bundle into dist/client, which is the web entry point Capacitor ships.
