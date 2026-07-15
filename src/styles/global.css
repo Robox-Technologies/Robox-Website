@@ -103,6 +103,24 @@
         animation: toast-slide-in 220ms ease-out both;
     }
 
+    @keyframes pop {
+        0% {
+            transform:scale(1);
+        }
+    
+        50% {
+            transform:scale(1.1);
+        }
+    
+        to {
+            transform:scale(1);
+        }
+    }
+    
+    .scale-animate {
+        animation: pop .2s ease-in-out;
+    }
+
     @media (prefers-reduced-motion: reduce) {
         .animate-toast-in {
             animation: none;

@@ -26,21 +26,21 @@ const heroImage = await getImage({src: hero, priority: true, width: 1200, height
 <!-- TODO: Make the image work like the normal website, and make the title work better -->
 <StandardLayout title="Home">
     <Hero hero={heroImage.src} scrollIndicator={true} imageClassName='max-lg:object-left'>
-        <div class="flex flex-col items-center absolute lg:right-1/10 lg:top-1/2 top-1/10 transform -translate-y-1/2">
+        <div class="flex flex-col items-center absolute lg:right-1/10 lg:top-1/2 top-1/5 transform -translate-y-1/2">
             <h1 class="text-6xl w-full font-bolder mb-4 text-blue text-center">
                 Robotics<br/>
-                <span class="text-red">
+                <span class="text-red text-5xl">
                     for everyone
                 </span>
             </h1>
         </div>
     </Hero>
     <Article>
-        <ArticleSection id="meet-robox" direction="LTR">
+        <ArticleSection id="content" direction="LTR">
             <ArticleText>
                 <h1 class=" text-6xl">Meet Robox</h1>
                 <p class="text-xl leading-[150%]">
-                    Ro/Box is an ultra-affordable robotics kit designed to make STEM education accessible to any student, anywhere. Whether you’re a budding engineer or a curious coder, Ro/Box offers hands-on experience in building, programming, and problem-solving
+                    Ro/Box is an ultra-affordable robotics kit designed to make STEM education accessible to any student, anywhere. Whether you’re a budding engineer or a curious coder, Ro/Box offers hands-on experience in building, programming, and problem-solving.
                 </p>
                 <Button href="/about" className='bg-red px-6 py-4 text-3xl box-shadow w-fit'>
                     About us
@@ -63,7 +63,6 @@ const heroImage = await getImage({src: hero, priority: true, width: 1200, height
             <Image src={article2} alt="Robox Kit Components" class="rounded-lg max-w-full max-h-full w-full lg:w-1/2 object-contain"/>
         </ArticleSection>
     </Article>
-    <!-- TODO: Fix this later -->
     <BoxToBot />
     <EmpoweringStudents />
     <Article>

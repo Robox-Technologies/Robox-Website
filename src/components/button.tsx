@@ -25,7 +25,7 @@ export default function Button({
             <a
                 href={href}
                 className={twMerge(
-                    `text-white px-4 py-2 rounded-lg hover:bg-blue-dark transition`,
+                    `text-white px-4 py-2 rounded-xl hover:bg-blue-dark transition`,
                     className,
                 )}
                 {...anchorProps}
@@ -40,7 +40,7 @@ export default function Button({
         return (
             <button
                 className={twMerge(
-                    `text-white rounded-lg px-4 py-2 hover:bg-blue-dark hover:cursor-pointer transition`,
+                    `text-white rounded-xl px-4 py-2 hover:bg-blue-dark hover:cursor-pointer transition`,
                     className,
                 )}
                 {...props}

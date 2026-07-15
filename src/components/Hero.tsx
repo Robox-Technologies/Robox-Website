@@ -20,7 +20,7 @@ export default function Hero({
     return (
         <section
             className={twMerge(
-                'relative flex flex-col items-center h-screen bg-hero bg-cover bg-center text-center px-4',
+                `relative flex flex-col items-center h-[calc(100vh-74px)] bg-hero bg-cover bg-center text-center px-4`,
                 className,
             )}
             {...props}

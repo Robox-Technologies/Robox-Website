@@ -2,24 +2,32 @@ interface StepProps {
     stepNumber: number
     title: string
     description: string
+    image: string
 }
 const stepColours = ['bg-blue', 'bg-red', 'bg-green', 'bg-yellow']
-export default function Step({ stepNumber, title, description }: StepProps) {
+const firstStep = 1;
+const numSteps = 4;
+export default function Step({ stepNumber, title, description, image }: StepProps) {
 
     return (
         <div
-            className="step flex flex-col gap-6 ml-46.75"
-            style={{ marginTop: 'max(25vh, 150px)' }}
+            className={`step
+            mt-[64px] mb-0 
+            
+            ${stepNumber === firstStep ? 'lg:mt-[max(45vh,250px)]' : 'lg:mt-[30vh]'}
+            ${stepNumber === numSteps ? 'lg:mb-[55px]' : ''}
+            `}
         >
-            <div className="flex flex-row gap-6 items-start">
+            <div className="flex flex-row gap-6 items-center">
                 <StepNumber stepNumber={stepNumber} />
                 <div className=" flex flex-col gap-4">
-                    <h3 className=" text-3xl font-semibold text-black">
+                    <h3 className=" text-3xl font-semibold text-white">
                         {title}
                     </h3>
-                    <p className=" text-black text-lg">{description}</p>
+                    <p className=" text-white text-lg">{description}</p>
                 </div>
             </div>
+            <img src={image} className="lg:hidden w-[70%] m-[32px_auto_auto]"/>
         </div>
     )
 }
