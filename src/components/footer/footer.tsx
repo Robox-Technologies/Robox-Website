@@ -53,11 +53,11 @@ export default function Footer() {
                 </div>
             </div>
             <FooterLine />
-            <div className="w-full px-12 flex flex-row justify-between z-10">
-                <p className="text-nowrap">
+            <div className="w-full px-12 flex flex-row justify-space-between z-10">
+                <p className="text-nowrap flex-1 text-left">
                     © {new Date().getFullYear()} Ro/Box. All rights reserved.
                 </p>
-                <p className="text-nowrap">
+                <p className="text-nowrap flex-1 text-center">
                     Contact us at{' '}
                     <a href="mailto:hello@robox.com.au" className="underline">
                         hello@robox.com.au
@@ -65,7 +65,7 @@ export default function Footer() {
                 </p>
                 <a
                     href="/privacy-policy"
-                    className="underline text-white text-nowrap"
+                    className="underline text-white text-nowrap flex-1 text-right"
                 >
                     Privacy Policy
                 </a>

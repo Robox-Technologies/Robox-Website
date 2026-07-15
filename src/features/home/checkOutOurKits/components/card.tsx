@@ -25,13 +25,13 @@ export default function ProductCard({
             image={
                 <img
                     src={image.src}
-                    alt="Robotics Kit Components"
+                    alt={`Thumbnail for product ${title}`}
                     className="w-full h-auto rounded-t-lg"
                 />
             }
             description={
                 <p className="text-lg">
-                    <span className="text-green">Available for Purchase</span>
+                    <span className="text-[#4aa21e]">Available for Purchase</span>
                     <br />
                     AU${price}
                 </p>

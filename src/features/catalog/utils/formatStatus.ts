@@ -8,17 +8,17 @@ export function formatStatus(status: ProductStatus): {
         case 'available':
             return {
                 text: 'Available for Purchase',
-                color: 'text-green-500 text-xl',
+                color: 'text-[#4AA21E] text-xl',
             }
         case 'preorder':
             return {
                 text: 'Coming Soon',
-                color: 'text-yellow-500 text-xl',
+                color: 'text-blue text-xl',
             }
         case 'not-available':
             return {
                 text: 'Not Available',
-                color: 'text-red-500 text-xl',
+                color: 'text-[#df1b41] text-xl',
             }
     }
 }

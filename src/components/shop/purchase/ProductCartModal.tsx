@@ -20,7 +20,7 @@ export default function ProductCartModal({
     product: Product
     image: ImageMetadata
 }) {
-    const [quantity, setQuantity] = useState(0)
+    const [quantity, setQuantity] = useState(1)
     const dialogRef = useRef<HTMLDialogElement>(null)
     return (
         <Dialog

@@ -54,7 +54,7 @@ function CarouselSideBar({
     setCurrentIndex: (index: number) => void
 }) {
     return (
-        <div className="flex flex-col max-xl:hidden max-xl:w-full gap-2 overflow-y-auto h-full min-w-42 w-42 p-1 aspect-video">
+        <div className="flex flex-col max-xl:hidden max-xl:w-full gap-2 overflow-y-auto h-full w-32 p-1 aspect-video">
             {images.map((image, index) => (
                 <CarouselSideBarItem
                     image={image}
@@ -80,14 +80,14 @@ function CarouselSideBarItem({
 }) {
     return (
         <div
-            className={`carousel-item flex-none block w-40 max-xl:w-full rounded-xl ${isActive ? 'ring-2 ring-blue-500' : ''}`}
+            className={`carousel-item overflow-hidden flex-none block w-30 max-xl:w-full rounded-xl ${isActive ? 'ring-2 ring-blue-500' : ''}`}
             key={image.src}
             onClick={onClick}
         >
             <div className="cursor-pointer">
                 <img
                     src={image.src}
-                    className="w-full rounded-xl block object-cover aspect-video"
+                    className="w-full block object-cover aspect-square"
                 />
             </div>
         </div>

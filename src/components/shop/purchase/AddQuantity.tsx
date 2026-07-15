@@ -2,6 +2,8 @@ import Button from '@/components/button'
 import { faMinus, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { addToCart } from '@/state/cartActions'
 import {
+    CART_MAX_QUANTITY,
+    CART_MIN_QUANTITY,
     clampQuantity,
     decrementQuantity,
     incrementQuantity,
@@ -50,10 +52,10 @@ export default function AddQuantity({
             return
         }
 
-        if (quantity <= 0) {
+        if (quantity < CART_MIN_QUANTITY) {
             toast.warning({
                 title: 'Quantity Needed',
-                message: 'Choose at least one item before adding to cart.',
+                message: 'Please choose at least one item before adding to cart.',
             })
             return
         }
@@ -80,9 +82,10 @@ export default function AddQuantity({
             />
             <input
                 type="number"
-                className="w-30 text-xl text-center border-y-2 border-black h-10 no-spinner"
+                className="w-30 text-xl text-center text-black border-y-2 border-black h-10 no-spinner"
                 value={quantity.toString()}
-                min={0}
+                min={CART_MIN_QUANTITY}
+                max={CART_MAX_QUANTITY}
                 onChange={onChangeHandler}
             />
             <Button

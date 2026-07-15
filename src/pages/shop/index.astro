@@ -36,7 +36,7 @@ const productsWithImages = products.map((product) => {
         <div slot="left" class="bg-blue h-full w-full flex justify-start items-end p-8">
             <h1 class="text-5xl font-bold text-white">
                 Shop
-                <p class="text-xl mt-4 text-white">
+                <p class="text-xl mt-4 font-normal text-white">
                     Check out our Ro/Box product range!
                 </p>
             </h1>
@@ -46,7 +46,7 @@ const productsWithImages = products.map((product) => {
         <h1 class="text-4xl font-bold mb-8">
             Our Products
         </h1>
-        <div class="card-holder flex flex-wrap gap-4 w-full">
+        <div class="card-holder flex flex-wrap gap-8 w-full align-center">
             <!-- TODO: THis has very bad constrast -->
             {productsWithImages.map(({ product, image }) => (
                 <ProductCard

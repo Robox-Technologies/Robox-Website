@@ -1,4 +1,4 @@
-export const CART_MIN_QUANTITY = 0
+export const CART_MIN_QUANTITY = 1
 export const CART_MAX_QUANTITY = 99
 
 export function toQuantity(value: unknown): number {

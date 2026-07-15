@@ -7,7 +7,7 @@ export default function FooterLine() {
     return (
         <hr
             style={style}
-            className="relative w-11/12 mx-auto p-px bg-black border-0
+            className="relative w-[calc(100vw-96px)] p-px bg-black border-0
                     before:content-['']
                     before:absolute before:top-0 before:right-0
                     before:p-px before:h-full
