@@ -3,6 +3,7 @@ import PageHero from '@/components/pageHero';
 import StandardLayout from '../layouts/StandardLayout.astro';
 import Hero from '@/images/teacherHub/hero.jpg';
 import Article from '@/components/article/Article';
+import eyes from '@/images/goobers/eyes.svg';
 
 ---
 <StandardLayout title="Teacher Resources">
@@ -16,7 +17,8 @@ import Article from '@/components/article/Article';
             </div>
             <img src={Hero.src} alt="Student using Ro/Box" class="w-full absolute top-0 h-full object-cover object-left"/>
         </div>
-        <div slot="right" class="bg-yellow h-full w-full flex justify-start items-end p-8">
+        <div slot="right" class="bg-yellow h-full w-full relative overflow-hidden">
+            <img src={eyes.src} alt="" aria-hidden="true" class="absolute bottom-10 right-12 w-28 max-w-[35%]" />
         </div>
     </PageHero>
     <Article>

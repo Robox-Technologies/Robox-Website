@@ -8,6 +8,7 @@ import {
 } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import FooterLine from './footerLine'
+import eyes from '@/images/goobers/eyes.svg'
 
 export default function Footer() {
     return (
@@ -16,9 +17,16 @@ export default function Footer() {
                 <Clipper
                     side="left"
                     gradient="positive"
-                    className="w-full bg-red h-full"
+                    className="w-full bg-red h-full relative overflow-hidden"
                     overhang="3vw"
-                />
+                >
+                    <img
+                        src={eyes.src}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute top-1/2 left-[18%] w-20 -translate-y-1/2 hidden md:block"
+                    />
+                </Clipper>
             </div>
             <div className="w-full px-8 md:px-12 py-10 flex flex-col gap-8 md:flex-row md:justify-start md:gap-40">
                 <div className="flex flex-col gap-4">
