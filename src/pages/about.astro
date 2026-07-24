@@ -5,12 +5,14 @@ import Hero from '@/images/about/hero.jpg';
 import Article1 from '@/images/about/article1.png';
 import Article2 from '@/images/about/article2.png';
 import Article3 from '@/images/about/article3.png';
+import Article4 from '@/images/about/article4.png';
+import bowtie from '@/images/goobers/bowtie.svg';
+import eyes from '@/images/goobers/eyes.svg';
 import { Image } from 'astro:assets';
 
 import ArticleSection from '@/components/article/ArticleSection';
 import Button from '@/components/button';
 ---
-<!-- TODO: Goobers -->
 <StandardLayout title="About">
     <div class="hero h-100 w-full relative">
         <Image src={Hero} alt="About Ro/Box" class="h-full object-cover w-full z-0 absolute object-right" width={Hero.width} height={Hero.height}/>
@@ -18,6 +20,10 @@ import Button from '@/components/button';
             <h1 class="p-12">
                 About Us
             </h1>
+            <div class="images absolute bottom-12 left-12 right-12 hidden lg:flex items-end justify-between" aria-hidden="true">
+                <img src={bowtie.src} alt="" class="mb-16 w-[30%]" />
+                <img src={eyes.src} alt="" class="w-[50%]" />
+            </div>
         </div>
     </div>
     <div class="w-full lg:pl-100 flex flex-col justify-center my-20">
@@ -72,6 +78,7 @@ import Button from '@/components/button';
                 <Image src={Article3} alt="About Story" class="rounded-lg max-w-full max-h-full w-full object-cover object-center" width={Article2.width} height={Article2.height}/>
             </div>
         </ArticleSection>
+        <Image src={Article4} alt="Ro/Box on a line-following course" class="w-full rounded-lg mt-8" width={Article4.width} height={Article4.height}/>
         <ArticleSection id="join-us" direction="LTR" className='flex-col'>
             <div class="w-full lg:w-1/2 flex flex-col justify-center gap-6">
                 <h1 class="text-left mb-8">
