@@ -7,15 +7,19 @@ interface Props {
     description: string;
 }
 const { image, title, description } : Props = Astro.props;
+const hasGoober = Astro.slots.has('goober');
 ---
-<BaseCard 
-    className='w-[350px] basis-[350px] box-shadow' 
-    contentClass='bg-white' 
-    description={description}
->
-    <Image slot="image" src={image} alt="Robotics Kit Components" class="w-full h-auto rounded-t-lg" width={image.width} height={image.height}/>
-    <h2 slot="title" class="text-2xl font-bold mb-4">{title}</h2>
-    <p slot="description" class="text-lg">
-        {description}
-    </p>
-</BaseCard>
+<div class:list={["relative w-[350px] basis-[350px]", hasGoober && "isolate"]}>
+    <slot name="goober" />
+    <BaseCard
+        className='w-full box-shadow'
+        contentClass='bg-white'
+        description={description}
+    >
+        <Image slot="image" src={image} alt="Robotics Kit Components" class="w-full h-auto rounded-t-lg" width={image.width} height={image.height}/>
+        <h2 slot="title" class="text-2xl font-bold mb-4">{title}</h2>
+        <p slot="description" class="text-lg">
+            {description}
+        </p>
+    </BaseCard>
+</div>

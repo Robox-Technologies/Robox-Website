@@ -6,6 +6,9 @@ import roboxHubCard3 from '@/images/index/roboxHubCard3.png';
 
 import EmpoweringStudentsCard from './components/card.astro';
 import Button from '@/components/button';
+import Goober from '@/components/Goober.astro';
+import pentagon from '@/images/goobers/pentagon.svg';
+import spiky from '@/images/goobers/spiky.svg';
 ---
 <Article>
     <section>
@@ -25,7 +28,15 @@ import Button from '@/components/button';
                 image={roboxHubCard1}
                 title="Step-by-Step Instructions"
                 description="Comprehensive guides walk students through building and programming their robots, ensuring a smooth learning experience."
-            />
+            >
+                <Goober
+                    slot="goober"
+                    shape={pentagon}
+                    eyes
+                    class="top-[-20%] left-[-10%] w-[60%] max-lg:hidden"
+                    eyesClass="top-[15%] right-[23%] w-[55%]"
+                />
+            </EmpoweringStudentsCard>
             <EmpoweringStudentsCard
                 image={roboxHubCard2}
                 title="Workshop"
@@ -35,7 +46,15 @@ import Button from '@/components/button';
                 image={roboxHubCard3}
                 title="Lessons"
                 description="Build real coding skills with our structured lessons that introduce programming in a simple, visual way using our block code editor."
-            />  
+            >
+                <Goober
+                    slot="goober"
+                    shape={spiky}
+                    eyes
+                    class="bottom-[-30%] right-0 w-[80%] max-[1350px]:hidden"
+                    eyesClass="bottom-[35%] left-[20%] w-[40%]"
+                />
+            </EmpoweringStudentsCard>
         </div>
         <div class="mt-8 flex justify-center text-center">
             <Button href="/student" className="bg-red text-2xl box-shadow p-4 mx-auto block">

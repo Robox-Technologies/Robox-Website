@@ -1,0 +1,32 @@
+---
+/**
+ * Decorative "goober" shape — a background blob, optionally with googly eyes
+ * layered on top. Purely decorative (aria-hidden) and non-interactive.
+ *
+ * Positioning is left to the caller via `class` (on the shape wrapper) and
+ * `eyesClass` (on the eyes overlay), mirroring the original site's per-placement
+ * offsets. Width is set by the caller; height follows the SVG's aspect ratio.
+ */
+import eyesImg from '@/images/goobers/eyes.svg'
+
+interface Props {
+    shape: ImageMetadata
+    eyes?: boolean
+    class?: string
+    eyesClass?: string
+}
+
+const { shape, eyes = false, class: className, eyesClass } = Astro.props
+---
+<div class:list={['goober pointer-events-none absolute -z-10', className]} aria-hidden="true">
+    <img src={shape.src} alt="" class="block h-auto w-full object-contain" />
+    {
+        eyes && (
+            <img
+                src={eyesImg.src}
+                alt=""
+                class:list={['absolute h-auto object-contain', eyesClass]}
+            />
+        )
+    }
+</div>
