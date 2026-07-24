@@ -17,7 +17,7 @@ export default function ProductCard({
             href={`/shop/product/${product.internalName}`}
         >
             <Card
-                className="bg-white w-75 shadow-md flex flex-col hover:drop-shadow-xl transition-all duration-100"
+                className="bg-white w-75 box-shadow flex flex-col hover:-translate-y-1 transition-transform duration-100"
                 title={<h1 className="text-2xl font-bold">{product.name}</h1>}
                 image={
                     <img
