@@ -12,6 +12,7 @@ interface Props {
 }
 
 const { type = 'standard' } = Astro.props as Props
+const isWorkshop = type === 'workshop'
 
 const headerHeight = 64
 const headerEndPadding = 16
@@ -20,7 +21,7 @@ const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
 ---
 
 <header
-    class={`sticky top-0 z-50 flex w-full items-center justify-between ${type === 'workshop' ? 'bg-blue' : 'bg-primary'}`}
+    class={`sticky top-0 z-50 flex w-full items-center justify-between ${isWorkshop ? 'bg-blue' : 'bg-primary'}`}
     style={`height: ${headerHeight}px`}
 >
     <nav
@@ -29,27 +30,27 @@ const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
     >
         <div class="flex flex-row items-center space-x-6">
             <a href="/" class="flex items-center p-4">
-                {type === 'workshop' ? (
+                {isWorkshop ? (
                     <WorkshopLogo className="h-8 w-auto" />
                 ) : (
                     <Logo className="h-8 w-auto" />
                 )}
             </a>
             <HeaderLink
-                href="/about/index.html"
-                className={type === 'workshop' ? 'text-white' : ''}
+                href="/about"
+                className={`max-[1050px]:hidden ${isWorkshop ? 'text-white' : ''}`}
             >
                 About
             </HeaderLink>
             <HeaderLink
                 href="/"
-                className={type === 'workshop' ? 'text-white' : ''}
+                className={`max-[1050px]:hidden ${isWorkshop ? 'text-white' : ''}`}
             >
                 Contact
             </HeaderLink>
         </div>
         <Clipper
-            className={`ml-auto h-full ${type === 'workshop' ? 'bg-red' : 'bg-blue'}`}
+            className={`ml-auto h-full ${isWorkshop ? 'bg-red' : 'bg-blue'}`}
             gradient="positive"
             side="left"
             overhang={overhang}
@@ -60,20 +61,22 @@ const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
             >
                 <HeaderLink
                     icon={faCompass}
-                    className="text-white"
-                    href="/student/index.html"
+                    className="text-white max-[1050px]:hidden"
+                    href="/student"
                 >
                     Ro/Box Hub
                 </HeaderLink>
                 <HeaderLink
                     icon={faGraduationCap}
-                    className="text-white"
-                    href="/teacher/index.html"
+                    className="text-white max-[1050px]:hidden"
+                    href="/teacher"
                 >
                     Teacher Resources
                 </HeaderLink>
-                {type === 'standard' && <StoreLink />}
-                {type !== 'workshop' ? (
+                {type === 'standard' && (
+                    <StoreLink className="max-[1050px]:hidden" />
+                )}
+                {!isWorkshop ? (
                     <CartIcon client:only="react">
                         <span
                             slot="fallback"
@@ -82,7 +85,130 @@ const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
                         ></span>
                     </CartIcon>
                 ) : null}
+                <button
+                    id="mobile-menu-toggle"
+                    type="button"
+                    aria-label="Toggle menu"
+                    aria-controls="mobile-menu"
+                    aria-expanded="false"
+                    class="hamburger hidden max-[1050px]:flex text-white"
+                >
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
         </Clipper>
     </nav>
+
+    <div
+        id="mobile-menu"
+        class={`mobile-menu absolute left-0 top-full flex w-full flex-col gap-4 border-b border-secondary px-8 py-6 min-[1050px]:hidden ${isWorkshop ? 'bg-blue' : 'bg-primary'}`}
+    >
+        <HeaderLink
+            href="/about"
+            className={isWorkshop ? 'text-white' : ''}
+        >
+            About
+        </HeaderLink>
+        <HeaderLink href="/" className={isWorkshop ? 'text-white' : ''}>
+            Contact
+        </HeaderLink>
+        <HeaderLink icon={faCompass} href="/student">
+            Ro/Box Hub
+        </HeaderLink>
+        <HeaderLink icon={faGraduationCap} href="/teacher">
+            Teacher Resources
+        </HeaderLink>
+        {type === 'standard' && <StoreLink className="w-fit" />}
+    </div>
 </header>
+
+<style>
+    /* Three-bar hamburger that morphs into an X when open. */
+    .hamburger {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+    .hamburger span {
+        display: block;
+        width: 22px;
+        height: 2px;
+        border-radius: 2px;
+        background: currentColor;
+        transition:
+            transform 0.25s ease,
+            opacity 0.2s ease;
+    }
+    .hamburger.open span:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+    }
+    .hamburger.open span:nth-child(2) {
+        opacity: 0;
+    }
+    .hamburger.open span:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
+    }
+
+    /* Slide-down dropdown. Kept in the DOM (absolute) but hidden from view and
+     * the a11y tree until opened. */
+    .mobile-menu {
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(-8px);
+        transition:
+            transform 0.25s ease,
+            opacity 0.25s ease;
+    }
+    .mobile-menu.open {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0);
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .hamburger span,
+        .mobile-menu {
+            transition: none;
+        }
+    }
+</style>
+
+<script>
+    const btn = document.getElementById('mobile-menu-toggle')
+    const menu = document.getElementById('mobile-menu')
+
+    if (btn && menu) {
+        const setOpen = (open: boolean) => {
+            menu.classList.toggle('open', open)
+            btn.classList.toggle('open', open)
+            btn.setAttribute('aria-expanded', String(open))
+        }
+
+        btn.addEventListener('click', (event) => {
+            event.stopPropagation()
+            setOpen(!menu.classList.contains('open'))
+        })
+
+        // Close when clicking outside or pressing Escape.
+        document.addEventListener('click', (event) => {
+            if (
+                menu.classList.contains('open') &&
+                !menu.contains(event.target as Node) &&
+                !btn.contains(event.target as Node)
+            ) {
+                setOpen(false)
+            }
+        })
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') setOpen(false)
+        })
+    }
+</script>
