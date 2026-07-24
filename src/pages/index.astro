@@ -12,6 +12,7 @@ import hero from '@/images/index/hero.jpg'
 import { Image } from 'astro:assets'
 import article1 from '@/images/index/article1.png'
 import article2 from '@/images/index/article2.png'
+import article3 from '@/images/index/article3.png'
 
 // import roboxHubCard1 from '@/images/index/roboxHubCard1.png'
 // import roboxHubCard2 from '@/images/index/roboxHubCard2.png'
@@ -38,7 +39,7 @@ const heroImage = await getImage({src: hero, priority: true, width: 1200, height
     <Article>
         <ArticleSection id="content" direction="LTR">
             <ArticleText>
-                <h1 class=" text-6xl">Meet Robox</h1>
+                <h1 class=" text-6xl">Meet Ro/Box</h1>
                 <p class="text-xl leading-[150%]">
                     Ro/Box is an ultra-affordable robotics kit designed to make STEM education accessible to any student, anywhere. Whether you’re a budding engineer or a curious coder, Ro/Box offers hands-on experience in building, programming, and problem-solving.
                 </p>
@@ -72,11 +73,11 @@ const heroImage = await getImage({src: hero, priority: true, width: 1200, height
                 <p class="text-xl leading-[150%]">
                     We know that great learning starts with confident teaching. That’s why we’ve built a dedicated Teacher Hub filled with classroom-ready resources—lesson plans, curriculums, and more.
                 </p>
-                <Button href="/teacher-hub" className='bg-red px-6 py-4 text-2xl box-shadow w-fit'>
+                <Button href="/teacher" className='bg-red px-6 py-4 text-2xl box-shadow w-fit'>
                     Visit Teacher Hub
                 </Button>
             </ArticleText>
-            <Image src={article2} alt="Robox Kit Components" class="rounded-lg max-w-full max-h-full w-full lg:w-1/2 object-contain"/>
+            <Image src={article3} alt="A nearly assembled Ro/Box kit with its lid open" class="rounded-lg max-w-full max-h-full w-full lg:w-1/2 object-contain"/>
         </ArticleSection>
     </Article>
     <CheckOutOurKits />
