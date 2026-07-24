@@ -9,6 +9,7 @@ import ArticleText from '@/components/article/ArticleText'
 import Article from '@/components/article/Article'
 import Button from '@/components/button'
 import hero from '@/images/index/hero.jpg'
+import heroMobile from '@/images/index/hero-mobile.jpg'
 import { Image } from 'astro:assets'
 import article1 from '@/images/index/article1.png'
 import article2 from '@/images/index/article2.png'
@@ -23,10 +24,10 @@ import BoxToBot from '@/features/home/boxToBot/components/boxToBot.astro'
 import EmpoweringStudents from '@/features/home/empoweringStudents/empoweringStudents.astro'
 import CheckOutOurKits from '@/features/home/checkOutOurKits/checkOutOurKits.astro'
 const heroImage = await getImage({src: hero, priority: true, width: 1200, height: 800})
+const heroMobileImage = await getImage({src: heroMobile, priority: true, width: 800, height: 1000})
 ---
-<!-- TODO: Make the image work like the normal website, and make the title work better -->
 <StandardLayout title="Home">
-    <Hero hero={heroImage.src} scrollIndicator={true} imageClassName='max-lg:object-left'>
+    <Hero hero={heroImage.src} heroMobile={heroMobileImage.src} scrollIndicator={true} imageClassName='object-[30%_center]'>
         <div class="flex flex-col items-center absolute lg:right-1/10 lg:top-1/2 top-1/5 transform -translate-y-1/2">
             <h1 class="text-6xl w-full font-bolder mb-4 text-blue text-center">
                 Robotics<br/>

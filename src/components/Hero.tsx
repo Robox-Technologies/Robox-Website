@@ -4,6 +4,8 @@ import type { HTMLAttributes } from 'react'
 import { twMerge } from 'tailwind-merge'
 interface HeroProps {
     hero: string,
+    /** Optional portrait/mobile crop shown below the `lg` breakpoint. */
+    heroMobile?: string
     children?: React.ReactNode
     scrollIndicator?: boolean
     imageClassName?: string
@@ -11,6 +13,7 @@ interface HeroProps {
 
 export default function Hero({
     hero,
+    heroMobile,
     scrollIndicator = false,
     children,
     imageClassName,
@@ -26,9 +29,18 @@ export default function Hero({
             {...props}
         >
             <div className="absolute inset-0 w-full h-full overflow-hidden">
+                {heroMobile && (
+                    <img
+                        className="h-full w-full object-cover object-center lg:hidden"
+                        src={heroMobile}
+                        alt=""
+                        fetchPriority="high"
+                    />
+                )}
                 <img
                     className={twMerge(
                         'h-full w-full object-cover',
+                        heroMobile && 'max-lg:hidden',
                         imageClassName,
                     )}
                     src={hero}
