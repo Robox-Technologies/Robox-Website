@@ -2,11 +2,12 @@ import Button from '@/components/button'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { createProject } from '@/utils/serialization'
+import { editorHref } from '../utils/editorHref'
 export default function CreateCard() {
     const onClick = async () => {
         const id = await createProject()
 
-        window.location.assign(`./editor/index.html?id=${id}`)
+        window.location.assign(editorHref(id))
     }
     return (
         <Button

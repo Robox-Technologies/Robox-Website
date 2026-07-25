@@ -9,6 +9,7 @@ import ProjectEditInput from './projectEditInput'
 import { editProject } from '@/utils/serialization'
 import { reloadProjects } from '../../stores/projectsStore'
 import type { UserProject } from 'src/types/projects'
+import { editorHref } from '../../utils/editorHref'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 dayjs.extend(relativeTime)
@@ -47,7 +48,7 @@ export function ProjectCard({
         // stopPropagation, which would otherwise prevent a bubble-phase onClick
         // here from cancelling navigation while editing.
         <a
-            href={`./editor/index.html?id=${id}`}
+            href={editorHref(id)}
             onClickCapture={(e) => {
                 if (isEditing) e.preventDefault()
             }}
