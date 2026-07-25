@@ -1,17 +1,32 @@
 import { Stripe } from 'stripe'
 import type { Product } from 'src/types/shop'
 import slugify from 'slugify'
+import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import { stripeAPI } from './index.server'
 
 
 
 import { isValidStatus } from 'src/types/guards/shop'
 
+/**
+ * Product banners are authored as markdown in Stripe metadata (the 10-Pack's
+ * "**Value Pack:** Save 5% off on your order!"), so they need rendering to HTML
+ * before the product page can drop them in — same as the original's
+ * `storeProcessor`.
+ */
+const markdownProcessor = await createMarkdownProcessor({})
+
+async function renderBanner(banner: string | undefined): Promise<string> {
+    if (!banner) return ''
+    const { code } = await markdownProcessor.render(banner)
+    return code
+}
+
 export async function getAllProducts(): Promise<Product[]> {
     const stripeProducts = await stripeAPI.products.list({
         expand: ['data.default_price'],
     })
-    const products: Product[] = stripeProducts.data.map((product) => {
+    const products: Product[] = await Promise.all(stripeProducts.data.map(async (product) => {
         const price = product.default_price as Stripe.Price
         if (price.unit_amount === null) {
             throw new Error(
@@ -36,12 +51,12 @@ export async function getAllProducts(): Promise<Product[]> {
             // Looking into what this is
             item_id: product.id,
             status: status,
-            banner: '',
+            banner: await renderBanner(product.metadata.banner),
             price: price.unit_amount,
             currency: price.currency,
             weight: Number(weight),
             unitVolume: Number(product.metadata.unitVolume ?? 0),
         }
-    })
+    }))
     return products
 }

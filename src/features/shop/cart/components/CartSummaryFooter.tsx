@@ -20,6 +20,12 @@ export default function CartSummaryFooter() {
                 <SummaryPrimaryAction href="/shop/checkout">
                     Proceed to Checkout
                 </SummaryPrimaryAction>
+                <a
+                    href="/shop"
+                    className="text-center text-base font-semibold text-blue hover:underline"
+                >
+                    Continue Shopping
+                </a>
             </div>
         </div>
     )

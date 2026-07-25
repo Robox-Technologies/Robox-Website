@@ -11,6 +11,9 @@
 
 @theme {
     --color-blue: #2588c7;
+    /* Hover shade for blue CTAs. `hover:bg-blue-dark` was already in use on the
+       checkout buttons but resolved to nothing without this. */
+    --color-blue-dark: #1c6b9e;
     --color-green: #91cc31;
     --color-yellow: #ffcd44;
     --color-red: #ff6166;

@@ -26,6 +26,7 @@ export function StripePaymentForm({
     const [submitting, setSubmitting] = useState(false)
     const [message, setMessage] = useState<string | null>(null)
     const [email, setEmail] = useState<string | null>(null)
+    const [termsAccepted, setTermsAccepted] = useState(false)
 
     const handleAddressChange = (
         event: StripeAddressElementChangeEvent,
@@ -50,7 +51,7 @@ export function StripePaymentForm({
 
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault()
-        if (!stripe || !elements) {
+        if (!stripe || !elements || !termsAccepted) {
             return
         }
         setSubmitting(true)
@@ -79,9 +80,33 @@ export function StripePaymentForm({
             {message ? (
                 <p className="mb-0 text-sm text-red-600">{message}</p>
             ) : null}
+            <div className="flex items-start gap-2">
+                <input
+                    type="checkbox"
+                    id="termsConsent"
+                    required
+                    checked={termsAccepted}
+                    onChange={(event) =>
+                        setTermsAccepted(event.currentTarget.checked)
+                    }
+                    className="mt-1.5 h-4 w-4 shrink-0"
+                />
+                <label htmlFor="termsConsent" className="text-base">
+                    I agree to the{' '}
+                    <a
+                        href="/tos"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline"
+                    >
+                        Consumer Terms of Sale
+                    </a>{' '}
+                    for this purchase.
+                </label>
+            </div>
             <button
                 type="submit"
-                disabled={!stripe || !elements || submitting}
+                disabled={!stripe || !elements || submitting || !termsAccepted}
                 className="inline-flex items-center justify-center rounded-lg bg-blue px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-dark disabled:cursor-not-allowed disabled:opacity-60"
             >
                 {submitting ? (

@@ -54,9 +54,23 @@ const priceText = formatPrice(product.price)
 ---
 <StandardLayout title={product.name}>
     <Article>
+        <p class="mb-4 text-base">
+            <a href="/shop" class="underline opacity-80 hover:opacity-100">Shop all</a>
+            &nbsp;/&nbsp;{product.name}
+        </p>
         <div class="w-full flex flex-row max-xl:flex-col gap-8">
             <Carousel images={images} client:load/>
             <div class="flex-1 flex flex-col gap-2">
+                {
+                    /* Products can carry a promo line (the 10-Pack's "Save 5%"),
+                       authored as HTML upstream in Stripe. */
+                    product.banner && (
+                        <div
+                            class="product-banner mb-4 rounded-lg bg-green px-3 py-2"
+                            set:html={product.banner}
+                        />
+                    )
+                }
                 <div class="flex flex-col gap-2">
                     <h1 class="text-5xl font-bolder">
                         {product.name}
@@ -75,9 +89,17 @@ const priceText = formatPrice(product.price)
             </div>
         </div>
         <div class="w-full mt-16">
-            <div class="w-full mt-16 prose max-w-none">
-                <description.Content /> 
+            <div class="w-full mt-16 max-w-none">
+                <description.Content />
             </div>
         </div>
     </Article>
 </StandardLayout>
+
+<style>
+    /* The banner is upstream HTML (a wrapped <p>), so strip its default margins
+       the way the original's .product-banner did. */
+    .product-banner :global(*) {
+        margin: 0;
+    }
+</style>

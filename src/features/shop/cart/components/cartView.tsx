@@ -21,6 +21,14 @@ export default function CartView({
     } = useCartEntries(products)
     const subtotalCents = useCartTotals(products)
     const showSummaryContent = entries.length > 0
+    // The original lists preorder items under their own heading so it's clear
+    // which part of the order ships later.
+    const availableEntries = entries.filter(
+        ({ product }) => product.status !== 'preorder',
+    )
+    const preorderEntries = entries.filter(
+        ({ product }) => product.status === 'preorder',
+    )
     const summaryLines = [
         {
             id: 'subtotal',
@@ -41,13 +49,22 @@ export default function CartView({
                 {entries.length === 0 ? (
                     <CartEmptyState />
                 ) : (
-                    <CartItemsSection
-                        title="Cart Items"
-                        items={entries}
-                        imageSrcById={imageSrcById}
-                        onInputChange={updateQuantity}
-                        onRemove={removeItem}
-                    />
+                    <>
+                        <CartItemsSection
+                            title="Cart Items"
+                            items={availableEntries}
+                            imageSrcById={imageSrcById}
+                            onInputChange={updateQuantity}
+                            onRemove={removeItem}
+                        />
+                        <CartItemsSection
+                            title="Preorder Now"
+                            items={preorderEntries}
+                            imageSrcById={imageSrcById}
+                            onInputChange={updateQuantity}
+                            onRemove={removeItem}
+                        />
+                    </>
                 )}
             </div>
 
