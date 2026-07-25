@@ -43,7 +43,7 @@ const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
                 About
             </HeaderLink>
             <HeaderLink
-                href="/"
+                href="#contactUs"
                 className={`max-[1050px]:hidden ${isWorkshop ? 'text-white' : ''}`}
             >
                 Contact
@@ -111,7 +111,10 @@ const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
         >
             About
         </HeaderLink>
-        <HeaderLink href="/" className={isWorkshop ? 'text-white' : ''}>
+        <HeaderLink
+            href="#contactUs"
+            className={isWorkshop ? 'text-white' : ''}
+        >
             Contact
         </HeaderLink>
         <HeaderLink icon={faCompass} href="/student">

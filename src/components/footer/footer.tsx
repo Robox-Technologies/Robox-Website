@@ -39,7 +39,7 @@ export default function Footer() {
                     <FooterLink href="/student">Ro/Box Hub</FooterLink>
                     <FooterLink href="/shop">Shop</FooterLink>
                 </div>
-                <div className="flex flex-col gap-4">
+                <div id="contactUs" className="flex flex-col gap-4">
                     <h2 className="text-2xl font-semibold">Connect With Us</h2>
                     <FooterLink href="https://www.instagram.com/robox.kit" external>
                         <FontAwesomeIcon
