@@ -43,6 +43,74 @@ export async function createProject(): Promise<string> {
     await persist()
     return id
 }
+/**
+ * Adopts a project parsed out of a `.robox` file, as the original's
+ * `importProject` did. The payload is untrusted, so fields are copied across
+ * one at a time onto a fresh empty project rather than spread — that keeps
+ * unknown keys (and `__proto__`) out, and fills in anything the file omits.
+ * Returns the new project's id, or null if the payload isn't a project.
+ */
+export async function importProject(payload: unknown): Promise<string | null> {
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+        return null
+    }
+    const incoming = payload as Record<string, unknown>
+    if (typeof incoming.name !== 'string' || !('workspace' in incoming)) {
+        return null
+    }
+
+    const project = generateEmptyProject()
+    project.name = incoming.name
+    project.time = dayjs()
+    project.workspace =
+        incoming.workspace && typeof incoming.workspace === 'object'
+            ? (incoming.workspace as Record<string, unknown>)
+            : null
+    // Thumbnails are data URLs rendered straight into an <img src>.
+    project.thumbnail =
+        typeof incoming.thumbnail === 'string' && incoming.thumbnail
+            ? sanitizeImageDataUrl(incoming.thumbnail) || null
+            : null
+
+    if (incoming.extensions && typeof incoming.extensions === 'object') {
+        const extensions = incoming.extensions as Record<string, unknown>
+        for (const key of ExtensionKeys) {
+            if (typeof extensions[key] === 'boolean') {
+                project.extensions[key] = extensions[key]
+            }
+        }
+    }
+    if (
+        incoming.sensors &&
+        typeof incoming.sensors === 'object' &&
+        !Array.isArray(incoming.sensors)
+    ) {
+        project.sensors = incoming.sensors as UserProject['sensors']
+    }
+
+    const db = await getDB()
+    const id = crypto.randomUUID()
+    await db.run(`INSERT INTO ${PROJECTS_TABLE} (id, data) VALUES (?, ?);`, [
+        id,
+        JSON.stringify(project),
+    ])
+    await persist()
+    return id
+}
+
+/** Reads a `.robox` file (JSON) and imports it. Null if it can't be parsed. */
+export async function importProjectFile(file: File): Promise<string | null> {
+    if (file.type !== 'application/json' && !file.name.endsWith('.robox')) {
+        return null
+    }
+    try {
+        return await importProject(JSON.parse(await file.text()))
+    } catch (e) {
+        console.error('Failed to parse .robox file:', e)
+        return null
+    }
+}
+
 export async function getProject(id: string): Promise<UserProject | null> {
     if (typeof window === 'undefined') return null
     const db = await getDB()
