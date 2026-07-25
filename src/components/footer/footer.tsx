@@ -24,7 +24,11 @@ export default function Footer() {
                         src={eyes.src}
                         alt=""
                         aria-hidden="true"
-                        className="absolute top-1/2 left-[18%] w-20 -translate-y-1/2 hidden md:block"
+                        /* Bottom edge on the footer's midline and left edge on
+                           the clipped diagonal, matching the original. No
+                           transform utilities here — the eye-tracking script in
+                           StandardLayout owns this element's transform. */
+                        className="eyes absolute bottom-1/2 left-[3vw] w-[195px] max-w-full hidden md:block"
                     />
                 </Clipper>
             </div>

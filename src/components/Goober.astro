@@ -6,6 +6,10 @@
  * Positioning is left to the caller via `class` (on the shape wrapper) and
  * `eyesClass` (on the eyes overlay), mirroring the original site's per-placement
  * offsets. Width is set by the caller; height follows the SVG's aspect ratio.
+ *
+ * The eyes overlay carries the `eyes` class, which the cursor-tracking script in
+ * StandardLayout hooks onto — so `eyesClass` must position with insets only, as
+ * the script owns the element's `transform`.
  */
 import eyesImg from '@/images/goobers/eyes.svg'
 
@@ -25,7 +29,7 @@ const { shape, eyes = false, class: className, eyesClass } = Astro.props
             <img
                 src={eyesImg.src}
                 alt=""
-                class:list={['absolute h-auto object-contain', eyesClass]}
+                class:list={['eyes absolute h-auto object-contain', eyesClass]}
             />
         )
     }

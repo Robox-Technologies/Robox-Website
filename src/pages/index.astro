@@ -54,7 +54,7 @@ const heroMobileImage = await getImage({src: heroMobile, priority: true, width: 
             <Image src={article1} alt="Robox Kit Components" class="rounded-lg max-w-full max-h-full w-1/2 lg:w-3/10"/>
         </ArticleSection>
         <ArticleSection id="moto" direction="RTL" className="relative isolate">
-            <Goober shape={star} class="left-[15%] top-[max(-35%,-150px)] w-[300px] max-lg:hidden" />
+            <Goober shape={star} class="left-[15%] top-[max(-35%,-150px)] w-[290px] max-[1000px]:hidden" />
             <ArticleText className="lg:w-1/2 w-full">
                 <h1 class=" text-6xl">Build it. Code it. Bring it to life.</h1>
                 <p class="text-xl leading-[150%]">
@@ -76,8 +76,8 @@ const heroMobileImage = await getImage({src: heroMobile, priority: true, width: 
             <Goober
                 shape={square}
                 eyes
-                class="bottom-[-32px] right-[-32px] w-[150px]"
-                eyesClass="top-[20%] left-[20%] w-[68%]"
+                class="bottom-[-32px] right-[-32px] w-[150px] max-[1000px]:hidden"
+                eyesClass="top-[20%] left-[20%] w-[103px]"
             />
             <ArticleText className="lg:w-1/2 w-full">
                 <h1 class=" text-6xl">Teacher Hub</h1>
