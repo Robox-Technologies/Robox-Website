@@ -1,0 +1,80 @@
+---
+/**
+ * Shared shell for the legal pages (/privacy, /tos), whose bodies come straight
+ * from markdown. The type scale mirrors the original site's `_common.scss`
+ * heading/body mixins, since markdown content can't carry Tailwind classes.
+ *
+ * `RoboxSectionize` wraps each `##` block in `<section class="articleSection">`,
+ * so the rules below reach into those.
+ */
+import StandardLayout from '@/layouts/StandardLayout.astro'
+
+interface Props {
+    title: string
+}
+const { title } = Astro.props
+---
+
+<StandardLayout title={title}>
+    <article class="legal">
+        <slot />
+    </article>
+</StandardLayout>
+
+<style>
+    /* The original's --articleMargin: 64px, halved below 1000px. */
+    .legal {
+        padding: 64px;
+    }
+
+    @media (max-width: 1000px) {
+        .legal {
+            padding: 64px 32px;
+        }
+    }
+
+    .legal :global(h1) {
+        margin: 0 0 32px;
+    }
+
+    .legal :global(h2) {
+        font-size: 25px;
+        font-weight: 500;
+        margin: 0.83em 0;
+    }
+
+    .legal :global(p),
+    .legal :global(li) {
+        font-size: 18px;
+        line-height: 150%;
+    }
+
+    .legal :global(p) {
+        margin: 1em 0;
+    }
+
+    .legal :global(ul),
+    .legal :global(ol) {
+        font-size: 18px;
+        line-height: 150%;
+        margin: 1em 0;
+        padding-left: 40px;
+    }
+
+    .legal :global(ul) {
+        list-style: disc;
+    }
+
+    .legal :global(ol) {
+        list-style: decimal;
+    }
+
+    .legal :global(a) {
+        text-decoration: underline;
+    }
+
+    /* Sections come from the markdown sectionizer; space them like the original. */
+    .legal :global(section.articleSection) {
+        margin-bottom: 32px;
+    }
+</style>
