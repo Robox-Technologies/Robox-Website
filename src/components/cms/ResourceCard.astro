@@ -1,0 +1,88 @@
+---
+/**
+ * Card for a CMS content item, following the original's `assembly-card`:
+ * thumbnail on top, preview title, then the call-to-action with a chevron and
+ * an underline that grows on hover.
+ *
+ * Deliberately plain markup rather than the React `Card` island: its slots are
+ * conditional here (items may have no thumbnail and no link), and Astro drops
+ * slot content wrapped in an expression when the host is a framework
+ * component. The class names mirror `card.tsx` so the two look identical.
+ */
+import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import type { CMSItem } from '@/utils/server/cms.server'
+import { itemHref } from '@/utils/server/cms.server'
+
+interface Props {
+    item: CMSItem
+}
+
+const { item } = Astro.props
+const href = itemHref(item)
+const [width, height, , , path] = faChevronRight.icon
+const chevron = Array.isArray(path) ? path.join(' ') : path
+// Resources are files served by the CMS; open those in a new tab like the
+// original did, but keep generated article pages in the same one.
+const external = item.type === 'resource'
+---
+
+<div
+    class="card resource-card box-shadow flex w-62.5 max-w-[350px] flex-col overflow-hidden rounded-3xl bg-white"
+>
+    {
+        item.thumbnailUrl && (
+            <img
+                src={item.thumbnailUrl}
+                alt=""
+                loading="lazy"
+                class="aspect-video w-full object-cover"
+            />
+        )
+    }
+    <div class="card-children flex flex-1 flex-col gap-2 pb-4">
+        <div class="card-content flex flex-col p-4">
+            <div class="card-top-row mb-2 flex items-center justify-between">
+                <h2 class="text-xl font-bold">{item.previewTitle}</h2>
+            </div>
+        </div>
+        {
+            href && (
+                <div class="mt-auto px-4">
+                    <a
+                        href={href}
+                        {...(external
+                            ? { target: '_blank', rel: 'noopener noreferrer' }
+                            : {})}
+                        class="cta inline-flex items-center gap-2 text-base font-semibold"
+                    >
+                        <span class="underline-grow">{item.callToAction}</span>
+                        <svg
+                            class="h-3 w-3 shrink-0"
+                            viewBox={`0 0 ${width} ${height}`}
+                            aria-hidden="true"
+                        >
+                            <path d={chevron} fill="currentColor" />
+                        </svg>
+                    </a>
+                </div>
+            )
+        }
+    </div>
+</div>
+
+<style>
+    /* The original's `underline-grow`: the rule sweeps out from the left. */
+    .underline-grow {
+        background-image: linear-gradient(currentColor, currentColor);
+        background-position: 0 100%;
+        background-repeat: no-repeat;
+        background-size: var(--underline-width, 0) 2px;
+        transition: background-size 0.2s ease-out;
+        padding-bottom: 2px;
+    }
+
+    .cta:hover .underline-grow,
+    .cta:focus-visible .underline-grow {
+        --underline-width: 100%;
+    }
+</style>

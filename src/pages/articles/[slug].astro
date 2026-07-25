@@ -1,0 +1,131 @@
+---
+import type { GetStaticPaths } from 'astro'
+import StandardLayout from '@/layouts/StandardLayout.astro'
+import { getCMSContent, type CMSItem } from '@/utils/server/cms.server'
+import { lexicalToHtml } from '@/utils/server/lexicalToHtml'
+import { faCalendar } from '@fortawesome/free-solid-svg-icons'
+
+export const getStaticPaths = (async () => {
+    const content = await getCMSContent()
+    return content
+        .filter((item) => item.type === 'article')
+        .map((item) => ({
+            params: { slug: item.slug },
+            props: { item },
+        }))
+}) satisfies GetStaticPaths
+
+interface Props {
+    item: CMSItem
+}
+
+const { item } = Astro.props
+const html = lexicalToHtml(item.content)
+const posted = new Date(item.createdAt).toLocaleDateString('en-AU')
+const [width, height, , , path] = faCalendar.icon
+const calendar = Array.isArray(path) ? path.join(' ') : path
+---
+
+<StandardLayout title={item.previewTitle}>
+    <article class="article px-8 py-16 md:px-16">
+        <header>
+            <p class="mb-2 text-lg font-semibold text-tone3">
+                {item.previewTitle}
+            </p>
+            <h1 class="mb-6">{item.articleTitle}</h1>
+            {
+                item.author && (
+                    <h2 class="mb-4 text-xl text-[#868686]">
+                        Posted by{' '}
+                        <span class="font-extrabold text-black">
+                            {item.author}
+                        </span>
+                    </h2>
+                )
+            }
+            <hr class="my-4 h-0.5 border-0 bg-red" />
+            <p class="flex items-center gap-2 text-base">
+                <svg
+                    class="h-4 w-4 shrink-0 text-red"
+                    viewBox={`0 0 ${width} ${height}`}
+                    aria-hidden="true"
+                >
+                    <path d={calendar} fill="currentColor"></path>
+                </svg>
+                Posted on <span>{posted}</span>
+            </p>
+        </header>
+
+        <div class="content mt-8 max-w-[800px]" set:html={html} />
+    </article>
+</StandardLayout>
+
+<style>
+    /* Type scale for CMS-authored markup, which can't carry Tailwind classes.
+       Mirrors the original's article.scss. */
+    .content :global(h2) {
+        font-size: 25px;
+        font-weight: 600;
+        margin: 1.5em 0 0.5em;
+    }
+
+    .content :global(h3) {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 1.25em 0 0.5em;
+    }
+
+    .content :global(p) {
+        font-size: 18px;
+        line-height: 150%;
+        margin: 1em 0;
+    }
+
+    .content :global(ul),
+    .content :global(ol) {
+        font-size: 18px;
+        line-height: 150%;
+        margin: 1em 0;
+        padding-left: 40px;
+    }
+
+    .content :global(ul) {
+        list-style: disc;
+    }
+
+    .content :global(ol) {
+        list-style: decimal;
+    }
+
+    .content :global(a) {
+        color: var(--color-blue);
+        text-decoration: underline;
+    }
+
+    .content :global(img) {
+        max-width: 50%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .content :global(hr) {
+        height: 2px;
+        border: 0;
+        background-color: var(--color-black);
+        margin: 2em 0;
+    }
+
+    .content :global(code) {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.9em;
+        background: var(--color-tone2);
+        border-radius: 4px;
+        padding: 0.1em 0.3em;
+    }
+
+    @media (max-width: 1000px) {
+        .content :global(img) {
+            max-width: 100%;
+        }
+    }
+</style>

@@ -4,7 +4,10 @@ import StandardLayout from '../layouts/StandardLayout.astro';
 import Hero from '@/images/teacherHub/hero.jpg';
 import Article from '@/components/article/Article';
 import eyes from '@/images/goobers/eyes.svg';
+import ResourceCard from '@/components/cms/ResourceCard.astro';
+import { getCMSContentFor } from '@/utils/server/cms.server';
 
+const lessonPlans = await getCMSContentFor('Teacher Resources');
 ---
 <StandardLayout title="Teacher Resources">
     <PageHero gradient='positive' className='bg-black' leftWidth='66%' lineWidth='20px' overlap='10vw'>
@@ -30,5 +33,18 @@ import eyes from '@/images/goobers/eyes.svg';
         <h1 class="text-5xl font-bold mb-8">
             Lesson Plans
         </h1>
+        {
+            lessonPlans.length > 0 ? (
+                <div class="card-holder flex w-full flex-wrap items-stretch gap-8">
+                    {lessonPlans.map((item) => (
+                        <ResourceCard item={item} />
+                    ))}
+                </div>
+            ) : (
+                <p class="text-lg text-tone3">
+                    Lesson plans are on their way — check back soon.
+                </p>
+            )
+        }
     </Article>
 </StandardLayout>

@@ -1,4 +1,24 @@
+---
+import ResourceCard from '@/components/cms/ResourceCard.astro'
+import { getCMSContentFor } from '@/utils/server/cms.server'
+
+const resources = await getCMSContentFor('Student Resources')
+---
 
 <h1 class="text-5xl font-bold mb-8">
     Resources for Students
 </h1>
+
+{
+    resources.length > 0 ? (
+        <div class="card-holder mb-16 flex w-full flex-wrap items-stretch gap-8">
+            {resources.map((item) => (
+                <ResourceCard item={item} />
+            ))}
+        </div>
+    ) : (
+        <p class="mb-16 text-lg text-tone3">
+            Student resources are on their way — check back soon.
+        </p>
+    )
+}
