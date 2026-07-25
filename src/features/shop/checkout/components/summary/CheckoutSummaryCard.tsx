@@ -12,7 +12,7 @@ export default function CheckoutSummaryCard({
 }) {
     const { entries } = useCartEntries(products)
     const subtotalCents = useCartTotals(products)
-    const { quote, loading, error } = useShipping(products)
+    const { quote, loading, error, shippingInfo } = useShipping(products)
     const summaryLines = [
         {
             id: 'subtotal',
@@ -36,9 +36,16 @@ export default function CheckoutSummaryCard({
             {entries.length > 0 ? (
                 <CheckoutSummaryBody
                     lines={summaryLines}
-                    shippingCents={quote?.shipping ?? null}
+                    /* A voucher can be priced without an address, and that
+                       quote carries shipping: 0 — which isn't a real quote, so
+                       keep saying "calculated at checkout" until we have one. */
+                    shippingCents={
+                        shippingInfo ? (quote?.shipping ?? null) : null
+                    }
                     shippingLoading={loading}
                     shippingError={error}
+                    discountCents={quote?.discount ?? 0}
+                    discountStatus={quote?.discountStatus ?? 'unset'}
                 />
             ) : null}
         </SummaryCard>

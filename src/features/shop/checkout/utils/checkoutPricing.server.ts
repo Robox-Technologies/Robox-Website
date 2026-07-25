@@ -1,6 +1,11 @@
 import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 import type { CartItems } from '@/features/shop/cart/types/cart'
 import { calculateAuspostShippingCents } from './auspost.server'
+import {
+    calculateDiscountCents,
+    resolveDiscount,
+    type DiscountStatus,
+} from './discount.server'
 
 const MIN_CHARGE_CENTS = 50
 const DOMESTIC_COUNTRY_CODE = 'AU'
@@ -13,6 +18,8 @@ export type ShippingInfo = {
 export type CheckoutTotals = {
     subtotalCents: number
     shippingCents: number
+    discountCents: number
+    discountStatus: DiscountStatus
     totalCents: number
 }
 
@@ -81,6 +88,7 @@ async function resolveEntries(
 export async function calculateCheckoutTotals(
     cart: CartLike,
     shippingInfo?: ShippingInfo | null,
+    voucher?: string | null,
 ): Promise<CheckoutTotals> {
     const entries = await resolveEntries(cart)
 
@@ -120,7 +128,33 @@ export async function calculateCheckoutTotals(
         })
     }
 
-    const totalCents = subtotalCents + shippingCents
+    const preDiscountTotalCents = subtotalCents + shippingCents
+
+    // The discount comes off the post-shipping total, and is always resolved
+    // here rather than trusted from the client — this is the amount charged.
+    let discountCents = 0
+    let discountStatus: DiscountStatus = 'unset'
+
+    if (voucher?.trim()) {
+        const discount = await resolveDiscount(voucher)
+
+        if (!discount) {
+            discountStatus = 'error'
+        } else {
+            discountCents = calculateDiscountCents({
+                discount,
+                lines: entries.map((entry) => ({
+                    itemId: entry.itemId,
+                    lineTotalCents: entry.unitPriceCents * entry.quantity,
+                })),
+                preDiscountTotalCents,
+            })
+            // Valid code that happens to take nothing off this cart.
+            discountStatus = discountCents === 0 ? 'stale' : 'success'
+        }
+    }
+
+    const totalCents = preDiscountTotalCents - discountCents
 
     if (totalCents < MIN_CHARGE_CENTS) {
         throw new Error('Validated total is below minimum charge amount')
@@ -129,6 +163,8 @@ export async function calculateCheckoutTotals(
     return {
         subtotalCents,
         shippingCents,
+        discountCents,
+        discountStatus,
         totalCents,
     }
 }

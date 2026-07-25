@@ -7,12 +7,14 @@ import type { Product } from '@/types/shop'
 import {
     shippingAddress,
     shippingQuote,
+    voucherCode,
 } from '../state/shippingStore'
 
 export function useShipping(products?: Product[]) {
     const currentCart = useStore(cartItems)
     const address = useStore(shippingAddress)
     const quote = useStore(shippingQuote)
+    const voucher = useStore(voucherCode)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -26,7 +28,11 @@ export function useShipping(products?: Product[]) {
         const country = address?.country.trim()
         const postcode = address?.postcode.trim()
 
-        if (!country || !postcode) {
+        const hasAddress = Boolean(country && postcode)
+
+        // A voucher re-prices the order on its own, so quote for it even before
+        // an address exists — the original applied discounts the same way.
+        if (!hasAddress && !voucher) {
             shippingQuote.set(null)
             setLoading(false)
             setError(null)
@@ -41,10 +47,10 @@ export function useShipping(products?: Product[]) {
         void (async () => {
             const result = await actions.getShippingQuote({
                 products: currentCart,
-                shippingInfo: {
-                    country,
-                    postcode,
-                },
+                shippingInfo: hasAddress
+                    ? { country: country!, postcode: postcode! }
+                    : null,
+                voucher,
             })
 
             if (cancelled) {
@@ -65,7 +71,7 @@ export function useShipping(products?: Product[]) {
         return () => {
             cancelled = true
         }
-    }, [address?.country, address?.postcode, currentCart, products])
+    }, [address?.country, address?.postcode, currentCart, products, voucher])
 
     return {
         quote,

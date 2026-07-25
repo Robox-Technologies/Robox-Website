@@ -22,10 +22,15 @@ export const updatePaymentIntent = defineAction({
             })
             .nullable()
             .optional(),
+        voucher: z.string().trim().max(64).nullable().optional(),
     }),
-    async handler({ paymentIntentId, products, shippingInfo }) {
+    async handler({ paymentIntentId, products, shippingInfo, voucher }) {
         // Recalculate totals with new shipping info
-        const totals = await calculateCheckoutTotals(products, shippingInfo)
+        const totals = await calculateCheckoutTotals(
+            products,
+            shippingInfo,
+            voucher,
+        )
 
         // Fetch current payment intent to verify it exists and is in updatable state
         const currentIntent = await stripeAPI.paymentIntents.retrieve(paymentIntentId)
@@ -51,6 +56,7 @@ export const updatePaymentIntent = defineAction({
                 products: normalizedProducts,
                 subtotalCents: totals.subtotalCents.toString(),
                 shippingCents: totals.shippingCents.toString(),
+                discountCents: totals.discountCents.toString(),
             },
         })
 
@@ -58,6 +64,8 @@ export const updatePaymentIntent = defineAction({
             id: updatedIntent.id,
             subtotal: totals.subtotalCents,
             shipping: totals.shippingCents,
+            discount: totals.discountCents,
+            discountStatus: totals.discountStatus,
             total: updatedIntent.amount,
             currency: 'aud' as const,
             status: updatedIntent.status,

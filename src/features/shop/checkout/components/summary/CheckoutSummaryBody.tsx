@@ -2,6 +2,7 @@ import CheckoutSummaryRow from './CheckoutSummaryRow'
 import CheckoutVoucher from './CheckoutVoucher'
 import type { SummaryLine } from '@/components/shop/summary/SummaryLineList'
 import { formatPrice } from '@/utils/formatPrice'
+import type { DiscountStatus } from '../../state/shippingStore'
 
 function getLine(lines: SummaryLine[], id: string) {
     return lines.find((line) => line.id === id)
@@ -12,11 +13,15 @@ export default function CheckoutSummaryBody({
     shippingCents,
     shippingLoading,
     shippingError,
+    discountCents,
+    discountStatus,
 }: {
     lines: SummaryLine[]
     shippingCents: number | null
     shippingLoading: boolean
     shippingError: string | null
+    discountCents: number
+    discountStatus: DiscountStatus
 }) {
     const subtotalLine = getLine(lines, 'subtotal')
     const totalLine = getLine(lines, 'total')
@@ -42,7 +47,17 @@ export default function CheckoutSummaryBody({
                 }
             />
 
-            <CheckoutVoucher />
+            {discountCents > 0 && (
+                <CheckoutSummaryRow
+                    label="Discount"
+                    value={`-${formatPrice(discountCents, true)}`}
+                />
+            )}
+
+            <CheckoutVoucher
+                status={discountStatus}
+                disabled={shippingLoading}
+            />
 
             <div className="mt-auto">
                 <hr className="mb-4 border-t border-gray-200" />

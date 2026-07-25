@@ -22,9 +22,14 @@ export const createPaymentIntent = defineAction({
             .nullable()
             .optional(),
         cost: z.number().int().min(50),
+        voucher: z.string().trim().max(64).nullable().optional(),
     }),
-    async handler({ products, shippingInfo, cost }) {
-        const totals = await calculateCheckoutTotals(products, shippingInfo)
+    async handler({ products, shippingInfo, cost, voucher }) {
+        const totals = await calculateCheckoutTotals(
+            products,
+            shippingInfo,
+            voucher,
+        )
 
         // Compare against the subtotal, not the total: the client sends the cart
         // value it computed, and it can't know the shipping we're about to quote.
@@ -47,6 +52,7 @@ export const createPaymentIntent = defineAction({
                 products: normalizedProducts,
                 subtotalCents: totals.subtotalCents.toString(),
                 shippingCents: totals.shippingCents.toString(),
+                discountCents: totals.discountCents.toString(),
             },
         })
 

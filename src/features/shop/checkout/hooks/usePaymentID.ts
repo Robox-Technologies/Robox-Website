@@ -4,12 +4,13 @@ import { cartItems } from '@/state/cartStore'
 import { useEffect, useRef, useState } from 'react'
 import type { Product } from '@/types/shop'
 import { useCartTotals } from '@/features/shop/hooks/useCartTotals'
-import { shippingAddress } from '../state/shippingStore'
+import { shippingAddress, voucherCode } from '../state/shippingStore'
 
 function buildSyncKey(
     subtotalCents: number,
     shippingInfo: { country: string; postcode: string } | null,
     currentCart: Record<string, { quantity: number } | number>,
+    voucher: string,
 ) {
     const shippingKey = shippingInfo
         ? `${shippingInfo.country.trim().toUpperCase()}:${shippingInfo.postcode.trim()}`
@@ -25,12 +26,13 @@ function buildSyncKey(
         .sort()
         .join(',')
 
-    return `${subtotalCents}:${shippingKey}:${cartKey}`
+    return `${subtotalCents}:${shippingKey}:${cartKey}:${voucher}`
 }
 
 export function usePaymentID(products: Product[]) {
     const currentCart = useStore(cartItems)
     const shippingInfo = useStore(shippingAddress)
+    const voucher = useStore(voucherCode)
     const subtotalCents = useCartTotals(products)
     const [paymentID, setPaymentID] = useState<string | null>(null)
     const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -48,7 +50,12 @@ export function usePaymentID(products: Product[]) {
             return
         }
 
-        const syncKey = buildSyncKey(subtotalCents, shippingInfo, currentCart)
+        const syncKey = buildSyncKey(
+            subtotalCents,
+            shippingInfo,
+            currentCart,
+            voucher,
+        )
 
         if (paymentID && lastSyncedKeyRef.current === syncKey) {
             return
@@ -65,6 +72,7 @@ export function usePaymentID(products: Product[]) {
                     paymentIntentId: paymentID,
                     products: currentCart,
                     shippingInfo: shippingInfo ?? null,
+                    voucher,
                 })
 
                 if (cancelled) {
@@ -87,6 +95,7 @@ export function usePaymentID(products: Product[]) {
                 products: currentCart,
                 shippingInfo: shippingInfo ?? null,
                 cost: subtotalCents,
+                voucher,
             })
 
             if (cancelled) {
@@ -108,7 +117,7 @@ export function usePaymentID(products: Product[]) {
         return () => {
             cancelled = true
         }
-    }, [currentCart, paymentID, shippingInfo, subtotalCents])
+    }, [currentCart, paymentID, shippingInfo, subtotalCents, voucher])
 
     return {
         paymentID,
