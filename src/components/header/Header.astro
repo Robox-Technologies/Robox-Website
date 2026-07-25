@@ -146,6 +146,10 @@ const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
         width: 22px;
         height: 2px;
         border-radius: 2px;
+        /* The base layer colours every `span` dark, which beat the button's
+           text-white — take the button's colour back so the bars read on the
+           blue (or red) block they sit in. */
+        color: inherit;
         background: currentColor;
         transition:
             transform 0.25s ease,
@@ -167,9 +171,13 @@ const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
         visibility: hidden;
         opacity: 0;
         transform: translateY(-8px);
+        /* `visibility` has to be in the transition or it snaps to hidden on
+           close and the slide-up never plays. Discrete interpolation keeps it
+           visible for the whole duration, so the menu animates out as well. */
         transition:
             transform 0.25s ease,
-            opacity 0.25s ease;
+            opacity 0.25s ease,
+            visibility 0.25s ease;
     }
     .mobile-menu.open {
         visibility: visible;

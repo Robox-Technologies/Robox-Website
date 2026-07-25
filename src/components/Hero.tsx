@@ -53,25 +53,24 @@ export default function Hero({
         </section>
     )
 }
+/**
+ * A plain anchor rather than a click handler: the hero renders as static HTML
+ * with no island, so an onClick never fired. Smooth scrolling comes from
+ * `scroll-behavior` in global.css, and `#content` gets scroll-margin for the
+ * sticky header.
+ */
 function ScrollIndicator() {
     return (
-        <div className="absolute bottom-10 w-full flex justify-center hover:cursor-pointer">
-            <button
-                onClick={scrollToContent}
+        // Centring lives on the wrapper because `animate-bounce` owns the
+        // anchor's transform.
+        <div className="absolute bottom-4 flex w-full justify-center">
+            <a
+                href="#content"
                 aria-label="Scroll to content"
-                className="animate-bounce mt-8 flex flex-col items-center gap-2"
+                className="animate-bounce flex h-11 w-11 items-center justify-center rounded-full bg-black/90 text-primary hover:cursor-pointer"
             >
-                <FontAwesomeIcon
-                    icon={faChevronDown}
-                    className="h-6 w-6 text-white"
-                />
-            </button>
+                <FontAwesomeIcon icon={faChevronDown} className="h-6 w-6" />
+            </a>
         </div>
     )
-}
-function scrollToContent() {
-    const content = document.getElementById('content')
-    if (content) {
-        content.scrollIntoView({ behavior: 'smooth' })
-    }
 }
