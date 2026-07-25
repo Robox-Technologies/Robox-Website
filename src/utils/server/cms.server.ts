@@ -75,31 +75,94 @@ async function getJson<T>(path: string): Promise<T | null> {
     }
 }
 
-/** id -> absolute file url, for an upload collection. */
-async function getUploadUrls(
-    collection: 'media' | 'files',
-): Promise<Map<string, string>> {
-    const data = await getJson<{
-        docs: Array<{ id: string; url?: string }>
-    }>(`/api/${collection}?pagination=false`)
+type UploadDoc = {
+    id: string
+    url?: string
+    filename?: string
+    createdAt?: string
+}
 
-    const urls = new Map<string, string>()
+type UploadIndex = {
+    byId: Map<string, UploadDoc>
+    byCreatedSecond: Map<number, UploadDoc[]>
+}
+
+/** Seconds since epoch encoded in the leading four bytes of a Mongo ObjectId. */
+function idTimestamp(id: string): number | null {
+    if (!/^[0-9a-f]{24}$/i.test(id)) return null
+    return parseInt(id.slice(0, 8), 16)
+}
+
+/** Lowercase alphanumerics, so "Lesson 4" matches "... Lesson 4-1.pdf". */
+function normalise(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
+async function getUploadIndex(
+    collection: 'media' | 'files',
+): Promise<UploadIndex> {
+    const data = await getJson<{ docs: UploadDoc[] }>(
+        `/api/${collection}?pagination=false`,
+    )
+
+    const byId = new Map<string, UploadDoc>()
+    const byCreatedSecond = new Map<number, UploadDoc[]>()
+
     for (const doc of data?.docs ?? []) {
-        const url = absolute(doc.url)
-        if (url) urls.set(doc.id, url)
+        byId.set(doc.id, doc)
+        if (!doc.createdAt) continue
+        const second = Math.floor(new Date(doc.createdAt).getTime() / 1000)
+        if (!byCreatedSecond.has(second)) byCreatedSecond.set(second, [])
+        byCreatedSecond.get(second)!.push(doc)
     }
-    return urls
+
+    return { byId, byCreatedSecond }
+}
+
+/**
+ * Recover an upload whose id no longer exists.
+ *
+ * The media and files documents were re-inserted at some point keeping their
+ * `createdAt` but getting fresh ObjectIds, and nothing remapped the references
+ * in `content` — so every `thumbnail`/`File` id 404s (on cms.robox.com.au as
+ * well as locally). An ObjectId carries its creation second in its first four
+ * bytes, and the re-inserted documents kept that same value in `createdAt`, so
+ * the pairing is still recoverable. Where several uploads share a second, the
+ * one whose filename names the item wins.
+ *
+ * `scripts/repair-cms-upload-refs.mjs` writes these corrections back to the
+ * CMS; once that's run this never fires, because the id lookup hits first.
+ */
+function recoverUpload(
+    ref: string,
+    uploads: UploadIndex,
+    title: string,
+): UploadDoc | null {
+    const second = idTimestamp(ref)
+    if (second === null) return null
+
+    const candidates = uploads.byCreatedSecond.get(second) ?? []
+    if (candidates.length === 0) return null
+    if (candidates.length === 1) return candidates[0]
+
+    const named = candidates.filter((candidate) =>
+        normalise(candidate.filename ?? '').includes(normalise(title)),
+    )
+    return named.length === 1 ? named[0] : null
 }
 
 function resolveUpload(
     ref: UploadRef,
-    urls: Map<string, string>,
+    uploads: UploadIndex,
+    title: string,
 ): string | null {
     if (!ref) return null
     // Payload hands these back as a bare id here; keep the expanded shape
     // working too, since that's what the original expected.
-    if (typeof ref === 'string') return urls.get(ref) ?? null
-    return absolute(ref.url)
+    if (typeof ref !== 'string') return absolute(ref.url)
+
+    const doc = uploads.byId.get(ref) ?? recoverUpload(ref, uploads, title)
+    return absolute(doc?.url)
 }
 
 /**
@@ -117,9 +180,9 @@ export async function getCMSContent(): Promise<CMSItem[]> {
     )
     if (!data) return []
 
-    const [mediaUrls, fileUrls] = await Promise.all([
-        getUploadUrls('media'),
-        getUploadUrls('files'),
+    const [media, files] = await Promise.all([
+        getUploadIndex('media'),
+        getUploadIndex('files'),
     ])
 
     return data.docs
@@ -135,8 +198,12 @@ export async function getCMSContent(): Promise<CMSItem[]> {
             createdAt: item.createdAt,
             location: item.location,
             favorite: Boolean(item.favorite),
-            thumbnailUrl: resolveUpload(item.thumbnail, mediaUrls),
-            fileUrl: resolveUpload(item.File, fileUrls),
+            thumbnailUrl: resolveUpload(
+                item.thumbnail,
+                media,
+                item.previewTitle,
+            ),
+            fileUrl: resolveUpload(item.File, files, item.previewTitle),
             content: item.content ?? null,
         }))
         .sort((a, b) => {
