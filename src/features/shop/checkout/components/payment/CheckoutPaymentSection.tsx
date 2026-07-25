@@ -22,14 +22,21 @@ export default function CheckoutPaymentSection({
                     Your cart doesn’t have anything to pay for yet. Add a
                     product and come back.
                 </CheckoutStatePanel>
-            ) : error ? (
+            ) : error && !clientSecret ? (
                 <CheckoutStatePanel heading="Checkout Error">
                     An error occurred while preparing your checkout.
                     <br />
                     Please review your cart items and try again.
                 </CheckoutStatePanel>
             ) : (
-                <StripeCheckoutForm clientSecret={clientSecret} />
+                /* Once there's a payment intent, keep the form mounted and
+                   report failures inline. Swapping it out for a panel would
+                   discard everything typed — and a rejected address (AusPost
+                   404s on an incomplete postcode) is recoverable. */
+                <StripeCheckoutForm
+                    clientSecret={clientSecret}
+                    error={error}
+                />
             )}
         </section>
     )

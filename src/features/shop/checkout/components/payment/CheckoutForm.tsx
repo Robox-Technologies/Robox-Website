@@ -7,8 +7,10 @@ import { useState } from 'react'
 
 export default function CheckoutForm({
     clientSecret,
+    error,
 }: {
     clientSecret: string | null
+    error?: string | null
 }) {
     const [isReady, setReady] = useState(false)
     const isLoading = !isReady || !clientSecret
@@ -47,7 +49,14 @@ export default function CheckoutForm({
                 </div>
             )}
             <section className="relative flex min-h-72 flex-col gap-6">
-                
+                {error && !isLoading && (
+                    <p
+                        role="alert"
+                        className="mb-0 rounded-lg border border-red bg-red/15 px-4 py-3 text-base"
+                    >
+                        {error}
+                    </p>
+                )}
 
                 {clientSecret && (
                     <div className={isLoading ? 'invisible' : undefined}>

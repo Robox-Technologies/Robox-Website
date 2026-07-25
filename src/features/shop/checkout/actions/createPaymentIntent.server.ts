@@ -26,7 +26,12 @@ export const createPaymentIntent = defineAction({
     async handler({ products, shippingInfo, cost }) {
         const totals = await calculateCheckoutTotals(products, shippingInfo)
 
-        if (totals.totalCents !== cost) {
+        // Compare against the subtotal, not the total: the client sends the cart
+        // value it computed, and it can't know the shipping we're about to quote.
+        // Comparing totals meant that creating an intent with an address already
+        // filled in failed outright. The charged amount is `totals.totalCents`
+        // below either way, so this stays an integrity check on the cart.
+        if (totals.subtotalCents !== cost) {
             throw new Error('Price validation failed: submitted cost mismatch')
         }
 

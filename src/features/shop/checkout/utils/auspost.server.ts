@@ -61,6 +61,18 @@ function parseAuspostCostCents(payload: unknown): number {
     return Math.round(dollars * 100)
 }
 
+async function readAuspostError(response: Response): Promise<string | null> {
+    try {
+        const payload = (await response.json()) as {
+            error?: { errorMessage?: unknown }
+        }
+        const message = payload.error?.errorMessage
+        return typeof message === 'string' && message ? message : null
+    } catch {
+        return null
+    }
+}
+
 export async function calculateAuspostShippingCents({
     country,
     postcode,
@@ -116,7 +128,14 @@ export async function calculateAuspostShippingCents({
     )
 
     if (!response.ok) {
-        throw new Error(`AusPost request failed with status ${response.status}`)
+        // AusPost answers 404 (not 400) for rejected inputs — e.g. an
+        // incomplete postcode gets `{"error":{"errorMessage":"Please enter a
+        // valid To postcode."}}`. Pass their wording through; a bare status
+        // reads like an outage.
+        throw new Error(
+            (await readAuspostError(response)) ??
+                `AusPost request failed with status ${response.status}`,
+        )
     }
 
     const payload = await response.json()

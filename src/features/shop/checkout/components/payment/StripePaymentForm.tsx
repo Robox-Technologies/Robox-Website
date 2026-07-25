@@ -31,9 +31,17 @@ export function StripePaymentForm({
     const handleAddressChange = (
         event: StripeAddressElementChangeEvent,
     ) => {
+        // Wait for Stripe's own `complete` before quoting. This fires on every
+        // keystroke, and AusPost rejects half-typed postcodes with a 404 — so
+        // quoting eagerly meant a burst of errors on the way to a valid
+        // address. `complete` is country-aware, unlike a hand-rolled check.
+        if (!event.complete) {
+            setShippingInfo(null)
+            return
+        }
         const country = event.value.address.country.trim()
         const postcode = event.value.address.postal_code.trim()
-        if (!country || !postcode) {
+        if (!country) {
             setShippingInfo(null)
             return
         }
