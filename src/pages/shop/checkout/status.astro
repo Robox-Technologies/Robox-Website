@@ -1,227 +1,254 @@
 ---
 import StandardLayout from '@/layouts/StandardLayout.astro'
-import Article from '@/components/article/Article'
+import background from '@/images/shop/confirmation/background.svg'
+import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons'
+import {
+    faInstagram,
+    faLinkedinIn,
+    faXTwitter,
+} from '@fortawesome/free-brands-svg-icons'
 
-const initialTitle = 'Checking payment status'
-const initialDescription = 'Please wait while we confirm the result with Stripe.'
+/** Pull the raw path out of a FontAwesome icon so it can be inlined here. */
+function iconPath(icon: typeof faCircleExclamation) {
+    const [width, height, , , path] = icon.icon
+    return {
+        viewBox: `0 0 ${width} ${height}`,
+        d: Array.isArray(path) ? path.join(' ') : path,
+    }
+}
+
+const alertIcon = iconPath(faCircleExclamation)
+const socials = [
+    {
+        href: 'https://www.instagram.com/robox.kit',
+        label: 'Instagram',
+        icon: iconPath(faInstagram),
+    },
+    {
+        href: 'https://x.com/robox_kit',
+        label: 'X/Twitter',
+        icon: iconPath(faXTwitter),
+    },
+    {
+        href: 'https://www.linkedin.com/company/roboxeducation',
+        label: 'LinkedIn',
+        icon: iconPath(faLinkedinIn),
+    },
+]
 ---
 
-<StandardLayout title="Checkout Status">
-    <Article className="w-full px-6! py-6! lg:flex lg:min-h-[calc(100vh-8rem)] lg:h-auto lg:flex-col lg:px-8!">
-        <div class="mb-6 flex items-center justify-between gap-4">
-            <a
-                href="/shop/checkout"
-                class="inline-flex items-center text-base font-semibold text-blue hover:underline"
-            >
-                ← Back to checkout
-            </a>
-            <a
-                href="/"
-                class="inline-flex items-center text-base font-semibold text-slate-600 hover:underline"
-            >
-                Home
-            </a>
+<StandardLayout title="Order Confirmation">
+    <div
+        class="flex min-h-[80vh] items-center justify-center bg-blue bg-cover bg-no-repeat p-8 md:p-16"
+        style={`background-image: url(${background.src})`}
+    >
+        <div
+            class="result-card w-full max-w-[800px] rounded-[20px] bg-primary p-8 text-center"
+        >
+            <div id="status-loading">
+                <div class="load-spinner mx-auto"></div>
+                <h1>Processing payment...</h1>
+                <h2 class="status-body">
+                    Sit tight! We're just processing your payment.<br />
+                    This may take a moment.
+                </h2>
+            </div>
+
+            <div id="status-failure" hidden>
+                <svg
+                    class="mx-auto mb-4 h-12 w-12 text-black"
+                    viewBox={alertIcon.viewBox}
+                    aria-hidden="true"
+                >
+                    <path d={alertIcon.d} fill="currentColor"></path>
+                </svg>
+                <h1>Payment failed</h1>
+                <h2 class="status-body">
+                    Something went wrong with your payment. Don't worry—you can
+                    try again or update your payment info.
+                </h2>
+                <a
+                    href="/shop/cart"
+                    class="box-shadow mt-8 inline-block rounded-[20px] bg-red px-6 py-4 text-2xl font-semibold text-primary"
+                >
+                    Back to cart
+                </a>
+            </div>
+
+            <div id="status-success" hidden>
+                <h1>Thank you!</h1>
+                <h2 class="status-body">
+                    Thank you for your purchase! We'll get started on your order
+                    right away.<span id="status-email-sentence" hidden
+                        >&#32;You will receive a confirmation email shortly at <strong
+                            id="status-email"></strong>.</span
+                    >
+                </h2>
+
+                <div class="mt-8">
+                    <p class="mb-0 text-tone3">Stay up to date with us!</p>
+                    <hr class="my-4 h-px border-0 bg-tone3" />
+                    <div class="flex justify-center gap-8">
+                        {
+                            socials.map((social) => (
+                                <a
+                                    href={social.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={social.label}
+                                >
+                                    <svg
+                                        class="h-6 w-6 text-tone3"
+                                        viewBox={social.icon.viewBox}
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            d={social.icon.d}
+                                            fill="currentColor"
+                                        />
+                                    </svg>
+                                </a>
+                            ))
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <section class="rounded-4xl border border-slate-200 bg-white p-8 shadow-[0_30px_80px_-50px_rgba(15,23,42,0.35)]">
-            <div
-                id="status-badge"
-                data-status-badge
-                class="inline-flex rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-700"
-            >
-                Loading
-            </div>
-
-            <h1 id="status-title" class="mt-6 text-4xl font-bold tracking-tight text-slate-950 lg:text-5xl">
-                {initialTitle}
-            </h1>
-            <p id="status-description" class="mt-4 max-w-2xl text-lg leading-8 text-slate-600">
-                {initialDescription}
-            </p>
-
-            <div id="status-details" hidden class="mt-8 grid gap-4 rounded-3xl border border-slate-200 bg-slate-50 p-5 sm:grid-cols-3"></div>
-
-            <div class="mt-8 flex flex-wrap gap-4">
-                <a
-                    href="/shop/checkout"
-                    class="inline-flex items-center justify-center rounded-full bg-blue px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-blue-dark"
-                >
-                    Return to checkout
-                </a>
-                <a
-                    href="/shop"
-                    class="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50"
-                >
-                    Browse products
-                </a>
-            </div>
-        </section>
-    </Article>
-
-    <script>
-        import { loadStripe } from '@stripe/stripe-js'
-
-        type PaymentIntentSummary = {
-            id: string
-            amount: number
-            status: string
-        }
-
-        type CheckoutStatusState = {
-            label: string
-            tone: string
-            heading: string
-            body: string
-            paymentIntent?: PaymentIntentSummary
-        }
-
-        const publishableKey = import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY
-        const badge = document.getElementById('status-badge')
-        const title = document.getElementById('status-title')
-        const description = document.getElementById('status-description')
-        const details = document.getElementById('status-details')
-
-        const setState = ({
-            label,
-            tone,
-            heading,
-            body,
-            paymentIntent,
-        }: CheckoutStatusState) => {
-            if (!badge || !title || !description || !details) {
-                return
-            }
-
-            badge.textContent = label
-            badge.className = `inline-flex rounded-full border px-4 py-2 text-sm font-semibold ${tone}`
-            title.textContent = heading
-            description.textContent = body
-
-            details.innerHTML = ''
-
-            if (paymentIntent) {
-                details.classList.remove('hidden')
-                details.innerHTML = `
-                    <div>
-                        <p class="text-sm font-medium text-slate-500">Payment ID</p>
-                        <p class="mt-1 break-all text-sm font-semibold text-slate-900">${paymentIntent.id}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-slate-500">Amount</p>
-                        <p class="mt-1 text-sm font-semibold text-slate-900">AU$${(paymentIntent.amount / 100).toFixed(2)}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-slate-500">Status</p>
-                        <p class="mt-1 text-sm font-semibold text-slate-900">${paymentIntent.status}</p>
-                    </div>
-                `
-            } else {
-                details.classList.add('hidden')
-            }
-        }
-
-        const fallbackState = (redirectStatus: string | null): CheckoutStatusState => {
-            if (redirectStatus === 'succeeded') {
-                return {
-                    label: 'Success',
-                    tone: 'border-emerald-200 bg-emerald-50 text-emerald-900',
-                    heading: 'Payment successful',
-                    body: 'Your payment was completed successfully. Thanks for your order.',
-                }
-            }
-
-            if (redirectStatus === 'processing') {
-                return {
-                    label: 'Processing',
-                    tone: 'border-amber-200 bg-amber-50 text-amber-900',
-                    heading: 'Payment processing',
-                    body: 'Stripe is still finalising this payment. You can safely wait on this page for the final status.',
-                }
-            }
-
-            return {
-                label: 'Failed',
-                tone: 'border-red-200 bg-red-50 text-red-900',
-                heading: 'Payment unsuccessful',
-                body: 'We could not verify a successful payment. You can return to checkout and try again.',
-            }
-        }
-
-        const url = new URL(window.location.href)
-        const clientSecret = url.searchParams.get('payment_intent_client_secret')
-        const redirectStatus = url.searchParams.get('redirect_status')
-
-        if (!publishableKey) {
-            setState({
-                label: 'Unavailable',
-                tone: 'border-red-200 bg-red-50 text-red-900',
-                heading: 'Payment status unavailable',
-                body: 'The Stripe publishable key is not configured for this environment.',
-            })
-        } else if (!clientSecret) {
-            setState(fallbackState(redirectStatus))
-        } else {
-            ;(async () => {
-                const stripe = await loadStripe(publishableKey)
-
-                if (!stripe) {
-                    setState({
-                        label: 'Unavailable',
-                        tone: 'border-red-200 bg-red-50 text-red-900',
-                        heading: 'Payment status unavailable',
-                        body: 'Stripe could not be initialised on this page.',
-                    })
-                    return
-                }
-
-                const result = await stripe.retrievePaymentIntent(clientSecret)
-
-                if (result.error) {
-                    setState({
-                        label: 'Failed',
-                        tone: 'border-red-200 bg-red-50 text-red-900',
-                        heading: 'Payment unsuccessful',
-                        body: result.error.message ?? 'Stripe could not verify this payment.',
-                    })
-                    return
-                }
-
-                const paymentIntent: PaymentIntentSummary = {
-                    id: result.paymentIntent.id,
-                    amount: result.paymentIntent.amount,
-                    status: result.paymentIntent.status,
-                }
-
-                if (paymentIntent.status === 'succeeded') {
-                    setState({
-                        label: 'Success',
-                        tone: 'border-emerald-200 bg-emerald-50 text-emerald-900',
-                        heading: 'Payment successful',
-                        body: 'Your order was paid successfully and your confirmation is on its way.',
-                        paymentIntent,
-                    })
-                    return
-                }
-
-                if (paymentIntent.status === 'processing') {
-                    setState({
-                        label: 'Processing',
-                        tone: 'border-amber-200 bg-amber-50 text-amber-900',
-                        heading: 'Payment processing',
-                        body: 'Stripe is still finalising this payment. Please refresh this page in a moment if it does not update automatically.',
-                        paymentIntent,
-                    })
-                    return
-                }
-
-                setState({
-                    label: 'Failed',
-                    tone: 'border-red-200 bg-red-50 text-red-900',
-                    heading: 'Payment unsuccessful',
-                    body: 'The payment was not completed. You can return to checkout and try again.',
-                    paymentIntent,
-                })
-            })()
-        }
-    </script>
+    </div>
 </StandardLayout>
+
+<style>
+    /* The original's dropShadowLarge; the shared .box-shadow utility is the 6px
+       variant used on buttons. */
+    .result-card {
+        box-shadow: 12px 12px 0 var(--color-drop-shadow);
+    }
+
+    .status-body {
+        font-size: 25px;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    .load-spinner {
+        width: 60px;
+        height: 60px;
+        border: 8px solid #405c6430;
+        border-top-color: var(--color-black);
+        border-radius: 50%;
+        animation: status-spin 2s linear infinite;
+    }
+
+    @keyframes status-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .load-spinner {
+            animation-duration: 8s;
+        }
+    }
+</style>
+
+<script>
+    import { loadStripe } from '@stripe/stripe-js'
+    import { clearCart } from '@/state/cartActions'
+
+    const POLL_INTERVAL_MS = 1000
+    /** Stop re-polling a stuck 'processing' intent after a minute. */
+    const MAX_POLLS = 60
+
+    const panels = {
+        loading: document.getElementById('status-loading'),
+        failure: document.getElementById('status-failure'),
+        success: document.getElementById('status-success'),
+    }
+
+    function show(state: keyof typeof panels) {
+        for (const [name, panel] of Object.entries(panels)) {
+            if (panel) panel.hidden = name !== state
+        }
+    }
+
+    function showSuccess(email: string | null) {
+        const sentence = document.getElementById('status-email-sentence')
+        const target = document.getElementById('status-email')
+        if (email && sentence && target) {
+            target.textContent = email
+            sentence.hidden = false
+        }
+        show('success')
+        // The order is paid — the cart has served its purpose.
+        clearCart()
+    }
+
+    function showFailure(reason: string) {
+        console.warn(`Payment confirmation failed: ${reason}`)
+        show('failure')
+    }
+
+    function sleep(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms))
+    }
+
+    const publishableKey = import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY
+    const clientSecret = new URL(window.location.href).searchParams.get(
+        'payment_intent_client_secret',
+    )
+
+    if (!publishableKey) {
+        showFailure('PUBLIC_STRIPE_PUBLISHABLE_KEY is not configured')
+    } else if (!clientSecret) {
+        showFailure('no payment intent client secret in the URL')
+    } else {
+        void (async () => {
+            try {
+                const stripe = await loadStripe(publishableKey)
+                if (!stripe) {
+                    showFailure('Stripe could not be initialised')
+                    return
+                }
+
+                // Stripe can still be settling the payment when it redirects
+                // here, so keep asking until it resolves either way.
+                for (let attempt = 0; attempt < MAX_POLLS; attempt++) {
+                    const { paymentIntent, error } =
+                        await stripe.retrievePaymentIntent(clientSecret)
+
+                    if (error) {
+                        showFailure(error.message ?? 'unknown Stripe error')
+                        return
+                    }
+
+                    if (
+                        paymentIntent &&
+                        paymentIntent.status !== 'processing'
+                    ) {
+                        if (paymentIntent.status === 'succeeded') {
+                            showSuccess(paymentIntent.receipt_email)
+                        } else {
+                            showFailure(`intent status ${paymentIntent.status}`)
+                        }
+                        return
+                    }
+
+                    await sleep(POLL_INTERVAL_MS)
+                }
+
+                // Still processing after the cap: the payment isn't lost, it's
+                // slow, so say so rather than claiming failure.
+                const body = document.querySelector(
+                    '#status-loading .status-body',
+                )
+                if (body) {
+                    body.textContent =
+                        'This is taking longer than usual. Your payment is still being processed — we’ll email you as soon as it completes.'
+                }
+            } catch (error) {
+                showFailure(String(error))
+            }
+        })()
+    }
+</script>
