@@ -2,8 +2,7 @@
  * Payload CMS client, ported from the original's CMS.ts.
  *
  * The CMS is optional infrastructure: if it isn't running, every getter returns
- * empty and the build still succeeds with the affected sections simply empty —
- * same as the original, which logged "IS THE CMS RUNNING?" and carried on.
+ * empty and the build still succeeds with the affected sections simply empty.
  */
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:3333'
