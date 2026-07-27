@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { Link, Text } from 'jsx-email';
 
+import { linkStyle, textStyle } from '../styles';
+
 export interface SignOffProps {
     /** The sentence(s) preceding the "Cheers," closing, e.g. help/contact copy. */
     children: React.ReactNode;
@@ -12,7 +14,7 @@ export interface SignOffProps {
  */
 export const SignOff = ({ children }: SignOffProps) => {
     return (
-        <Text>
+        <Text style={textStyle}>
             {children}
             <br />
             <br />
@@ -23,6 +25,10 @@ export const SignOff = ({ children }: SignOffProps) => {
     );
 };
 
-export const SupportLink = () => <Link href="mailto:hello@robox.com.au">hello@robox.com.au</Link>;
+export const SupportLink = () => (
+    <Link href="mailto:hello@robox.com.au" style={linkStyle}>
+        hello@robox.com.au
+    </Link>
+);
 
 export default SignOff;

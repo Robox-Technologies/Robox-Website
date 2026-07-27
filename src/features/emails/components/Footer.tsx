@@ -1,10 +1,6 @@
-import * as React from 'react';
-import { Column, Link, Row, Section, Text } from 'jsx-email';
+import { Link, Section, Text } from 'jsx-email';
 
-const subStyle: React.CSSProperties = {
-    fontSize: '11px',
-    margin: 0
-};
+import { alignRight, footerStyle, subLinkStyle, subStyle, topCellStyle } from '../styles';
 
 /**
  * Company address / ABN / contact footer, shown at the bottom of every email.
@@ -12,33 +8,44 @@ const subStyle: React.CSSProperties = {
  */
 export const Footer = () => {
     return (
-        <Section style={{ marginTop: '32px' }}>
-            <Row>
-                <Column align="left" style={{ verticalAlign: 'top' }}>
-                    <Text style={subStyle}>
-                        Ro/Box Technologies
-                        <br />
-                        20 Coleridge Street
-                        <br />
-                        Elwood VIC 3184
-                        <br />
-                        Australia
-                    </Text>
-                </Column>
-                <Column align="right" style={{ verticalAlign: 'top' }}>
-                    <Text style={{ ...subStyle, textAlign: 'right' }}>
-                        ABN 89 684 550 249
-                        <br />
-                        <Link href="mailto:hello@robox.com.au" style={{ fontSize: '11px' }}>
-                            hello@robox.com.au
-                        </Link>
-                        <br />
-                        <Link href="tel:+61422987506" style={{ fontSize: '11px' }}>
-                            +61 422 987 506
-                        </Link>
-                    </Text>
-                </Column>
-            </Row>
+        <Section style={footerStyle}>
+            <table
+                width="100%"
+                cellPadding={0}
+                cellSpacing={0}
+                border={0}
+                role="presentation"
+                style={{ width: '100%' }}
+            >
+                <tbody>
+                    <tr>
+                        <td align="left" style={topCellStyle}>
+                            <Text style={subStyle}>
+                                Ro/Box Technologies
+                                <br />
+                                20 Coleridge Street
+                                <br />
+                                Elwood VIC 3184
+                                <br />
+                                Australia
+                            </Text>
+                        </td>
+                        <td align="right" style={topCellStyle}>
+                            <Text style={{ ...subStyle, ...alignRight }}>
+                                ABN 89 684 550 249
+                                <br />
+                                <Link href="mailto:hello@robox.com.au" style={subLinkStyle}>
+                                    hello@robox.com.au
+                                </Link>
+                                <br />
+                                <Link href="tel:+61422987506" style={subLinkStyle}>
+                                    +61 422 987 506
+                                </Link>
+                            </Text>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </Section>
     );
 };

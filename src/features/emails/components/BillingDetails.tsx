@@ -1,5 +1,7 @@
 import * as React from 'react';
-import { Column, Heading, Row, Section, Text } from 'jsx-email';
+import { Heading, Section, Text } from 'jsx-email';
+
+import { billingDetailsStyle, cellHeadingStyle, cellTextStyle, topCellStyle } from '../styles';
 
 export interface BillingRow {
     label: string;
@@ -11,11 +13,10 @@ export interface BillingDetailsProps {
 }
 
 /**
- * Splits a multi-line string on newlines and joins the lines with <br />,
- * mirroring how the original templates expected `address` / `billing`
- * strings containing literal "\n" characters to wrap onto separate lines.
- * Non-string values (already-built ReactNode, e.g. from <SupportLink />)
- * pass through unchanged.
+ * Splits a multi-line string on newlines and joins the lines with <br />.
+ * `resolveBilling` returns newline-joined address and payment-method strings;
+ * the original template put the same data in as an innerHTML string of
+ * <br>-separated lines.
  */
 const withLineBreaks = (value: React.ReactNode): React.ReactNode => {
     if (typeof value !== 'string') return value;
@@ -33,24 +34,39 @@ const withLineBreaks = (value: React.ReactNode): React.ReactNode => {
 
 /**
  * Two-column label/value block used for "Shipping to:", "Billed to:", and
- * "Payment details:" rows. Mirrors the `.billing-details` table markup shared
- * by success.html and failure.html.
+ * "Payment details:" rows. Mirrors the `.billing-details` table shared by
+ * success.html and failure.html.
+ *
+ * A single table holds every row, as in the original, so the labels and values
+ * line up across rows. Column widths are left to the table to work out from the
+ * content, which is what the original did.
  */
 export const BillingDetails = ({ rows }: BillingDetailsProps) => {
     return (
-        <Section style={{ marginBottom: '32px' }}>
-            {rows.map((row) => (
-                <Row key={row.label}>
-                    <Column style={{ verticalAlign: 'top', width: '40%' }}>
-                        <Heading as="h3" m={16}>
-                            {row.label}
-                        </Heading>
-                    </Column>
-                    <Column style={{ verticalAlign: 'top' }}>
-                        <Text style={{ margin: '16px 0' }}>{withLineBreaks(row.value)}</Text>
-                    </Column>
-                </Row>
-            ))}
+        <Section style={billingDetailsStyle}>
+            <table
+                width="100%"
+                cellPadding={0}
+                cellSpacing={0}
+                border={0}
+                role="presentation"
+                style={{ width: '100%' }}
+            >
+                <tbody>
+                    {rows.map((row) => (
+                        <tr key={row.label}>
+                            <td style={topCellStyle}>
+                                <Heading as="h3" style={cellHeadingStyle}>
+                                    {row.label}
+                                </Heading>
+                            </td>
+                            <td style={topCellStyle}>
+                                <Text style={cellTextStyle}>{withLineBreaks(row.value)}</Text>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </Section>
     );
 };

@@ -1,6 +1,7 @@
 
-import { Button, Heading, Row, Section, Text } from 'jsx-email';
+import { Button, Heading, Section, Text } from 'jsx-email';
 
+import { buttonStyle, cellStyle, heading, textStyle } from '../styles';
 import { BillingDetails } from '../components/BillingDetails';
 import { EmailLayout } from '../components/EmailLayout';
 import { Footer } from '../components/Footer';
@@ -41,8 +42,10 @@ export const PaymentFailedEmail = ({
         >
             <Masthead />
 
-            <Heading as="h1">Dear {name},</Heading>
-            <Text>
+            <Heading as="h1" style={heading('h1')}>
+                Dear {name},
+            </Heading>
+            <Text style={textStyle}>
                 We were unable to process your payment for your recent order on {date}.
                 <br />
                 <br />
@@ -60,21 +63,26 @@ export const PaymentFailedEmail = ({
 
             <BillingDetails rows={[{ label: 'Payment details:', value: billing }]} />
 
-            <Section>
-                <Row>
-                    <Button
-                        href="https://robox.com.au/shop/cart"
-                        width={150}
-                        height={40}
-                        align="center"
-                        backgroundColor="#FF6166"
-                        textColor="#F8F8F8"
-                        borderRadius={20}
-                        fontSize={14}
-                    >
-                        Retry Payment
-                    </Button>
-                </Row>
+            {/* `.button` in email.css: coral pill, centred, with 32px beneath it. */}
+            <Section style={{ marginBottom: '32px' }}>
+                <table
+                    width="100%"
+                    cellPadding={0}
+                    cellSpacing={0}
+                    border={0}
+                    role="presentation"
+                    style={{ width: '100%' }}
+                >
+                    <tbody>
+                        <tr>
+                            <td align="center" style={cellStyle}>
+                                <Button href="https://robox.com.au/shop/cart" {...buttonStyle}>
+                                    Retry Payment
+                                </Button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </Section>
 
             <SignOff>

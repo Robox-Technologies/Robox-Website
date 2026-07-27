@@ -1,21 +1,27 @@
-
-
 import { render } from 'jsx-email';
 import { Resend } from 'resend';
 import type { Stripe } from 'stripe';
- 
+
 import type { Product } from '@/types/shop';
- 
+
 import { ReceiptEmail } from '@/features/emails/templates/ReceiptEmail';
 import { PaymentFailedEmail } from '@/features/emails/templates/PaymentFailedEmail';
 import { buildEmailOrderData } from '@/features/emails/utils/buildEmailOrderData.server';
- 
+import {
+    buildPaymentFailedText,
+    buildReceiptText
+} from '@/features/emails/text/orderEmailText';
+
 const resend = new Resend(process.env.RESEND_KEY || 're_...');
 
-export async function sendOrderEmail(paymentIntent: Stripe.PaymentIntent, verifiedProducts: Record<string, Product>, success: boolean) {
+export async function sendOrderEmail(
+    paymentIntent: Stripe.PaymentIntent,
+    verifiedProducts: Record<string, Product>,
+    success: boolean
+) {
     const orderData = await buildEmailOrderData(paymentIntent, verifiedProducts);
     if (!orderData.to) {
-        throw new Error("Receipt Email is not defined")
+        throw new Error('Receipt Email is not defined');
     }
 
     const subject = success ? 'Your Ro/Box Receipt' : 'Ro/Box Payment Failed';
@@ -44,7 +50,9 @@ export async function sendOrderEmail(paymentIntent: Stripe.PaymentIntent, verifi
         });
 
     const html = await render(element);
-    const text = await render(element, { plainText: true });
+    // Hand-written rather than render(..., { plainText: true }); see orderEmailText.ts.
+    const text = success ? buildReceiptText(orderData) : buildPaymentFailedText(orderData);
+
     await resend.emails.send({
         from: 'Ro/Box <hello@store.robox.com.au>',
         to: [orderData.to],
@@ -53,6 +61,5 @@ export async function sendOrderEmail(paymentIntent: Stripe.PaymentIntent, verifi
         text
     });
 
-    console.log("Hi")
     return { sent: true, to: orderData.to };
 }

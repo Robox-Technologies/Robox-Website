@@ -1,11 +1,27 @@
 import * as React from 'react';
-import { Column, Heading, Row, Section, Text } from 'jsx-email';
+import { Heading, Section, Text } from 'jsx-email';
+
+import {
+    alignCenter,
+    alignRight,
+    cellHeadingStyle,
+    cellStyle,
+    cellTextStyle,
+    discountTextStyle,
+    feeRowStyle,
+    purchaseContentStyle,
+    purchaseTotalLabelStyle,
+    purchaseTotalStyle,
+    rowSeparateStyle,
+    smallCellStyle,
+    summaryStyle
+} from '../styles';
 
 export interface OrderItem {
     /** Item / product name */
     name: string;
     quantity: number;
-    /** Pre-formatted subtotal string, e.g. "$49.00" */
+    /** Pre-formatted subtotal string, e.g. "AU$49.00" */
     subtotal: string;
 }
 
@@ -14,26 +30,46 @@ export interface OrderSummaryProps {
     /** Pre-formatted date string, e.g. "23 June 2026" */
     date: string;
     items: OrderItem[];
-    /** Pre-formatted shipping cost string, e.g. "$9.95" or "Free" */
+    /** Pre-formatted shipping cost string, e.g. "AU$9.95" */
     shipping: string;
     /**
-     * Pre-formatted discount line, e.g. "-$10.00 (WELCOME10)".
-     * Mirrors `{{discount}}` in summary.txt, which is appended directly after
-     * the shipping line and is empty/omitted when no discount applies.
+     * Pre-formatted discount amount, e.g. "AU$10.00", or undefined when no
+     * discount applies. Rendered parenthesised, as in the original.
      */
     discount?: string;
-    /** Pre-formatted grand total string, e.g. "$58.95" */
+    /** Pre-formatted grand total string, e.g. "AU$58.95" */
     total: string;
 }
 
-const headingCellStyle: React.CSSProperties = { textAlign: 'left' };
-const rowSeparateStyle: React.CSSProperties = { borderBottom: '1px solid #FF6166' };
-const feeRowStyle: React.CSSProperties = { borderTop: '1px solid #FF6166' };
-
 /**
  * Order summary table: order id, date, line items, then a shipping / discount /
- * total breakdown. Mirrors summary.html (HTML) and summary.txt (plain text).
+ * total breakdown. Mirrors summary.html and the `appendFeeRow` logic in the
+ * original's email.ts.
+ *
+ * Built from raw <table>/<tr>/<td> rather than jsx-email's <Row>/<Column>,
+ * because those render one nested <table> per row - which drops every cell into
+ * its own independent grid, so nothing lines up column to column.
  */
+
+/** A cell whose content is a <p>, matching the original's `createCell`. */
+const Cell = ({
+    children,
+    align,
+    style,
+    textStyle,
+    colSpan
+}: {
+    children?: React.ReactNode;
+    align?: 'left' | 'center' | 'right';
+    style?: React.CSSProperties;
+    textStyle?: React.CSSProperties;
+    colSpan?: number;
+}) => (
+    <td align={align} colSpan={colSpan} style={{ ...cellStyle, ...style }}>
+        <Text style={{ ...cellTextStyle, ...textStyle }}>{children}</Text>
+    </td>
+);
+
 export const OrderSummary = ({
     orderId,
     date,
@@ -42,101 +78,105 @@ export const OrderSummary = ({
     discount,
     total
 }: OrderSummaryProps) => {
+    // The original always draws a rule directly above the total: on the
+    // discount row when there is one, otherwise on the shipping row.
+    const shippingRowStyle = { ...feeRowStyle, ...(discount ? {} : rowSeparateStyle) };
+
     return (
-        <Section style={{ marginTop: '32px' }}>
-            <Heading as="h3" m={0} mb={8}>
+        <Section style={summaryStyle}>
+            <Heading as="h3" style={cellHeadingStyle}>
                 Order ID: {orderId}
             </Heading>
-            <Heading as="h3" m={0} mb={16}>
+            <Heading as="h3" style={cellHeadingStyle}>
                 Date: {date}
             </Heading>
 
-            <Section style={{ width: '100%', margin: 0, padding: '25px 0 0 0' }}>
-                <Row style={rowSeparateStyle}>
-                    <Column style={headingCellStyle}>
-                        <Text style={{ margin: '16px 0', fontWeight: 'bold' }}>Item</Text>
-                    </Column>
-                    <Column align="center" style={{ textAlign: 'center' }}>
-                        <Text style={{ margin: '16px 0', fontWeight: 'bold' }}>Quantity</Text>
-                    </Column>
-                    <Column align="right" style={{ textAlign: 'right' }}>
-                        <Text style={{ margin: '16px 0', fontWeight: 'bold' }}>Subtotal</Text>
-                    </Column>
-                </Row>
+            <table
+                width="100%"
+                cellPadding={0}
+                cellSpacing={0}
+                border={0}
+                role="presentation"
+                style={purchaseContentStyle}
+            >
+                <tbody>
+                    <tr>
+                        <th align="left" style={rowSeparateStyle}>
+                            <Text style={cellTextStyle}>Item</Text>
+                        </th>
+                        <th align="center" style={{ ...rowSeparateStyle, ...alignCenter }}>
+                            <Text style={cellTextStyle}>Quantity</Text>
+                        </th>
+                        <th align="right" style={{ ...rowSeparateStyle, ...alignRight }}>
+                            <Text style={cellTextStyle}>Subtotal</Text>
+                        </th>
+                    </tr>
 
-                {items.map((item, index) => (
-                    <Row key={`${item.name}-${index}`}>
-                        <Column style={headingCellStyle}>
-                            <Text style={{ margin: '16px 0' }}>{item.name}</Text>
-                        </Column>
-                        <Column align="center" style={{ textAlign: 'center' }}>
-                            <Text style={{ margin: '16px 0' }}>{item.quantity}</Text>
-                        </Column>
-                        <Column align="right" style={{ textAlign: 'right' }}>
-                            <Text style={{ margin: '16px 0' }}>{item.subtotal}</Text>
-                        </Column>
-                    </Row>
-                ))}
+                    {items.map((item, index) => (
+                        <tr key={`${item.name}-${index}`}>
+                            <Cell>{item.name}</Cell>
+                            <Cell align="center" style={{ ...smallCellStyle, ...alignCenter }}>
+                                {item.quantity}
+                            </Cell>
+                            <Cell align="right" style={{ ...smallCellStyle, ...alignRight }}>
+                                {item.subtotal}
+                            </Cell>
+                        </tr>
+                    ))}
 
-                <Row style={feeRowStyle}>
-                    <Column style={headingCellStyle}>
-                        <Text style={{ margin: '16px 0' }}>Shipping</Text>
-                    </Column>
-                    <Column align="center" style={{ textAlign: 'center' }} />
-                    <Column align="right" style={{ textAlign: 'right' }}>
-                        <Text style={{ margin: '16px 0' }}>{shipping}</Text>
-                    </Column>
-                </Row>
+                    <tr>
+                        <Cell style={shippingRowStyle}>Shipping</Cell>
+                        <Cell
+                            align="center"
+                            style={{ ...smallCellStyle, ...alignCenter, ...shippingRowStyle }}
+                        />
+                        <Cell
+                            align="right"
+                            style={{ ...smallCellStyle, ...alignRight, ...shippingRowStyle }}
+                        >
+                            {shipping}
+                        </Cell>
+                    </tr>
 
-                {discount && (
-                    <Row>
-                        <Column style={headingCellStyle} colSpan={2}>
-                            <Text
-                                style={{
-                                    margin: 0,
-                                    marginTop: 0,
-                                    fontStyle: 'italic',
-                                    color: '#4AA21E'
-                                }}
+                    {/*
+                      The `discount-row` class is load-bearing: the dark-mode
+                      override in styles.ts targets `.discount-row p` to swap the
+                      green for a lighter shade.
+                    */}
+                    {discount && (
+                        <tr className="discount-row">
+                            <td style={{ ...cellStyle, ...rowSeparateStyle }}>
+                                <Text style={discountTextStyle}>Discount</Text>
+                            </td>
+                            <td
+                                align="center"
+                                style={{ ...smallCellStyle, ...alignCenter, ...rowSeparateStyle }}
                             >
-                                Discount
-                            </Text>
-                        </Column>
-                        <Column align="right" style={{ textAlign: 'right' }}>
-                            <Text
-                                style={{
-                                    margin: 0,
-                                    marginTop: 0,
-                                    fontStyle: 'italic',
-                                    color: '#4AA21E'
-                                }}
+                                <Text style={discountTextStyle} />
+                            </td>
+                            <td
+                                align="right"
+                                style={{ ...smallCellStyle, ...alignRight, ...rowSeparateStyle }}
                             >
-                                {discount}
-                            </Text>
-                        </Column>
-                    </Row>
-                )}
+                                <Text style={discountTextStyle}>({discount})</Text>
+                            </td>
+                        </tr>
+                    )}
 
-                <Row style={{ margin: 0 }}>
-                    <Column
-                        style={{
-                            textAlign: 'left',
-                            padding: '0 15px 0 0',
-                            verticalAlign: 'middle'
-                        }}
-                    >
-                        <Text style={{ margin: '16px 0', fontWeight: 'bold', textAlign: 'left' }}>
-                            Total
-                        </Text>
-                    </Column>
-                    <Column style={{ width: '15%', minWidth: '90px', verticalAlign: 'middle' }} />
-                    <Column style={{ verticalAlign: 'middle', width: '15%', minWidth: '90px' }}>
-                        <Text style={{ margin: '16px 0', fontWeight: 'bold', textAlign: 'right' }}>
-                            {total}
-                        </Text>
-                    </Column>
-                </Row>
-            </Section>
+                    <tr>
+                        <td style={{ ...cellStyle, verticalAlign: 'middle' }}>
+                            <Text style={purchaseTotalLabelStyle}>Total</Text>
+                        </td>
+                        <td style={{ ...smallCellStyle, verticalAlign: 'middle' }} />
+                        <td
+                            align="right"
+                            style={{ ...smallCellStyle, ...alignRight, verticalAlign: 'middle' }}
+                        >
+                            <Text style={purchaseTotalStyle}>{total}</Text>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </Section>
     );
 };

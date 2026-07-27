@@ -1,4 +1,6 @@
-import { Column, Hr, Img, Link, Row, Section, Text } from 'jsx-email';
+import { Hr, Img, Link, Section, Text } from 'jsx-email';
+
+import { cellStyle, hrStyle, socialsCaptionStyle, socialsStyle } from '../styles';
 
 const SOCIAL_LINKS = [
     {
@@ -20,26 +22,51 @@ const SOCIAL_LINKS = [
 
 /**
  * "Stay up to date with us!" social icon row, shown on the receipt email.
- * Mirrors the `.socials` block in success.html + the `.socials` / `.socialButtons` rules in email.css.
+ * Mirrors the `.socials` block in success.html + the `.socials` /
+ * `.socialButtons` rules in email.css.
+ *
+ * The empty cells on either end are load-bearing: they absorb the leftover
+ * width so the three fixed 40px cells sit together in the middle. Without them
+ * the icons spread out to the thirds of the table.
  */
 export const Socials = () => {
     return (
-        <Section style={{ marginTop: '64px' }}>
-            <Text style={{ width: '100%', textAlign: 'center', color: '#717171' }}>
-                Stay up to date with us!
-            </Text>
+        <Section style={socialsStyle}>
+            <Text style={socialsCaptionStyle}>Stay up to date with us!</Text>
 
-            <Hr style={{ backgroundColor: '#717171', height: '2px', border: 'none' }} />
+            <Hr style={hrStyle} />
 
-            <Row>
-                {SOCIAL_LINKS.map((social) => (
-                    <Column key={social.alt} align="center" style={{ width: '40px' }}>
-                        <Link href={social.href} target="_blank">
-                            <Img src={social.icon} alt={social.alt} width="24" height="24" />
-                        </Link>
-                    </Column>
-                ))}
-            </Row>
+            <table
+                width="100%"
+                cellPadding={0}
+                cellSpacing={0}
+                border={0}
+                role="presentation"
+                style={{ width: '100%' }}
+            >
+                <tbody>
+                    <tr>
+                        <th style={cellStyle} />
+                        {SOCIAL_LINKS.map((social) => (
+                            <th
+                                key={social.alt}
+                                align="center"
+                                style={{ ...cellStyle, width: '40px' }}
+                            >
+                                <Link href={social.href} target="_blank">
+                                    <Img
+                                        src={social.icon}
+                                        alt={social.alt}
+                                        width="24"
+                                        height="24"
+                                    />
+                                </Link>
+                            </th>
+                        ))}
+                        <th style={cellStyle} />
+                    </tr>
+                </tbody>
+            </table>
         </Section>
     );
 };

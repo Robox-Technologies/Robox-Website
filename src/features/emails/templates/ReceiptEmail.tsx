@@ -1,5 +1,6 @@
 import { Heading, Text } from 'jsx-email';
 
+import { heading, textStyle } from '../styles';
 import { BillingDetails } from '../components/BillingDetails';
 import { EmailLayout } from '../components/EmailLayout';
 import { Footer } from '../components/Footer';
@@ -43,8 +44,10 @@ export const ReceiptEmail = ({
         >
             <Masthead />
 
-            <Heading as="h1">Dear {name},</Heading>
-            <Text>
+            <Heading as="h1" style={heading('h1')}>
+                Dear {name},
+            </Heading>
+            <Text style={textStyle}>
                 Thank you for your purchase!
                 <br />
                 <br />
