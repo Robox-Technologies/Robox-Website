@@ -79,19 +79,23 @@ export const ReceiptEmail = ({
     );
 };
  
+/**
+ * Sample data for `email build --use-preview-props` / `email preview`.
+ * Amounts use `formatPrice`'s real "AU$" output so the preview matches production.
+ */
 export const previewProps: ReceiptEmailProps = {
     name: 'Ada Lovelace',
     date: '23 June 2026',
-    orderId: 'RB-10293',
+    orderId: 'pi_3RvKq2CZ6qsJgndP1a2Bc3De',
     items: [
-        { name: 'Ro/Box Starter Kit', quantity: 1, subtotal: '$129.00' },
-        { name: 'Sensor Pack', quantity: 2, subtotal: '$58.00' }
+        { name: 'Ro/Box Starter Kit', quantity: 1, subtotal: 'AU$129.00' },
+        { name: 'Sensor Pack', quantity: 2, subtotal: 'AU$58.00' }
     ],
-    shipping: '$9.95',
-    discount: '-$10.00 (WELCOME10)',
-    total: '$186.95',
-    address: 'Ada Lovelace\n42 Analytical Engine Way\nMelbourne VIC 3000\nAustralia',
-    billing: 'Visa ending in 4242'
+    shipping: 'AU$9.95',
+    discount: 'AU$10.00',
+    total: 'AU$186.95',
+    address: '42 Analytical Engine Way\nMelbourne VIC 3000\nAustralia',
+    billing: 'Visa\nEnding in ••••4242\nExpires on 4/29'
 };
 
 export const Template = ReceiptEmail

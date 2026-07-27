@@ -86,16 +86,21 @@ export const PaymentFailedEmail = ({
         </EmailLayout>
     );
 };
+/**
+ * Sample data for `email build --use-preview-props` / `email preview`.
+ * Includes a discount so the discount row is exercised in the preview.
+ */
 export const previewProps: PaymentFailedEmailProps = {
     name: 'Ada Lovelace',
     date: '23 June 2026',
-    orderId: 'RB-10293',
+    orderId: 'pi_3RvKq2CZ6qsJgndP1a2Bc3De',
     items: [
-        { name: 'Ro/Box Starter Kit', quantity: 1, subtotal: '$129.00' },
-        { name: 'Sensor Pack', quantity: 2, subtotal: '$58.00' }
+        { name: 'Ro/Box Starter Kit', quantity: 1, subtotal: 'AU$129.00' },
+        { name: 'Sensor Pack', quantity: 2, subtotal: 'AU$58.00' }
     ],
-    shipping: '$9.95',
-    total: '$196.95',
-    billing: 'Visa ending in 4242'
+    shipping: 'AU$9.95',
+    discount: 'AU$10.00',
+    total: 'AU$186.95',
+    billing: 'Visa\nEnding in ••••4242\nExpires on 4/29'
 };
 export const Template = PaymentFailedEmail ;

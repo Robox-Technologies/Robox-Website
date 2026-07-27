@@ -11,6 +11,8 @@
         "dev": "astro dev --port 3000",
         "build:preview": "astro build && astro preview --port ${PORT:-3000}",
         "build": "astro check && astro build",
+        "email:build": "email build src/features/emails/templates --out build/emails --use-preview-props --plain",
+        "email:preview": "email preview src/features/emails/templates",
         "fix": "prettier --write . && eslint --fix ."
     },
     "dependencies": {
