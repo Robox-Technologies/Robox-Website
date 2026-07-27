@@ -1,36 +1,22 @@
 import * as React from 'react';
-import { Body, ColorScheme, Conditional, Container, Font, Head, Html, Preview } from 'jsx-email';
+import { Body, ColorScheme, Head, Html, Preview } from 'jsx-email';
+
+import { fontFaceCss } from '../fonts';
+import { bodyStyle, cellStyle, containerStyle, globalCss } from '../styles';
 
 /**
  * Shared <Html>/<Head>/<Body> wrapper used by every Ro/Box transactional email.
  *
  * Replicates, from the original templates:
  *  - metadata.html  -> viewport / x-apple-disable-message-reformatting / charset /
- *                      color-scheme meta tags + MSO font fallback conditional comment
- *  - email.css      -> base body styles, dark-mode color overrides, color-scheme support
- *  - nunitoFont.css  -> self-hosted "Nunito" (headings) and "Nunito Sans" (body) webfonts
+ *                      color-scheme meta tags
+ *  - email.css      -> base body styles, the centred 700px container, dark-mode
+ *                      colour overrides, color-scheme support
+ *  - nunitoFont.css -> "Nunito" (headings) and "Nunito Sans" (body) webfonts
+ *
+ * Both the font block and the container are hand-rolled rather than using
+ * jsx-email's <Font> and <Container>; see the comments on each below.
  */
-
-const bodyStyle: React.CSSProperties = {
-    width: '100%',
-    margin: 0,
-    WebkitTextSizeAdjust: 'none',
-    boxSizing: 'border-box',
-    backgroundColor: '#FFFFFF'
-};
-
-// Dark-mode color overrides that can't be expressed via component props alone
-// (mirrors the `@media (prefers-color-scheme: dark)` block in email.css).
-const darkModeCss = `
-  @media (prefers-color-scheme: dark) {
-    p, h1, h2, h3 {
-      color: #F8F8F8 !important;
-    }
-    .discount-row > p {
-      color: #91CC31 !important;
-    }
-  }
-`;
 
 export interface EmailLayoutProps {
     /** Short preview text shown by recipient email clients in the inbox list. */
@@ -46,55 +32,56 @@ export const EmailLayout = ({ previewText, title, children }: EmailLayoutProps) 
             <Head>
                 <title>{title}</title>
 
-                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-                <meta name="x-apple-disable-message-reformatting" content="" />
-                <meta httpEquiv="Content-Type" content="text/html; charset=UTF-8" />
-
+                {/*
+                  Emits the color-scheme / supported-color-schemes metas plus the
+                  `:root { color-scheme: light dark }` rule, matching email.css.
+                  This is what actually opts the email in to dark mode.
+                */}
                 <ColorScheme mode="light dark" />
 
-                {/* Nunito - used for headings (h1/h2/h3) */}
-                <Font
-                    fontFamily="Nunito"
-                    fallbackFontFamily={['sans-serif']}
-                    fontWeight={700}
-                    fontStyle="normal"
-                    webFont={{
-                        url: 'https://fonts.gstatic.com/s/nunito/v31/XRXV3I6Li01BKofINeaBTMnFcQ.woff2',
-                        format: 'woff2'
-                    }}
-                />
+                {/*
+                  Hand-rolled in place of two <Font> components. <Font> emits a
+                  blanket `* { font-family: ... }`, so with two fonts the second
+                  wins everywhere and headings lose Nunito. Here the faces are
+                  declared once and font-family is applied per element from
+                  styles.ts, preserving the original's heading/body split.
 
-                {/* Nunito Sans - used for body copy, links, and small print */}
-                <Font
-                    fontFamily="Nunito Sans"
-                    fallbackFontFamily={['sans-serif']}
-                    fontWeight={400}
-                    fontStyle="normal"
-                    webFont={{
-                        url: 'https://fonts.gstatic.com/s/nunitosans/v18/pe0AMImSLYBIv1o4X1M8ce2xCx3yop4tQpF_MeTm0lfUVwoNnq4CLz0_kJ3xzHGGVFM.woff2',
-                        format: 'woff2'
-                    }}
-                />
+                  No MSO conditional is needed for the Outlook fallback: every
+                  font-family is written as a stack ending in `sans-serif`, and
+                  Outlook's Word engine ignores @font-face and falls through to
+                  it. (The original tried to ship an MSO <style> via
+                  metadata.html, but that partial never actually injected.)
+                */}
+                <style type="text/css">{fontFaceCss}</style>
 
-                {/* MSO (Outlook desktop) font fallback, matches metadata.html's conditional block */}
-                <Conditional mso={true}>
-                    <style type="text/css">{`h1, h2, h3, p, a { font-family: sans-serif; }`}</style>
-                </Conditional>
-
-                <style type="text/css">{darkModeCss}</style>
+                <style type="text/css">{globalCss}</style>
             </Head>
             <Preview>{previewText}</Preview>
             <Body style={bodyStyle}>
-                <Container
-                    style={{
-                        maxWidth: '700px',
-                        padding: '32px',
-                        textAlign: 'left',
-                        margin: '0 auto'
-                    }}
+                {/*
+                  Hand-rolled in place of <Container>, which wraps its contents
+                  in a hardcoded `max-width: 600px` div and would clamp the
+                  original's 700px. This mirrors the original's structure
+                  exactly: a full-width table whose single centred cell holds
+                  the .email-container div.
+                */}
+                <table
+                    align="center"
+                    width="100%"
+                    role="presentation"
+                    cellPadding={0}
+                    cellSpacing={0}
+                    border={0}
+                    style={{ width: '100%' }}
                 >
-                    {children}
-                </Container>
+                    <tbody>
+                        <tr>
+                            <td align="center" style={cellStyle}>
+                                <div style={containerStyle}>{children}</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </Body>
         </Html>
     );
