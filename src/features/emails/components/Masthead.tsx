@@ -1,5 +1,6 @@
 import { Img, Link, Section } from 'jsx-email';
 
+import { emailAsset } from '../assets';
 import { cellStyle, logoStyle, mastheadStyle } from '../styles';
 
 /**
@@ -25,7 +26,7 @@ export const Masthead = () => {
                         <td align="center" style={cellStyle}>
                             <Link href="https://robox.com.au">
                                 <Img
-                                    src="https://robox.com.au/email/logo.png"
+                                    src={emailAsset('logo.png')}
                                     alt="Ro/Box Logo"
                                     width="250"
                                     height="50"

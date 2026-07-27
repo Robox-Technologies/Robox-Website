@@ -144,13 +144,23 @@ export const alignCenter: React.CSSProperties = { textAlign: 'center' };
 
 /* Buttons ------------------------------ */
 
+/**
+ * `.button` in email.css, as props for jsx-email's <Button>.
+ *
+ * `align` is set explicitly because <Button> defaults to 'left'. The font has
+ * to come through `style`: <Button> sets no font-family, so the anchor would
+ * otherwise fall back to the client default (a serif face), where the original
+ * picked up Nunito Sans from the `p, a` rule.
+ */
 export const buttonStyle = {
+    align: 'center',
     backgroundColor: colors.accent,
     textColor: colors.buttonText,
     width: 150,
     height: 40,
     borderRadius: 20,
-    fontSize: 14
+    fontSize: 14,
+    style: { fontFamily: fonts.body }
 } as const;
 
 /* Purchase summary ------------------------------ */

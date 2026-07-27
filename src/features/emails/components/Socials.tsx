@@ -1,21 +1,22 @@
 import { Hr, Img, Link, Section, Text } from 'jsx-email';
 
+import { emailAsset } from '../assets';
 import { cellStyle, hrStyle, socialsCaptionStyle, socialsStyle } from '../styles';
 
 const SOCIAL_LINKS = [
     {
         href: 'https://www.instagram.com/robox.kit',
-        icon: 'https://robox.com.au/email/instagram.png',
+        icon: emailAsset('instagram.png'),
         alt: 'Instagram'
     },
     {
         href: 'https://x.com/robox_kit',
-        icon: 'https://robox.com.au/email/x.png',
+        icon: emailAsset('x.png'),
         alt: 'X (formerly Twitter)'
     },
     {
         href: 'https://www.linkedin.com/company/roboxeducation',
-        icon: 'https://robox.com.au/email/linkedin.png',
+        icon: emailAsset('linkedin.png'),
         alt: 'LinkedIn'
     }
 ];

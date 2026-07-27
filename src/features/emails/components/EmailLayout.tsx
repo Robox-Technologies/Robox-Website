@@ -52,9 +52,16 @@ export const EmailLayout = ({ previewText, title, children }: EmailLayoutProps) 
                   it. (The original tried to ship an MSO <style> via
                   metadata.html, but that partial never actually injected.)
                 */}
-                <style type="text/css">{fontFaceCss}</style>
+                {/*
+                  Both stylesheets are injected via dangerouslySetInnerHTML
+                  rather than as children. jsx-email HTML-escapes text children
+                  even inside <style>, which turns `'Nunito'` into
+                  `&#x27;Nunito&#x27;` and `>` into `&gt;` - silently breaking
+                  every @font-face rule and any child-combinator selector.
+                */}
+                <style type="text/css" dangerouslySetInnerHTML={{ __html: fontFaceCss }} />
 
-                <style type="text/css">{globalCss}</style>
+                <style type="text/css" dangerouslySetInnerHTML={{ __html: globalCss }} />
             </Head>
             <Preview>{previewText}</Preview>
             <Body style={bodyStyle}>
