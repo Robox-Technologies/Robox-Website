@@ -253,6 +253,8 @@ export const footerStyle: React.CSSProperties = { marginTop: '32px' };
 export const globalCss = `
 td { word-break: break-word; }
 
+.dark-img { display: none; mso-hide: all; }
+
 @media (prefers-color-scheme: dark) {
   p, h1, h2, h3 {
     color: ${colors.textDark} !important;
@@ -261,5 +263,8 @@ td { word-break: break-word; }
   .discount-row p {
     color: ${colors.discountDark} !important;
   }
+
+  .light-img { display: none !important; }
+  .dark-img { display: block !important; }
 }
 `;

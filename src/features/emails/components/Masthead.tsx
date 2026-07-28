@@ -1,7 +1,8 @@
-import { Img, Link, Section } from 'jsx-email';
+import { Link, Section } from 'jsx-email';
 
 import { emailAsset } from '../assets';
 import { cellStyle, logoStyle, mastheadStyle } from '../styles';
+import { ThemedImg } from './ThemedImg';
 
 /**
  * Logo / masthead, shown at the top of every email.
@@ -25,8 +26,9 @@ export const Masthead = () => {
                     <tr>
                         <td align="center" style={cellStyle}>
                             <Link href="https://robox.com.au">
-                                <Img
+                                <ThemedImg
                                     src={emailAsset('logo.png')}
+                                    darkSrc={emailAsset('logo-dark.png')}
                                     alt="Ro/Box Logo"
                                     width="250"
                                     height="50"
