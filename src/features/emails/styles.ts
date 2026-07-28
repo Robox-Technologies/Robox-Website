@@ -64,6 +64,12 @@ export const cellStyle: React.CSSProperties = {
     wordBreak: 'break-word'
 };
 
+/**
+ * The rule above the social icons. Its colour tracks the icons: `colors.muted`
+ * to match the light icon art, swapped to `colors.textDark` by the `social-hr`
+ * rule in `globalCss` to match the dark art. Recolour the icons and both need
+ * updating together.
+ */
 export const hrStyle: React.CSSProperties = {
     backgroundColor: colors.muted,
     height: '2px',
@@ -72,6 +78,9 @@ export const hrStyle: React.CSSProperties = {
     // would otherwise draw a stray line under the 2px bar.
     borderTop: 'none'
 };
+
+/** Class on the social separator, so the dark-mode rule can reach it. */
+export const SOCIAL_HR_CLASS = 'social-hr';
 
 /* Fonts ------------------------------ */
 
@@ -266,5 +275,7 @@ td { word-break: break-word; }
 
   .light-img { display: none !important; }
   .dark-img { display: block !important; }
+
+  .${SOCIAL_HR_CLASS} { background-color: ${colors.textDark} !important; }
 }
 `;

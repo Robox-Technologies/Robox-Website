@@ -1,7 +1,13 @@
 import { Hr, Link, Section, Text } from 'jsx-email';
 
 import { emailAsset } from '../assets';
-import { cellStyle, hrStyle, socialsCaptionStyle, socialsStyle } from '../styles';
+import {
+    cellStyle,
+    hrStyle,
+    SOCIAL_HR_CLASS,
+    socialsCaptionStyle,
+    socialsStyle
+} from '../styles';
 import { ThemedImg } from './ThemedImg';
 
 const SOCIAL_LINKS = [
@@ -39,7 +45,7 @@ export const Socials = () => {
         <Section style={socialsStyle}>
             <Text style={socialsCaptionStyle}>Stay up to date with us!</Text>
 
-            <Hr style={hrStyle} />
+            <Hr className={SOCIAL_HR_CLASS} style={hrStyle} />
 
             <table
                 width="100%"
