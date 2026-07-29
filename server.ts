@@ -57,6 +57,13 @@ app.use("/public", express.static(websiteDir + "/public", {
             }
         }
 }));
+
+// Redirect /student and /student/* to homepage
+app.get(/^\/student(?:\/(.*))?$/, (req, res) => {
+    // 301 indicates the resource has moved permanently
+    res.redirect(301, '/'); 
+});
+
 app.get('*', (_, res) => {
     res.sendFile(path404);
 });
