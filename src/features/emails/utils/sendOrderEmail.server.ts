@@ -30,8 +30,8 @@ export async function sendOrderEmail(
     // expander - with a fixed subject, every receipt after the customer's first
     // arrived with its masthead, totals table and footer folded away.
     const subject = success
-        ? `Your Ro/Box Receipt - ${orderData.orderId}`
-        : `Ro/Box Payment Failed - ${orderData.orderId}`;
+        ? `Your Ro/Box Receipt`
+        : `Ro/Box Payment Failed`;
 
     const element = success
         ? ReceiptEmail({
