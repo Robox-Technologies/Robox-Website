@@ -54,7 +54,7 @@ export async function sendOrderEmail(
     const text = success ? buildReceiptText(orderData) : buildPaymentFailedText(orderData);
 
     await resend.emails.send({
-        from: 'Ro/Box <hello@store.robox.com.au>',
+        from: 'Ro/Box <hello@robox.com.au>',
         to: [orderData.to],
         subject,
         html,

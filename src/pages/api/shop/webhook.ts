@@ -46,24 +46,10 @@ export const POST = (async ({ request }) => {
 
     switch (event.type) {
         case 'payment_intent.succeeded':
-            paymentIntent = event.data.object as Stripe.PaymentIntent
             succeeded = true
-            break
         case 'payment_intent.payment_failed':
             paymentIntent = event.data.object as Stripe.PaymentIntent
-            succeeded = false
             break
-        case 'charge.updated':
-        case 'charge.succeeded': {
-            const charge = event.data.object as Stripe.Charge
-            if (typeof charge.payment_intent === 'string') {
-                paymentIntent = await stripeAPI.paymentIntents.retrieve(
-                    charge.payment_intent,
-                )
-                succeeded = charge.paid && charge.status === 'succeeded'
-            }
-            break
-        }
     }
 
     if (paymentIntent) {
