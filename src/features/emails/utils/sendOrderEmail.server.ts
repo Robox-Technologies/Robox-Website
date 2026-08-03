@@ -24,7 +24,14 @@ export async function sendOrderEmail(
         throw new Error('Receipt Email is not defined');
     }
 
-    const subject = success ? 'Your Ro/Box Receipt' : 'Ro/Box Payment Failed';
+    // The order id is in the subject to keep each message in its own Gmail
+    // thread. Gmail threads on subject + participants, and collapses whatever a
+    // later message repeats from an earlier one in the thread behind a "..."
+    // expander - with a fixed subject, every receipt after the customer's first
+    // arrived with its masthead, totals table and footer folded away.
+    const subject = success
+        ? `Your Ro/Box Receipt - ${orderData.orderId}`
+        : `Ro/Box Payment Failed - ${orderData.orderId}`;
 
     const element = success
         ? ReceiptEmail({
