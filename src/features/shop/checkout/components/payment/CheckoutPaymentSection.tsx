@@ -19,7 +19,7 @@ export default function CheckoutPaymentSection({
         <section className="flex w-full min-h-0 flex-1 relative flex-col gap-6 overflow-hidden lg:h-full lg:min-h-168 lg:overflow-visible">
             {subtotalCents < MINIMUM_CHARGE_CENTS ? (
                 <CheckoutStatePanel heading="Nothing to check out">
-                    Your cart doesn’t have anything to pay for yet. Add a
+                    Your cart doesn't have anything to pay for yet. Add a
                     product and come back.
                 </CheckoutStatePanel>
             ) : error && !clientSecret ? (

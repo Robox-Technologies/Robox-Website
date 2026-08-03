@@ -15,7 +15,7 @@ export default function ImportButton() {
         const id = await importProjectFile(file)
         if (!id) {
             toast.danger({
-                message: `${file.name} isn’t a Ro/Box project file.`,
+                message: `${file.name} isn't a Ro/Box project file.`,
             })
             return
         }

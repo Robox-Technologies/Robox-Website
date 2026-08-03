@@ -60,7 +60,7 @@ export default function CheckoutVoucher({
             )}
             {status === 'stale' && (
                 <p className="mb-0 text-sm text-gray-600" role="status">
-                    That code is valid but doesn’t apply to anything in your
+                    That code is valid but doesn't apply to anything in your
                     cart.
                 </p>
             )}

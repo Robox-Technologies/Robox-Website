@@ -55,7 +55,7 @@ Unless stated otherwise, all Prices specified on our website are GST inclusive p
 
 7.2 For the efficiency of Robox's production and fulfilment procedures, it may be necessary for Robox to deliver such Products by instalments in any sequence. You may not cancel the Contract where Products are delivered by instalments.
 
-7.3 Any dates provided by Robox for the delivery of the Products are estimates only and will not form part of the Contract. Actual delivery date will be affected by factors such as clearance of payment, Place of Delivery location and availability of parts for the Products. Robox will not be liable for any delay in delivery of the products and/or services, howsoever caused and for Robox will not be liable for any delay in delivery of the Products and/or services which is outside of Robox’s control.
+7.3 Any dates provided by Robox for the delivery of the Products are estimates only and will not form part of the Contract. Actual delivery date will be affected by factors such as clearance of payment, Place of Delivery location and availability of parts for the Products. Robox will not be liable for any delay in delivery of the products and/or services, howsoever caused and for Robox will not be liable for any delay in delivery of the Products and/or services which is outside of Robox's control.
 
 7.4 You may cancel an order for Products purchased if Robox is unable to deliver the Products within a reasonable period from the estimated delivery date specified on the Order Confirmation.
 
@@ -140,6 +140,6 @@ In this document, these terms have the following meanings:
 
 **Products** means the goods and/or services specified in the Order Confirmation and may include Robox-branded products, non Robox-branded products and Service and Support.
 
-**Service Offerings** means the different service options offered by Robox for the Products or any part of them and for varying periods, as described in Robox's published literature, including but not limited to Customer’s invoice and/or Robox’s service descriptions.
+**Service Offerings** means the different service options offered by Robox for the Products or any part of them and for varying periods, as described in Robox's published literature, including but not limited to Customer's invoice and/or Robox's service descriptions.
 
 **Third Party Products** means products other than Robox-branded.
