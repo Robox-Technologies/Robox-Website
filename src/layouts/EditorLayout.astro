@@ -21,7 +21,6 @@ const { title } = Astro.props as Props;
         <Meta title={title} />
     </head>
     <body class="flex flex-col">
-        {!isIOSBuild && <Header type="workshop" />}
         
         <slot />
         <ToastHost client:only="react" />
