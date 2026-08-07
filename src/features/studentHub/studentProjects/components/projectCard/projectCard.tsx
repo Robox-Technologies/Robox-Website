@@ -59,7 +59,7 @@ export function ProjectCard({
                     <img
                         src={project.thumbnail || ''}
                         alt="Project Image"
-                        className="w-full object-cover bg-tone3 aspect-video"
+                        className="w-full rounded-t-3xl object-cover bg-tone3 aspect-video"
                     />
                 }
                 title={
