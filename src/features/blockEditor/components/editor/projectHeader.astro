@@ -1,9 +1,9 @@
 ---
 import Button from "@/components/button";
-import ProjectRename from "@/features/blockEditor/components/editor/projectRename";
-import ProjectSettings from "@/features/blockEditor/components/editor/projectSettings";
+import ProjectRename from "@/features/blockEditor/components/editor/projectRename.astro";
+import ProjectSettings from "@/features/blockEditor/components/editor/projectSettings.astro";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
-import ExtensionsDialog from "@/features/blockEditor/components/extensionsDialog";
+import ExtensionsDialog from "@/features/blockEditor/components/extensionsDialog.astro";
 
 const isIOSBuild = process.env.IOS_BUILD === 'true';
 ---
@@ -18,10 +18,10 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             window.history.back();
         } : undefined}
     />
-    <ProjectRename client:load />
+    <ProjectRename />
     <div class="flex flex-row gap-4">
-        <ExtensionsDialog client:only="react" />
-        {!isIOSBuild && <ProjectSettings client:load/>}
+        <!-- <ExtensionsDialog /> -->
+        {!isIOSBuild && <ProjectSettings />}
 
     </div>
     

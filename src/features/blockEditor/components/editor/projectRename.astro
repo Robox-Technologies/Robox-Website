@@ -1,0 +1,77 @@
+---
+---
+
+<div class="project-rename flex items-center justify-center">
+    <form
+        autocomplete="off"
+        class="flex gap-4 bg-white rounded-lg box-shadow"
+        data-project-rename
+    >
+        <label class="sr-only" for="project-name-input">Project name</label>
+        <input
+            type="text"
+            name="projectName"
+            id="project-name-input"
+            value="Untitled Project"
+            class="border border-gray-300 p-2 rounded-sm w-42 text-black"
+            data-project-rename-input
+            disabled
+        />
+    </form>
+</div>
+
+<script type="module">
+    import { editProject, getProject } from '@/utils/serialization'
+    import { getProjectIdFromURL } from '@/features/blockEditor/utils/serialization'
+
+    const DEFAULT_PROJECT_NAME = 'Untitled Project'
+
+    const form = document.querySelector('[data-project-rename]')
+    const input = document.querySelector('[data-project-rename-input]')
+
+    if (
+        !(form instanceof HTMLFormElement) ||
+        !(input instanceof HTMLInputElement)
+    ) {
+        throw new Error('Project rename elements are missing')
+    }
+
+    const projectId = getProjectIdFromURL()
+    let saveTimeoutId = 0
+
+    const enableEditor = (name) => {
+        input.value = name
+        input.disabled = false
+    }
+
+    const scheduleSave = () => {
+        if (!projectId) return
+
+        if (saveTimeoutId) {
+            window.clearTimeout(saveTimeoutId)
+        }
+
+        saveTimeoutId = window.setTimeout(() => {
+            void editProject(projectId, {
+                name: input.value.trim() || DEFAULT_PROJECT_NAME,
+            })
+        }, 250)
+    }
+
+    form.addEventListener('submit', (event) => {
+        event.preventDefault()
+    })
+
+    input.addEventListener('input', scheduleSave)
+
+    const loadProjectName = async () => {
+        try {
+            const project = projectId ? await getProject(projectId) : null
+            enableEditor(project?.name || DEFAULT_PROJECT_NAME)
+        } catch {
+            enableEditor(DEFAULT_PROJECT_NAME)
+        }
+    }
+
+    void loadProjectName()
+</script>

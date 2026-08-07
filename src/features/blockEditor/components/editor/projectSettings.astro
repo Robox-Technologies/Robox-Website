@@ -1,0 +1,97 @@
+---
+import { faEyeDropper, faScrewdriver, faDownload } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+---
+
+<div class="project-settings relative">
+    <button
+        type="button"
+        id="project-settings-button"
+        class="text-white h-8 w-8 p-0! flex justify-center items-center transition-transform duration-300 ease-in-out"
+        aria-label="Project settings"
+    >
+        <i class="fa-solid fa-gear fa-xl"></i>
+    </button>
+
+    <dialog
+        id="project-settings-dialog"
+        class="modal absolute top-1/2 right-full -translate-x-full rounded-lg drop-shadow-xl ml-2 transform border-2 border-black p-0! z-50"
+    >
+        <div class="modal-content bg-white min-h-25 w-50 rounded flex flex-col p-4! gap-4">
+            <button
+                type="button"
+                class="text-black! text-md p-0! text-left flex items-center gap-2"
+            >
+                <FontAwesomeIcon icon={faEyeDropper}/>
+                Calibrate Colour
+            </button>
+            <button
+                type="button"
+                class="text-black! text-md p-0! text-left flex items-center gap-2"
+            >
+                <FontAwesomeIcon icon={faScrewdriver} />
+                Update Firmware
+            </button>
+            <button
+                type="button"
+                class="text-black! text-md p-0! text-left flex items-center gap-2"
+            >
+                <FontAwesomeIcon className="text-green" icon={faDownload} />
+                Download Project
+            </button>
+        </div>
+    </dialog>
+</div>
+
+<script>
+    const settingsDialog = document.getElementById(
+        'project-settings-dialog',
+    ) as HTMLDialogElement | null
+    const settingsButton = document.getElementById(
+        'project-settings-button',
+    ) as HTMLButtonElement | null
+
+    if (settingsDialog && settingsButton) {
+        let gearRotation = 0
+
+        const updateRotation = () => {
+            settingsButton.style.transform = `rotate(${gearRotation}deg)`
+        }
+
+        const closeDialog = () => {
+            if (!settingsDialog.open) return
+            settingsDialog.close()
+            settingsDialog.classList.remove('open')
+            gearRotation -= 45
+            updateRotation()
+        }
+
+        settingsButton.addEventListener('click', (event) => {
+            event.stopPropagation()
+
+            const isOpen = settingsDialog.classList.contains('open')
+
+            if (isOpen) {
+                settingsDialog.classList.remove('open')
+                settingsDialog.close()
+                gearRotation -= 45
+            } else {
+                settingsDialog.classList.add('open')
+                settingsDialog.show()
+                gearRotation += 45
+            }
+
+            updateRotation()
+        })
+
+        document.addEventListener('click', (event) => {
+            if (
+                settingsDialog.open &&
+                event.target instanceof Element &&
+                !event.target.closest('.modal')
+            ) {
+                closeDialog()
+            }
+        })
+    }
+</script>

@@ -1,0 +1,167 @@
+---
+import extensions from '@/data/extensions.json'
+---
+
+<button
+    type="button"
+    id="extensions-dialog-button"
+    class="text-white h-8 w-8 p-0! flex items-center justify-center"
+    aria-label="Extensions"
+>
+    <i class="fa-solid fa-puzzle-piece fa-xl"></i>
+</button>
+
+<dialog
+    id="extensions-dialog"
+    class="modal fixed inset-0 z-50 m-0 h-screen w-screen max-h-none max-w-none border-0 bg-black/45 p-4 text-black backdrop:bg-black/45 open:flex open:items-center open:justify-center"
+>
+    <div class="flex max-h-[80vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <header class="flex items-center justify-between border-b border-gray-300 px-6 py-4 text-black">
+            <h2 class="flex items-center gap-2 text-xl font-bold">
+                <i class="fa-solid fa-puzzle-piece mb-0.5 text-green"></i>
+                <span>Extensions</span>
+            </h2>
+            <button
+                type="button"
+                id="extensions-dialog-close"
+                class="rounded-lg px-3 py-2 text-gray-600 transition hover:bg-gray-100 hover:text-black"
+                aria-label="Close extensions dialog"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </header>
+
+        <div class="flex flex-col gap-4 overflow-y-auto p-6">
+            {Object.entries(extensions).map(([key, extension]) => (
+                <div class="extension-card w-full rounded-xl border border-gray-300 p-4 transition hover:bg-gray-100" data-extension-card={key}>
+                    <div class="mb-2 flex items-center justify-between gap-4">
+                        <h3 class="flex items-center gap-2 text-lg font-semibold text-gray-800">
+                            <span>{extension.emoji}</span>
+                            <span>{extension.name}</span>
+                            <span class={`inline-block rounded px-2 py-1 text-xs font-medium ${extension.tag === 'software' ? 'bg-blue-100 text-blue-500' : extension.tag === 'hardware' ? 'bg-green-100 text-green-500' : 'bg-purple-100 text-purple-500'}`}>
+                                {extension.tag}
+                            </span>
+                        </h3>
+
+                        <button
+                            type="button"
+                            class="extension-toggle flex h-7 w-12 items-center rounded-full border border-gray-300 bg-gray-200 p-1 transition-colors"
+                            data-extension-toggle={key}
+                            aria-pressed="false"
+                            aria-label={`Toggle ${extension.name}`}
+                        >
+                            <span class="extension-toggle-thumb block h-5 w-5 rounded-full bg-white shadow transition-transform duration-200"></span>
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-500">{extension.description}</p>
+                </div>
+            ))}
+        </div>
+    </div>
+</dialog>
+
+<script>
+    import extensions from '@/data/extensions.json'
+    import { getProject } from '@/utils/serialization'
+    import { getProjectIdFromURL, setUserExtension } from '@/features/blockEditor/utils/serialization'
+    import generateToolbox from '@/features/blockEditor/utils/toolbox'
+    import * as Blockly from 'blockly'
+    import { dom, library } from '@fortawesome/fontawesome-svg-core'
+    import { faPuzzlePiece, faXmark } from '@fortawesome/free-solid-svg-icons'
+
+    library.add(faPuzzlePiece, faXmark)
+    dom.watch()
+
+    const dialog = document.getElementById('extensions-dialog') as HTMLDialogElement | null
+    const button = document.getElementById('extensions-dialog-button') as HTMLButtonElement | null
+    const closeButton = document.getElementById('extensions-dialog-close') as HTMLButtonElement | null
+    const toggleButtons = Array.from(document.querySelectorAll('[data-extension-toggle]')) as HTMLButtonElement[]
+
+    const setToggleState = (extensionKey: string, enabled: boolean) => {
+        const toggle = document.querySelector(
+            `[data-extension-toggle="${extensionKey}"]`,
+        ) as HTMLButtonElement | null
+        if (!toggle) return
+
+        const thumb = toggle.querySelector('.extension-toggle-thumb') as HTMLSpanElement | null
+        toggle.setAttribute('aria-pressed', String(enabled))
+        toggle.classList.toggle('bg-green', enabled)
+        toggle.classList.toggle('bg-gray-200', !enabled)
+        toggle.classList.toggle('border-green', enabled)
+        toggle.classList.toggle('border-gray-300', !enabled)
+
+        if (thumb) {
+            thumb.style.transform = enabled ? 'translateX(20px)' : 'translateX(0)'
+        }
+    }
+
+    if (dialog && button) {
+        const closeDialog = () => {
+            if (!dialog.open) return
+            dialog.close()
+        }
+
+        button.addEventListener('click', (event) => {
+            event.stopPropagation()
+
+            if (dialog.open) {
+                closeDialog()
+            } else {
+                dialog.showModal()
+            }
+        })
+
+        closeButton?.addEventListener('click', closeDialog)
+
+        document.addEventListener('click', (event) => {
+            if (
+                dialog.open &&
+                event.target instanceof Element &&
+                event.target === dialog
+            ) {
+                closeDialog()
+            }
+        })
+
+        dialog.addEventListener('cancel', (event) => {
+            event.preventDefault()
+            closeDialog()
+        })
+
+        const projectId = getProjectIdFromURL()
+
+        if (projectId) {
+            void getProject(projectId).then((project) => {
+                for (const [extensionKey] of Object.entries(extensions)) {
+                    setToggleState(
+                        extensionKey,
+                        project?.extensions?.[extensionKey as keyof typeof project.extensions] === true,
+                    )
+                }
+            })
+        }
+
+        for (const toggle of toggleButtons) {
+            const extensionKey = toggle.dataset.extensionToggle
+            if (!extensionKey) continue
+
+            toggle.addEventListener('click', async () => {
+                const enabled = toggle.getAttribute('aria-pressed') !== 'true'
+                setToggleState(extensionKey, enabled)
+
+                await setUserExtension(
+                    extensionKey as keyof typeof extensions,
+                    enabled,
+                )
+
+                const toolbox = await generateToolbox()
+                const workspace = Blockly.getMainWorkspace()
+
+                if (workspace instanceof Blockly.WorkspaceSvg) {
+                    workspace.updateToolbox(toolbox)
+                    workspace.getToolbox()?.refreshSelection()
+                }
+            })
+        }
+    }
+</script>
