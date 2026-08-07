@@ -4,6 +4,13 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
 ---
 
 <div class="flex-1 flex relative">
+    <div
+        id="editorLoadingOverlay"
+        class="fixed inset-0 z-9999 flex flex-col items-center justify-center gap-4 bg-white/95 backdrop-blur-sm text-black pointer-events-auto"
+    >
+        <div class="h-14 w-14 animate-spin rounded-full border-4 border-gray-300 border-t-red"></div>
+        <div class="text-lg font-semibold">Loading editor...</div>
+    </div>
     <div id="blocklyDiv" class="flex-1">
         
     </div>
@@ -35,11 +42,24 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
     import.meta.glob('../config/generators/*.ts', { eager: true });
 
     const workspace = Blockly.inject('blocklyDiv', BlocklyConfig);
+
+    const overlay = document.getElementById('editorLoadingOverlay')
+    const hideOverlay = () => {
+        if (overlay) {
+            overlay.remove()
+        }
+    }
+
     // Load the saved workspace, then swap in the project's extension-aware
     // toolbox once storage has resolved (both are async).
     (async () => {
-        await loadBlockly(workspace);
-        workspace.updateToolbox(await generateToolbox());
+        try {
+            await loadBlockly(workspace);
+            workspace.updateToolbox(await generateToolbox());
+            await new Promise((resolve) => requestAnimationFrame(resolve))
+        } finally {
+            hideOverlay()
+        }
     })();
     // Saving every time a change is made to the workspace, except for UI events (like dragging blocks)
     workspace.addChangeListener((event) => {
