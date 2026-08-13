@@ -91,7 +91,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const cartIcon = document.getElementById("cart");
     let thumbnailsPreloaded = false; // ensure we only preload once
     cartIcon?.addEventListener("mouseenter", () => {
-        console.log("Preloading thumbnails");
         if (!thumbnailsPreloaded) {
             preloadThumbnails();
             thumbnailsPreloaded = true;
