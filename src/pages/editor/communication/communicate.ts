@@ -95,6 +95,7 @@ export class Pico extends EventTarget {
         this.dispatchEvent(new CustomEvent(payload.event, {detail: payload.options}));
     }
     read(payload: picoMessage) {
+        console.log("Pico message received: ", payload)
         if (!this.responded) {
             this.responded = true //The Pico has responded to the website
             this.emit({"event": "connect", "options": {}})
