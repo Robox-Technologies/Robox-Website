@@ -48,7 +48,12 @@ export class Pico extends EventTarget {
         this.responded = false
         this.firmwareVersion = firmwareVersion
     }
+    private initialized = false;
+    private disconnecting: Promise<void> | null = null;
+    private connecting: Promise<void> | null = null;
     init() {
+        if (this.initialized) return;
+        this.initialized = true;
         navigator.serial.addEventListener("connect", (event) => { //When pico is connected 
             if (!event.target) return
             if ('getInfo' in event.target) {
@@ -61,8 +66,8 @@ export class Pico extends EventTarget {
                 }
             }
         });
-        
         navigator.serial.addEventListener("disconnect", async (event) => { //When pico is disconnected 
+
             if (!event.target) return
             if ('getInfo' in event.target) {
                 const port = event.target as SerialPort;
@@ -75,8 +80,16 @@ export class Pico extends EventTarget {
         });
     }
     async disconnect() {
-        const disconnected = await this.communication.disconnect()
-        if (disconnected) this.emit({event: "disconnect", options: {error: false, restarting: this.restarting}})
+        if (this.disconnecting) return this.disconnecting;
+        this.disconnecting = (async () => {
+            const disconnected = await this.communication.disconnect();
+            if (disconnected) this.emit({event: "disconnect", options: {error: false, restarting: this.restarting}});
+        })();
+        try {
+            await this.disconnecting;
+        } finally {
+            this.disconnecting = null;
+        }
     }
     emit(payload: EventPayload) {
         this.dispatchEvent(new CustomEvent(payload.event, {detail: payload.options}));
@@ -139,10 +152,18 @@ export class Pico extends EventTarget {
         ])
     }
     async connect(port: SerialPort) {
-        const connected = await this.communication.connect(port)
-        if (connected) {
-            if (this.restarting) this.restarting = false
-            this.firmwareCheck()
+        if (this.connecting) return this.connecting;
+        this.connecting = (async () => {
+            const connected = await this.communication.connect(port)
+            if (connected) {
+                if (this.restarting) this.restarting = false
+                this.firmwareCheck()
+            }
+        })();
+        try {
+            await this.connecting;
+        } finally {
+            this.connecting = null;
         }
     }
     startupConnect() { //Check if the Pico is already connected to the website on startup
@@ -241,7 +262,7 @@ class USBCommunication {
             this.parent.emit({ event: "error", options: { message: "We are unable to open the port on the pico! Try resetting it?" } });
             return false;
         }
-    
+        console.log(this.port.writable, this.port.readable)
         if (!this.port.writable || !this.port.readable) {
             this.parent.emit({ event: "error", options: { message: "The port is not readable/writable!" } });
             return false;
@@ -263,39 +284,32 @@ class USBCommunication {
     
         return true;
     }
-    async disconnect() {
+    async disconnect(): Promise<boolean> {
         if (this.currentReader) {
             try {
                 await this.currentReader.cancel();
                 this.currentReader.releaseLock();
                 await this.currentReadableStreamClosed?.catch(() => {});
-            } catch {
-                return
-            }
+            } catch { /* ignore */ }
         }
-    
+
         if (this.currentWriter) {
             try {
                 await this.currentWriter.close();
                 this.currentWriter.releaseLock();
                 await this.currentWriterStreamClosed?.catch(() => {});
-            } catch {
-                return
-            }
+            } catch { /* ignore */ }
         }
-    
-        if (this.port?.readable?.locked || this.port?.writable?.locked) {
+        if (this.port) {
             try {
                 await this.port.close();
-            } catch {
-                this.parent.emit({
-                    event: "error",
-                    options: { message: "Could not close Pico port" }
-                });
+            } catch (err) {
+                console.error("port.close failed:", err);
+                // Don't emit an error event here — during a physical
+                // disconnect this is expected/harmless noise.
             }
         }
-    
-        // Reinitialize for next connection
+
         this.textEncoder = new TextEncoderStream();
         this.textDecoder = new TextDecoderStream();
         this.currentWriter = this.textEncoder.writable.getWriter();
