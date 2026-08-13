@@ -146,3 +146,4 @@ GUIDE_*.html
 src/.DS_Store
 products.json
 products.json
+.claude/
