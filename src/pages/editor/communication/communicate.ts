@@ -262,7 +262,6 @@ class USBCommunication {
             this.parent.emit({ event: "error", options: { message: "We are unable to open the port on the pico! Try resetting it?" } });
             return false;
         }
-        console.log(this.port.writable, this.port.readable)
         if (!this.port.writable || !this.port.readable) {
             this.parent.emit({ event: "error", options: { message: "The port is not readable/writable!" } });
             return false;
