@@ -1,0 +1,136 @@
+name: Deploy
+
+# Both targets live on the same VM:
+#   master              -> /var/www/Robox-Website      (pm2 "server")
+#   develop, epic/astro -> /var/www/Robox-Website-dev  (pm2 "server-dev")
+#
+# Required repository secrets:
+#   DEPLOY_SSH_HOST  - the VM's IP address / hostname
+#   DEPLOY_SSH_USER  - SSH username
+#   DEPLOY_SSH_KEY   - private key (full PEM/OpenSSH text, including the header
+#                      and trailer lines) whose public half is in the user's
+#                      ~/.ssh/authorized_keys
+# Optional:
+#   DEPLOY_SSH_PORT        - SSH port (default 22)
+#   DEPLOY_SSH_KNOWN_HOSTS - pinned host key(s); when unset the host key is
+#                            fetched with ssh-keyscan on every run
+
+on:
+    push:
+        branches:
+            - master
+            - develop
+            - epic/astro
+    workflow_dispatch:
+        inputs:
+            recreate_pm2:
+                description: 'Delete and re-create the pm2 process instead of restarting it (use when its script path changed)'
+                type: boolean
+                default: false
+
+# Never let two deploys race on the same directory, and never cancel one
+# half-way through a build or restart.
+concurrency:
+    group: deploy-${{ github.ref_name == 'master' && 'production' || 'development' }}
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        name: Deploy ${{ github.ref_name }}
+        runs-on: ubuntu-latest
+        environment: ${{ github.ref_name == 'master' && 'production' || 'development' }}
+        steps:
+            - uses: actions/checkout@v5
+
+            - name: Resolve deploy target
+              id: target
+              env:
+                  BRANCH: ${{ github.ref_name }}
+              run: |
+                  case "$BRANCH" in
+                      master)
+                          dir=/var/www/Robox-Website
+                          pm2_name=server
+                          ;;
+                      develop | epic/astro)
+                          dir=/var/www/Robox-Website-dev
+                          pm2_name=server-dev
+                          ;;
+                      *)
+                          echo "::error::No deploy target configured for '$BRANCH'"
+                          exit 1
+                          ;;
+                  esac
+                  echo "dir=$dir" >> "$GITHUB_OUTPUT"
+                  echo "pm2_name=$pm2_name" >> "$GITHUB_OUTPUT"
+                  echo "Deploying $BRANCH to $dir (pm2: $pm2_name)"
+
+            - name: Configure SSH
+              env:
+                  SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+                  SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+                  SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
+                  SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+              run: |
+                  for name in SSH_KEY SSH_HOST; do
+                      if [ -z "${!name}" ]; then
+                          echo "::error::Missing secret DEPLOY_${name#SSH_}"
+                          exit 1
+                      fi
+                  done
+
+                  mkdir -p ~/.ssh
+                  chmod 700 ~/.ssh
+                  printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+                  chmod 600 ~/.ssh/deploy_key
+
+                  if [ -n "$SSH_KNOWN_HOSTS" ]; then
+                      printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+                  else
+                      echo "DEPLOY_SSH_KNOWN_HOSTS is not set — trusting the key ssh-keyscan returns"
+                      ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" > ~/.ssh/known_hosts 2>/dev/null
+                  fi
+                  chmod 600 ~/.ssh/known_hosts
+
+            - name: Build and restart on the server
+              env:
+                  SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+                  SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+                  SSH_PORT: ${{ secrets.DEPLOY_SSH_PORT }}
+                  BRANCH: ${{ github.ref_name }}
+                  DEPLOY_DIR: ${{ steps.target.outputs.dir }}
+                  PM2_NAME: ${{ steps.target.outputs.pm2_name }}
+                  RECREATE_PM2: ${{ inputs.recreate_pm2 || 'false' }}
+              run: |
+                  ssh \
+                      -i ~/.ssh/deploy_key \
+                      -p "${SSH_PORT:-22}" \
+                      -o StrictHostKeyChecking=yes \
+                      -o IdentitiesOnly=yes \
+                      -o ServerAliveInterval=30 \
+                      "$SSH_USER@$SSH_HOST" \
+                      'bash -s' -- "$BRANCH" "$DEPLOY_DIR" "$PM2_NAME" "$RECREATE_PM2" \
+                      < .github/scripts/remote-deploy.sh
+
+            - name: Summary
+              if: always()
+              env:
+                  BRANCH: ${{ github.ref_name }}
+                  DEPLOY_DIR: ${{ steps.target.outputs.dir }}
+                  PM2_NAME: ${{ steps.target.outputs.pm2_name }}
+                  RESULT: ${{ job.status }}
+              run: |
+                  {
+                      echo "### Deploy \`$RESULT\`"
+                      echo
+                      echo "| | |"
+                      echo "|---|---|"
+                      echo "| Branch | \`$BRANCH\` |"
+                      echo "| Commit | \`${GITHUB_SHA:0:7}\` |"
+                      echo "| Directory | \`$DEPLOY_DIR\` |"
+                      echo "| pm2 process | \`$PM2_NAME\` |"
+                  } >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Clean up SSH key
+              if: always()
+              run: rm -f ~/.ssh/deploy_key
