@@ -65,7 +65,7 @@ function transformIOSBuild(): AstroIntegration {
         name: 'transform-ios-build',
         hooks: {
             'astro:build:done': async ({ dir, logger }) => {
-                // Delete everything in this path except for _astro or /student
+                // Delete everything in this path except for _astro or /hub
                 logger.info(`Transforming iOS build in ${dir.pathname}`)
                 const folders = (
                     await fs.readdir(dir.pathname, {
@@ -75,7 +75,7 @@ function transformIOSBuild(): AstroIntegration {
                     (dirent) =>
                         dirent.isDirectory() &&
                         dirent.name !== '_astro' &&
-                        dirent.name !== 'student',
+                        dirent.name !== 'hub',
                 )
                 const folderNames = folders.map((folder) => folder.name)
                 for (const folderName of folderNames) {
@@ -87,13 +87,13 @@ function transformIOSBuild(): AstroIntegration {
                 const indexPath = join(dir.pathname, 'index.html')
                 await fs.rm(indexPath)
                 logger.info(`Deleted ${indexPath}`)
-                //Copy content of /student to the root of the build
-                const studentPath = join(dir.pathname, 'student')
+                //Copy content of /hub to the root of the build
+                const studentPath = join(dir.pathname, 'hub')
                 await fs.cp(studentPath, dir.pathname, { recursive: true })
                 logger.info(
                     `Copied content of ${studentPath} to ${dir.pathname}`,
                 )
-                //Delete the /student folder
+                //Delete the /hub folder
                 await fs.rm(studentPath, { recursive: true })
                 logger.info(
                     `Copied content of ${studentPath} to ${dir.pathname} and deleted ${studentPath}`,

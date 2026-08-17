@@ -74,94 +74,14 @@ async function getJson<T>(path: string): Promise<T | null> {
     }
 }
 
-type UploadDoc = {
-    id: string
-    url?: string
-    filename?: string
-    createdAt?: string
-}
-
-type UploadIndex = {
-    byId: Map<string, UploadDoc>
-    byCreatedSecond: Map<number, UploadDoc[]>
-}
-
-/** Seconds since epoch encoded in the leading four bytes of a Mongo ObjectId. */
-function idTimestamp(id: string): number | null {
-    if (!/^[0-9a-f]{24}$/i.test(id)) return null
-    return parseInt(id.slice(0, 8), 16)
-}
-
-/** Lowercase alphanumerics, so "Lesson 4" matches "... Lesson 4-1.pdf". */
-function normalise(value: string): string {
-    return value.toLowerCase().replace(/[^a-z0-9]/g, '')
-}
-
-async function getUploadIndex(
-    collection: 'media' | 'files',
-): Promise<UploadIndex> {
-    const data = await getJson<{ docs: UploadDoc[] }>(
-        `/api/${collection}?pagination=false`,
-    )
-
-    const byId = new Map<string, UploadDoc>()
-    const byCreatedSecond = new Map<number, UploadDoc[]>()
-
-    for (const doc of data?.docs ?? []) {
-        byId.set(doc.id, doc)
-        if (!doc.createdAt) continue
-        const second = Math.floor(new Date(doc.createdAt).getTime() / 1000)
-        if (!byCreatedSecond.has(second)) byCreatedSecond.set(second, [])
-        byCreatedSecond.get(second)!.push(doc)
-    }
-
-    return { byId, byCreatedSecond }
-}
-
 /**
- * Recover an upload whose id no longer exists.
- *
- * The media and files documents were re-inserted at some point keeping their
- * `createdAt` but getting fresh ObjectIds, and nothing remapped the references
- * in `content` — so every `thumbnail`/`File` id 404s (on cms.robox.com.au as
- * well as locally). An ObjectId carries its creation second in its first four
- * bytes, and the re-inserted documents kept that same value in `createdAt`, so
- * the pairing is still recoverable. Where several uploads share a second, the
- * one whose filename names the item wins.
- *
- * `scripts/repair-cms-upload-refs.mjs` writes these corrections back to the
- * CMS; once that's run this never fires, because the id lookup hits first.
+ * At `depth=1` Payload populates upload relationships into full documents. A
+ * ref left as a bare id string means the id no longer exists in `media`/`files`
+ * — run `scripts/repair-cms-upload-refs.mjs` if that starts happening again.
  */
-function recoverUpload(
-    ref: string,
-    uploads: UploadIndex,
-    title: string,
-): UploadDoc | null {
-    const second = idTimestamp(ref)
-    if (second === null) return null
-
-    const candidates = uploads.byCreatedSecond.get(second) ?? []
-    if (candidates.length === 0) return null
-    if (candidates.length === 1) return candidates[0]
-
-    const named = candidates.filter((candidate) =>
-        normalise(candidate.filename ?? '').includes(normalise(title)),
-    )
-    return named.length === 1 ? named[0] : null
-}
-
-function resolveUpload(
-    ref: UploadRef,
-    uploads: UploadIndex,
-    title: string,
-): string | null {
-    if (!ref) return null
-    // Payload hands these back as a bare id here; keep the expanded shape
-    // working too, since that's what the original expected.
-    if (typeof ref !== 'string') return absolute(ref.url)
-
-    const doc = uploads.byId.get(ref) ?? recoverUpload(ref, uploads, title)
-    return absolute(doc?.url)
+function resolveUpload(ref: UploadRef): string | null {
+    if (!ref || typeof ref === 'string') return null
+    return absolute(ref.url)
 }
 
 /**
@@ -169,20 +89,14 @@ function resolveUpload(
  * newest.
  */
 export async function getCMSContent(): Promise<CMSItem[]> {
-    // `depth=0` is deliberate and load-bearing. At Payload's default depth the
-    // `upload` nodes inside article richtext come back as `value: null`; at
-    // depth=0 they carry the inline snapshot (url, alt, dimensions) that the
-    // body images need. Relationship fields are bare ids either way, which is
-    // why the upload collections get joined by hand below.
+    // `depth=1` is load-bearing: it's what populates the `thumbnail`/`File`
+    // relationships *and* the `upload` nodes inside article richtext into full
+    // documents. At depth=0 all of those are bare ids, and the article body
+    // images silently render as nothing.
     const data = await getJson<{ docs: RawContentItem[] }>(
-        '/api/content?pagination=false&depth=0',
+        '/api/content?pagination=false&depth=1',
     )
     if (!data) return []
-
-    const [media, files] = await Promise.all([
-        getUploadIndex('media'),
-        getUploadIndex('files'),
-    ])
 
     return data.docs
         .filter((item) => item.status === 'published')
@@ -197,12 +111,8 @@ export async function getCMSContent(): Promise<CMSItem[]> {
             createdAt: item.createdAt,
             location: item.location,
             favorite: Boolean(item.favorite),
-            thumbnailUrl: resolveUpload(
-                item.thumbnail,
-                media,
-                item.previewTitle,
-            ),
-            fileUrl: resolveUpload(item.File, files, item.previewTitle),
+            thumbnailUrl: resolveUpload(item.thumbnail),
+            fileUrl: resolveUpload(item.File),
             content: item.content ?? null,
         }))
         .sort((a, b) => {
@@ -212,6 +122,32 @@ export async function getCMSContent(): Promise<CMSItem[]> {
                 new Date(a.createdAt).getTime()
             )
         })
+}
+
+/**
+ * A CMS-managed short link: /api/redirect/<slug> lands on the uploaded file the
+ * editors pointed the slug at, so printed URLs stay valid when the file behind
+ * them is replaced.
+ */
+type RawRedirect = {
+    slug: string
+    destination: UploadRef
+}
+
+/**
+ * Resolves a redirect slug to the absolute URL of its destination file, or null
+ * when the slug is unknown (or the CMS is unreachable).
+ */
+export async function getCMSRedirect(slug: string): Promise<string | null> {
+    // `depth=1` is what turns `destination` from a bare id into the file
+    // document that actually carries the `url`.
+    const data = await getJson<{ docs: RawRedirect[] }>(
+        `/api/redirects?where[slug][equals]=${encodeURIComponent(slug)}&depth=1&limit=1`,
+    )
+    const redirect = data?.docs?.[0]
+    if (!redirect) return null
+
+    return resolveUpload(redirect.destination)
 }
 
 export async function getCMSContentFor(

@@ -80,7 +80,7 @@ export default function Footer() {
                 <div className="flex flex-col gap-4">
                     <h2 className="text-2xl font-semibold">Pages</h2>
                     <FooterLink href="/teacher">Teacher Resources</FooterLink>
-                    <FooterLink href="/student">Ro/Box Hub</FooterLink>
+                    <FooterLink href="/hub">Ro/Box Hub</FooterLink>
                     <FooterLink href="/shop">Shop</FooterLink>
                 </div>
                 <div id="contactUs" className="flex flex-col gap-4">

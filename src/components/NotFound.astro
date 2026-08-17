@@ -1,0 +1,31 @@
+---
+import StandardLayout from '@/layouts/StandardLayout.astro'
+import Button from '@/components/button'
+
+/**
+ * The 404 page body. Lives in a component so that routes which decide at
+ * request time that there's nothing to serve — /api/redirect/<unknown slug> —
+ * can render the same page as the static 404.
+ */
+---
+
+<StandardLayout title="Page Not Found">
+    <div class="mx-auto my-[20vh] max-w-[360px] px-8 text-center">
+        <h1>404</h1>
+        <h2 class="mt-2 text-3xl font-semibold">Page Not Found</h2>
+
+        <p class="mt-6 text-left text-xl leading-[150%]">
+            There's no <em>Ro/Box</em>es or random shapes with eyes here.<br />
+            You're welcome to stop and smell the (non-existent) pine trees along
+            the way.<br />
+            Next time, make sure the URL is correct!
+        </p>
+
+        <Button
+            href="/"
+            className="bg-red box-shadow mt-8 inline-block px-6 py-4 text-2xl"
+        >
+            Home
+        </Button>
+    </div>
+</StandardLayout>

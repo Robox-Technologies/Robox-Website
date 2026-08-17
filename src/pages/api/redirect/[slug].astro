@@ -1,0 +1,37 @@
+---
+export const prerender = false
+
+import { getCMSRedirect } from '@/utils/server/cms.server'
+import NotFound from '@/components/NotFound.astro'
+
+/**
+ * /api/redirect/<slug> -> the CMS file that editors pointed <slug> at.
+ *
+ * These are the short links printed on packaging and in guides (e.g.
+ * /api/redirect/guide), so the URL has to stay stable while the file behind it
+ * gets replaced in the CMS. Ported from the original Express server.
+ *
+ * The old server read the redirect list once at boot; this looks the slug up
+ * per request instead, so a newly added redirect works without a redeploy.
+ *
+ * A page rather than an endpoint so that an unknown slug — which is what a
+ * mistyped printed URL looks like — can render the regular 404 page instead of
+ * a bare error.
+ */
+
+// Payload slugs are slugify(..., { strict: true }) output. Anything else can't
+// match a real redirect, so reject it before it reaches the CMS query.
+const SAFE_SLUG = /^[a-z0-9-]+$/
+
+const slug = Astro.params.slug
+
+if (slug && SAFE_SLUG.test(slug)) {
+    const destination = await getCMSRedirect(slug)
+    // 302: the destination file behind a slug is expected to change.
+    if (destination) return Astro.redirect(destination, 302)
+}
+
+Astro.response.status = 404
+---
+
+<NotFound />
