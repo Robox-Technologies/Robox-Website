@@ -12,7 +12,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         href="../"
         icon={faChevronLeft}
         iconStyle="fa-xl"
-        className="text-white h-8 w-8 p-0! flex justify-center items-center"
+        className="button-interactive-light text-white h-8 w-8 p-0! rounded-full! flex justify-center items-center"
         onClick={isIOSBuild ? (event: React.MouseEvent<HTMLButtonElement>) => {
             event.preventDefault(); 
             window.history.back();

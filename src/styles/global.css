@@ -11,9 +11,6 @@
 
 @theme {
     --color-blue: #2588c7;
-    /* Hover shade for blue CTAs. `hover:bg-blue-dark` was already in use on the
-       checkout buttons but resolved to nothing without this. */
-    --color-blue-dark: #1c6b9e;
     --color-green: #91cc31;
     --color-yellow: #ffcd44;
     --color-red: #ff6166;
@@ -58,7 +55,107 @@
         @apply text-black font-semibold;
     }
     .box-shadow {
-        box-shadow: 6px 6px 0 #26363b;
+        box-shadow: 6px 6px 0 var(--color-drop-shadow);
+    }
+
+    /*
+     * Hover / press feedback shared by every button-shaped control: applied by
+     * `components/button.tsx` and by hand on the raw <button>/<a> ones.
+     *
+     * The feedback is a translucent overlay rather than a hover *background*,
+     * so a single rule reads correctly on a red CTA, a white round icon button
+     * and a transparent menu row alike. (The base button class used to hardcode
+     * `hover:bg-blue-dark`, which turned red buttons blue and did nothing at
+     * all for the icon-only ones.)
+     */
+    .button-interactive {
+        position: relative;
+        cursor: pointer;
+        transition:
+            transform 100ms ease-out,
+            box-shadow 100ms ease-out,
+            opacity 150ms ease-out;
+    }
+    .button-interactive::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        /* Follows whatever radius the button was given, pill or square. */
+        border-radius: inherit;
+        background-color: var(--color-drop-shadow);
+        opacity: 0;
+        /* The overlay sits on top of the label, so it must never eat clicks. */
+        pointer-events: none;
+        transition: opacity 150ms ease-out;
+    }
+    /* White-on-colour icon buttons (editor header, nav) darken into mud with
+       the default wash; lighten those instead. White needs more of it than
+       dark ink to register on red or blue. */
+    .button-interactive-light::after {
+        background-color: #ffffff;
+    }
+    /* The states are chained `:not()`s rather than `:not(a, b)` because the
+       iOS build still targets iOS 15, where a selector list inside `:not()`
+       throws the whole rule away. */
+    /* Hover is gated on a real pointer so a tap in the app doesn't leave the
+       wash stuck on until the next tap elsewhere. */
+    @media (hover: hover) {
+        .button-interactive:hover:not(:disabled):not(
+                [aria-disabled='true']
+            )::after {
+            opacity: 0.12;
+        }
+    }
+    .button-interactive:active:not(:disabled):not(
+            [aria-disabled='true']
+        )::after {
+        opacity: 0.22;
+    }
+    @media (hover: hover) {
+        .button-interactive-light:hover:not(:disabled):not(
+                [aria-disabled='true']
+            )::after {
+            opacity: 0.2;
+        }
+    }
+    .button-interactive-light:active:not(:disabled):not(
+            [aria-disabled='true']
+        )::after {
+        opacity: 0.32;
+    }
+    /* Flat buttons sink a pixel; the chunky ones ride down into their own drop
+       shadow, which is where that style expects its press to come from.
+       Deliberately `transform` and not the individual `translate` property:
+       Tailwind's translate utilities compile to `translate`, so writing there
+       would replace (not add to) the -50% that centres the carousel arrows and
+       drop them 16px on press. `transform` composes with `translate` instead. */
+    .button-interactive:active:not(:disabled):not([aria-disabled='true']) {
+        transform: translateY(1px);
+    }
+    .button-interactive.box-shadow:active:not(:disabled):not(
+            [aria-disabled='true']
+        ) {
+        transform: translate(3px, 3px);
+        box-shadow: 3px 3px 0 var(--color-drop-shadow);
+    }
+    .button-interactive:focus-visible {
+        outline: 2px solid var(--color-black);
+        outline-offset: 2px;
+    }
+    .button-interactive:disabled,
+    .button-interactive[aria-disabled='true'] {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    /* A disabled <a> keeps its href for copy/paste but must not navigate. */
+    a.button-interactive[aria-disabled='true'] {
+        pointer-events: none;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .button-interactive,
+        .button-interactive::after {
+            transition: none;
+        }
     }
 }
 @layer base {

@@ -115,7 +115,7 @@ export function StripePaymentForm({
             <button
                 type="submit"
                 disabled={!stripe || !elements || submitting || !termsAccepted}
-                className="inline-flex items-center justify-center rounded-lg bg-blue px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-dark disabled:cursor-not-allowed disabled:opacity-60"
+                className="button-interactive inline-flex items-center justify-center rounded-lg bg-blue px-4 py-3 font-semibold text-white"
             >
                 {submitting ? (
                     <span className="inline-flex items-center gap-2">

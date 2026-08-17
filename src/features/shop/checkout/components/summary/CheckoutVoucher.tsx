@@ -48,7 +48,7 @@ export default function CheckoutVoucher({
                     type="button"
                     onClick={apply}
                     disabled={disabled}
-                    className="rounded-lg bg-red px-5 py-3 text-base font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                    className="button-interactive rounded-lg bg-red px-5 py-3 text-base font-semibold text-white"
                 >
                     Apply
                 </button>

@@ -21,7 +21,7 @@ export default function DeleteDialog() {
             trigger={(setIsOpen) => (
                 <>
                     <Button
-                        className="text-black! p-1.5! flex items-center justify-start gap-1.5 hover:cursor-pointer"
+                        className="text-black! p-1.5! flex items-center justify-start gap-1.5"
                         onClick={(event) => {
                             event.stopPropagation()
                             event.preventDefault()
@@ -70,7 +70,7 @@ export default function DeleteDialog() {
 
             <DialogFooter>
                 <Button
-                    className="bg-red w-25 px-4 py-2 text-white rounded-xl hover:bg-red-600 transition-colors"
+                    className="bg-red w-25"
                     onClick={onDeleteProject}
                 >
                     Delete

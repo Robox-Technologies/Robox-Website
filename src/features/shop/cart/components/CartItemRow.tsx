@@ -38,7 +38,7 @@ export default function CartItemRow({
                 />
                 <Button
                     type="button"
-                    className="bg-black text-white hover:bg-black/80"
+                    className="bg-black text-white"
                     onClick={onRemove}
                 >
                     Remove

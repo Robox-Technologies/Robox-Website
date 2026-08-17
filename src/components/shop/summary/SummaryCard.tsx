@@ -47,7 +47,7 @@ export function SummaryPrimaryAction({
         <Button
             href={href}
             disabled={disabled}
-            className="w-full bg-blue text-center text-white! hover:bg-blue-dark disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full bg-blue text-center text-white!"
         >
             {children}
         </Button>

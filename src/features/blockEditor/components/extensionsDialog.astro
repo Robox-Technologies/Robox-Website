@@ -5,7 +5,7 @@ import extensions from '@/data/extensions.json'
 <button
     type="button"
     id="extensions-dialog-button"
-    class="text-white h-8 w-8 p-0! flex items-center justify-center"
+    class="button-interactive button-interactive-light text-white h-8 w-8 p-0! rounded-full flex items-center justify-center"
     aria-label="Extensions"
 >
     <i class="fa-solid fa-puzzle-piece fa-xl"></i>
@@ -24,7 +24,7 @@ import extensions from '@/data/extensions.json'
             <button
                 type="button"
                 id="extensions-dialog-close"
-                class="rounded-lg px-3 py-2 text-gray-600 transition hover:bg-gray-100 hover:text-black"
+                class="button-interactive rounded-lg px-3 py-2 text-gray-600"
                 aria-label="Close extensions dialog"
             >
                 <i class="fa-solid fa-xmark"></i>
@@ -45,7 +45,7 @@ import extensions from '@/data/extensions.json'
 
                         <button
                             type="button"
-                            class="extension-toggle flex h-7 w-12 items-center rounded-full border border-gray-300 bg-gray-200 p-1 transition-colors"
+                            class="extension-toggle button-interactive flex h-7 w-12 items-center rounded-full border border-gray-300 bg-gray-200 p-1 transition-colors"
                             data-extension-toggle={key}
                             aria-pressed="false"
                             aria-label={`Toggle ${extension.name}`}

@@ -18,7 +18,7 @@ export default function TerminalButton({
             icon={faTerminal}
             id="terminalButton"
             className={`flex items-center w-10 h-10 justify-center border-2 rounded-full bg-white box-shadow pointer-events-auto 
-                ${connected ? 'border-green' : 'border-gray-500 hover:cursor-not-allowed!'}`}
+                ${connected ? 'border-green' : 'border-gray-500'}`}
             iconStyle={`text-xl
                 ${connected ? 'text-green' : 'text-gray-500'}
             `}

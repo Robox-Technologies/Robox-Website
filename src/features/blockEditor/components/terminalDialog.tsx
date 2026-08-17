@@ -69,7 +69,7 @@ export default function TerminalDialog() {
                     onClick={() => {
                         setLogs([])
                     }}
-                    className="bg-gray-500 px-4 py-2 text-white rounded-xl hover:bg-gray-600 ml-auto transition-colors"
+                    className="bg-gray-500 ml-auto"
                 >
                     Clear Terminal
                 </Button>

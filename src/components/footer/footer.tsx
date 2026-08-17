@@ -35,12 +35,14 @@ function FooterBottomBar({ tone }: { tone: 'dark' | 'light' }) {
                         hello@robox.com.au
                     </a>
                 </p>
-                <a
-                    href="/privacy"
-                    className="w-fit underline md:flex-1 md:text-right md:text-nowrap"
-                >
-                    Privacy Policy
-                </a>
+                <p className="w-fit md:flex-1 md:text-right md:text-nowrap">
+                    <a
+                        href="/privacy"
+                        className="underline"
+                    >
+                        Privacy Policy
+                    </a>
+                </p>
             </div>
         </div>
     )

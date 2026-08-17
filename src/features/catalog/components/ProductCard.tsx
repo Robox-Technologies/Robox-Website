@@ -35,7 +35,7 @@ export default function ProductCard({
                 }
             >
                 <div className="flex justify-center px-4">
-                    <button className="px-4 py-2 bg-red text-white w-full rounded-full hover:cursor-pointer">
+                    <button className="button-interactive px-4 py-2 bg-red text-white w-full rounded-full">
                         View Product
                     </button>
                 </div>

@@ -63,7 +63,7 @@ export default function Dialog({
                     >
                         <button
                             onClick={() => setIsOpen(false)}
-                            className="absolute top-3.5 right-4 rounded-sm transition-opacity hover:cursor-pointer flex items-center justify-center py-1 px-0.5"
+                            className="button-interactive absolute top-3.5 right-4 rounded-md flex items-center justify-center py-1 px-1.5"
                         >
                             <FontAwesomeIcon
                                 icon={faXmark}

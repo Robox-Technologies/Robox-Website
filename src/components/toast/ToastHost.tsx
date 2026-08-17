@@ -183,7 +183,7 @@ function ToastItemCard({
                         type="button"
                         onClick={onDismiss}
                         aria-label="Dismiss notification"
-                        className="rounded-md p-1 border border-black hover:cursor-pointer"
+                        className="button-interactive rounded-md p-1 border border-black"
                     >
                         <FontAwesomeIcon
                             icon={faXmark}

@@ -35,7 +35,7 @@ export default function CheckoutSummaryLoadingState() {
                         </div>
                         <button
                             type="button"
-                            className="rounded-lg bg-red px-5 py-3 text-base font-semibold text-white"
+                            className="button-interactive rounded-lg bg-red px-5 py-3 text-base font-semibold text-white"
                             disabled
                         >
                             Apply

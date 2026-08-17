@@ -24,8 +24,13 @@ export default function Button({
         return (
             <a
                 href={href}
+                // An anchor can't be `:disabled`, so carry the state as
+                // `aria-disabled` — that's what the greyed-out look and the
+                // click-blocking in `.button-interactive` key off.
+                aria-disabled={disabled || undefined}
+                tabIndex={disabled ? -1 : undefined}
                 className={twMerge(
-                    `text-white px-4 py-2 rounded-xl hover:bg-blue-dark transition`,
+                    `button-interactive text-white px-4 py-2 rounded-xl`,
                     className,
                 )}
                 {...anchorProps}
@@ -40,7 +45,7 @@ export default function Button({
         return (
             <button
                 className={twMerge(
-                    `text-white rounded-xl px-4 py-2 hover:bg-blue-dark hover:cursor-pointer transition`,
+                    `button-interactive text-white rounded-xl px-4 py-2`,
                     className,
                 )}
                 {...props}

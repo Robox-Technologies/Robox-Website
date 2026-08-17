@@ -18,7 +18,7 @@ export default function ProjectSettings({ id }: { id: string }) {
     return (
         <Button
             onClick={handleClick}
-            className="project-settings ml-auto shrink-0 pr-0 -transform-y-1 bg-transparent hover:bg-transparent text-black! hover:text-black! w-8 h-8 flex items-center justify-center p-0 hover:cursor-pointer"
+            className="project-settings ml-auto shrink-0 pr-0 -transform-y-1 bg-transparent text-black! w-8 h-8 flex items-center justify-center p-0 rounded-full!"
         >
             <FontAwesomeIcon
                 className="w-5 h-5 text-black"

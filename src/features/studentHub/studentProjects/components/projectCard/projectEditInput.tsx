@@ -98,7 +98,7 @@ export default function ProjectEditInput({
                     e.stopPropagation()
                     handleSave()
                 }}
-                className="p-1! h-8 w-8 flex items-center justify-center bg-green hover:bg-green-dark"
+                className="p-1! h-8 w-8 flex items-center justify-center bg-green"
             >
                 <FontAwesomeIcon icon={faCheck} className="text-white h-4 w-4" />
             </Button>
@@ -109,7 +109,7 @@ export default function ProjectEditInput({
                     e.stopPropagation()
                     onCancel()
                 }}
-                className="p-1! h-8 w-8 flex items-center justify-center bg-red hover:bg-red-dark"
+                className="p-1! h-8 w-8 flex items-center justify-center bg-red"
             >
                 <FontAwesomeIcon icon={faX} className="text-white h-4 w-4" />
             </Button>

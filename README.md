@@ -1,12 +1,11 @@
 # Ro/Box Website
 
-[GitHub Actions Workflow Status](https://github.com/Robox-Technologies/Robox-Website/actions)
-[License: GPL v3](https://www.gnu.org/licenses/gpl-3.0)
-[Website](https://robox.com.au)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Frobox.com.au&label=Website)](https://robox.com.au)
 
-[Instagram](https://www.instagram.com/robox.kit)
-[X (formerly Twitter)](https://x.com/robox_kit)
-[LinkedIn](https://www.linkedin.com/company/roboxeducation)
+[![Instagram](https://img.shields.io/twitter/url?url=https%3A%2F%2Fwww.instagram.com%2Frobox.kit&style=flat&logo=instagram&label=Instagram&labelColor=d62976&color=d62976)](https://www.instagram.com/robox.kit)
+[![X (formerly Twitter)](https://img.shields.io/twitter/url?url=https%3A%2F%2Fx.com%2Frobox_kit&style=flat&logo=x&label=%2F%20Twitter&labelColor=black&color=black)](https://x.com/robox_kit)
+[![LinkedIn](https://img.shields.io/twitter/url?url=https%3A%2F%2Fwww.linkedin.com%2Fcompany%2Froboxeducation&style=flat&label=LinkedIn&labelColor=0e76a8&color=0e76a8)](https://www.linkedin.com/company/roboxeducation)
 
 Repository for the official source code of the [Ro/Box website](https://robox.com.au).
 

@@ -12,7 +12,7 @@ export default function CreateCard() {
     return (
         <Button
             id="create-card"
-            className="w-[250px] rounded-lg bg-blue flex flex-col items-center justify-center p-6 gap-4 hover:cursor-pointer"
+            className="w-[250px] rounded-lg bg-blue flex flex-col items-center justify-center p-6 gap-4"
             onClick={onClick}
         >
             <div className="w-12 h-12 flex items-center justify-center">

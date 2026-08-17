@@ -67,7 +67,7 @@ function ScrollIndicator() {
             <a
                 href="#content"
                 aria-label="Scroll to content"
-                className="animate-bounce flex h-11 w-11 items-center justify-center rounded-full bg-black/90 text-primary hover:cursor-pointer"
+                className="button-interactive animate-bounce flex h-11 w-11 items-center justify-center rounded-full bg-black/90 text-primary"
             >
                 <FontAwesomeIcon icon={faChevronDown} className="h-6 w-6" />
             </a>
