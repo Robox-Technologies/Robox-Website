@@ -8,7 +8,11 @@ export default function CartItemsSection({
     onInputChange,
     onRemove,
 }: {
-    title: string
+    /**
+     * Optional: the original only labels the preorder group, so the
+     * available items sit directly under the page heading.
+     */
+    title?: string
     items: CartEntry[]
     imageSrcById: Record<string, string>
     onInputChange: (productId: string, value: number) => void
@@ -19,9 +23,13 @@ export default function CartItemsSection({
     }
 
     return (
-        <section className="flex flex-col gap-4">
-            <h2 className="mb-0! text-2xl font-semibold">{title}</h2>
-            <div className="flex flex-col gap-4">
+        <section>
+            {title ? (
+                <h2 className="my-[20.75px] text-[25px] font-medium">
+                    {title}
+                </h2>
+            ) : null}
+            <div className="flex flex-col gap-8">
                 {items.map(({ product, quantity }) => (
                     <CartItemRow
                         key={product.internalName}

@@ -1,5 +1,3 @@
-import Button from '@/components/button'
-
 /**
  * Stands in for the payment form when there's nothing to pay for, or when
  * preparing the payment intent failed. Without this the section sat on its
@@ -14,12 +12,12 @@ export default function CheckoutStatePanel({
     children: React.ReactNode
 }) {
     return (
-        <div className="flex w-full flex-1 flex-col items-start gap-4 rounded-xl border border-black/10 bg-white p-6 shadow-sm">
-            <h2 className="mb-0! text-3xl font-bold">{heading}</h2>
-            <p className="mb-0 text-gray-600">{children}</p>
-            <Button href="/shop/cart" className="bg-red text-white">
+        <div className="w-full flex-1 text-center">
+            <h2 className="my-[20.75px] text-[25px] font-medium">{heading}</h2>
+            <p>{children}</p>
+            <a href="/shop/cart" className="button-interactive cta-button">
                 Back to Cart
-            </Button>
+            </a>
         </div>
     )
 }

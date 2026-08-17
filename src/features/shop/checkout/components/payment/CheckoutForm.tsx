@@ -48,18 +48,24 @@ export default function CheckoutForm({
                     <CheckoutPaymentLoadingState />
                 </div>
             )}
-            <section className="relative flex min-h-72 flex-col gap-6">
+            <section className="relative flex min-h-72 flex-1 flex-col">
+                <h2 className="my-[20.75px] text-[25px] font-medium">
+                    Payment
+                </h2>
+
                 {error && !isLoading && (
                     <p
                         role="alert"
-                        className="mb-0 rounded-lg border border-red bg-red/15 px-4 py-3 text-base"
+                        className="mb-4 rounded-lg border border-red bg-red/15 px-4 py-3 text-base"
                     >
                         {error}
                     </p>
                 )}
 
                 {clientSecret && (
-                    <div className={isLoading ? 'invisible' : undefined}>
+                    <div
+                        className={`flex flex-1 flex-col${isLoading ? ' invisible' : ''}`}
+                    >
                         <Elements stripe={stripePromise} options={elementsOptions}>
                             <StripePaymentForm setReady={setReady} />
                         </Elements>

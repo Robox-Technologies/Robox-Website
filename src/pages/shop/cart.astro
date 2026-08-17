@@ -27,36 +27,33 @@ const imageSrcById = products.reduce(
 )
 ---
 <StandardLayout title="Cart">
-    <Article className="w-full px-6! py-6! lg:flex lg:h-[calc(100vh-8rem)] lg:flex-col lg:px-8!">
-        <a
-            href="/shop"
-            class="mb-4 inline-flex items-center text-base font-semibold text-blue hover:underline"
-        >
-            ← Shop
+    <!--
+        The original flows down the page: no viewport-height shell and no
+        inner scroll area, `--articleMargin` padding, and a breadcrumb sized
+        by `.navigation` (18px on a 64px line box).
+    -->
+    <Article className="p-16 max-[1000px]:p-8">
+        <a href="/shop" class="text-lg leading-[64px] hover:underline">
+            &lsaquo;&nbsp;Shop
         </a>
-        <h1 class="mb-8 text-5xl font-bold">My Cart</h1>
+        <h1 class="mb-8">My Cart</h1>
 
-        <div class="min-h-0 flex-1">
-            <CartView products={products} imageSrcById={imageSrcById} client:only="react">
-                <div slot="fallback" class="flex h-full flex-col gap-8 lg:flex-row lg:items-stretch">
-                    <div class="flex w-full flex-1 flex-col gap-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm lg:h-full lg:overflow-y-auto">
-                        <div class="flex min-h-72 flex-col items-center justify-center gap-3 text-center">
-                            <h2 class="mb-0! text-3xl font-bold">
-                                Loading cart...
-                            </h2>
-                        </div>
-                    </div>
-
-                    <div class="w-full lg:h-full lg:w-96 lg:shrink-0">
-                        <aside class="flex h-full flex-col rounded-xl border border-black/10 bg-white p-6 shadow-sm">
-                            <h2 class="mb-4! text-2xl font-bold">Order Summary</h2>
-                            <p class="mb-0 text-gray-600">
-                                Add products to build your checkout summary.
-                            </p>
-                        </aside>
-                    </div>
+        <CartView products={products} imageSrcById={imageSrcById} client:only="react">
+            <div slot="fallback" class="flex flex-col gap-[50px] min-[900px]:flex-row min-[900px]:items-start">
+                <div class="flex w-full flex-1 flex-col">
+                    <h2 class="my-[20.75px] text-[25px] font-medium">Loading cart...</h2>
                 </div>
-            </CartView>
-        </div>
+
+                <!-- Mirrors SummaryCard's own wrapper so hydration doesn't move it. -->
+                <div class="w-full min-[900px]:w-96 min-[900px]:shrink-0">
+                    <aside class="flex flex-col rounded-xl border border-black/10 bg-white p-6 shadow-sm">
+                        <h2 class="mb-4! text-2xl font-bold">Order Summary</h2>
+                        <p class="mb-0 text-gray-600">
+                            Add products to build your checkout summary.
+                        </p>
+                    </aside>
+                </div>
+            </div>
+        </CartView>
     </Article>
 </StandardLayout>

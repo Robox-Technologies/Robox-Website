@@ -78,8 +78,10 @@ export function StripePaymentForm({
     }
 
     return (
+        // The original's `#payment-form` carries no card chrome — the Stripe
+        // elements supply their own field styling against the page background.
         <form
-            className="flex w-full flex-col gap-4 rounded-xl border border-black/10 bg-white p-6 shadow-sm"
+            className="flex w-full flex-1 flex-col gap-4"
             onSubmit={handleSubmit}
         >
             <ContactDetailsElement onChange={handleContactChange} />
@@ -112,10 +114,12 @@ export function StripePaymentForm({
                     for this purchase.
                 </label>
             </div>
+            {/* `.ctaButton.pill` + `#submit`: full-width 50px pill, pushed to
+                the bottom of the form and greyed out until it's usable. */}
             <button
                 type="submit"
                 disabled={!stripe || !elements || submitting || !termsAccepted}
-                className="button-interactive inline-flex items-center justify-center rounded-lg bg-blue px-4 py-3 font-semibold text-white"
+                className="button-interactive mt-8 inline-flex h-[50px] w-full items-center justify-center gap-4 rounded-[25px] bg-red text-lg text-primary disabled:bg-tone3"
             >
                 {submitting ? (
                     <span className="inline-flex items-center gap-2">

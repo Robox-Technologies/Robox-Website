@@ -12,16 +12,17 @@ import {
 const products = await getAllProducts()
 ---
 <StandardLayout title="Checkout">
-    <Article className="w-full px-6! py-6! lg:flex lg:min-h-[calc(100vh-8rem)] lg:h-auto lg:flex-col lg:px-8!">
-        <a
-            href="/shop/cart"
-            class="mb-4 inline-flex items-center text-base font-semibold text-blue hover:underline"
-        >
-            ← Cart
+    <Article className="p-16 max-[1000px]:p-8">
+        <a href="/shop/cart" class="text-lg leading-[64px] hover:underline">
+            &lsaquo;&nbsp;Cart
         </a>
-        <h1 class="mb-8 text-5xl font-bold">Checkout</h1>
+        <h1 class="mb-8">Checkout</h1>
 
-        <div class="flex min-h-0 flex-1 flex-col gap-8 lg:flex-row lg:items-stretch">
+        <!--
+            `#main-content`: payment beside the summary, collapsing to
+            column-reverse below 900px so the summary leads on narrow screens.
+        -->
+        <div class="flex flex-col-reverse gap-[50px] min-[900px]:flex-row min-[900px]:items-start">
             <CheckoutPaymentSection products={products} client:only="react">
                 <CheckoutPaymentLoadingState slot="fallback" />
             </CheckoutPaymentSection>

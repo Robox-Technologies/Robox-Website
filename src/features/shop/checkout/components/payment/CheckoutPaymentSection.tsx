@@ -16,7 +16,10 @@ export default function CheckoutPaymentSection({
     const subtotalCents = useCartTotals(products)
 
     return (
-        <section className="flex w-full min-h-0 flex-1 relative flex-col gap-6 overflow-hidden lg:h-full lg:min-h-168 lg:overflow-visible">
+        // The original's `#payment-card`: no card chrome of its own, grows to
+        // fill the row, and holds a 675px floor so the column doesn't jump as
+        // Stripe's elements come in.
+        <section className="relative flex w-full flex-1 flex-col min-h-[675px]">
             {subtotalCents < MINIMUM_CHARGE_CENTS ? (
                 <CheckoutStatePanel heading="Nothing to check out">
                     Your cart doesn't have anything to pay for yet. Add a

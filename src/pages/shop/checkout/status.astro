@@ -39,7 +39,7 @@ const socials = [
 
 <StandardLayout title="Order Confirmation">
     <div
-        class="flex min-h-[80vh] items-center justify-center bg-blue bg-cover bg-no-repeat p-8 md:p-16"
+        class="flex min-h-[80vh] items-center justify-center bg-blue bg-cover bg-no-repeat p-16 max-[1000px]:p-8"
         style={`background-image: url(${background.src})`}
     >
         <div
@@ -67,10 +67,7 @@ const socials = [
                     Something went wrong with your payment. Don't worry—you can
                     try again or update your payment info.
                 </h2>
-                <a
-                    href="/shop/cart"
-                    class="button-interactive box-shadow mt-8 inline-block rounded-[20px] bg-red px-6 py-4 text-2xl font-semibold text-primary"
-                >
+                <a href="/shop/cart" class="button-interactive cta-button">
                     Back to cart
                 </a>
             </div>
@@ -79,16 +76,13 @@ const socials = [
                 <h1>Thank you!</h1>
                 <h2 class="status-body">
                     Thank you for your purchase! We'll get started on your order
-                    right away.<span id="status-email-sentence" hidden
-                        >&#32;You will receive a confirmation email shortly at <strong
-                            id="status-email"></strong>.</span
-                    >
+                    right away. <span id="status-email-sentence" hidden>You will receive a confirmation email shortly at <strong id="status-email"></strong>.</span>
                 </h2>
 
-                <div class="mt-8">
-                    <p class="mb-0 text-tone3">Stay up to date with us!</p>
-                    <hr class="my-4 h-px border-0 bg-tone3" />
-                    <div class="flex justify-center gap-8">
+                <div>
+                    <p class="mb-0 text-lg text-tone3">Stay up to date with us!</p>
+                    <hr class="my-2 h-0.5 border-0 bg-tone3" />
+                    <div class="mt-4 flex justify-center gap-8">
                         {
                             socials.map((social) => (
                                 <a
@@ -124,10 +118,20 @@ const socials = [
         box-shadow: 12px 12px 0 var(--color-drop-shadow);
     }
 
+    /*
+     * The original leaned on the browser's default heading margins (0.67em on
+     * h1, 0.83em on h2) inside the card; Preflight zeroes those, so restate
+     * them here to get the same vertical rhythm.
+     */
+    .result-card :global(h1) {
+        margin: 0 0 0.67em;
+    }
+
     .status-body {
         font-size: 25px;
         font-weight: 500;
         line-height: 1.4;
+        margin: 0.83em 0;
     }
 
     .load-spinner {

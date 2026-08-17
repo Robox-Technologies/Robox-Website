@@ -59,6 +59,17 @@
     }
 
     /*
+     * The original's `.ctaButton`: the large red action button on the empty
+     * cart, the checkout error panel and the payment-status card. Pair it with
+     * `button-interactive` for the hover/press feedback.
+     */
+    .cta-button {
+        @apply my-8 inline-block whitespace-nowrap rounded-[20px] bg-red px-[25px] py-4 text-[25px] font-medium text-primary;
+
+        box-shadow: 6px 6px 0 var(--color-drop-shadow);
+    }
+
+    /*
      * Hover / press feedback shared by every button-shaped control: applied by
      * `components/button.tsx` and by hand on the raw <button>/<a> ones.
      *

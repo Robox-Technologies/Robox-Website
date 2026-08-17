@@ -30,7 +30,7 @@ export default function CheckoutSummaryCard({
     return (
         <SummaryCard
             title="Order Summary"
-            className="w-full lg:w-96 lg:shrink-0 lg:h-full"
+            className="w-full min-[900px]:w-96 min-[900px]:shrink-0"
             emptyMessage="Add products to build your checkout summary."
         >
             {entries.length > 0 ? (

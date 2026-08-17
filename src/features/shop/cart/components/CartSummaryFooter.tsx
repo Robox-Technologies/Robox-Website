@@ -22,7 +22,7 @@ export default function CartSummaryFooter() {
                 </SummaryPrimaryAction>
                 <a
                     href="/shop"
-                    className="text-center text-base font-semibold text-blue hover:underline"
+                    className="text-center text-base font-semibold text-gray hover:underline"
                 >
                     Continue Shopping
                 </a>

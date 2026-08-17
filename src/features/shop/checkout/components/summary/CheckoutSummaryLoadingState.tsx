@@ -6,11 +6,17 @@ function SkeletonLine({ className = 'h-4 w-24' }: { className?: string }) {
     )
 }
 
+/**
+ * The `client:only` fallback for `CheckoutSummaryCard`. It has to mirror that
+ * card's wrapper classes and inner structure — same card width, same row
+ * spacing, same voucher block — or the summary shifts and resizes the moment
+ * hydration swaps one for the other.
+ */
 export default function CheckoutSummaryLoadingState() {
     return (
         <SummaryCard
             title="Order Summary"
-            className="w-full lg:w-96 lg:shrink-0 lg:h-full"
+            className="w-full min-[900px]:w-96 min-[900px]:shrink-0"
             emptyMessage="Add products to build your checkout summary."
         >
             <div className="flex flex-1 flex-col gap-4">
@@ -23,12 +29,11 @@ export default function CheckoutSummaryLoadingState() {
                     <SkeletonLine className="h-4 w-40" />
                 </div>
 
-                <div className="flex flex-col gap-3 mt-auto">
-                    <div className="flex gap-3">
-                        <span className="text-md font-medium text-black">
-                            Voucher Code
-                        </span>
-                    </div>
+                {/* Matches CheckoutVoucher's layout, inert. */}
+                <div className="mt-auto flex flex-col gap-3">
+                    <span className="text-md font-medium text-black">
+                        Voucher Code
+                    </span>
                     <div className="flex gap-3">
                         <div className="min-w-0 flex-1 rounded-lg border border-black/10 bg-white px-4 py-3 text-base text-gray-400 outline-none">
                             Enter Voucher

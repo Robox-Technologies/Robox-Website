@@ -43,43 +43,37 @@ export default function CartView({
         },
     ]
 
+    // An empty cart replaces the whole two-column layout in the original,
+    // rather than sitting beside a summary with nothing to summarise.
+    if (!showSummaryContent) {
+        return <CartEmptyState />
+    }
+
     return (
-        <div className="flex h-full flex-col gap-8 lg:flex-row lg:items-stretch">
-            <div className="flex w-full flex-1 flex-col gap-6 rounded-xl border border-black/10 bg-white p-6 shadow-sm lg:h-full lg:overflow-y-auto">
-                {entries.length === 0 ? (
-                    <CartEmptyState />
-                ) : (
-                    <>
-                        <CartItemsSection
-                            title="Cart Items"
-                            items={availableEntries}
-                            imageSrcById={imageSrcById}
-                            onInputChange={updateQuantity}
-                            onRemove={removeItem}
-                        />
-                        <CartItemsSection
-                            title="Preorder Now"
-                            items={preorderEntries}
-                            imageSrcById={imageSrcById}
-                            onInputChange={updateQuantity}
-                            onRemove={removeItem}
-                        />
-                    </>
-                )}
+        // `#main-content`: a row that stacks below 900px, with the item list
+        // growing and the summary a fixed column beside it. The list itself
+        // carries no card chrome in the original — each row provides its own.
+        <div className="flex flex-col gap-[50px] min-[1200px]:flex-row min-[1200px]:items-start">
+            <div className="flex w-full flex-1 flex-col gap-16">
+                <CartItemsSection
+                    items={availableEntries}
+                    imageSrcById={imageSrcById}
+                    onInputChange={updateQuantity}
+                    onRemove={removeItem}
+                />
+                <CartItemsSection
+                    title="Preorder Now"
+                    items={preorderEntries}
+                    imageSrcById={imageSrcById}
+                    onInputChange={updateQuantity}
+                    onRemove={removeItem}
+                />
             </div>
 
-            <div className="w-full lg:h-full lg:w-96 lg:shrink-0">
-                <SummaryCard
-                    title="Order Summary"
-                    className="w-full lg:h-full"
-                    emptyMessage="Add products to build your checkout summary."
-                >
-                    {showSummaryContent ? (
-                        <>
-                            <SummaryLineList lines={summaryLines} />
-                            <CartSummaryFooter />
-                        </>
-                    ) : null}
+            <div className="w-full min-[1200px]:w-96 min-[1200px]:shrink-0">
+                <SummaryCard title="Order Summary" className="w-full">
+                    <SummaryLineList lines={summaryLines} />
+                    <CartSummaryFooter />
                 </SummaryCard>
             </div>
         </div>

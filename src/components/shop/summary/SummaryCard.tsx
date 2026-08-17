@@ -47,7 +47,7 @@ export function SummaryPrimaryAction({
         <Button
             href={href}
             disabled={disabled}
-            className="w-full bg-blue text-center text-white!"
+            className="w-full bg-red text-center text-white!"
         >
             {children}
         </Button>

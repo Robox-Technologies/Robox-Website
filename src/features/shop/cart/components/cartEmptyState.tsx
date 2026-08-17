@@ -1,15 +1,16 @@
-import Button from '@/components/button'
-
+/** The original's `#empty-cart`: centred in a half-viewport block. */
 export default function CartEmptyState() {
     return (
-        <div className="flex flex-col items-start gap-4 py-8">
-            <h2 className="mb-0! text-3xl font-bold">Your cart is empty</h2>
-            <p className="mb-0 text-gray-600">
+        <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
+            <h2 className="my-[20.75px] text-[25px] font-medium">
+                Your cart is empty
+            </h2>
+            <p className="mb-0">
                 Add some products to start building your order.
             </p>
-            <Button href="/shop" className="bg-red text-white">
+            <a href="/shop" className="button-interactive cta-button">
                 Continue Shopping
-            </Button>
+            </a>
         </div>
     )
 }
