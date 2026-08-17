@@ -61,7 +61,7 @@ function CarouselSideBar({
         // The rail is a fixed 115px wide and drops out below 940px; its
         // thumbnails shrink to share the carousel's height rather than scroll,
         // same as the original.
-        <div className="flex flex-col shrink-0 items-center gap-[4px] overflow-y-auto h-full w-[115px] max-[940px]:hidden">
+        <div className="flex flex-col shrink-0 items-center gap-[4px] overflow-y-auto overflow-x-hidden h-full w-[115px] max-[940px]:hidden">
             {images.map((image, index) => (
                 <CarouselSideBarItem
                     image={image}
