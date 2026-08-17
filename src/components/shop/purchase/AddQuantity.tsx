@@ -9,7 +9,7 @@ import {
     incrementQuantity,
 } from '@/features/shop/cart/utils/quantity'
 import { toast } from '@/libs/ui/toast'
-import clsx from 'clsx'
+import { twMerge } from 'tailwind-merge'
 import type { FormHTMLAttributes } from 'react'
 
 export default function AddQuantity({
@@ -71,18 +71,21 @@ export default function AddQuantity({
         <form
             {...props}
             onSubmit={onSubmit}
-            className={clsx(`flex flex-row items-center gap-0 w-64`, className)}
+            className={twMerge(
+                `flex flex-row items-center gap-0 w-50 h-[37px]`,
+                className,
+            )}
         >
             <Button
                 type="button"
                 icon={faMinus}
-                iconStyle="text-black"
-                className="rounded-l-full! border-2 p-0! w-10 border-black flex items-center justify-center h-10"
+                iconStyle="text-black text-sm"
+                className="rounded-l-full! rounded-r-none! bg-white border-2 border-r-0 p-0! w-[30px] border-black flex items-center justify-center h-full"
                 onClick={decrement}
             />
             <input
                 type="number"
-                className="w-30 text-xl text-center text-black border-y-2 border-black h-10 no-spinner"
+                className="w-35 text-xl text-center text-black border-2 border-black h-full no-spinner"
                 value={quantity.toString()}
                 min={CART_MIN_QUANTITY}
                 max={CART_MAX_QUANTITY}
@@ -91,8 +94,8 @@ export default function AddQuantity({
             <Button
                 type="button"
                 icon={faPlus}
-                iconStyle="text-black"
-                className="rounded-r-full! border-2 border-black p-0! w-10 flex text-center items-center justify-center h-10"
+                iconStyle="text-black text-sm"
+                className="rounded-r-full! rounded-l-none! bg-white border-2 border-l-0 border-black p-0! w-[30px] flex text-center items-center justify-center h-full"
                 onClick={increment}
             />
         </form>

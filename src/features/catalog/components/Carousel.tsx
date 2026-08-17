@@ -10,7 +10,11 @@ export default function Carousel({ images }: { images: ImageMetadata[] }) {
     const [currentIndex, setCurrentIndex] = useState(0)
 
     return (
-        <div className="carousel flex flex-row h-[60vh] gap-4">
+        // 60vh tall with a 500px floor, and a 1.4 hero aspect ratio, as on the
+        // original. The ratio matters beyond the image itself: it's what leaves
+        // room for the info column beside it (a 16/9 hero squeezed that column
+        // down to ~240px at 1440px wide).
+        <div className="carousel flex flex-row h-[60vh] min-h-[500px] gap-[10px] max-[940px]:h-auto max-[940px]:min-h-0">
             <CarouselSideBar
                 images={images}
                 currentIndex={currentIndex}
@@ -18,8 +22,8 @@ export default function Carousel({ images }: { images: ImageMetadata[] }) {
             />
             <div className="carousel-main relative">
                 <Button
-                    className="absolute top-1/2 left-4 -translate-y-1/2 z-10 bg-white p-0! rounded-full w-8 h-8"
-                    iconStyle="text-gray-500 w-4 h-4"
+                    className="absolute top-1/2 left-8 -translate-y-1/2 z-10 bg-white/75 backdrop-blur-[2px] p-0! rounded-full w-10 h-10"
+                    iconStyle="text-black w-[18px] h-[18px]"
                     icon={faChevronLeft}
                     onClick={() =>
                         setCurrentIndex(
@@ -29,11 +33,11 @@ export default function Carousel({ images }: { images: ImageMetadata[] }) {
                 />
                 <img
                     src={images[currentIndex].src}
-                    className="h-[60vh] rounded-xl block object-contain aspect-video"
+                    className="h-[60vh] min-h-[500px] block object-contain aspect-[1.4] max-[940px]:h-auto max-[940px]:min-h-0 max-[940px]:max-h-[60vh] max-[940px]:w-full"
                 />
                 <Button
-                    className="absolute top-1/2 right-4 -translate-y-1/2 z-10 bg-white p-0! rounded-full w-8 h-8"
-                    iconStyle="text-gray-500 w-4 h-4"
+                    className="absolute top-1/2 right-8 -translate-y-1/2 z-10 bg-white/75 backdrop-blur-[2px] p-0! rounded-full w-10 h-10"
+                    iconStyle="text-black w-[18px] h-[18px]"
                     icon={faChevronRight}
                     onClick={() =>
                         setCurrentIndex((currentIndex + 1) % images.length)
@@ -54,7 +58,10 @@ function CarouselSideBar({
     setCurrentIndex: (index: number) => void
 }) {
     return (
-        <div className="flex flex-col max-xl:hidden max-xl:w-full gap-2 overflow-y-auto h-full w-32 p-1 aspect-video">
+        // The rail is a fixed 115px wide and drops out below 940px; its
+        // thumbnails shrink to share the carousel's height rather than scroll,
+        // same as the original.
+        <div className="flex flex-col shrink-0 items-center gap-[4px] overflow-y-auto h-full w-[115px] max-[940px]:hidden">
             {images.map((image, index) => (
                 <CarouselSideBarItem
                     image={image}
@@ -80,14 +87,14 @@ function CarouselSideBarItem({
 }) {
     return (
         <div
-            className={`carousel-item overflow-hidden flex-none block w-30 max-xl:w-full rounded-xl ${isActive ? 'ring-2 ring-blue-500' : ''}`}
+            className="carousel-item overflow-hidden block w-[115px] h-[115px] rounded-lg"
             key={image.src}
             onClick={onClick}
         >
-            <div className="cursor-pointer">
+            <div className="cursor-pointer h-full">
                 <img
                     src={image.src}
-                    className="w-full block object-cover aspect-square"
+                    className={`w-full h-full block object-cover rounded-lg ${isActive ? 'brightness-[0.6]' : ''}`}
                 />
             </div>
         </div>

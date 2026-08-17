@@ -1,40 +1,71 @@
 @import 'tailwindcss';
-.RTL,
-.LTR {
+
+/*
+ * Layout for the sections `RoboxSectionize` builds out of markdown: each `##`
+ * block becomes `<section class="articleSection LTR|RTL [equalWidth]">` with a
+ * `.text` column and, when the block ends in an image, a `.media` sibling.
+ * Mirrors the original site's `_common.scss`.
+ *
+ * Everything is scoped to `.markdown` (the wrapper the description renders
+ * into). The bare `p`/`li`/`h2`/`img` rules below used to be global, and since
+ * this file is unlayered they outranked Tailwind's utilities — the product
+ * page's own nav, description and status text all silently rendered at the
+ * markdown body size instead of their own.
+ */
+.markdown .articleSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
     gap: 2rem;
 }
-.RTL {
-    display: flex;
+.markdown .RTL {
     flex-direction: row-reverse;
 }
-.LTR {
-    display: flex;
+.markdown .LTR {
     flex-direction: row;
 }
-.equalWidth > * {
+.markdown .equalWidth > * {
     width: 50%;
     height: fit-content;
 }
-section.articleSection {
-    margin-top: 2rem;
+.markdown .articleSection .media {
+    object-fit: contain;
+    max-width: 100%;
 }
-h2 {
+.markdown section.articleSection {
+    margin: 4rem 0;
+}
+
+/* Below the site's `lg` breakpoint the two columns stack, as on the original. */
+@media screen and (max-width: 1023px) {
+    .markdown .articleSection {
+        align-items: center;
+    }
+    .markdown .LTR,
+    .markdown .RTL {
+        flex-direction: column;
+    }
+    .markdown .equalWidth > * {
+        width: 100%;
+    }
+}
+
+.markdown h2 {
     margin-bottom: 1rem;
     font-weight: 600;
     @apply text-3xl;
 }
-p,
-li {
-    margin-bottom: 1rem;
+.markdown p,
+.markdown li {
     line-height: 1.6;
     @apply text-xl;
 }
-ul {
+.markdown ul {
     list-style: unset;
 }
-li {
+.markdown li {
     margin-left: 1.5rem;
 }
-img {
+.markdown img {
     flex-grow: 0;
 }

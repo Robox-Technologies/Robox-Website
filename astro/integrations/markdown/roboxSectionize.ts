@@ -57,9 +57,7 @@ function transform(tree: Root): void {
 
         if (endIsImage) {
             const image = children[endIndex]
-            if (image.type === 'html' && typeof image.value === 'string') {
-                image.value = image.value.replace('<img', '<img class="media"')
-            }
+            markAsMedia(image)
             sectionChildren.push(image)
         }
 
@@ -70,7 +68,11 @@ function transform(tree: Root): void {
             data: {
                 hName: 'section',
                 hProperties: {
-                    className: ["articleSection", `${direction}${endIsImage ? 'equalWidth' : ''}`],
+                    className: [
+                        'articleSection',
+                        direction,
+                        ...(endIsImage ? ['equalWidth'] : []),
+                    ],
                 },
             },
             children: sectionChildren,
@@ -82,6 +84,38 @@ function transform(tree: Root): void {
     }
 
     tree.children = newChildren
+}
+
+/**
+ * Tags the section's image so the stylesheet can size it. Markdown gives us a
+ * raw `<img>`, while MDX gives us an `<Image>` JSX element whose `class`
+ * attribute is forwarded to the rendered `<img>`.
+ */
+function markAsMedia(node: RootContent): void {
+    if (node.type === 'html' && typeof node.value === 'string') {
+        node.value = node.value.replace('<img', '<img class="media"')
+        return
+    }
+
+    if (!('attributes' in node) || !Array.isArray(node.attributes)) {
+        return
+    }
+
+    const classAttribute = node.attributes.find(
+        (attribute) =>
+            attribute.type === 'mdxJsxAttribute' &&
+            (attribute.name === 'class' || attribute.name === 'className'),
+    )
+
+    if (!classAttribute) {
+        node.attributes.push({
+            type: 'mdxJsxAttribute',
+            name: 'class',
+            value: 'media',
+        })
+    } else if (typeof classAttribute.value === 'string') {
+        classAttribute.value = `${classAttribute.value} media`
+    }
 }
 
 function isImageNode(node: RootContent): boolean {

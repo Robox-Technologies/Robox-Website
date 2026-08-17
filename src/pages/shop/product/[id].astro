@@ -53,14 +53,21 @@ const statusText = formatStatus(product.status)
 const priceText = formatPrice(product.price)
 ---
 <StandardLayout title={product.name}>
-    <Article>
-        <p class="mb-4 text-base">
+    <!-- The original's --articleMargin: 64px, halved below 1000px. -->
+    <Article className="p-16 max-[1000px]:p-8">
+        <p class="my-4 text-base">
             <a href="/shop" class="underline opacity-80 hover:opacity-100">Shop all</a>
             &nbsp;/&nbsp;{product.name}
         </p>
-        <div class="w-full flex flex-row max-xl:flex-col gap-8">
+        <div class="w-full flex flex-row max-[1250px]:flex-col gap-8">
             <Carousel images={images} client:load/>
-            <div class="flex-1 flex flex-col gap-2">
+            <!--
+                Type scale and spacing mirror the original's `#important-info`:
+                name and price are both heading-sized (49px), the price at
+                regular weight in the body colour rather than a blue accent, and
+                the copy below them at the 18px body size.
+            -->
+            <div class="flex-1 flex flex-col">
                 {
                     /* Products can carry a promo line (the 10-Pack's "Save 5%"),
                        authored as HTML upstream in Stripe. */
@@ -71,27 +78,23 @@ const priceText = formatPrice(product.price)
                         />
                     )
                 }
-                <div class="flex flex-col gap-2">
-                    <h1 class="text-5xl font-bolder">
-                        {product.name}
-                    </h1>
-                    <p class="text-4xl text-blue font-bold mb-0!">
-                        {priceText}
-                    </p>
-                </div>
-                <p class="text-xl mb-0!">
+                <h1 class="text-[49px] leading-[1.25] font-extrabold">
+                    {product.name}
+                </h1>
+                <p class="text-[49px] leading-[1.25] font-normal mb-8">
+                    {priceText}
+                </p>
+                <p class="text-lg leading-[1.5] my-[18px]">
                     {product.description}
                 </p>
-                <p class={statusText.color}>{statusText.text}</p>
-                <div class="flex flex-col gap-4 w-60 mt-auto ">
+                <p class={`${statusText.color} my-0`}>{statusText.text}</p>
+                <div class="flex flex-col gap-4 w-50 mt-8">
                     <ProductCartModal product={product} image={images[0]} client:only="react" />
                 </div>
             </div>
         </div>
-        <div class="w-full mt-16">
-            <div class="w-full mt-16 max-w-none">
-                <description.Content />
-            </div>
+        <div class="markdown w-full mt-16 max-w-none">
+            <description.Content />
         </div>
     </Article>
 </StandardLayout>

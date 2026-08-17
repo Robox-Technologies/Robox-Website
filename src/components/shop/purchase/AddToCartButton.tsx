@@ -9,7 +9,7 @@ export default function AddToCartButton({
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
     return (
         <Button
-            className="bg-red w-50 rounded-full! py-2 text-xl"
+            className="bg-red text-primary w-50 rounded-full! p-1.5 text-lg leading-[1.5]"
             onClick={() => setIsOpen(true)}
             {...props}
         >
