@@ -1,0 +1,161 @@
+---
+/**
+ * Full-bleed page hero.
+ *
+ * Hand-rolled `<picture>` rather than `<Picture>` from astro:assets: that
+ * component takes a single `src` and emits one `<source>` per *format*, with no
+ * `media` attribute, so it can't art-direct. The hero needs two different
+ * crops — landscape above `lg`, portrait below — and gating them with `media`
+ * is what keeps a phone from downloading both. (The previous version used two
+ * `<img>`s and hid one with `lg:hidden`; `display: none` doesn't stop a fetch.)
+ *
+ * Everything else is `<Picture>`'s job and is delegated to `getImage`.
+ */
+import { getImage } from 'astro:assets'
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons'
+import { twMerge } from 'tailwind-merge'
+
+interface Props {
+    hero: ImageMetadata
+    /** Optional portrait crop shown below the `lg` breakpoint. */
+    heroMobile?: ImageMetadata
+    alt: string
+    scrollIndicator?: boolean
+    /** Extra classes for the `<img>` — mainly `object-position` overrides. */
+    imageClass?: string
+    class?: string
+}
+
+const {
+    hero,
+    heroMobile,
+    alt,
+    scrollIndicator = false,
+    imageClass,
+    class: className,
+} = Astro.props
+
+/**
+ * The hero is `object-cover` in a `100vw × (100vh - header)` box, so its
+ * rendered width is `max(100vw, boxHeight × imageAspect)`. A phone's box is far
+ * taller than the portrait crop's 0.79 aspect, so cover scales to fit *height*
+ * and the image overflows the viewport width by ~1.5×. `sizes` can't read `vh`,
+ * hence the hard-coded bump. Desktop boxes are wider than the landscape crop's
+ * 1.53 aspect, so there the width-bound `100vw` is already right.
+ */
+interface Crop {
+    src: ImageMetadata
+    widths: number[]
+    sizes: string
+    media?: string
+}
+
+const DESKTOP: Crop = {
+    src: hero,
+    widths: [1024, 1280, 1600, 1920, 2400, 2880],
+    sizes: '100vw',
+}
+const MOBILE: Crop | null = heroMobile
+    ? {
+        src: heroMobile,
+        widths: [480, 669, 900, 1152, 1338],
+        sizes: '(max-width: 767px) 160vw, 100vw',
+        media: '(max-width: 1023px)', // matches Tailwind's `lg`
+    }
+    : null
+
+const FORMATS = [
+    { format: 'avif', quality: 60 },
+    { format: 'webp', quality: 78 },
+] as const
+
+// Mobile first: the browser takes the first `<source>` whose `media` matches.
+const sources = await Promise.all(
+    [MOBILE, DESKTOP]
+        .filter((crop): crop is Crop => crop !== null)
+        .flatMap((crop) => FORMATS.map((format) => ({ ...crop, ...format })))
+        .map(async ({ src, widths, sizes, media, format, quality }) => {
+            // Cap at the intrinsic width — upscaling costs bytes and adds nothing.
+            const used = widths.filter((w) => w < src.width).concat(src.width)
+            const built = await Promise.all(
+                used.map((width) => getImage({ src, width, format, quality })),
+            )
+            return {
+                type: `image/${format}`,
+                media,
+                sizes,
+                srcset: built
+                    .map((image, i) => `${image.src} ${used[i]}w`)
+                    .join(', '),
+            }
+        }),
+)
+
+/**
+ * Only reached by browsers with neither AVIF nor WebP (Safari ≤13), so one
+ * fixed size is enough — no srcset ladder, and no portrait variant either:
+ * those browsers get the landscape crop, which still covers correctly.
+ */
+const fallback = await getImage({
+    src: hero,
+    width: Math.min(1600, hero.width),
+    format: 'jpeg',
+    quality: 80,
+})
+
+// Inline icon path rather than the React FontAwesome component: the hero has no
+// island, so that would be the page's only hydration cost. As in ResourceCard.
+const [iconWidth, iconHeight, , , iconPath] = faChevronDown.icon
+const chevron = Array.isArray(iconPath) ? iconPath.join(' ') : iconPath
+---
+
+<section
+    class={twMerge(
+        'relative flex h-[calc(100vh-74px)] flex-col items-center px-4 text-center',
+        className,
+    )}
+>
+    <div class="absolute inset-0 h-full w-full overflow-hidden">
+        <picture>
+            {sources.map((source) => <source {...source} />)}
+            <img
+                class={twMerge(
+                    'h-full w-full object-cover object-center',
+                    imageClass,
+                )}
+                src={fallback.src}
+                width={hero.width}
+                height={hero.height}
+                alt={alt}
+                fetchpriority="high"
+                loading="eager"
+                decoding="sync"
+            />
+        </picture>
+    </div>
+    <slot />
+    {
+        /* Centring lives on the wrapper because `animate-bounce` owns the
+         * anchor's transform. A plain anchor, not a click handler: smooth
+         * scrolling comes from `scroll-behavior` in global.css and `#content`
+         * carries scroll-margin for the sticky header. */
+        scrollIndicator && (
+            <div class="absolute bottom-4 flex w-full justify-center">
+                <a
+                    href="#content"
+                    aria-label="Scroll to content"
+                    class="button-interactive animate-bounce flex h-11 w-11 items-center justify-center rounded-full bg-black/90 text-primary"
+                >
+                    <svg
+                        class="h-6 w-6"
+                        viewBox={`0 0 ${iconWidth} ${iconHeight}`}
+                        fill="currentColor"
+                        aria-hidden="true"
+                    >
+                        <path d={chevron} />
+                    </svg>
+                </a>
+            </div>
+        )
+    }
+</section>
