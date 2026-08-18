@@ -18,22 +18,37 @@ const headerHeight = 64
 const headerEndPadding = 16
 const extraClipperPadding = 32
 const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
+/*
+ * Insets for the clipped block of icons/links at the right end of the header.
+ * Below the hamburger breakpoint both ends tighten to 32px (see `.links`):
+ * that matches the logo's own inset from the left edge — `headerEndPadding`
+ * plus its `p-4` — and buys back the 32px a 320px-wide phone can't spare. The
+ * left padding only ever has to clear the clipped diagonal, which is `overhang`
+ * wide, so 32px still leaves it room.
+ */
+const linksInset = headerEndPadding + extraClipperPadding
+const linksInsetTight = headerEndPadding * 2
 ---
 
 <header
     class={`sticky top-0 z-50 flex w-full items-center justify-between ${isWorkshop ? 'bg-blue' : 'bg-primary'}`}
     style={`height: ${headerHeight}px`}
 >
-    <nav
-        class="flex h-full w-full flex-row items-center font-medium text-lg"
-        style={`margin-left: ${headerEndPadding}px`}
-    >
-        <div class="flex flex-row items-center space-x-6">
-            <a href="/" class="flex items-center p-4">
+    <nav class="flex h-full w-full flex-row items-center text-lg">
+        <div
+            class="flex min-w-0 flex-row items-center gap-6"
+            style={`padding-left: ${headerEndPadding}px`}
+        >
+            {/*
+             * `min-w-0` here and on the logo let the wordmark scale itself down
+             * instead of pushing the icons off the right of a narrow phone: both
+             * logos carry a viewBox, so a narrower box just draws them smaller.
+             */}
+            <a href="/" class="flex min-w-0 items-center p-4">
                 {isWorkshop ? (
-                    <WorkshopLogo className="h-8 w-auto" />
+                    <WorkshopLogo className="h-8 w-auto max-w-full" />
                 ) : (
-                    <Logo className="h-8 w-auto" />
+                    <Logo className="h-8 w-auto max-w-full" />
                 )}
             </a>
             <HeaderLink
@@ -56,8 +71,8 @@ const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
             overhang={overhang}
         >
             <div
-                class="links flex h-full items-center space-x-6 text-white"
-                style={`padding-left: ${headerEndPadding + extraClipperPadding}px; padding-right: ${headerEndPadding + extraClipperPadding}px`}
+                class="links flex h-full shrink-0 items-center gap-6 text-white"
+                style={`--links-inset: ${linksInset}px; --links-inset-tight: ${linksInsetTight}px`}
             >
                 <HeaderLink
                     icon={faCompass}
@@ -117,10 +132,20 @@ const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
         >
             Contact
         </HeaderLink>
-        <HeaderLink icon={faCompass} href="/hub">
+        {/* The workshop menu drops down over a blue panel, so these two need
+            the same white as the rest of the rows — the default is dark ink. */}
+        <HeaderLink
+            icon={faCompass}
+            href="/hub"
+            className={isWorkshop ? 'text-white' : ''}
+        >
             Ro/Box Hub
         </HeaderLink>
-        <HeaderLink icon={faGraduationCap} href="/teacher">
+        <HeaderLink
+            icon={faGraduationCap}
+            href="/teacher"
+            className={isWorkshop ? 'text-white' : ''}
+        >
             Teacher Resources
         </HeaderLink>
         {type === 'standard' && <StoreLink className="w-fit" />}
@@ -128,6 +153,19 @@ const overhang = `${(headerEndPadding + extraClipperPadding) / 2}px`
 </header>
 
 <style>
+    .links {
+        padding-left: var(--links-inset);
+        padding-right: var(--links-inset);
+    }
+    /* Spelled the way Tailwind compiles `max-[1050px]:` so the insets tighten
+       on exactly the widths that swap the nav links for the hamburger. */
+    @media not all and (min-width: 1050px) {
+        .links {
+            padding-left: var(--links-inset-tight);
+            padding-right: var(--links-inset-tight);
+        }
+    }
+
     /* Three-bar hamburger that morphs into an X when open. */
     .hamburger {
         flex-direction: column;

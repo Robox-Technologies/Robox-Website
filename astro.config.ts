@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from 'astro/config'
+import { defineConfig, envField } from 'astro/config'
 import 'dotenv/config'
 
 import react from '@astrojs/react'
@@ -28,6 +28,25 @@ export default defineConfig({
      */
     site: process.env.SITE_URL ?? PRODUCTION_ORIGIN,
     output: "static",
+    /*
+     * Vite only exposes `PUBLIC_`-prefixed variables to client code, so the
+     * publishable key has to be declared here to reach the browser under its
+     * own name. `access: 'public'` inlines the value at build time (it is a
+     * publishable key — it is meant to ship), and `optional` keeps a missing
+     * key a runtime error in the checkout rather than a failed build, which is
+     * what the iOS bundle and CI builds without Stripe credentials rely on.
+     *
+     * Import it from `astro:env/client`; `import.meta.env` will not have it.
+     */
+    env: {
+        schema: {
+            STRIPE_PUBLISHABLE_KEY: envField.string({
+                context: 'client',
+                access: 'public',
+                optional: true,
+            }),
+        },
+    },
     integrations: [
         react(),
         mdx(),

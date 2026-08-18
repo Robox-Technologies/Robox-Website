@@ -41,21 +41,26 @@ export default function ProductCartModal({
                 />
                 <h2 className="mb-0! text-2xl! font-bold">Added to Cart</h2>
             </DialogHeader>
-            <DialogBody className="flex flex-row gap-4 p-4 justify-between">
+            {/*
+              * The image is a thumbnail rather than half the dialog: at half
+              * width it squeezed the text column down to a few characters per
+              * line on a phone.
+              */}
+            <DialogBody className="flex flex-row items-center gap-4 p-4">
                 <img
                     src={image.src}
                     // Decorative: the heading beside it names the product.
                     alt=""
-                    className="w-1/2 object-cover rounded-lg"
+                    className="aspect-square w-28 shrink-0 rounded-lg object-cover sm:w-40"
                 />
-                <div className="flex flex-col flex-1 gap-2 w-1/2 h-full items-start justify-between">
-                    <h3 className="text-2xl! font-semibold mb-4!">
+                <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+                    <h3 className="mb-0! text-xl! font-semibold sm:text-2xl!">
                         {product.name} (Qty: {quantity})
                     </h3>
-                    <p className="text-black text-2xl! font-bolder mt-auto!">
+                    <p className="mb-0! text-black text-xl! font-bold sm:text-2xl!">
                         {formatPrice(product.price)}/each
                     </p>
-                    <p className="text-black text-base! mt-auto">
+                    <p className="mb-0! text-black text-base!">
                         Total: {formatPrice(product.price * quantity)}
                     </p>
                 </div>

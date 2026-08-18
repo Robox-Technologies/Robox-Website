@@ -72,7 +72,14 @@ export default function AddQuantity({
             {...props}
             onSubmit={onSubmit}
             className={twMerge(
-                `flex flex-row items-center gap-0 w-50 h-[37px]`,
+                /*
+                 * The original's `.cart-quantity-button` is a flat 200px wide.
+                 * Here it also has to survive a 393px-wide cart row, so 200px
+                 * is the preferred width and `max-w-full` lets it give ground:
+                 * the +/- buttons keep their 30px and the field between them
+                 * takes up the slack (see `flex-1 min-w-0` on the input).
+                 */
+                `flex flex-row items-center gap-0 w-50 max-w-full h-[37px]`,
                 className,
             )}
         >
@@ -85,7 +92,7 @@ export default function AddQuantity({
             />
             <input
                 type="number"
-                className="w-35 text-xl text-center text-black border-2 border-black h-full no-spinner"
+                className="w-35 min-w-0 flex-1 text-xl text-center text-black border-2 border-black h-full no-spinner"
                 value={quantity.toString()}
                 min={CART_MIN_QUANTITY}
                 max={CART_MAX_QUANTITY}

@@ -16,7 +16,10 @@ const lessonPlans = await getCMSContentFor('Teacher Resources');
     <PageHero gradient='positive' className='bg-black' leftWidth='66%' lineWidth='20px' overlap='10vw'>
         <div slot="left" class="bg-primary h-full">
             <div class="h-full w-full flex justify-start items-end p-8">
-                <h1 class="relative z-100 text-5xl font-bold" >
+                <!-- Above the hero photo that follows it in the markup, but
+                     below the header's z-50: z-100 put the title on top of the
+                     open mobile menu. -->
+                <h1 class="relative z-10 text-5xl font-bold" >
                     Teacher Resources
                 </h1>
 

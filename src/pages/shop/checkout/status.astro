@@ -162,6 +162,9 @@ const socials = [
 <script>
     import { loadStripe } from '@stripe/stripe-js'
     import { clearCart } from '@/state/cartActions'
+    // See `env.schema` in astro.config.ts — not a `PUBLIC_` variable, so it
+    // reaches the client through `astro:env`, not `import.meta.env`.
+    import { STRIPE_PUBLISHABLE_KEY } from 'astro:env/client'
 
     const POLL_INTERVAL_MS = 1000
     /** Stop re-polling a stuck 'processing' intent after a minute. */
@@ -200,7 +203,7 @@ const socials = [
         return new Promise((resolve) => setTimeout(resolve, ms))
     }
 
-    const publishableKey = import.meta.env.STRIPE_PUBLISHABLE_KEY
+    const publishableKey = STRIPE_PUBLISHABLE_KEY
     const clientSecret = new URL(window.location.href).searchParams.get(
         'payment_intent_client_secret',
     )

@@ -32,8 +32,11 @@ export default function CartItemRow({
                     alt=""
                     className="h-full aspect-video shrink-0 rounded-[5px] object-cover max-[600px]:h-auto max-[600px]:w-full"
                 />
-                <div className="flex flex-1 flex-row items-start justify-between gap-4">
-                    <div className="flex h-full flex-col items-start justify-between">
+                <div className="flex min-w-0 flex-1 flex-row items-start justify-between gap-4">
+                    {/* `min-w-0` on both columns: without it each one holds its
+                        min-content width and the stepper and bin overhang the
+                        card on a phone. */}
+                    <div className="flex h-full min-w-0 flex-col items-start justify-between">
                         <p className="mb-0! text-lg">{item.name}</p>
                         <p className="mb-0! text-3xl font-bold">
                             {formatPrice(item.price * quantity)}
@@ -43,7 +46,7 @@ export default function CartItemRow({
                         </p>
                     </div>
 
-                    <div className="flex flex-col items-end justify-between gap-8">
+                    <div className="flex min-w-0 flex-col items-end justify-between gap-8">
                         <button
                             type="button"
                             aria-label={`Remove ${item.name} from cart`}

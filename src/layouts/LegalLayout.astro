@@ -72,6 +72,9 @@ const { title, description } = Astro.props
 
     .legal :global(a) {
         text-decoration: underline;
+        /* The policies spell links out as bare URLs, which are a single
+           unbreakable word wider than a small phone. */
+        overflow-wrap: break-word;
     }
 
     /* Sections come from the markdown sectionizer; space them like the original. */
