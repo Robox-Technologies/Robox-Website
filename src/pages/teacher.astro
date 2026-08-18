@@ -6,6 +6,7 @@ import Article from '@/components/article/Article';
 import eyes from '@/images/goobers/eyes.svg';
 import ResourceCard from '@/components/cms/ResourceCard.astro';
 import { getCMSContentFor } from '@/utils/server/cms.server';
+import { Image } from 'astro:assets';
 
 const lessonPlans = await getCMSContentFor('Teacher Resources');
 ---
@@ -24,7 +25,25 @@ const lessonPlans = await getCMSContentFor('Teacher Resources');
                 </h1>
 
             </div>
-            <img src={Hero.src} alt="" aria-hidden="true" class="w-full absolute top-0 h-full object-cover object-left"/>
+            <!-- The left panel is ~71vw wide on desktop (66% - 20px/2 + 10vw/2,
+                 see pageHero) and full-width on mobile, so a single fixed
+                 render is either blurry on a large screen or oversized on a
+                 phone. `widths` + `sizes` let the browser pick. The 85vw hint
+                 is the panel width plus headroom: the source is 3.06:1 against
+                 a 400px-tall panel, so object-cover crops horizontally and
+                 paints ~1.2x wider than the panel is. -->
+            <Image
+                src={Hero}
+                alt=""
+                aria-hidden="true"
+                class="w-full absolute top-0 h-full object-cover object-left"
+                widths={[640, 960, 1280, 1920, 2560]}
+                sizes="(min-width: 768px) 85vw, 100vw"
+                width={2560}
+                height={837}
+                loading="eager"
+                fetchpriority="high"
+            />
         </div>
         <div slot="right" class="bg-yellow h-full w-full relative overflow-hidden">
             <img

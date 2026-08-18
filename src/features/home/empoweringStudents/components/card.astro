@@ -16,7 +16,7 @@ const hasGoober = Astro.slots.has('goober');
     <!-- Background belongs on the card itself, not the content block: the card
          adds padding below the content, which showed through as a bare strip. -->
     <BaseCard
-        className='w-full box-shadow bg-white'
+        className='w-full h-full box-shadow bg-white'
         description={description}
     >
         <Image slot="image" src={image} alt={imageAlt} class="w-full h-auto rounded-t-lg" width={image.width} height={image.height}/>
