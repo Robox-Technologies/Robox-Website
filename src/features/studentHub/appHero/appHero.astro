@@ -1,0 +1,44 @@
+---
+import doodles from '@/images/studentHub/goobersMobile.svg'
+import eyesImg from '@/images/studentHub/appEyes.svg'
+---
+
+<section class="app-hero relative isolate min-h-[25vh] w-full">
+    <div class="app-hero-plate absolute inset-0 bg-red">
+        <img
+            src={doodles.src}
+            alt=""
+            aria-hidden="true"
+            class="app-hero-doodles absolute"
+        />
+    </div>
+
+    <div class="app-hero-eyes absolute" aria-hidden="true">
+        <img src={eyesImg.src} alt="" class="eyes block w-full" />
+    </div>
+
+    <div class="relative p-8">
+        <slot />
+    </div>
+</section>
+
+<style>
+    .app-hero-plate {
+        clip-path: polygon(0 0, 100% 0, 100% 60%, 70% 100%, 0 100%);
+    }
+
+    .app-hero-doodles {
+        top: 0;
+        right: 0.9%;
+        height: 100%;
+        width: auto;
+        max-width: 60%;
+    }
+
+    .app-hero-eyes {
+        right: 8%;
+        bottom: 10%;
+        width: 18%;
+        transform: rotate(-12deg);
+    }
+</style>

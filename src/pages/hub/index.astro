@@ -2,7 +2,7 @@
 import PageHero from '@/components/pageHero';
 import StandardLayout from '@/layouts/StandardLayout.astro';
 import Hero from '@/images/studentHub/hero.jpg';
-import HeroMobile from '@/images/studentHub/heroMobile.png';
+import AppHero from '@/features/studentHub/appHero/appHero.astro';
 import Article from '@/components/article/Article';
 import StudentResources from '@/features/studentHub/studentResources/studentResources.astro';
 import StudentProjects from '@/features/studentHub/studentProjects/studentProjects.astro';
@@ -15,19 +15,15 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     header="workshop"
 >
     {isIOSBuild ?
-        <div class="relative w-full h-[25vh]">
-            <Image src={HeroMobile} alt="" aria-hidden="true" class="w-full h-full object-cover object-left"/>
-
-            <div class="absolute top-0 left-0 w-full h-full p-8">
-                <h1 class="text-5xl font-bold text-primary">
-                    Welcome to our Mobile app!
-                </h1>
-                <p class="text-xl text-primary mt-8">
-                    Support for this app is done separately to our website.<br>
-                    If you encounter any bugs/issues, reach out to us at <a href="mailto:hello@robox.com.au" class="text-primary">hello@robox.com.au</a>.
-                </p>
-            </div>
-        </div>
+        <AppHero>
+            <h1 class="text-5xl font-bold text-primary">
+                Welcome to our Mobile app!
+            </h1>
+            <p class="text-xl text-primary mt-8">
+                Support for this app is done separately to our website.<br>
+                If you encounter any bugs/issues, reach out to us at <a href="mailto:hello@robox.com.au" class="text-primary">hello@robox.com.au</a>.
+            </p>
+        </AppHero>
         :
         <PageHero gradient='positive' className='bg-black' lineWidth='20px' overlap='10vw'>
             <div slot="left" class="bg-yellow h-full w-full flex justify-start items-end p-8">

@@ -70,8 +70,8 @@ export default function Footer() {
                             aria-hidden="true"
                             /* Bottom edge on the footer's midline, left edge on
                                the clipped diagonal, matching the original. No
-                               transform utilities here — the eye-tracking script
-                               in StandardLayout owns this element's transform. */
+                               transform utilities here — the eye tracking in
+                               src/utils/eyes.ts owns this element's transform. */
                             className="eyes absolute bottom-1/2 left-[calc(75%+3vw)] w-[195px] max-w-full"
                         />
                         <FooterBottomBar tone="light" />

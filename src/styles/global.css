@@ -357,6 +357,18 @@
         animation: toast-slide-in 220ms ease-out both;
     }
 
+    /*
+     * Touch input only, and only once a touch has actually happened — see
+     * src/utils/eyes.ts, which sets the root class. A finger arrives at a
+     * position instead of travelling to it, so without this the eyes snap; a
+     * cursor already moves continuously and wants no smoothing at all.
+     */
+    @media (prefers-reduced-motion: no-preference) {
+        .eyes-touch .eyes {
+            transition: transform 280ms ease-out;
+        }
+    }
+
     @keyframes pop {
         0% {
             transform:scale(1);

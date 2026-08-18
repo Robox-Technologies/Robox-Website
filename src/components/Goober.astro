@@ -7,9 +7,9 @@
  * `eyesClass` (on the eyes overlay), mirroring the original site's per-placement
  * offsets. Width is set by the caller; height follows the SVG's aspect ratio.
  *
- * The eyes overlay carries the `eyes` class, which the cursor-tracking script in
- * StandardLayout hooks onto — so `eyesClass` must position with insets only, as
- * the script owns the element's `transform`.
+ * The eyes overlay carries the `eyes` class, which the pointer tracking in
+ * src/utils/eyes.ts hooks onto — so `eyesClass` must position with insets only,
+ * as that script owns the element's `transform`.
  */
 import eyesImg from '@/images/goobers/eyes.svg'
 
