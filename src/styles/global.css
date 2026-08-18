@@ -318,7 +318,7 @@
         @apply text-5xl font-extrabold text-black;
     }
     /*
-     * A single long word at heading size (`Empowering` at text-6xl) is wider
+     * A single long word at heading size (`Empowering` at text-5xl) is wider
      * than a 320px screen's text column, and an overflowing word gives the whole
      * page horizontal scroll. Breaking it is the lesser evil, and it only ever
      * kicks in on a word that wouldn't fit at all.
