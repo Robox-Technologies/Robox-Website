@@ -13,54 +13,33 @@ export default function ProductCard({
 }) {
     const status = formatStatus(product.status)
     return (
-        <a
+        <Card
             href={`/shop/product/${product.internalName}`}
+            className="card-interactive bg-white w-75 box-shadow flex flex-col"
+            title={<h1 className="text-2xl font-bold">{product.name}</h1>}
+            image={
+                <img
+                    src={image.src}
+                    alt={`Thumbnail for product ${product.name}`}
+                    className="w-full h-auto"
+                />
+            }
+            description={
+                <p className="text-lg">
+                    <span className={`${status.color}`}>{status.text}</span>
+                    <br />
+                    {formatPrice(product.price)}
+                </p>
+            }
         >
-            <Card
-                className="bg-white w-75 box-shadow flex flex-col hover:-translate-y-1 transition-transform duration-100"
-                title={<h1 className="text-2xl font-bold">{product.name}</h1>}
-                image={
-                    <img
-                        src={image.src}
-                        alt={`Thumbnail for product ${product.name}`}
-                        className="w-full h-auto rounded-t-lg"
-                    />
-                }
-                description={
-                    <p className="text-lg">
-                        <span className={`${status.color}`}>{status.text}</span>
-                        <br />
-                        {formatPrice(product.price)}
-                    </p>
-                }
-            >
-                <div className="flex justify-center px-4">
-                    <button className="button-interactive px-4 py-2 bg-red text-white w-full rounded-full">
-                        View Product
-                    </button>
-                </div>
-            </Card>
-        </a>
-        //     <div className="bg-white w-75 rounded-lg shadow-md flex flex-col hover:drop-shadow-xl transition-all duration-100">
-        //         <img
-        //             src={image.src}
-        //             alt={product.name}
-        //             className="w-full h-48 object-cover rounded-t-md mb-4"
-        //         />
-        //         <div className="px-4 pb-4 flex flex-col gap-2 grow">
-        //             <h3 className="text-xl font-bold">{product.name}</h3>
-        //             <div>
-        //                 <p className={`text-sm font-semibold ${status.color}`}>
-        //                     {status.text}
-        //                 </p>
-        //                 <span className="text-base">
-        //                     ${formatPrice(product.price)}
-        //                 </span>
-        //             </div>
-        //             <button className="px-4 py-2 bg-red text-white rounded-full hover:bg-red-700 hover:cursor-pointer">
-        //                 View Product
-        //             </button>
-        //         </div>
-        //     </div>
+            <div className="flex justify-center px-4">
+                {/* A <span>, not a <button>: the card is the link, and nesting a
+                    control inside it would both be invalid markup and shrink the
+                    tappable area back to this pill. */}
+                <span className="card-cta px-4 py-2 bg-red text-white text-center w-full rounded-full">
+                    View Product
+                </span>
+            </div>
+        </Card>
     )
 }

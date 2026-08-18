@@ -4,6 +4,11 @@
  * thumbnail on top, preview title, then the call-to-action with a chevron and
  * an underline that grows on hover.
  *
+ * The whole card is the link, not just the call-to-action: a 250px card is a far
+ * easier target than a 90px hyperlink, especially on touch. The CTA stays as the
+ * affordance and its underline grows whenever the card is hovered, so it can't
+ * be a nested <a> — it's a <span> the card drives.
+ *
  * Deliberately plain markup rather than the React `Card` island: its slots are
  * conditional here (items may have no thumbnail and no link), and Astro drops
  * slot content wrapped in an expression when the host is a framework
@@ -24,10 +29,23 @@ const chevron = Array.isArray(path) ? path.join(' ') : path
 // Resources are files served by the CMS; open those in a new tab like the
 // original did, but keep generated article pages in the same one.
 const external = item.type === 'resource'
+// An item with no link has nothing to click, so it stays an inert <div>.
+const Wrapper = href ? 'a' : 'div'
 ---
 
-<div
-    class="card resource-card box-shadow flex w-62.5 max-w-[350px] flex-col overflow-hidden rounded-3xl bg-white"
+<Wrapper
+    class:list={[
+        'card resource-card box-shadow flex w-62.5 max-w-[350px] flex-col overflow-hidden rounded-3xl bg-white',
+        href && 'card-interactive',
+    ]}
+    {...href
+        ? {
+              href,
+              ...(external
+                  ? { target: '_blank', rel: 'noopener noreferrer' }
+                  : {}),
+          }
+        : {}}
 >
     {
         item.thumbnailUrl && (
@@ -48,13 +66,7 @@ const external = item.type === 'resource'
         {
             href && (
                 <div class="mt-auto px-4">
-                    <a
-                        href={href}
-                        {...(external
-                            ? { target: '_blank', rel: 'noopener noreferrer' }
-                            : {})}
-                        class="cta inline-flex items-center gap-2 text-base font-semibold"
-                    >
+                    <span class="cta inline-flex items-center gap-2 text-base font-semibold">
                         <span class="underline-grow">{item.callToAction}</span>
                         <svg
                             class="h-3 w-3 shrink-0"
@@ -63,12 +75,12 @@ const external = item.type === 'resource'
                         >
                             <path d={chevron} fill="currentColor" />
                         </svg>
-                    </a>
+                    </span>
                 </div>
             )
         }
     </div>
-</div>
+</Wrapper>
 
 <style>
     /* The original's `underline-grow`: the rule sweeps out from the left. */
@@ -81,8 +93,21 @@ const external = item.type === 'resource'
         padding-bottom: 2px;
     }
 
-    .cta:hover .underline-grow,
-    .cta:focus-visible .underline-grow {
+    /* Driven by the card, not the CTA: pointing anywhere on the card is what
+       arms the click, so that's what the underline should answer to. Hover is
+       gated on a real pointer so a tap doesn't leave it stuck on. */
+    @media (hover: hover) {
+        .resource-card:hover .underline-grow {
+            --underline-width: 100%;
+        }
+    }
+    .resource-card:focus-visible .underline-grow {
         --underline-width: 100%;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .underline-grow {
+            transition: none;
+        }
     }
 </style>

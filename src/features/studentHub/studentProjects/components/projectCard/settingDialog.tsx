@@ -22,7 +22,7 @@ export default function SettingDialog() {
     return (
         <dialog
             id="project-settings-dialog"
-            className="modal w-32 bg-white rounded-lg drop-shadow-lg border-2 border-black absolute top-45 left-54 flex flex-col z-100"
+            className="modal card-control w-32 bg-white rounded-lg drop-shadow-lg border-2 border-black absolute top-45 left-54 flex flex-col z-100"
             onClick={onClick}
         >
             <Button

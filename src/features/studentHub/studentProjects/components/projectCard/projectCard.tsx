@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Card from '@/components/card'
 import { faSquareBinary } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -22,6 +23,9 @@ export function ProjectCard({
 }) {
     const $selectedProject = useStore(openProject)
     const $editingProject = useStore(editingProject)
+    // Whether the press that's in flight landed on one of the card's own
+    // controls rather than on the card itself — see `handlePointerDown`.
+    const [pressOnControl, setPressOnControl] = useState(false)
     if (!project) return null
     const isSelected = $selectedProject === id
     const isEditing = $editingProject === id
@@ -43,56 +47,69 @@ export function ProjectCard({
         editingProject.set(null)
         openProject.set(null)
     }
+
+    // The browser sets `:active` on every ancestor of the pressed node, so
+    // pressing the ⋮ button, its menu or the rename row would sink the whole
+    // card underneath a control that already gives its own press feedback.
+    // Those presses are marked here so `.card-no-press` can suppress the sink;
+    // CSS can't tell on its own without `:has()` (Safari 15.4, above the iOS 15
+    // floor). Recomputed on every press, so it never needs clearing.
+    const handlePointerDown = (e: React.PointerEvent) => {
+        setPressOnControl(
+            e.target instanceof Element &&
+                e.target.closest('.card-control') !== null,
+        )
+    }
+
     return (
-        // Guard in the capture phase: children (e.g. the rename input) call
-        // stopPropagation, which would otherwise prevent a bubble-phase onClick
-        // here from cancelling navigation while editing.
-        <a
+        <Card
             href={editorHref(id)}
+            onPointerDown={handlePointerDown}
+            // Guard in the capture phase: children (e.g. the rename input) call
+            // stopPropagation, which would otherwise prevent a bubble-phase
+            // onClick here from cancelling navigation while editing.
             onClickCapture={(e) => {
                 if (isEditing) e.preventDefault()
             }}
-        >
-            <Card
-                className={`project-card overflow-visible relative bg-white w-62.5 border-transparent border-4 transition-transform hover:-translate-y-0.5 hover:border-blue duration-100 hover:cursor-pointer ${isSelected ? '-translate-y-0.5! border-green! z-99' : ''}`}
-                image={
-                    <img
-                        src={project.thumbnail || ''}
-                        alt="Project Image"
-                        className="w-full rounded-t-3xl object-cover bg-tone3 aspect-video"
-                    />
-                }
-                title={
-                    <>
-                        <div className="flex w-full flex-row items-center gap-2">
-                            {isEditing ? (
-                                <ProjectEditInput
-                                    initialName={project.name}
-                                    onSave={handleSaveName}
-                                    onCancel={handleCancelEdit}
-                                />
-                            ) : (
-                                <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
-                                    <FontAwesomeIcon
-                                        className="h-6 w-5 text-blue -transform-y-1"
-                                        icon={faSquareBinary}
-                                    />
-                                    <h3 className="truncate whitespace-nowrap text-xl font-bold">
-                                        {project.name || 'Untitled'}
-                                    </h3>
-                                </div>
-                            )}
-                            {!isEditing && <ProjectSettings id={id} />}
+            // `overflow-visible` so the settings dialog can escape the card;
+            // that's why the thumbnail below has to round its own corners.
+            className={`project-card card-interactive box-shadow overflow-visible bg-white w-62.5 border-transparent border-4 hover:border-blue ${pressOnControl ? 'card-no-press' : ''} ${isSelected ? '-translate-y-0.5! border-green! z-99' : ''}`}
+            image={
+                <img
+                    src={project.thumbnail || ''}
+                    alt="Project Image"
+                    // The card rounds to 24px *outside* its 4px border, so the
+                    // thumbnail sitting inside that border has to stop 4px
+                    // short of it or its corners bulge past the highlight.
+                    className="w-full rounded-t-[calc(1.5rem-4px)] object-cover bg-tone3 aspect-video"
+                />
+            }
+            title={
+                <div className="flex w-full flex-row items-center gap-2">
+                    {isEditing ? (
+                        <ProjectEditInput
+                            initialName={project.name}
+                            onSave={handleSaveName}
+                            onCancel={handleCancelEdit}
+                        />
+                    ) : (
+                        <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
+                            <FontAwesomeIcon
+                                className="h-6 w-5 text-blue -transform-y-1"
+                                icon={faSquareBinary}
+                            />
+                            <h3 className="truncate whitespace-nowrap text-xl font-bold">
+                                {project.name || 'Untitled'}
+                            </h3>
                         </div>
-                    </>
-                }
-                description={
-                    <p className="text-gray-700">
-                        {dayjs(project.time).fromNow()}
-                    </p>
-                }
-                absolute={isSelected && !isEditing ? <SettingDialog /> : null}
-            />
-        </a>
+                    )}
+                    {!isEditing && <ProjectSettings id={id} />}
+                </div>
+            }
+            description={
+                <p className="text-gray-700">{dayjs(project.time).fromNow()}</p>
+            }
+            absolute={isSelected && !isEditing ? <SettingDialog /> : null}
+        />
     )
 }

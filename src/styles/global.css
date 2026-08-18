@@ -168,6 +168,87 @@
             transition: none;
         }
     }
+
+    /*
+     * Hover / press feedback shared by every card-shaped surface: shop and home
+     * product cards, CMS resource cards, hub project cards and the New Project
+     * tile. Cards are one click target end to end (better on touch than a small
+     * CTA hyperlink), so the feedback belongs to the whole card.
+     *
+     * The card leans out of the page on hover and rides down into its own drop
+     * shadow on press, which is the same language `.button-interactive` speaks —
+     * no translucent wash, because a card's own artwork already carries it.
+     */
+    .card-interactive {
+        position: relative;
+        cursor: pointer;
+        transition:
+            transform 100ms ease-out,
+            box-shadow 100ms ease-out;
+    }
+    /* `transform` and not the `translate` property, so these compose with (and
+       don't clobber) Tailwind's translate utilities — see the note above. */
+    @media (hover: hover) {
+        .card-interactive:hover {
+            transform: translate(-2px, -2px);
+        }
+        .card-interactive.box-shadow:hover {
+            box-shadow: 8px 8px 0 var(--color-drop-shadow);
+        }
+    }
+    /* `.card-no-press` suppresses the press when the pointer went down on one of
+       the card's own controls (a ⋮ menu, a rename row) — that press acts on the
+       control, which gives its own feedback, so the card must stay put. The
+       browser sets `:active` on every ancestor of the pressed node and CSS can't
+       opt out of that on its own: `:has()` needs Safari 15.4, above the iOS 15
+       floor. So the owning component sets the class on pointerdown; a lone
+       simple selector inside `:not()` is Safari 15-safe, a list wouldn't be. */
+    .card-interactive:not(.card-no-press):active {
+        transform: translate(1px, 1px);
+    }
+    .card-interactive.box-shadow:not(.card-no-press):active {
+        transform: translate(3px, 3px);
+        box-shadow: 3px 3px 0 var(--color-drop-shadow);
+    }
+    .card-interactive:focus-visible {
+        outline: 2px solid var(--color-black);
+        outline-offset: 2px;
+    }
+
+    /*
+     * A pill inside a clickable card that looks like a button but isn't one: the
+     * card is the click target, so the card drives this element's wash. Nesting
+     * a real <button>/<a> inside the card's anchor would be invalid markup and
+     * would shrink the tappable area back down to the pill.
+     */
+    .card-cta {
+        position: relative;
+    }
+    .card-cta::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background-color: var(--color-drop-shadow);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 150ms ease-out;
+    }
+    @media (hover: hover) {
+        .card-interactive:hover .card-cta::after {
+            opacity: 0.12;
+        }
+    }
+    .card-interactive:not(.card-no-press):active .card-cta::after {
+        opacity: 0.22;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .card-interactive,
+        .card-cta::after {
+            transition: none;
+        }
+    }
 }
 @layer base {
     html {

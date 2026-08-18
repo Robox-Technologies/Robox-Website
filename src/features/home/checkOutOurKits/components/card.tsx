@@ -1,5 +1,4 @@
 import Card from '@/components/card'
-import Button from '@/components/button'
 import type React from 'react'
 interface ProductCardProps {
     className?: string
@@ -18,15 +17,18 @@ export default function ProductCard({
     title,
 }: ProductCardProps) {
     return (
+        // Same behaviour as the shop's own product cards: the whole card is the
+        // link, and the pill inside it is a label the card drives.
         <Card
-            className={`w-[350px] basis-[350px] relative box-shadow bg-gray-100 ${className ?? ''}`}
+            href={href}
+            className={`card-interactive w-[350px] basis-[350px] box-shadow bg-gray-100 ${className ?? ''}`}
             absolute={absolute}
             title={<h1 className="text-2xl font-bold">{title}</h1>}
             image={
                 <img
                     src={image.src}
                     alt={`Thumbnail for product ${title}`}
-                    className="w-full h-auto rounded-t-lg"
+                    className="w-full h-auto"
                 />
             }
             description={
@@ -38,9 +40,9 @@ export default function ProductCard({
             }
         >
             <div className="flex justify-center p-4">
-                <Button href={href} className="bg-blue text-xl px-8 box-shadow">
+                <span className="card-cta box-shadow bg-blue text-white text-xl px-8 py-2 rounded-xl">
                     View Product
-                </Button>
+                </span>
             </div>
         </Card>
     )

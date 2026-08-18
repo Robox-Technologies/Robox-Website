@@ -67,7 +67,7 @@ export default function ProjectEditInput({
     )
 
     return (
-        <div className="flex gap-1 w-full items-center">
+        <div className="card-control flex gap-1 w-full items-center">
             <div className="flex-1 relative">
                 <input
                     ref={inputRef}

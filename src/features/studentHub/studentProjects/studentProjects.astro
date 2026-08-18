@@ -10,6 +10,6 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     </h1>
     {!isIOSBuild && <ImportButton client:load />}
 </div>
-<div class="card-holder flex flex-wrap gap-4 w-full">
+<div class="card-holder flex flex-wrap gap-8 w-full">
     <Projects client:load />
 </div>
