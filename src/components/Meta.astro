@@ -1,0 +1,79 @@
+---
+/**
+ * Everything that goes in `<head>`: the document title, the search-engine
+ * description, and the Open Graph / Twitter tags link unfurlers read.
+ *
+ * Was a React component; it's Astro now because the social tags need absolute
+ * URLs, and `Astro.site` / `Astro.url` are the only places those come from.
+ * (`site` is set in astro.config.ts — without it `new URL()` below throws,
+ * which is the loud failure we want rather than silently shipping a relative
+ * `og:image` that no crawler can resolve.)
+ */
+import ogImage from '@/images/og-image.jpg'
+import { DEFAULT_DESCRIPTION } from '@/data/seo'
+
+interface Props {
+    title: string
+    /**
+     * The page's own description, used for `<meta name="description">` and both
+     * social descriptions so they can't drift apart.
+     */
+    description?: string
+    /** Keep the page out of search results (carts, checkout, 404s). */
+    noindex?: boolean
+}
+
+const SITE_NAME = 'Ro/Box'
+
+const {
+    title,
+    description = DEFAULT_DESCRIPTION,
+    noindex = false,
+} = Astro.props
+
+// Titles that already say "Ro/Box" don't need it twice.
+const pageTitle = title.includes(SITE_NAME)
+    ? title
+    : `${title} | ${SITE_NAME}`
+
+const canonical = new URL(Astro.url.pathname, Astro.site)
+const ogImageUrl = new URL(ogImage.src, Astro.site)
+---
+
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta
+    name="keywords"
+    content="Robox, Ro/Box, robotics, Python, line following, line-following, Rise Project, low-cost robotics, cheap robotics kit, robotics kit, RCJA, RoboCup, RoboCupJunior, RoboCup Junior Australia, STEM kit, STEM"
+/>
+<meta name="author" content="Ro/Box" />
+<meta name="copyright" content="All content copyright © 2025 Ro/Box" />
+<meta name="theme-color" content="#F8F8F8" />
+
+<title>{pageTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical.href} />
+{noindex && <meta name="robots" content="noindex, follow" />}
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={SITE_NAME} />
+<meta property="og:locale" content="en_AU" />
+<meta property="og:title" content={pageTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical.href} />
+<meta property="og:image" content={ogImageUrl.href} />
+<meta property="og:image:width" content={String(ogImage.width)} />
+<meta property="og:image:height" content={String(ogImage.height)} />
+<meta property="og:image:type" content="image/jpeg" />
+<meta
+    property="og:image:alt"
+    content="Two Ro/Box robots parked on a bench at the beach, one built from plywood and one from a cardboard box"
+/>
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={pageTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImageUrl.href} />

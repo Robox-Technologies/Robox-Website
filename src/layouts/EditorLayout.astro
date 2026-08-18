@@ -1,5 +1,5 @@
 ---
-import Meta from '@/components/Meta'
+import Meta from '@/components/Meta.astro'
 import Header from '@/components/header/Header.astro'
 
 const isIOSBuild = process.env.IOS_BUILD === 'true';
@@ -13,12 +13,16 @@ import '@fortawesome/fontawesome-svg-core/styles.css';
 import '@/styles/global.css'
 interface Props {
     title: string
+    /** Page description, for search results and social previews. */
+    description?: string
+    /** Keep this page out of search results. */
+    noindex?: boolean
 };
-const { title } = Astro.props as Props;
+const { title, description, noindex } = Astro.props as Props;
 ---
 <html lang="en">
     <head>
-        <Meta title={title} />
+        <Meta title={title} description={description} noindex={noindex} />
     </head>
     <body class="flex flex-col">
         

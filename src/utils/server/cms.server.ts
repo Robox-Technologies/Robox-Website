@@ -40,6 +40,8 @@ export type CMSItem = {
     previewTitle: string
     articleTitle: string
     author: string
+    /** Editor-written blurb, used as the article page's meta description. */
+    description: string
     callToAction: string
     createdAt: string
     location: CMSLocation
@@ -107,6 +109,7 @@ export async function getCMSContent(): Promise<CMSItem[]> {
             previewTitle: item.previewTitle,
             articleTitle: item.articleTitle ?? item.previewTitle,
             author: item.author ?? '',
+            description: item.description ?? '',
             callToAction: item.callToAction || 'Read Resource',
             createdAt: item.createdAt,
             location: item.location,

@@ -26,7 +26,10 @@ import BoxToBot from '@/features/home/boxToBot/components/boxToBot.astro'
 import EmpoweringStudents from '@/features/home/empoweringStudents/empoweringStudents.astro'
 import CheckOutOurKits from '@/features/home/checkOutOurKits/checkOutOurKits.astro'
 ---
-<StandardLayout title="Home">
+<StandardLayout
+    title="Robotics for Everyone"
+    description="Ro/Box is an ultra-affordable robotics kit designed to make STEM education accessible to any student, anywhere. Build it, code it, bring it to life."
+>
     <Hero
         hero={hero}
         heroMobile={heroMobile}
@@ -54,7 +57,7 @@ import CheckOutOurKits from '@/features/home/checkOutOurKits/checkOutOurKits.ast
                     About us
                 </Button>
             </ArticleText>
-            <Image src={article1} alt="Robox Kit Components" class="rounded-lg max-w-full max-h-full w-1/2 lg:w-3/10"/>
+            <Image src={article1} alt="An assembled Ro/Box, its ultrasonic sensor facing the camera like a pair of eyes" class="rounded-lg max-w-full max-h-full w-1/2 lg:w-3/10"/>
         </ArticleSection>
         <ArticleSection id="moto" direction="RTL" className="relative isolate">
             <Goober shape={star} class="left-[15%] top-[max(-35%,-150px)] w-[290px] max-[1000px]:hidden" />
@@ -69,7 +72,7 @@ import CheckOutOurKits from '@/features/home/checkOutOurKits/checkOutOurKits.ast
                     <li class="text-xl"><span class="font-bold">Open-sourced:</span> We mean it. Everything from the Ro/Box design schematics, to this website, is open-sourced. It's our way of giving to the community.</li>
                 </ul>
             </ArticleText>
-            <Image src={article2} alt="Robox Kit Components" class="rounded-lg max-w-full max-h-full w-full lg:w-1/2 object-contain"/>
+            <Image src={article2} alt="Looking down into an open Ro/Box at the Pico, motor driver, and wiring inside" class="rounded-lg max-w-full max-h-full w-full lg:w-1/2 object-contain"/>
         </ArticleSection>
     </Article>
     <BoxToBot />
@@ -91,7 +94,7 @@ import CheckOutOurKits from '@/features/home/checkOutOurKits/checkOutOurKits.ast
                     Visit Teacher Hub
                 </Button>
             </ArticleText>
-            <Image src={article3} alt="A nearly assembled Ro/Box kit with its lid open" class="rounded-lg max-w-full max-h-full w-full lg:w-1/2 object-contain"/>
+            <Image src={article3} alt="A student assembling a Ro/Box at a desk, next to an open laptop" class="rounded-lg max-w-full max-h-full w-full lg:w-1/2 object-contain"/>
         </ArticleSection>
     </Article>
     <CheckOutOurKits />

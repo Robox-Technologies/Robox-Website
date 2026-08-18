@@ -3,10 +3,12 @@ import BaseCard from '@/components/card';
 import { Image } from 'astro:assets';
 interface Props {
     image: ImageMetadata;
+    /** Describes `image`; each card shows something different. */
+    imageAlt: string;
     title: string;
     description: string;
 }
-const { image, title, description } : Props = Astro.props;
+const { image, imageAlt, title, description } : Props = Astro.props;
 const hasGoober = Astro.slots.has('goober');
 ---
 <div class:list={["relative w-[350px] basis-[350px]", hasGoober && "isolate"]}>
@@ -17,7 +19,7 @@ const hasGoober = Astro.slots.has('goober');
         className='w-full box-shadow bg-white'
         description={description}
     >
-        <Image slot="image" src={image} alt="Robotics Kit Components" class="w-full h-auto rounded-t-lg" width={image.width} height={image.height}/>
+        <Image slot="image" src={image} alt={imageAlt} class="w-full h-auto rounded-t-lg" width={image.width} height={image.height}/>
         <h2 slot="title" class="text-2xl font-bold mb-4">{title}</h2>
         <p slot="description" class="text-lg">
             {description}

@@ -9,10 +9,14 @@ import StudentProjects from '@/features/studentHub/studentProjects/studentProjec
 import { Image } from 'astro:assets';
 const isIOSBuild = process.env.IOS_BUILD === 'true';
 ---
-<StandardLayout title="Ro/Box Hub" header="workshop">
+<StandardLayout
+    title="Ro/Box Hub"
+    description="Everything students need to get going: step-by-step assembly guides, coding lessons, and a free block code editor for your Ro/Box."
+    header="workshop"
+>
     {isIOSBuild ?
         <div class="relative w-full h-[25vh]">
-            <Image src={HeroMobile} alt="Hero image background" class="w-full h-full object-cover object-left"/>
+            <Image src={HeroMobile} alt="" aria-hidden="true" class="w-full h-full object-cover object-left"/>
 
             <div class="absolute top-0 left-0 w-full h-full p-8">
                 <h1 class="text-5xl font-bold text-primary">
@@ -32,7 +36,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
                 </h1>
             </div>
             <div slot="right" class="bg-primary h-full">
-                <Image src={Hero} alt="Student using Ro/Box" class="w-full h-full object-cover object-left" height={Hero.height / 8} width={Hero.width / 8}/>
+                <Image src={Hero} alt="A Ro/Box next to an open laptop showing a forest scene" class="w-full h-full object-cover object-left" height={Hero.height / 8} width={Hero.width / 8}/>
             </div>
         </PageHero>
     }

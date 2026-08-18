@@ -3,6 +3,7 @@ import type { GetStaticPaths } from 'astro'
 import StandardLayout from '@/layouts/StandardLayout.astro'
 import { getCMSContent, type CMSItem } from '@/utils/server/cms.server'
 import { lexicalToHtml } from '@/utils/server/lexicalToHtml'
+import { toDescription } from '@/data/seo'
 import { faCalendar } from '@fortawesome/free-solid-svg-icons'
 
 export const getStaticPaths = (async () => {
@@ -24,9 +25,15 @@ const html = lexicalToHtml(item.content)
 const posted = new Date(item.createdAt).toLocaleDateString('en-AU')
 const [width, height, , , path] = faCalendar.icon
 const calendar = Array.isArray(path) ? path.join(' ') : path
+
+// Editors can write a blurb per item; when they haven't, the title is still a
+// better search snippet than the site-wide fallback.
+const description = item.description
+    ? toDescription(item.description)
+    : `Read ${item.articleTitle} in the Ro/Box resource library.`
 ---
 
-<StandardLayout title={item.previewTitle}>
+<StandardLayout title={item.previewTitle} description={description}>
     <article class="article px-8 py-16 md:px-16 max-w-[800px] mx-auto">
         <header>
             <p class="mb-2 text-lg font-semibold text-tone3">

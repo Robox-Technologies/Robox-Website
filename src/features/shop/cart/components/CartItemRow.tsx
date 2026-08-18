@@ -28,7 +28,8 @@ export default function CartItemRow({
             <div className="flex h-25 flex-row gap-5 max-[600px]:h-auto max-[600px]:flex-col">
                 <img
                     src={imageSrc}
-                    alt={item.name}
+                    // Decorative: the row names the product right beside it.
+                    alt=""
                     className="h-full aspect-video shrink-0 rounded-[5px] object-cover max-[600px]:h-auto max-[600px]:w-full"
                 />
                 <div className="flex flex-1 flex-row items-start justify-between gap-4">

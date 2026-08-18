@@ -6,7 +6,13 @@ import {
 import type { ImageMetadata } from 'astro'
 import { useState } from 'react'
 
-export default function Carousel({ images }: { images: ImageMetadata[] }) {
+/** A product photo plus the description of what's in it. */
+export interface CarouselImage {
+    src: ImageMetadata
+    alt: string
+}
+
+export default function Carousel({ images }: { images: CarouselImage[] }) {
     const [currentIndex, setCurrentIndex] = useState(0)
 
     return (
@@ -32,7 +38,8 @@ export default function Carousel({ images }: { images: ImageMetadata[] }) {
                     }
                 />
                 <img
-                    src={images[currentIndex].src}
+                    src={images[currentIndex].src.src}
+                    alt={images[currentIndex].alt}
                     className="h-[60vh] min-h-[500px] block object-contain aspect-[1.4] max-[940px]:h-auto max-[940px]:min-h-0 max-[940px]:max-h-[60vh] max-[940px]:w-full"
                 />
                 <Button
@@ -53,7 +60,7 @@ function CarouselSideBar({
     currentIndex,
     setCurrentIndex,
 }: {
-    images: ImageMetadata[]
+    images: CarouselImage[]
     currentIndex: number
     setCurrentIndex: (index: number) => void
 }) {
@@ -81,19 +88,22 @@ function CarouselSideBarItem({
     isActive,
     onClick,
 }: {
-    image: ImageMetadata
+    image: CarouselImage
     isActive: boolean
     onClick: () => void
 }) {
     return (
         <div
             className="carousel-item overflow-hidden block w-[115px] h-[115px] rounded-lg"
-            key={image.src}
+            key={image.src.src}
             onClick={onClick}
         >
             <div className="cursor-pointer h-full">
+                {/* The rail duplicates the photo already described by the main
+                    image, so it stays out of the accessibility tree. */}
                 <img
-                    src={image.src}
+                    src={image.src.src}
+                    alt=""
                     className={`w-full h-full block object-cover rounded-lg ${isActive ? 'brightness-[0.6]' : ''}`}
                 />
             </div>

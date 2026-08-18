@@ -11,7 +11,11 @@ import {
 
 const products = await getAllProducts()
 ---
-<StandardLayout title="Checkout">
+<StandardLayout
+    title="Checkout"
+    description="Enter your delivery and payment details to finish your Ro/Box order."
+    noindex
+>
     <Article className="p-16 max-[1000px]:p-8">
         <a href="/shop/cart" class="text-lg leading-[64px] hover:underline">
             &lsaquo;&nbsp;Cart

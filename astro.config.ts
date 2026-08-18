@@ -14,6 +14,10 @@ import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
 
 export default defineConfig({
     srcDir: 'src',
+    // Canonical links and the og:image URL are built off this: crawlers and
+    // link unfurlers won't resolve a root-relative path, so they need the
+    // origin. Meta.astro throws at build time if this is ever removed.
+    site: 'https://robox.com.au',
     output: "static",
     integrations: [
         react(),

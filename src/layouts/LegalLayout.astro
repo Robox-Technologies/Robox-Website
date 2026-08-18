@@ -11,11 +11,12 @@ import StandardLayout from '@/layouts/StandardLayout.astro'
 
 interface Props {
     title: string
+    description?: string
 }
-const { title } = Astro.props
+const { title, description } = Astro.props
 ---
 
-<StandardLayout title={title}>
+<StandardLayout title={title} description={description}>
     <article class="legal">
         <slot />
     </article>

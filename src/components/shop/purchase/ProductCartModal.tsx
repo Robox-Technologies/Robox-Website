@@ -44,7 +44,8 @@ export default function ProductCartModal({
             <DialogBody className="flex flex-row gap-4 p-4 justify-between">
                 <img
                     src={image.src}
-                    alt={product.name}
+                    // Decorative: the heading beside it names the product.
+                    alt=""
                     className="w-1/2 object-cover rounded-lg"
                 />
                 <div className="flex flex-col flex-1 gap-2 w-1/2 h-full items-start justify-between">

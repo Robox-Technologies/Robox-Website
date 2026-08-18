@@ -28,10 +28,13 @@ const productsWithImages = products.map((product) => {
     }
 })
 ---
-<StandardLayout title="Home">
+<StandardLayout
+    title="Shop"
+    description="Check out our Ro/Box product range. Grab a single kit to build at home, or a 10-pack for the classroom."
+>
     <PageHero gradient='negative' className='bg-black' lineWidth='20px' overlap='10vw'>
         <div slot="right" class="bg-primary h-full lg:">
-            <Image src={Hero} alt="Student using Ro/Box" class="w-full h-full object-cover object-left" height={Hero.height} width={Hero.width}/>
+            <Image src={Hero} alt="A Ro/Box parked on a white mat printed with a black line-following course" class="w-full h-full object-cover object-left" height={Hero.height} width={Hero.width}/>
         </div>
         <div slot="left" class="bg-blue h-full w-full flex justify-start items-end p-8">
             <h1 class="text-5xl font-bold text-white">

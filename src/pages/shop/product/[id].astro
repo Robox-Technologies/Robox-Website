@@ -8,6 +8,7 @@ import Carousel from '@/features/catalog/components/Carousel'
 import ProductCartModal from '@/components/shop/purchase/ProductCartModal'
 import { formatStatus } from '@/features/catalog/utils/formatStatus'
 import { formatPrice } from '@/utils/formatPrice'
+import { toDescription } from '@/data/seo'
 
 export const getStaticPaths = (async () => {
     const products = await getAllProducts()
@@ -28,12 +29,32 @@ const allImages = import.meta.glob<{ default: ImageMetadata }>(
     `src/images/shop/products/**/*`,
     { eager: true },
 )
+
+/**
+ * Every product's photo set uses the same six filenames and, so far, the same
+ * six shots, so the descriptions live here keyed by filename rather than being
+ * repeated per product folder.
+ */
+const PHOTO_ALTS: Record<string, string> = {
+    'thumbnail.jpg':
+        'An assembled Ro/Box at a three-quarter angle, showing its plywood chassis and yellow wheels',
+    'u1.jpg':
+        'An assembled Ro/Box head on, its ultrasonic sensor looking straight down the lens',
+    'u2.jpg':
+        'An assembled Ro/Box from behind, with the battery pack and motor driver sitting in the open bay',
+    'u3.jpg': 'A Ro/Box parked on a black line that runs across a white surface',
+    'u4.jpg': 'A Ro/Box beside an open laptop showing the code that drives it',
+    'u5.jpg':
+        'Everything in the kit laid out flat: plywood panels, wheels, motors, sensors, battery pack, and jumper wires',
+}
+
 const images = Object.entries(allImages)
     .filter(([path]) => path.includes(`/src/images/shop/products/${product.internalName}/`))
-    .reduce((acc, [_, image]) => {
-        acc.push(image.default)
-        return acc
-    }, [] as ImageMetadata[])
+    .map(([path, image]) => ({
+        src: image.default,
+        // Falls back to the product name so a newly added photo is never altless.
+        alt: PHOTO_ALTS[path.split('/').pop() ?? ''] ?? product.name,
+    }))
 if (images.length === 0) {
     throw new Error(`Image for product ${product.internalName} not found`)
 }
@@ -51,8 +72,19 @@ if (!description) {
 
 const statusText = formatStatus(product.status)
 const priceText = formatPrice(product.price)
+
+/**
+ * The Stripe copy runs long for a search result, and its second half is the same
+ * "designed as an engaging tool for teaching kids STEM..." clause on every
+ * product. Keep the part that's actually about this kit, and close the sentence
+ * that dropping the rest left hanging.
+ */
+const firstHalf = product.description.split('—')[0].trim()
+const metaDescription = toDescription(
+    /[.!?]$/.test(firstHalf) ? firstHalf : `${firstHalf}.`,
+)
 ---
-<StandardLayout title={product.name}>
+<StandardLayout title={product.name} description={metaDescription}>
     <!-- The original's --articleMargin: 64px, halved below 1000px. -->
     <Article className="p-16 max-[1000px]:p-8">
         <p class="my-4 text-base">
@@ -89,7 +121,7 @@ const priceText = formatPrice(product.price)
                 </p>
                 <p class={`${statusText.color} my-0`}>{statusText.text}</p>
                 <div class="flex flex-col gap-4 w-50 mt-8">
-                    <ProductCartModal product={product} image={images[0]} client:only="react" />
+                    <ProductCartModal product={product} image={images[0].src} client:only="react" />
                 </div>
             </div>
         </div>

@@ -27,7 +27,9 @@ export default function ProductCard({
             image={
                 <img
                     src={image.src}
-                    alt={`Thumbnail for product ${title}`}
+                    // Decorative: the card title right below it is the
+                    // product name, so describing it again is just noise.
+                    alt=""
                     className="w-full h-auto"
                 />
             }

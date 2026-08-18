@@ -77,7 +77,9 @@ export function ProjectCard({
             image={
                 <img
                     src={project.thumbnail || ''}
-                    alt="Project Image"
+                    // Decorative: the project name sits directly below it,
+                    // and `thumbnail` is empty until the project is first saved.
+                    alt=""
                     // The card rounds to 24px *outside* its 4px border, so the
                     // thumbnail sitting inside that border has to stop 4px
                     // short of it or its corners bulge past the highlight.

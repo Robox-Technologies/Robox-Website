@@ -9,7 +9,10 @@ import { getCMSContentFor } from '@/utils/server/cms.server';
 
 const lessonPlans = await getCMSContentFor('Teacher Resources');
 ---
-<StandardLayout title="Teacher Resources">
+<StandardLayout
+    title="Teacher Resources"
+    description="Free lesson plans, curriculums, and classroom-ready resources for teaching robotics and coding with Ro/Box. No robotics experience needed."
+>
     <PageHero gradient='positive' className='bg-black' leftWidth='66%' lineWidth='20px' overlap='10vw'>
         <div slot="left" class="bg-primary h-full">
             <div class="h-full w-full flex justify-start items-end p-8">
@@ -18,7 +21,7 @@ const lessonPlans = await getCMSContentFor('Teacher Resources');
                 </h1>
 
             </div>
-            <img src={Hero.src} alt="Student using Ro/Box" class="w-full absolute top-0 h-full object-cover object-left"/>
+            <img src={Hero.src} alt="" aria-hidden="true" class="w-full absolute top-0 h-full object-cover object-left"/>
         </div>
         <div slot="right" class="bg-yellow h-full w-full relative overflow-hidden">
             <img
