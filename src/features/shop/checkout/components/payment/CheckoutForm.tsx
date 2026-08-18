@@ -29,10 +29,21 @@ export default function CheckoutForm({
                 fontSizeBase: '16px',
             },
             rules: {
+                // Only card is offered, so Stripe still wraps it in an
+                // accordion item — strip the card chrome so it sits flat on
+                // the page like the elements above it.
                 '.AccordionItem': {
                     border: 'none',
+                    backgroundColor: 'transparent',
+                    boxShadow: 'none',
                     paddingTop: '0',
+                    paddingRight: '0',
+                    paddingBottom: '0',
                     paddingLeft: '0',
+                },
+                '.AccordionItem--selected': {
+                    backgroundColor: 'transparent',
+                    boxShadow: 'none',
                 },
                 '.Input': {
                     backgroundColor: '#fff',
