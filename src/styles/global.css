@@ -249,6 +249,22 @@
             transition: none;
         }
     }
+
+    /*
+     * A thumbnail in the product carousel's rail. Same focus treatment as
+     * `.button-interactive`, but the outline sits *inside* the edge: the rail is
+     * exactly one thumbnail wide and clips its overflow, so an outward offset
+     * would be cut off down both sides.
+     *
+     * Hand-written rather than Tailwind's `focus-visible:outline-*` utilities,
+     * which compile to `outline-style: var(--tw-outline-style)` and so need
+     * `@property` — Safari 16.4, above the iOS 15 floor. The rest of the site's
+     * focus rings are written out here for the same reason.
+     */
+    .carousel-item:focus-visible {
+        outline: 2px solid var(--color-black);
+        outline-offset: -2px;
+    }
 }
 @layer base {
     html {

@@ -1,0 +1,9 @@
+# Everything on the site is fair game to crawl. The handful of routes that
+# shouldn't be indexed (cart, checkout, the editor, 404) say so with a
+# `noindex` meta tag instead of being blocked here on purpose: a crawler has to
+# be able to fetch a page to read that tag, so disallowing them would leave
+# them eligible to show up in results with no snippet.
+User-agent: *
+Allow: /
+
+Sitemap: https://robox.com.au/sitemap-index.xml

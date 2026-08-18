@@ -1,0 +1,182 @@
+---
+/**
+ * The cookie consent bar, ported from the original site's `gaConsent` partial.
+ * Same copy, same placement (a pill floating at the bottom of the page, centred
+ * above 640px), and the same ids so the styling reads the same way.
+ *
+ * Starts with the `hidden` attribute and only comes out when there's nothing in
+ * `localStorage`, so a returning visitor never sees it flash. Analytics.astro is
+ * what actually acts on the answer.
+ *
+ * The `{' '}` before the Privacy Policy link is load-bearing: Astro collapses the
+ * newline between text and a following element, which ran the sentence straight
+ * into the link.
+ */
+---
+
+<section
+    id="gaConsentPopup"
+    hidden
+    aria-label="Cookie consent"
+    class="box-shadow"
+>
+    <div id="consentDesc">
+        <p>
+            Our website uses cookies to create better user experience. We never
+            collect any personal data!{' '}
+            <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        </p>
+    </div>
+    <div id="consentButtons">
+        <button id="consentApproveBtn" type="button" class="button-interactive">
+            Accept
+        </button>
+        <button id="consentRejectBtn" type="button" class="button-interactive">
+            Decline
+        </button>
+    </div>
+</section>
+
+<style>
+    /* The original's own measurements: 640px wide, 20px radius (its
+       `$borderRadius`), 2px black border on the off-white page colour. */
+    #gaConsentPopup {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        /* `transform`, not the `translate` property, so this composes with
+           Tailwind's translate utilities rather than replacing them. */
+        transform: translateX(-50%);
+        z-index: 99999;
+        display: flex;
+        width: 640px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
+        gap: 20px;
+        margin: 16px;
+        padding: 10px 30px;
+        border: 2px solid var(--color-black);
+        border-radius: 20px;
+        background-color: var(--color-primary);
+        color: var(--color-black);
+    }
+
+    /* Beats the plain `#gaConsentPopup` rule above on specificity (id + attribute
+       against id alone), so the attribute is enough to hide it and the script
+       doesn't have to write inline styles. */
+    #gaConsentPopup[hidden] {
+        display: none;
+    }
+
+    #gaConsentPopup p,
+    #gaConsentPopup a {
+        font-size: 0.9em;
+        line-height: 150%;
+        margin: 0;
+    }
+
+    #gaConsentPopup a {
+        text-decoration: underline;
+    }
+
+    #consentButtons {
+        display: flex;
+        width: 100%;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Hover, press and focus come from `.button-interactive`, the same as every
+       other button on the site; only the colours are set here. */
+    #consentButtons button {
+        width: 50%;
+        min-width: 110px;
+        padding: 15px 0;
+        border-radius: 10px;
+        font-size: 1rem;
+        background-color: var(--color-red);
+        color: var(--color-primary);
+    }
+
+    #consentButtons #consentRejectBtn {
+        background-color: transparent;
+        border: 1px solid var(--color-black);
+        color: var(--color-black);
+    }
+
+    /* Below its own width the pill spans the viewport and the buttons stack. */
+    @media only screen and (max-width: 640px) {
+        #gaConsentPopup {
+            left: 0;
+            width: auto;
+            transform: none;
+            padding: 15px 30px;
+        }
+
+        #consentButtons {
+            flex-direction: column;
+        }
+
+        #consentButtons button {
+            width: 100%;
+        }
+    }
+</style>
+
+<script>
+    type ConsentValue = 'granted' | 'denied'
+    type Gtag = (...args: unknown[]) => void
+
+    const popup = document.getElementById('gaConsentPopup')
+
+    /**
+     * Read off `window` at call time rather than up here: gtag.js loads async, so
+     * `window.gtag` may still be the queueing stub (or missing, if the request
+     * was blocked) when this module runs.
+     */
+    function gtag(...args: unknown[]) {
+        ;(window as unknown as { gtag?: Gtag }).gtag?.(...args)
+    }
+
+    function setConsent(approved: boolean) {
+        const value: ConsentValue = approved ? 'granted' : 'denied'
+        // Stored in exactly the shape `consent update` takes, so Analytics.astro
+        // can replay it verbatim on the next page load.
+        const consent = {
+            functionality_storage: value,
+            analytics_storage: value,
+            // Nothing here is used for advertising, so these stay off whichever
+            // button was pressed — the original made the same call.
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+        }
+
+        try {
+            localStorage.setItem('consentMode', JSON.stringify(consent))
+        } catch (error) {
+            // Private mode: the choice can't be remembered, but honour it now.
+            console.warn('Could not store cookie consent', error)
+        }
+
+        gtag('consent', 'update', consent)
+        if (popup) popup.hidden = true
+    }
+
+    document
+        .getElementById('consentApproveBtn')
+        ?.addEventListener('click', () => setConsent(true))
+    document
+        .getElementById('consentRejectBtn')
+        ?.addEventListener('click', () => setConsent(false))
+
+    // Only ask if they haven't already answered.
+    try {
+        if (popup && localStorage.getItem('consentMode') === null) {
+            popup.hidden = false
+        }
+    } catch {
+        // Can't tell whether they've answered, so don't nag.
+    }
+</script>

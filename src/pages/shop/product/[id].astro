@@ -74,14 +74,18 @@ const statusText = formatStatus(product.status)
 const priceText = formatPrice(product.price)
 
 /**
- * The Stripe copy runs long for a search result, and its second half is the same
- * "designed as an engaging tool for teaching kids STEM..." clause on every
- * product. Keep the part that's actually about this kit, and close the sentence
- * that dropping the rest left hanging.
+ * Prefer the description authored in the product's own .mdx frontmatter. The
+ * Stripe copy is written for the page body, not for a search result: it runs
+ * well past the length a link preview shows, and cutting it to fit lands
+ * mid-sentence. The fallback keeps a new product from shipping without one, by
+ * dropping the shared "designed as an engaging tool for teaching kids STEM..."
+ * clause after the em dash and closing the sentence that leaves hanging.
  */
-const firstHalf = product.description.split('—')[0].trim()
+const authored: string | undefined = description.frontmatter?.description
+const stripeCopy = product.description.split('—')[0].trim()
 const metaDescription = toDescription(
-    /[.!?]$/.test(firstHalf) ? firstHalf : `${firstHalf}.`,
+    authored ??
+        (/[.!?]$/.test(stripeCopy) ? stripeCopy : `${stripeCopy}.`),
 )
 ---
 <StandardLayout title={product.name} description={metaDescription}>

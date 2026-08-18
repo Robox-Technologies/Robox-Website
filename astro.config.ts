@@ -10,7 +10,9 @@ import {  join } from 'path'
 import node from '@astrojs/node';
 import { promises as fs } from 'fs'
 import mdx from '@astrojs/mdx'
+import sitemap from '@astrojs/sitemap'
 import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
+import { isNoindex } from './src/data/seo'
 
 export default defineConfig({
     srcDir: 'src',
@@ -22,6 +24,16 @@ export default defineConfig({
     integrations: [
         react(),
         mdx(),
+        // No sitemap in the iOS bundle: it ships as a Capacitor app off the
+        // filesystem, so there's nothing there for a crawler to find.
+        process.env.IOS_BUILD === 'true'
+            ? undefined
+            : sitemap({
+                  // Same list Meta.astro marks `noindex` from, so a page can't
+                  // end up telling crawlers to skip it and then inviting them
+                  // in through the sitemap.
+                  filter: (page) => !isNoindex(new URL(page).pathname),
+              }),
         process.env.IOS_BUILD === 'true' ? transformIOSBuild() : undefined,
     ],
     adapter: node({

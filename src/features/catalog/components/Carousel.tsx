@@ -31,6 +31,7 @@ export default function Carousel({ images }: { images: CarouselImage[] }) {
                     className="absolute top-1/2 left-8 -translate-y-1/2 z-10 bg-white/75 backdrop-blur-[2px] p-0! rounded-full w-10 h-10"
                     iconStyle="text-black w-[18px] h-[18px]"
                     icon={faChevronLeft}
+                    aria-label="Previous photo"
                     onClick={() =>
                         setCurrentIndex(
                             (currentIndex - 1 + images.length) % images.length,
@@ -46,6 +47,7 @@ export default function Carousel({ images }: { images: CarouselImage[] }) {
                     className="absolute top-1/2 right-8 -translate-y-1/2 z-10 bg-white/75 backdrop-blur-[2px] p-0! rounded-full w-10 h-10"
                     iconStyle="text-black w-[18px] h-[18px]"
                     icon={faChevronRight}
+                    aria-label="Next photo"
                     onClick={() =>
                         setCurrentIndex((currentIndex + 1) % images.length)
                     }
@@ -68,11 +70,17 @@ function CarouselSideBar({
         // The rail is a fixed 115px wide and drops out below 940px; its
         // thumbnails shrink to share the carousel's height rather than scroll,
         // same as the original.
-        <div className="flex flex-col shrink-0 items-center gap-[4px] overflow-y-auto overflow-x-hidden h-full w-[115px] max-[940px]:hidden">
+        <div
+            role="group"
+            aria-label="Product photos"
+            className="flex flex-col shrink-0 items-center gap-[4px] overflow-y-auto overflow-x-hidden h-full w-[115px] max-[940px]:hidden"
+        >
             {images.map((image, index) => (
                 <CarouselSideBarItem
                     image={image}
                     key={index}
+                    index={index}
+                    total={images.length}
                     isActive={index === currentIndex}
                     onClick={() => {
                         setCurrentIndex(index)
@@ -85,18 +93,37 @@ function CarouselSideBar({
 
 function CarouselSideBarItem({
     image,
+    index,
+    total,
     isActive,
     onClick,
 }: {
     image: CarouselImage
+    index: number
+    total: number
     isActive: boolean
     onClick: () => void
 }) {
     return (
-        <div
-            className="carousel-item overflow-hidden block w-[115px] h-[115px] rounded-lg"
-            key={image.src.src}
+        // A real <button> so the rail can be tabbed to and driven from the
+        // keyboard; `aria-pressed` is what tells a screen reader which photo is
+        // currently up, since swapping the main image announces nothing.
+        //
+        // The layout classes are the ones the old <div> carried, unchanged --
+        // `overflow-hidden` in particular is load-bearing, as it's what zeroes
+        // this flex item's automatic minimum size and lets the rail squeeze the
+        // thumbnails to share the carousel's height instead of scrolling. The
+        // rest only undo the UA's button chrome (background, border, padding,
+        // font) so it renders exactly as before.
+        //
+        // The focus ring lives on `.carousel-item` in global.css, alongside the
+        // site's other focus styles.
+        <button
+            type="button"
+            aria-label={`Show photo ${index + 1} of ${total}`}
+            aria-pressed={isActive}
             onClick={onClick}
+            className="carousel-item overflow-hidden block w-[115px] h-[115px] rounded-lg appearance-none border-0 bg-transparent p-0"
         >
             <div className="cursor-pointer h-full">
                 {/* The rail duplicates the photo already described by the main
@@ -107,6 +134,6 @@ function CarouselSideBarItem({
                     className={`w-full h-full block object-cover rounded-lg ${isActive ? 'brightness-[0.6]' : ''}`}
                 />
             </div>
-        </div>
+        </button>
     )
 }

@@ -1,5 +1,7 @@
 ---
 import Meta from '@/components/Meta.astro'
+import Analytics from '@/components/Analytics.astro'
+import CookieConsent from '@/components/CookieConsent.astro'
 import Header from '@/components/header/Header.astro'
 import Footer from '@/components/footer/footer'
 import { config } from '@fortawesome/fontawesome-svg-core'
@@ -23,12 +25,17 @@ const { title, description, noindex, header='standard' } = Astro.props as Props;
 <html lang="en">
     <head>
         <Meta title={title} description={description} noindex={noindex} />
+        <!-- Not in the iOS bundle: it's a Capacitor app, and neither the tag
+             nor a cookie bar belongs in one. -->
+        {!isIOSBuild && <Analytics />}
     </head>
     <body>
         {!isIOSBuild && <Header type={header} />}
-        
+
         <slot />
         <ToastHost client:only="react" />
+        <!-- Sits with the footer, which is where the original kept it. -->
+        {!isIOSBuild && <CookieConsent />}
     </body>
     {!isIOSBuild && <Footer />}
 </html>

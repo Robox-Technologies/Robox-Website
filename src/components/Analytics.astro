@@ -1,0 +1,60 @@
+---
+/**
+ * Google Analytics (gtag.js), gated behind Google Consent Mode.
+ *
+ * Ported from the original site's `metadata.html`, with two behaviours the
+ * original got wrong (see the comments in the snippet): it never declared a
+ * consent *default*, and it never re-applied a stored choice on later visits, so
+ * a visitor who pressed Decline was measured anyway from their second page view
+ * onward. Both are fixed here.
+ *
+ * The paired UI lives in CookieConsent.astro; this component only sets up the
+ * tag and replays whatever the visitor already decided.
+ */
+const GA_MEASUREMENT_ID = 'G-YMVJK0M2GG'
+
+/**
+ * `set:html` with a template literal rather than a plain `<script>` body: the
+ * contents of a script tag are raw text, not an expression context, so `{...}`
+ * interpolation doesn't apply there. Same reason the site injects dynamic CSS
+ * this way.
+ */
+const bootstrap = `
+window.dataLayer = window.dataLayer || [];
+function gtag() { dataLayer.push(arguments); }
+window.gtag = gtag;
+
+/* Deny everything up front. This has to be queued before gtag.js runs, or the
+   first page_view goes out under Google's default (granted) and a later
+   Decline can't take it back. \`wait_for_update\` gives the stored-choice
+   replay below a beat to land before anything is sent. */
+gtag('consent', 'default', {
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied',
+    functionality_storage: 'denied',
+    /* Not analytics: this covers things like fraud prevention, and Google's
+       own guidance is to leave it on. */
+    security_storage: 'granted',
+    wait_for_update: 500,
+});
+
+/* Re-apply a choice made on an earlier visit. */
+try {
+    var saved = localStorage.getItem('consentMode');
+    if (saved) gtag('consent', 'update', JSON.parse(saved));
+} catch (error) {
+    /* Safari in private mode can make localStorage throw. Denied stands. */
+}
+
+gtag('js', new Date());
+gtag('config', '${GA_MEASUREMENT_ID}');
+`
+---
+
+<script is:inline set:html={bootstrap} />
+<script
+    is:inline
+    async
+    src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}></script>
