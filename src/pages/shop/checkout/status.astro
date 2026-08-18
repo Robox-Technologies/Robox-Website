@@ -200,13 +200,13 @@ const socials = [
         return new Promise((resolve) => setTimeout(resolve, ms))
     }
 
-    const publishableKey = import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY
+    const publishableKey = import.meta.env.STRIPE_PUBLISHABLE_KEY
     const clientSecret = new URL(window.location.href).searchParams.get(
         'payment_intent_client_secret',
     )
 
     if (!publishableKey) {
-        showFailure('PUBLIC_STRIPE_PUBLISHABLE_KEY is not configured')
+        showFailure('STRIPE_PUBLISHABLE_KEY is not configured')
     } else if (!clientSecret) {
         showFailure('no payment intent client secret in the URL')
     } else {

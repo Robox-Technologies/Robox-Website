@@ -9,7 +9,7 @@
  * which is the loud failure we want rather than silently shipping a relative
  * `og:image` that no crawler can resolve.)
  */
-import { DEFAULT_DESCRIPTION, isNoindex } from '@/data/seo'
+import { DEFAULT_DESCRIPTION, isNoindex, isProductionOrigin } from '@/data/seo'
 
 interface Props {
     title: string
@@ -45,10 +45,16 @@ const OG_IMAGE = {
     alt: 'Two Ro/Box robots parked on a bench at the beach, one built from plywood and one from a cardboard box',
 }
 
+/**
+ * A dev deploy gets `noindex` on every page, not just the usual routes: two
+ * copies of the same site competing in search is worse than either alone.
+ */
+const isProduction = isProductionOrigin(Astro.site)
+
 const {
     title,
     description = DEFAULT_DESCRIPTION,
-    noindex = isNoindex(Astro.url.pathname),
+    noindex = !isProduction || isNoindex(Astro.url.pathname),
 } = Astro.props
 
 // Titles that already say "Ro/Box" don't need it twice.

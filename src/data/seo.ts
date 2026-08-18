@@ -55,3 +55,20 @@ export function isNoindex(pathname: string): boolean {
     const path = pathname.replace(/\/+$/, '') || '/'
     return NOINDEX_PATHS.includes(path)
 }
+
+/**
+ * The live site. Everything absolute (canonical, `og:image`, the sitemap) is
+ * built off whatever `site` the build was given, so a dev deploy advertises
+ * itself rather than pointing previews at production. This constant is only for
+ * telling the two apart.
+ */
+export const PRODUCTION_ORIGIN = 'https://robox.com.au'
+
+/**
+ * Whether this build is the real site. Anything else — dev.robox.com.au, a local
+ * preview — is kept out of search entirely, so a staging copy can't compete with
+ * production for the same content.
+ */
+export function isProductionOrigin(site: URL | undefined): boolean {
+    return site?.origin === PRODUCTION_ORIGIN
+}

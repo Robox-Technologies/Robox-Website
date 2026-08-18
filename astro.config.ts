@@ -12,14 +12,21 @@ import { promises as fs } from 'fs'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
-import { isNoindex } from './src/data/seo'
+import { isNoindex, PRODUCTION_ORIGIN } from './src/data/seo'
 
 export default defineConfig({
     srcDir: 'src',
-    // Canonical links and the og:image URL are built off this: crawlers and
-    // link unfurlers won't resolve a root-relative path, so they need the
-    // origin. Meta.astro throws at build time if this is ever removed.
-    site: 'https://robox.com.au',
+    /*
+     * Canonical links, the og:image URL and the sitemap are all built off this:
+     * crawlers and link unfurlers won't resolve a root-relative path, so they
+     * need the origin.
+     *
+     * Set SITE_URL to point a build at the host it's actually being served from
+     * — `SITE_URL=https://dev.robox.com.au npm run build` makes the dev box
+     * advertise its own og:image instead of production's. Anything other than
+     * PRODUCTION_ORIGIN is also kept out of search; see src/data/seo.ts.
+     */
+    site: process.env.SITE_URL ?? PRODUCTION_ORIGIN,
     output: "static",
     integrations: [
         react(),
