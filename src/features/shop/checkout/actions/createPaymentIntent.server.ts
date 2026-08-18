@@ -1,6 +1,11 @@
 import { defineAction } from 'astro:actions'
 import { z } from 'astro/zod'
 import { stripeAPI } from '@/utils/server/stripe/index.server'
+import { enforceRateLimit } from '@/utils/server/rateLimit.server'
+import {
+    CHECKOUT_OWNER_KEY,
+    resolveCheckoutOwner,
+} from '@/utils/server/checkoutSession.server'
 import {
     calculateCheckoutTotals,
     normalizeCartMetadata,
@@ -24,7 +29,15 @@ export const createPaymentIntent = defineAction({
         cost: z.number().int().min(50),
         voucher: z.string().trim().max(64).nullable().optional(),
     }),
-    async handler({ products, shippingInfo, cost, voucher }) {
+    async handler({ products, shippingInfo, cost, voucher }, context) {
+        // Ahead of the Stripe and AusPost reads below, so a flood costs us
+        // nothing upstream.
+        enforceRateLimit(context, { name: 'createPaymentIntent', max: 15 })
+
+        // Records which browser this intent belongs to; `updatePaymentIntent`
+        // won't touch an intent that doesn't match the caller's cookie.
+        const owner = resolveCheckoutOwner(context)
+
         const totals = await calculateCheckoutTotals(
             products,
             shippingInfo,
@@ -49,6 +62,7 @@ export const createPaymentIntent = defineAction({
                 enabled: true,
             },
             metadata: {
+                [CHECKOUT_OWNER_KEY]: owner,
                 products: normalizedProducts,
                 subtotalCents: totals.subtotalCents.toString(),
                 shippingCents: totals.shippingCents.toString(),
@@ -66,4 +80,3 @@ export const createPaymentIntent = defineAction({
         }
     },
 })
-        

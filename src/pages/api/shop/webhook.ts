@@ -12,17 +12,13 @@ export const POST = (async ({ request }) => {
     console.log('[stripe-webhook] received POST /api/shop/webhook')
 
     if (!endpointSecret) {
-        console.error('[stripe-webhook] STRIPE_WEBHOOK_SECRET is not configured')
+        console.error(
+            '[stripe-webhook] STRIPE_WEBHOOK_SECRET is not configured',
+        )
         return new Response('Stripe webhook secret not configured', {
             status: 500,
         })
     }
-
-    const allProducts = await getAllProducts()
-
-    const verifiedProducts: Record<string, Product> = Object.fromEntries(
-        allProducts.map((product) => [product.item_id, product]),
-    )
 
     const signature = request.headers.get('stripe-signature')
     let event: Stripe.Event
@@ -31,7 +27,11 @@ export const POST = (async ({ request }) => {
             throw new Error('Stripe signature header not specified')
         }
         const body = await request.text()
-        event = stripeAPI.webhooks.constructEvent(body, signature, endpointSecret)
+        event = stripeAPI.webhooks.constructEvent(
+            body,
+            signature,
+            endpointSecret,
+        )
     } catch (err) {
         console.error(
             '[stripe-webhook] signature verification failed:',
@@ -54,6 +54,16 @@ export const POST = (async ({ request }) => {
 
     if (paymentIntent) {
         try {
+            // Deliberately after signature verification: this reaches out to
+            // Stripe, and reading it up front meant an unsigned POST to this
+            // public path could spend our API budget on its way to the 400.
+            const allProducts = await getAllProducts()
+
+            const verifiedProducts: Record<string, Product> =
+                Object.fromEntries(
+                    allProducts.map((product) => [product.item_id, product]),
+                )
+
             await sendOrderEmail(paymentIntent, verifiedProducts, succeeded)
         } catch (error) {
             console.error('[stripe-webhook] error processing email:', error)
@@ -62,4 +72,3 @@ export const POST = (async ({ request }) => {
 
     return new Response(null, { status: 200 })
 }) satisfies APIRoute
-

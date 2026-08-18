@@ -10,6 +10,9 @@
  * disappearing, so new content degrades to plain prose instead of vanishing.
  */
 
+// Blocks `javascript:` and friends; CMS content is trusted-ish, not trusted.
+import { safeUrl } from '@/utils/server/safeUrl'
+
 /** Lexical's TextNode format bitmask. */
 const FORMAT = {
     bold: 1,
@@ -43,14 +46,6 @@ function escapeHtml(value: string): string {
         .replaceAll("'", '&#39;')
 }
 
-/** Block `javascript:` and friends; CMS content is trusted-ish, not trusted. */
-function safeUrl(url: string | undefined): string | null {
-    if (!url) return null
-    const trimmed = url.trim()
-    if (/^(https?:|mailto:|tel:|\/|#)/i.test(trimmed)) return trimmed
-    return null
-}
-
 function renderText(node: LexicalNode): string {
     let html = escapeHtml(node.text ?? '')
     const format = typeof node.format === 'number' ? node.format : 0
@@ -77,7 +72,10 @@ function renderUpload(node: LexicalNode, cmsUrl: string): string {
     return `<img src="${escapeHtml(src)}" alt="${escapeHtml(value.alt ?? '')}" loading="lazy" />`
 }
 
-function renderChildren(nodes: LexicalNode[] | undefined, cmsUrl: string): string {
+function renderChildren(
+    nodes: LexicalNode[] | undefined,
+    cmsUrl: string,
+): string {
     return (nodes ?? []).map((child) => renderNode(child, cmsUrl)).join('')
 }
 

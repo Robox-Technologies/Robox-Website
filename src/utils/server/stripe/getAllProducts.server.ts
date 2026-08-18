@@ -1,62 +1,75 @@
 import { Stripe } from 'stripe'
 import type { Product } from 'src/types/shop'
 import slugify from 'slugify'
-import { createMarkdownProcessor } from '@astrojs/markdown-remark'
 import { stripeAPI } from './index.server'
-
-
+import { createCachedLoader } from '@/utils/server/cache.server'
+import { renderBanner } from '@/utils/server/renderBanner.server'
 
 import { isValidStatus } from 'src/types/guards/shop'
 
 /**
- * Product banners are authored as markdown in Stripe metadata (the 10-Pack's
- * "**Value Pack:** Save 5% off on your order!"), so they need rendering to HTML
- * before the product page can drop them in — same as the original's
- * `storeProcessor`.
+ * Short enough that a price or availability change in the Stripe dashboard shows
+ * up on its own, long enough that a burst of checkout traffic is one read rather
+ * than one per request. The charged amount is still validated against this list
+ * (see `checkoutPricing.server.ts`), so the window is how long a just-changed
+ * price keeps applying — not a gap in the price check.
  */
-const markdownProcessor = await createMarkdownProcessor({})
+const PRODUCT_CACHE_TTL_MS = 60_000
 
-async function renderBanner(banner: string | undefined): Promise<string> {
-    if (!banner) return ''
-    const { code } = await markdownProcessor.render(banner)
-    return code
-}
-
-export async function getAllProducts(): Promise<Product[]> {
+async function fetchAllProducts(): Promise<Product[]> {
     const stripeProducts = await stripeAPI.products.list({
         expand: ['data.default_price'],
     })
-    const products: Product[] = await Promise.all(stripeProducts.data.map(async (product) => {
-        const price = product.default_price as Stripe.Price
-        if (price.unit_amount === null) {
-            throw new Error(
-                `Price for product ${product.name} is missing unit_amount`,
-            )
-        }
-        const status = product.metadata.status || 'not-available'
-        if (!isValidStatus(status)) {
-            throw new Error(
-                `Invalid status for product ${product.name}: ${status}`,
-            )
-        }
-        const weight = product.metadata.weight
-        if (weight === undefined) {
-            throw new Error(`Missing weight for product ${product.name}`)
-        }
-        return {
-            //URL slug for product page, can be generated from name but allowing it to be set manually for better control
-            internalName: slugify(product.name, { lower: true, strict: true }),
-            name: product.name,
-            description: product.description ?? '',
-            // Looking into what this is
-            item_id: product.id,
-            status: status,
-            banner: await renderBanner(product.metadata.banner),
-            price: price.unit_amount,
-            currency: price.currency,
-            weight: Number(weight),
-            unitVolume: Number(product.metadata.unitVolume ?? 0),
-        }
-    }))
+    const products: Product[] = await Promise.all(
+        stripeProducts.data.map(async (product) => {
+            const price = product.default_price as Stripe.Price
+            if (price.unit_amount === null) {
+                throw new Error(
+                    `Price for product ${product.name} is missing unit_amount`,
+                )
+            }
+            const status = product.metadata.status || 'not-available'
+            if (!isValidStatus(status)) {
+                throw new Error(
+                    `Invalid status for product ${product.name}: ${status}`,
+                )
+            }
+            const weight = product.metadata.weight
+            if (weight === undefined) {
+                throw new Error(`Missing weight for product ${product.name}`)
+            }
+            return {
+                //URL slug for product page, can be generated from name but allowing it to be set manually for better control
+                internalName: slugify(product.name, {
+                    lower: true,
+                    strict: true,
+                }),
+                name: product.name,
+                description: product.description ?? '',
+                // Looking into what this is
+                item_id: product.id,
+                status: status,
+                banner: await renderBanner(product.metadata.banner),
+                price: price.unit_amount,
+                currency: price.currency,
+                weight: Number(weight),
+                unitVolume: Number(product.metadata.unitVolume ?? 0),
+            }
+        }),
+    )
     return products
+}
+
+/**
+ * Cached because every public checkout action reads it: the actions under
+ * `src/actions` are reachable unauthenticated at `/_actions/*`, and an uncached
+ * read turned each of those requests into a Stripe API call. Also collapses the
+ * repeat reads a build does across `getStaticPaths` and the shop pages.
+ */
+const loadAllProducts = createCachedLoader(fetchAllProducts, {
+    ttlMs: PRODUCT_CACHE_TTL_MS,
+})
+
+export function getAllProducts(): Promise<Product[]> {
+    return loadAllProducts()
 }

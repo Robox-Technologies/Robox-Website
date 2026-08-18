@@ -1,3 +1,5 @@
+import { createCachedLoader } from '@/utils/server/cache.server'
+
 const AUSPOST_BASE_URL = 'https://digitalapi.auspost.com.au'
 const DOMESTIC_COUNTRY_CODE = 'AU'
 
@@ -73,7 +75,7 @@ async function readAuspostError(response: Response): Promise<string | null> {
     }
 }
 
-export async function calculateAuspostShippingCents({
+async function fetchAuspostShippingCents({
     country,
     postcode,
     totalUnitVolume,
@@ -140,4 +142,35 @@ export async function calculateAuspostShippingCents({
 
     const payload = await response.json()
     return parseAuspostCostCents(payload)
+}
+
+/**
+ * Quotes are cached per destination and parcel. AusPost is metered and quoting is
+ * reachable unauthenticated through `getShippingQuote`, so an uncached call meant
+ * one billable request per HTTP request; postage prices move on the order of
+ * months, so serving a repeat destination from memory costs nothing real.
+ *
+ * Keyed on the same values the request is built from — a change to any of them is
+ * a different quote. Failures aren't cached (see `createCachedLoader`), which
+ * keeps AusPost's own validation wording flowing through to the customer.
+ */
+const QUOTE_CACHE_TTL_MS = 10 * 60_000
+const QUOTE_CACHE_MAX_ENTRIES = 500
+
+const loadShippingCents = createCachedLoader(fetchAuspostShippingCents, {
+    ttlMs: QUOTE_CACHE_TTL_MS,
+    maxEntries: QUOTE_CACHE_MAX_ENTRIES,
+    keyOf: (request) =>
+        [
+            toCountryCode(request.country),
+            request.postcode.trim(),
+            request.totalWeightGrams,
+            request.totalUnitVolume,
+        ].join('|'),
+})
+
+export function calculateAuspostShippingCents(
+    request: ShippingRequest,
+): Promise<number> {
+    return loadShippingCents(request)
 }

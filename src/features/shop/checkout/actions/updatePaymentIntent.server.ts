@@ -1,6 +1,12 @@
 import { defineAction } from 'astro:actions'
 import { z } from 'astro/zod'
 import { stripeAPI } from '@/utils/server/stripe/index.server'
+import { enforceRateLimit } from '@/utils/server/rateLimit.server'
+import {
+    assertCheckoutOwner,
+    CHECKOUT_OWNER_KEY,
+    readCheckoutOwner,
+} from '@/utils/server/checkoutSession.server'
 import {
     calculateCheckoutTotals,
     normalizeCartMetadata,
@@ -24,16 +30,23 @@ export const updatePaymentIntent = defineAction({
             .optional(),
         voucher: z.string().trim().max(64).nullable().optional(),
     }),
-    async handler({ paymentIntentId, products, shippingInfo, voucher }) {
-        // Recalculate totals with new shipping info
-        const totals = await calculateCheckoutTotals(
-            products,
-            shippingInfo,
-            voucher,
-        )
+    async handler(
+        { paymentIntentId, products, shippingInfo, voucher },
+        context,
+    ) {
+        enforceRateLimit(context, { name: 'updatePaymentIntent', max: 60 })
+
+        // `paymentIntentId` arrives from the client and the id isn't secret —
+        // Stripe puts it in the return URL — so establish that this caller is the
+        // browser that created the intent before touching it, and do that before
+        // the totals below spend anything upstream.
+        const owner = readCheckoutOwner(context)
 
         // Fetch current payment intent to verify it exists and is in updatable state
-        const currentIntent = await stripeAPI.paymentIntents.retrieve(paymentIntentId)
+        const currentIntent =
+            await stripeAPI.paymentIntents.retrieve(paymentIntentId)
+
+        assertCheckoutOwner(currentIntent, owner)
 
         // Only allow updates if the payment intent hasn't been processed
         if (
@@ -46,19 +59,32 @@ export const updatePaymentIntent = defineAction({
             )
         }
 
+        // Recalculate totals with new shipping info
+        const totals = await calculateCheckoutTotals(
+            products,
+            shippingInfo,
+            voucher,
+        )
+
         // Update metadata with new product/shipping info
         const normalizedProducts = await normalizeCartMetadata(products)
 
         // Update the payment intent with new amount and metadata
-        const updatedIntent = await stripeAPI.paymentIntents.update(paymentIntentId, {
-            amount: totals.totalCents,
-            metadata: {
-                products: normalizedProducts,
-                subtotalCents: totals.subtotalCents.toString(),
-                shippingCents: totals.shippingCents.toString(),
-                discountCents: totals.discountCents.toString(),
+        const updatedIntent = await stripeAPI.paymentIntents.update(
+            paymentIntentId,
+            {
+                amount: totals.totalCents,
+                metadata: {
+                    // A metadata update merges rather than replaces, but restate the
+                    // owner so the binding is visible at the point it's relied on.
+                    [CHECKOUT_OWNER_KEY]: owner,
+                    products: normalizedProducts,
+                    subtotalCents: totals.subtotalCents.toString(),
+                    shippingCents: totals.shippingCents.toString(),
+                    discountCents: totals.discountCents.toString(),
+                },
             },
-        })
+        )
 
         return {
             id: updatedIntent.id,

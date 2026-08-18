@@ -1,5 +1,6 @@
 import { defineAction } from 'astro:actions'
 import { z } from 'astro/zod'
+import { enforceRateLimit } from '@/utils/server/rateLimit.server'
 import { calculateCheckoutTotals } from '../utils/checkoutPricing.server'
 
 export const getShippingQuote = defineAction({
@@ -19,7 +20,11 @@ export const getShippingQuote = defineAction({
             .optional(),
         voucher: z.string().trim().max(64).nullable().optional(),
     }),
-    async handler({ products, shippingInfo, voucher }) {
+    async handler({ products, shippingInfo, voucher }, context) {
+        // The one action that reaches AusPost on every call. A customer quotes
+        // once per completed address, so this only bites on scripted abuse.
+        enforceRateLimit(context, { name: 'getShippingQuote', max: 40 })
+
         const totals = await calculateCheckoutTotals(
             products,
             shippingInfo,

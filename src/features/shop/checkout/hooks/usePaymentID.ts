@@ -18,8 +18,7 @@ function buildSyncKey(
 
     const cartKey = Object.entries(currentCart)
         .map(([productKey, value]) => {
-            const quantity =
-                typeof value === 'number' ? value : value.quantity
+            const quantity = typeof value === 'number' ? value : value.quantity
 
             return `${productKey}:${quantity}`
         })
@@ -39,6 +38,9 @@ export function usePaymentID(products: Product[]) {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const lastSyncedKeyRef = useRef<string | null>(null)
+    // One recovery per mount: enough to replace an intent we can no longer
+    // update, without letting a persistently failing update spin.
+    const recoveredRef = useRef(false)
 
     useEffect(() => {
         if (subtotalCents < 50) {
@@ -80,6 +82,20 @@ export function usePaymentID(products: Product[]) {
                 }
 
                 if (result.error) {
+                    // A refused update means the intent we're holding isn't ours
+                    // to change any more - the checkout cookie behind it is gone
+                    // or never arrived (see checkoutSession.server.ts), or Stripe
+                    // has moved it past an updatable status. Dropping it re-runs
+                    // this effect and mints a fresh intent, which is recoverable;
+                    // surfacing the error here would dead-end the checkout.
+                    if (!recoveredRef.current) {
+                        recoveredRef.current = true
+                        setPaymentID(null)
+                        setClientSecret(null)
+                        lastSyncedKeyRef.current = null
+                        return
+                    }
+
                     setError(result.error.message)
                     setLoading(false)
                     return
