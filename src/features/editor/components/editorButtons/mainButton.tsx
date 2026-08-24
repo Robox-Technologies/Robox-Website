@@ -1,5 +1,5 @@
 import Button from '@/components/button'
-import { usePico } from '@/features/blockEditor/hooks/usePico'
+import { usePico } from '@/features/editor/hooks/usePico'
 import { ConnectionStatus } from 'src/types/communication'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'

@@ -2,7 +2,7 @@ import type { ToolboxDefinition } from 'node_modules/blockly/core/utils/toolbox'
 import {
     BaseToolbox,
     ExtensionCategories,
-} from '@/features/blockEditor/config/toolbox'
+} from '@/features/editor/editors/blockEditor/config/toolbox'
 import { getProject } from '@/utils/serialization'
 import type { ExtensionKey } from 'src/types/extensions'
 import { getProjectIdFromURL } from './serialization'

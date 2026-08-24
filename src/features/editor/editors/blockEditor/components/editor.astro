@@ -26,9 +26,13 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
 <script>
     // Setting up Blockly
     import * as Blockly from 'blockly/core';
-    import { loadBlockly, saveBlockly } from "../utils/serialization";
+    import { loadBlockly, saveBlockly, generateCode } from "../utils/serialization";
     import generateToolbox from '../utils/toolbox';
     import { registerControls } from '../utils/controls';
+    import { registerCodeProvider } from '@/features/editor/state/codeProvider';
+    registerCodeProvider(() =>
+        generateCode(Blockly.getMainWorkspace() as Blockly.WorkspaceSvg),
+    );
     import { registerFieldColour } from '@blockly/field-colour';
     registerFieldColour();
     // Required for some reason as it does not apply automatically 
