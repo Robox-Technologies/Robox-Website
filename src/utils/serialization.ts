@@ -1,4 +1,4 @@
-import type { UserProject } from 'src/types/projects'
+import type { ProjectType, UserProject } from 'src/types/projects'
 import type { ExtensionKey } from 'src/types/extensions'
 import extensions from '@/data/extensions.json'
 import DOMPurify from 'dompurify'
@@ -33,12 +33,17 @@ export async function getProjects(): Promise<Record<string, UserProject>> {
         ),
     )
 }
-export async function createProject(): Promise<string> {
+// `type` defaults to 'block' since that's the only editor the UI can create
+// or open today — a python editor can pass 'python' once it exists, with no
+// further backend changes needed.
+export async function createProject(
+    type: ProjectType = 'block',
+): Promise<string> {
     const db = await getDB()
     const id = crypto.randomUUID()
     await db.run(`INSERT INTO ${PROJECTS_TABLE} (id, data) VALUES (?, ?);`, [
         id,
-        JSON.stringify(generateEmptyProject()),
+        JSON.stringify(generateEmptyProject(type)),
     ])
     await persist()
     return id
@@ -59,7 +64,8 @@ export async function importProject(payload: unknown): Promise<string | null> {
         return null
     }
 
-    const project = generateEmptyProject()
+    // Only the block editor's .robox format is importable today.
+    const project = generateEmptyProject('block')
     project.name = incoming.name
     project.time = dayjs()
     project.workspace =
@@ -134,7 +140,7 @@ export async function deleteProject(id: string): Promise<boolean> {
     return (res.changes?.changes ?? 0) > 0
 }
 
-function generateEmptyProject(): UserProject {
+function generateEmptyProject(type: ProjectType): UserProject {
     const userExtensions = ExtensionKeys.reduce(
         (acc, key) => {
             acc[key] = false
@@ -145,7 +151,9 @@ function generateEmptyProject(): UserProject {
     return {
         name: 'Untitled Project',
         time: dayjs(),
+        type,
         workspace: null,
+        code: type === 'python' ? '' : null,
         thumbnail: null,
         extensions: userExtensions,
         sensors: {},
