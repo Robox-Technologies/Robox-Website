@@ -38,6 +38,7 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
         editProject,
     } from '@/utils/serialization'
     import { registerCodeProvider } from '@/features/editor/state/codeProvider'
+    import { buildPreamble } from '@/features/editor/utils/preamble'
     import dayjs from 'dayjs'
 
     globalThis.MonacoEnvironment = {
@@ -56,14 +57,39 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
     // Monaco instance entirely when this isn't a python project, mirroring
     // the equivalent `project.type !== 'block'` guard in loadBlockly.
     if (!project || project.type === 'python') {
+        // Colours pulled from the `--color-*` tokens in src/styles/global.css
+        // so the editor reads as the same brand palette as the rest of the
+        // site (and the Blockly editor's roboxTheme.ts) rather than Monaco's
+        // generic `vs` defaults.
         editor.defineTheme('roboxPython', {
             base: 'vs',
             inherit: true,
-            rules: [],
+            rules: [
+                { token: 'comment', foreground: '717171', fontStyle: 'italic' },
+                // Darker, higher-contrast tints of --color-green/--color-yellow —
+                // the raw brand hexes are too light to read as body text on a
+                // light background.
+                { token: 'string', foreground: '4f7619' },
+                { token: 'string.escape', foreground: 'ff6166' },
+                { token: 'number', foreground: '916d08', fontStyle: 'bold' },
+                { token: 'number.hex', foreground: '916d08', fontStyle: 'bold' },
+                { token: 'keyword', foreground: '2588c7', fontStyle: 'bold' },
+                { token: 'identifier', foreground: '405c64' },
+                { token: 'delimiter', foreground: '717171' },
+                { token: 'tag', foreground: 'ff6166' },
+            ],
             colors: {
-                'editorGutter.background': '#f4f4f4',
-                'editorLineNumber.foreground': '#9ca3af',
-                'editorLineNumber.activeForeground': '#6b7280',
+                'editor.background': '#f8f8f8',
+                'editor.foreground': '#405c64',
+                'editorGutter.background': '#efefef',
+                'editorLineNumber.foreground': '#717171',
+                'editorLineNumber.activeForeground': '#405c64',
+                'editorCursor.foreground': '#2588c7',
+                'editor.selectionBackground': '#2588c74d',
+                'editor.lineHighlightBackground': '#2588c714',
+                'editor.lineHighlightBorder': '#00000000',
+                'editorIndentGuide.background': '#c6c6c6',
+                'editorIndentGuide.activeBackground': '#2588c7',
             },
         })
 
@@ -76,7 +102,12 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
             fontSize: 14,
         })
 
-        registerCodeProvider(() => codeEditor.getValue())
+        // The robot's firmware expects the roboxlib/machine setup the block
+        // editor's generated code also depends on (see buildPreamble) — the
+        // user only ever sees/edits their own code, but this is prepended
+        // whenever it's sent to the board.
+        const preambleCode = buildPreamble(project)
+        registerCodeProvider(() => preambleCode + '\n' + codeEditor.getValue())
 
         let saveTimeoutId = 0
         model.onDidChangeContent(() => {
@@ -105,6 +136,6 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
 
 <style is:global>
     #monacoContainer .margin {
-        border-right: 1px solid #e0e0e0;
+        border-right: 1px solid #c6c6c6;
     }
 </style>
