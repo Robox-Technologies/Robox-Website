@@ -27,6 +27,12 @@ pythonGenerator.forBlock['sleep'] = function (block, generator) {
     const code = `time.sleep(${value_time})\n`
     return code
 }
+pythonGenerator.forBlock['generate_random'] = function (block, generator) {
+    const lower_bound = generator.valueToCode(block, 'lower_bound', Order.ATOMIC)
+    const upper_bound = generator.valueToCode(block, 'upper_bound', Order.ATOMIC)
+    const code = `random.randint(${lower_bound}, ${upper_bound})\n`
+    return code
+}
 //This will break if the version is not updated
 pythonGenerator.forBlock['print'] = function (block, generator) {
     const value_time = generator.valueToCode(block, 'string', Order.ATOMIC)

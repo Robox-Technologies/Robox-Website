@@ -49,6 +49,28 @@ const systems = [
         helpUrl: '',
     },
     {
+        type: 'generate_random',
+        message0: 'generate random number between %1 and %2',
+        args0: [
+            {
+                type: 'input_value',
+                name: 'lower_bound',
+                check: 'Number',
+            },
+            {
+                type: 'input_value',
+                name: 'upper_bound',
+                check: 'Number',
+            },
+        ],
+        inputsInline: true,
+        previousStatement: null,
+        nextStatement: null,
+        style: 'system_blocks',
+        tooltip: 'Generates a random number',
+        helpUrl: '',
+    },
+    {
         type: 'get_time',
         message0: 'get current time',
         inputsInline: true,

@@ -5,6 +5,7 @@ export const preamble = `
 from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
 from machine import Pin, Timer
 import time
+import random
 import json
 import sys
 ENV_LED = Pin(25, Pin.OUT)
