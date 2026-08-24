@@ -1,0 +1,101 @@
+---
+import { faUsb, faBluetoothB } from "@fortawesome/free-brands-svg-icons";
+import Button from "@/components/button";
+---
+<div id="communicationMethodToggle">
+    <div id="communicationMethodToggleUsbWrap">
+        <Button
+            icon={faUsb}
+            id="communicationMethodToggleUsb"
+            title="Connecting over USB — click to switch to Bluetooth"
+            className="flex items-center w-10 h-10 justify-center border-2 border-blue rounded-full bg-white box-shadow pointer-events-auto"
+            iconStyle="text-blue text-xl -rotate-90"
+        />
+    </div>
+    <div id="communicationMethodToggleBluetoothWrap" class="hidden">
+        <Button
+            icon={faBluetoothB}
+            id="communicationMethodToggleBluetooth"
+            title="Connecting over Bluetooth — click to switch to USB"
+            className="flex items-center w-10 h-10 justify-center border-2 border-blue rounded-full bg-white box-shadow pointer-events-auto"
+            iconStyle="text-blue text-xl"
+        />
+    </div>
+</div>
+<script>
+    import { pico } from "@/libs/communication/communicate";
+    import {
+        getPreferredCommunicationMethod,
+        setPreferredCommunicationMethod,
+    } from "@/libs/communication/communicationMethodStorage";
+    import type { CommunicationMethod, PicoState } from "src/types/communication";
+    import { ConnectionStatus } from "src/types/communication";
+
+    // Web Serial and Web Bluetooth are both Chromium-only, and either can be
+    // missing on its own (e.g. a locked-down enterprise build), so the toggle
+    // only cycles through methods the browser actually exposes.
+    const supportsUsb = "serial" in navigator;
+    const supportsWebBluetooth = "bluetooth" in navigator;
+    const supportedMethods = [
+        ...(supportsUsb ? (["USB"] as const) : []),
+        ...(supportsWebBluetooth ? (["WebBluetooth"] as const) : []),
+    ];
+
+    const usbWrap = document.querySelector<HTMLDivElement>(
+        "#communicationMethodToggleUsbWrap",
+    );
+    const bluetoothWrap = document.querySelector<HTMLDivElement>(
+        "#communicationMethodToggleBluetoothWrap",
+    );
+    const usbButton = usbWrap?.querySelector<HTMLButtonElement>("button");
+    const bluetoothButton =
+        bluetoothWrap?.querySelector<HTMLButtonElement>("button");
+    if (!usbWrap || !bluetoothWrap || !usbButton || !bluetoothButton)
+        throw new Error("Communication method toggle buttons not found");
+
+    function showMethod(method: CommunicationMethod) {
+        usbWrap!.classList.toggle("hidden", method !== "USB");
+        bluetoothWrap!.classList.toggle("hidden", method !== "WebBluetooth");
+    }
+
+    const preferred = getPreferredCommunicationMethod();
+    const initial =
+        preferred && supportedMethods.includes(preferred as never)
+            ? preferred
+            : (supportedMethods[0] ?? null);
+
+    if (initial) {
+        showMethod(initial);
+        void pico.setCommunicationMethod(initial);
+    } else {
+        usbButton.disabled = true;
+        usbButton.title = "Your browser doesn't support connecting to a Ro/Box";
+        usbWrap.classList.remove("hidden");
+        bluetoothWrap.classList.add("hidden");
+    }
+
+    function cycle() {
+        if (supportedMethods.length < 2) return;
+        const current = pico.getState().communicationMethod;
+        const currentIndex = supportedMethods.indexOf(current as never);
+        const next =
+            supportedMethods[(currentIndex + 1) % supportedMethods.length];
+        setPreferredCommunicationMethod(next);
+        showMethod(next);
+        void pico.setCommunicationMethod(next);
+    }
+
+    usbButton.addEventListener("click", cycle);
+    bluetoothButton.addEventListener("click", cycle);
+
+    // Switching methods mid-attempt would abandon a connect in progress, so
+    // lock the toggle while CONNECTING. It reopens if the attempt fails back
+    // to DISCONNECTED, or gives way to the terminal button once CONNECTED.
+    if (initial) {
+        pico.on("stateChange", (state: PicoState) => {
+            const connecting = state.connectionStatus === ConnectionStatus.CONNECTING;
+            usbButton!.disabled = connecting;
+            bluetoothButton!.disabled = connecting;
+        });
+    }
+</script>

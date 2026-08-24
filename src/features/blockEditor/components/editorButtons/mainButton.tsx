@@ -1,17 +1,9 @@
 import Button from '@/components/button'
 import { usePico } from '@/features/blockEditor/hooks/usePico'
-import { ConnectionStatus, type CommunicationMethod } from 'src/types/communication'
+import { ConnectionStatus } from 'src/types/communication'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { useEffect } from 'react'
 import { twMerge } from 'tailwind-merge'
-
-function getDefaultCommunicationMethod(): CommunicationMethod {
-    if (typeof window !== 'undefined' && 'Capacitor' in window) {
-        return 'iOSBluetooth'
-    }
-    return 'WebBluetooth'
-}
 
 const statusStyling: Record<
     ConnectionStatus,
@@ -49,20 +41,21 @@ const statusStyling: Record<
 export default function MainButton() {
     const {
         connectionStatus,
+        communicationMethod,
         connect,
         restart,
         sendCode,
         runCode,
-        setCommunicationMethod,
     } = usePico()
     const { className, children } = statusStyling[connectionStatus]
-    useEffect(() => {
-        void setCommunicationMethod(getDefaultCommunicationMethod())
-    }, [setCommunicationMethod])
     const stateClickHandlers: Partial<Record<ConnectionStatus, () => void>> = {
-        [ConnectionStatus.DISCONNECTED]: () => {
-            connect()
-        },
+        // The communication method toggle sets this before the button is
+        // ever clickable; no method means the browser supports neither USB
+        // nor Bluetooth, so leave the button disabled instead of connecting
+        // into a dead end.
+        ...(communicationMethod
+            ? { [ConnectionStatus.DISCONNECTED]: () => connect() }
+            : {}),
         [ConnectionStatus.CONNECTED]: async () => {
             await sendCode()
             //TODO: Make this not run every time
