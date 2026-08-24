@@ -1,31 +1,74 @@
-import { faPlus } from '@fortawesome/free-solid-svg-icons'
+import { faPlus, faSquareBinary } from '@fortawesome/free-solid-svg-icons'
+import { faPython } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import Dialog, { DialogHeader, DialogBody } from '@/components/dialog'
+import Button from '@/components/button'
 import { createProject } from '@/utils/serialization'
 import { editorHref } from '../utils/editorHref'
-export default function CreateCard() {
-    const onClick = async () => {
-        const id = await createProject()
+import type { ProjectType } from 'src/types/projects'
 
+export default function CreateCard() {
+    const onChoose = async (type: ProjectType) => {
+        const id = await createProject(type)
         window.location.assign(editorHref(id))
     }
     return (
-        // Shaped as a card rather than a button — same width, radius, hard
-        // shadow and hover/press feedback as the project cards it sits beside.
-        // `min-h` is what keeps it card-shaped when it's the only tile there:
-        // with siblings the row's stretch matches it to them, alone it would
-        // otherwise collapse to the height of its own contents.
-        <button
-            id="create-card"
-            className="card card-interactive box-shadow w-62.5 min-h-62.5 rounded-3xl bg-blue flex flex-col items-center justify-center p-6 gap-4"
-            onClick={onClick}
+        <Dialog
+            id="createProjectDialog"
+            className="h-fit"
+            trigger={(setIsOpen) => (
+                // Shaped as a card rather than a button — same width, radius, hard
+                // shadow and hover/press feedback as the project cards it sits beside.
+                // `min-h` is what keeps it card-shaped when it's the only tile there:
+                // with siblings the row's stretch matches it to them, alone it would
+                // otherwise collapse to the height of its own contents.
+                <button
+                    id="create-card"
+                    className="card card-interactive box-shadow w-62.5 min-h-62.5 rounded-3xl bg-blue flex flex-col items-center justify-center p-6 gap-4"
+                    onClick={() => setIsOpen(true)}
+                >
+                    <div className="w-12 h-12 flex items-center justify-center">
+                        <FontAwesomeIcon
+                            icon={faPlus}
+                            className="text-white text-4xl w-9 h-9 shrink-0"
+                        />
+                    </div>
+                    <h1 className="text-white text-3xl font-normal">
+                        New Project
+                    </h1>
+                </button>
+            )}
         >
-            <div className="w-12 h-12 flex items-center justify-center">
-                <FontAwesomeIcon
-                    icon={faPlus}
-                    className="text-white text-4xl w-9 h-9 shrink-0"
-                />
-            </div>
-            <h1 className="text-white text-3xl font-normal">New Project</h1>
-        </button>
+            <DialogHeader>
+                <div className="flex items-center text-xl font-bold">
+                    <h2>New Project</h2>
+                </div>
+            </DialogHeader>
+
+            <DialogBody className="px-6 py-4">
+                <p className="text-black mb-4">
+                    How do you want to build your Ro/Box program?
+                </p>
+                <div className="flex flex-col gap-3">
+                    <Button
+                        className="bg-blue flex items-center justify-center gap-2 py-3"
+                        onClick={() => onChoose('block')}
+                    >
+                        <FontAwesomeIcon
+                            icon={faSquareBinary}
+                            className="text-lg"
+                        />
+                        Block Editor
+                    </Button>
+                    <Button
+                        className="bg-blue flex items-center justify-center gap-2 py-3"
+                        onClick={() => onChoose('python')}
+                    >
+                        <FontAwesomeIcon icon={faPython} className="text-lg" />
+                        Python Editor
+                    </Button>
+                </div>
+            </DialogBody>
+        </Dialog>
     )
 }

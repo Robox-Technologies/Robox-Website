@@ -1,0 +1,32 @@
+---
+import BlockEditor from "../editors/blockEditor/components/editor.astro";
+import PythonEditor from "../editors/pythonEditor/components/editor.astro";
+---
+<div id="editorBody" class="flex-1 flex flex-col">
+    <div id="blockEditorSlot" class="flex-1">
+        <BlockEditor />
+    </div>
+    <div id="pythonEditorSlot" class="hidden flex-1">
+        <PythonEditor />
+    </div>
+</div>
+<script>
+    import { getProject, getProjectIdFromURL } from "@/utils/serialization";
+
+    const blockSlot = document.querySelector<HTMLDivElement>("#blockEditorSlot");
+    const pythonSlot = document.querySelector<HTMLDivElement>("#pythonEditorSlot");
+    if (!blockSlot || !pythonSlot)
+        throw new Error("Editor slots not found");
+
+    // Which editor a project opens with is stored data, not something the
+    // URL encodes — both bodies render, and this picks the one that matches
+    // once the project loads (defaults to block until then).
+    void (async () => {
+        const projectId = getProjectIdFromURL();
+        const project = projectId ? await getProject(projectId) : null;
+        if (project?.type === "python") {
+            blockSlot.classList.add("hidden");
+            pythonSlot.classList.remove("hidden");
+        }
+    })();
+</script>

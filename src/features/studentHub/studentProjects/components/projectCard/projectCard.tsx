@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Card from '@/components/card'
 import { faSquareBinary } from '@fortawesome/free-solid-svg-icons'
+import { faPython } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ProjectSettings from './projectSettings'
 import { useStore } from '@nanostores/react'
@@ -29,6 +30,7 @@ export function ProjectCard({
     if (!project) return null
     const isSelected = $selectedProject === id
     const isEditing = $editingProject === id
+    const typeIcon = project.type === 'python' ? faPython : faSquareBinary
 
     const handleSaveName = async (newName: string) => {
         if (newName.trim()) {
@@ -98,7 +100,7 @@ export function ProjectCard({
                         <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
                             <FontAwesomeIcon
                                 className="h-6 w-5 text-blue -transform-y-1"
-                                icon={faSquareBinary}
+                                icon={typeIcon}
                             />
                             <h3 className="truncate whitespace-nowrap text-xl font-bold">
                                 {project.name || 'Untitled'}

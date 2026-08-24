@@ -3,9 +3,8 @@ import {
     BaseToolbox,
     ExtensionCategories,
 } from '@/features/editor/editors/blockEditor/config/toolbox'
-import { getProject } from '@/utils/serialization'
+import { getProject, getProjectIdFromURL } from '@/utils/serialization'
 import type { ExtensionKey } from 'src/types/extensions'
-import { getProjectIdFromURL } from './serialization'
 
 //TODO: Make this dynamic
 export default async function generateToolbox(): Promise<ToolboxDefinition> {

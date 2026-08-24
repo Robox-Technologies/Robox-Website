@@ -1,5 +1,5 @@
 /**
- * URL of the block editor for a project.
+ * URL of the editor for a project.
  *
  * The hub lives at `/hub` on the web but at the root in the iOS build,
  * where `transformIOSBuild()` copies `/hub`'s contents up a level — so the

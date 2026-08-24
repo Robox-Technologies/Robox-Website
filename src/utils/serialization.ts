@@ -185,6 +185,16 @@ export function isValidProjectId(id: string): boolean {
         /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
     return uuidRegex.test(id)
 }
+export function getProjectIdFromURL(): string | null {
+    // If we are running on the server, we cannot access the URL, so we return null
+    if (typeof window === 'undefined') return null
+    const urlParams = new URLSearchParams(window.location.search)
+    const projectId = urlParams.get('id')
+    if (projectId && isValidProjectId(projectId)) {
+        return projectId
+    }
+    return null
+}
 export function sanitizeImageDataUrl(dataUrl: string): string {
     const allowedMimeTypes = [
         'image/jpeg',

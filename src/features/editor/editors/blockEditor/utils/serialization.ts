@@ -2,6 +2,7 @@
 import type { WorkspaceSvg } from 'blockly/core'
 import {
     getProject,
+    getProjectIdFromURL,
     isValidProjectId,
     sanitizeImageDataUrl,
     editProject,
@@ -22,16 +23,6 @@ import {
     ExtensionsPreamble,
     ExtraSensorsPreamble,
 } from '../config/preamble'
-export function getProjectIdFromURL(): string | null {
-    // If we are running on the server, we cannot access the URL, so we return null
-    if (typeof window === 'undefined') return null
-    const urlParams = new URLSearchParams(window.location.search)
-    const projectId = urlParams.get('id')
-    if (projectId && isValidProjectId(projectId)) {
-        return projectId
-    }
-    return null
-}
 export async function loadBlockly(workspace: WorkspaceSvg) {
 
     const projectId = getProjectIdFromURL()
@@ -39,6 +30,9 @@ export async function loadBlockly(workspace: WorkspaceSvg) {
 
     const project = await getProject(projectId)
     if (!project) return
+    // A stray/bookmarked block-editor URL pointed at a python project
+    // shouldn't load (or, worse, overwrite) that project's data.
+    if (project.type !== 'block') return
     const workspaceData = project.workspace
     Blockly.Events.disable()
 

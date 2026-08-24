@@ -1,0 +1,42 @@
+---
+import TerminalDialog from "../terminalDialog";
+import CommunicationMethodToggle from "./communicationMethodToggle.astro";
+---
+<div id="communicationSlot">
+    <CommunicationMethodToggle />
+    <div id="terminalDialogSlot" class="hidden">
+        <TerminalDialog client:only="react" />
+    </div>
+</div>
+<script>
+    import { pico } from "@/libs/communication/communicate";
+    import { ConnectionStatus } from "src/types/communication";
+    import type { PicoState } from "src/types/communication";
+
+    const toggle = document.querySelector<HTMLDivElement>(
+        "#communicationMethodToggle",
+    );
+    const terminalSlot = document.querySelector<HTMLDivElement>(
+        "#terminalDialogSlot",
+    );
+    if (!toggle || !terminalSlot)
+        throw new Error("Communication slot elements not found");
+
+    // Once we're actually talking to a Ro/Box there's no method left to pick,
+    // so the toggle makes way for the terminal button.
+    function isConnected(status: ConnectionStatus) {
+        return (
+            status !== ConnectionStatus.DISCONNECTED &&
+            status !== ConnectionStatus.DISCONNECTING
+        );
+    }
+
+    function updateVisibility(state: PicoState) {
+        const connected = isConnected(state.connectionStatus);
+        toggle!.classList.toggle("hidden", connected);
+        terminalSlot!.classList.toggle("hidden", !connected);
+    }
+
+    updateVisibility(pico.getState());
+    pico.on("stateChange", updateVisibility);
+</script>

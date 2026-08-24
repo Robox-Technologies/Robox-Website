@@ -1,7 +1,7 @@
 ---
 import EditorLayout from "@/layouts/EditorLayout.astro";
 import ProjectHeader from "@/features/editor/components/header/projectHeader.astro";
-import BlocklyEditor from "@/features/editor/editors/blockEditor/components/editor.astro";
+import EditorBody from "@/features/editor/components/editorBody.astro";
 ---
 <style>
     html, body {
@@ -16,7 +16,7 @@ import BlocklyEditor from "@/features/editor/editors/blockEditor/components/edit
 
     <div class="w-full h-full flex flex-col">
         <ProjectHeader />
-        <BlocklyEditor />
+        <EditorBody />
 
     </div>
 </EditorLayout>
