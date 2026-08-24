@@ -24,12 +24,18 @@ import Button from "@/components/button";
 </div>
 <script>
     import { pico } from "@/libs/communication/communicate";
+    import { toast } from "@/libs/ui/toast";
     import {
         getPreferredCommunicationMethod,
         setPreferredCommunicationMethod,
     } from "@/libs/communication/communicationMethodStorage";
     import type { CommunicationMethod, PicoState } from "src/types/communication";
     import { ConnectionStatus } from "src/types/communication";
+
+    const methodLabels: Partial<Record<NonNullable<CommunicationMethod>, string>> = {
+        USB: "USB",
+        WebBluetooth: "Bluetooth",
+    };
 
     // Web Serial and Web Bluetooth are both Chromium-only, and either can be
     // missing on its own (e.g. a locked-down enterprise build), so the toggle
@@ -83,6 +89,11 @@ import Button from "@/components/button";
         setPreferredCommunicationMethod(next);
         showMethod(next);
         void pico.setCommunicationMethod(next);
+        toast.informative({
+            title: "Connection Method Changed",
+            message: `Now connecting to Ro/Box over ${methodLabels[next] ?? next}.`,
+            durationMs: 3000,
+        });
     }
 
     usbButton.addEventListener("click", cycle);
