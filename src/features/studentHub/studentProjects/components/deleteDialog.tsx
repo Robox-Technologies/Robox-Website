@@ -21,7 +21,7 @@ export default function DeleteDialog() {
             trigger={(setIsOpen) => (
                 <>
                     <Button
-                        className="text-black! p-1.5! flex items-center justify-start gap-1.5"
+                        className="text-black! p-1.5! flex items-center justify-start gap-1.5 rounded-none w-full"
                         onClick={(event) => {
                             event.stopPropagation()
                             event.preventDefault()
