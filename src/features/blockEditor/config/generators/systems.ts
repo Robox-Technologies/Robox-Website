@@ -30,8 +30,8 @@ pythonGenerator.forBlock['sleep'] = function (block, generator) {
 pythonGenerator.forBlock['generate_random'] = function (block, generator) {
     const lower_bound = generator.valueToCode(block, 'lower_bound', Order.ATOMIC)
     const upper_bound = generator.valueToCode(block, 'upper_bound', Order.ATOMIC)
-    const code = `random.randint(${lower_bound}, ${upper_bound})\n`
-    return code
+    const code = `random.randint(${lower_bound}, ${upper_bound})`
+    return [code, Order.ATOMIC]
 }
 //This will break if the version is not updated
 pythonGenerator.forBlock['print'] = function (block, generator) {

@@ -529,6 +529,28 @@ export const BaseToolbox: ToolboxDefinition = {
             contents: [
                 {
                     kind: 'block',
+                    type: 'generate_random',
+                    inputs: {
+                        lower_bound: {
+                            shadow: {
+                                type: 'math_number',
+                                fields: {
+                                    NUM: 1,
+                                },
+                            },
+                        },
+                        upper_bound: {
+                            shadow: {
+                                type: 'math_number',
+                                fields: {
+                                    NUM: 2,
+                                },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'block',
                     type: 'sleep',
                     inputs: {
                         time: {
