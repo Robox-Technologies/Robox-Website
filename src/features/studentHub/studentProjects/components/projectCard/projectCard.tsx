@@ -75,7 +75,7 @@ export function ProjectCard({
             }}
             // `overflow-visible` so the settings dialog can escape the card;
             // that's why the thumbnail below has to round its own corners.
-            className={`project-card card-interactive box-shadow overflow-visible bg-white w-62.5 border-transparent border-4 hover:border-blue ${pressOnControl ? 'card-no-press' : ''} ${isSelected ? '-translate-y-0.5! border-green! z-99' : ''}`}
+            className={`project-card card-interactive box-shadow overflow-visible bg-white w-62.5 border-transparent border-4 hover:border-blue ${pressOnControl ? 'card-no-press' : ''} ${isSelected ? '-translate-y-0.5! border-green! z-10' : ''}`}
             image={
                 <img
                     src={project.thumbnail || ''}
