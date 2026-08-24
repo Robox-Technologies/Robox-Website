@@ -2,20 +2,18 @@
 import { faUsb, faBluetoothB } from "@fortawesome/free-brands-svg-icons";
 import Button from "@/components/button";
 ---
-<div id="communicationMethodToggle">
-    <div id="communicationMethodToggleUsbWrap">
+<div class="communicationMethodToggle">
+    <div class="communicationMethodToggleUsbWrap">
         <Button
             icon={faUsb}
-            id="communicationMethodToggleUsb"
             title="Connecting over USB — click to switch to Bluetooth"
             className="flex items-center w-10 h-10 justify-center border-2 border-blue rounded-full bg-white box-shadow pointer-events-auto"
             iconStyle="text-blue text-xl -rotate-90"
         />
     </div>
-    <div id="communicationMethodToggleBluetoothWrap" class="hidden">
+    <div class="communicationMethodToggleBluetoothWrap hidden">
         <Button
             icon={faBluetoothB}
-            id="communicationMethodToggleBluetooth"
             title="Connecting over Bluetooth — click to switch to USB"
             className="flex items-center w-10 h-10 justify-center border-2 border-blue rounded-full bg-white box-shadow pointer-events-auto"
             iconStyle="text-blue text-xl"
@@ -23,6 +21,10 @@ import Button from "@/components/button";
     </div>
 </div>
 <script>
+    // The block and python editor bodies both render (one hidden) on every
+    // editor page load, and each uses its own copy of this component — so
+    // this script, which Astro only includes once, has to wire up every
+    // instance it finds rather than assuming there's a single one.
     import { pico } from "@/libs/communication/communicate";
     import { toast } from "@/libs/ui/toast";
     import {
@@ -47,66 +49,88 @@ import Button from "@/components/button";
         ...(supportsWebBluetooth ? (["WebBluetooth"] as const) : []),
     ];
 
-    const usbWrap = document.querySelector<HTMLDivElement>(
-        "#communicationMethodToggleUsbWrap",
-    );
-    const bluetoothWrap = document.querySelector<HTMLDivElement>(
-        "#communicationMethodToggleBluetoothWrap",
-    );
-    const usbButton = usbWrap?.querySelector<HTMLButtonElement>("button");
-    const bluetoothButton =
-        bluetoothWrap?.querySelector<HTMLButtonElement>("button");
-    if (!usbWrap || !bluetoothWrap || !usbButton || !bluetoothButton)
-        throw new Error("Communication method toggle buttons not found");
-
-    function showMethod(method: CommunicationMethod) {
-        usbWrap!.classList.toggle("hidden", method !== "USB");
-        bluetoothWrap!.classList.toggle("hidden", method !== "WebBluetooth");
-    }
-
     const preferred = getPreferredCommunicationMethod();
     const initial =
         preferred && supportedMethods.includes(preferred as never)
             ? preferred
             : (supportedMethods[0] ?? null);
 
-    if (initial) {
-        showMethod(initial);
-        void pico.setCommunicationMethod(initial);
-    } else {
-        usbButton.disabled = true;
-        usbButton.title = "Your browser doesn't support connecting to a Ro/Box";
-        usbWrap.classList.remove("hidden");
-        bluetoothWrap.classList.add("hidden");
-    }
+    // Set the shared connection's method exactly once, regardless of how
+    // many toggle instances are on the page.
+    if (initial) void pico.setCommunicationMethod(initial);
 
-    function cycle() {
-        if (supportedMethods.length < 2) return;
+    // Returns the method synchronously so callers can update their own
+    // display immediately — `pico.setCommunicationMethod` is async, so
+    // reading `pico.getState()` right after calling it would still see the
+    // old value until that promise settles.
+    function cycle(): CommunicationMethod {
         const current = pico.getState().communicationMethod;
+        if (supportedMethods.length < 2) return current;
         const currentIndex = supportedMethods.indexOf(current as never);
         const next =
             supportedMethods[(currentIndex + 1) % supportedMethods.length];
         setPreferredCommunicationMethod(next);
-        showMethod(next);
         void pico.setCommunicationMethod(next);
         toast.informative({
             title: "Connection Method Changed",
             message: `Now connecting to Ro/Box over ${methodLabels[next] ?? next}.`,
             durationMs: 3000,
         });
+        return next;
     }
 
-    usbButton.addEventListener("click", cycle);
-    bluetoothButton.addEventListener("click", cycle);
+    document
+        .querySelectorAll<HTMLDivElement>(".communicationMethodToggle")
+        .forEach((root) => {
+            const usbWrap = root.querySelector<HTMLDivElement>(
+                ".communicationMethodToggleUsbWrap",
+            );
+            const bluetoothWrap = root.querySelector<HTMLDivElement>(
+                ".communicationMethodToggleBluetoothWrap",
+            );
+            const usbButton =
+                usbWrap?.querySelector<HTMLButtonElement>("button");
+            const bluetoothButton =
+                bluetoothWrap?.querySelector<HTMLButtonElement>("button");
+            if (!usbWrap || !bluetoothWrap || !usbButton || !bluetoothButton)
+                throw new Error("Communication method toggle buttons not found");
 
-    // Switching methods mid-attempt would abandon a connect in progress, so
-    // lock the toggle while CONNECTING. It reopens if the attempt fails back
-    // to DISCONNECTED, or gives way to the terminal button once CONNECTED.
-    if (initial) {
-        pico.on("stateChange", (state: PicoState) => {
-            const connecting = state.connectionStatus === ConnectionStatus.CONNECTING;
-            usbButton!.disabled = connecting;
-            bluetoothButton!.disabled = connecting;
+            function showMethod(method: CommunicationMethod) {
+                usbWrap!.classList.toggle("hidden", method !== "USB");
+                bluetoothWrap!.classList.toggle(
+                    "hidden",
+                    method !== "WebBluetooth",
+                );
+            }
+
+            if (initial) {
+                showMethod(initial);
+            } else {
+                usbButton.disabled = true;
+                usbButton.title =
+                    "Your browser doesn't support connecting to a Ro/Box";
+                usbWrap.classList.remove("hidden");
+                bluetoothWrap.classList.add("hidden");
+            }
+
+            usbButton.addEventListener("click", () => {
+                showMethod(cycle());
+            });
+            bluetoothButton.addEventListener("click", () => {
+                showMethod(cycle());
+            });
+
+            // Switching methods mid-attempt would abandon a connect in
+            // progress, so lock the toggle while CONNECTING. It reopens if
+            // the attempt fails back to DISCONNECTED, or gives way to the
+            // terminal button once CONNECTED.
+            if (initial) {
+                pico.on("stateChange", (state: PicoState) => {
+                    const connecting =
+                        state.connectionStatus === ConnectionStatus.CONNECTING;
+                    usbButton!.disabled = connecting;
+                    bluetoothButton!.disabled = connecting;
+                });
+            }
         });
-    }
 </script>

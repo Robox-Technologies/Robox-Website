@@ -1,9 +1,93 @@
 ---
-import { faPython } from "@fortawesome/free-brands-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUndo, faRedo } from "@fortawesome/free-solid-svg-icons";
+import Button from "@/components/button";
+import CommunicationSlot from "@/features/editor/components/editorButtons/communicationSlot.astro";
+import MainButton from "@/features/editor/components/editorButtons/mainButton";
 ---
 
-<div class="h-full flex flex-col items-center justify-center gap-4 text-gray-400">
-    <FontAwesomeIcon icon={faPython} className="text-6xl" />
-    <p class="text-xl font-semibold">Python editor coming soon</p>
+<div class="h-full flex flex-col">
+    <div class="bg-gray-100 border-b border-gray-300 flex items-center justify-center gap-4 py-2">
+        <Button
+            icon={faUndo}
+            id="pythonUndoButton"
+            className="flex items-center justify-center w-9 h-9 p-0! rounded-full! bg-white text-blue border border-gray-300"
+            iconStyle="text-lg"
+        />
+        <Button
+            icon={faRedo}
+            id="pythonRedoButton"
+            className="flex items-center justify-center w-9 h-9 p-0! rounded-full! bg-white text-blue border border-gray-300"
+            iconStyle="text-lg"
+        />
+    </div>
+
+    <div id="monacoContainer" class="flex-1"></div>
+
+    <div class="bg-gray-100 border-t border-gray-300 flex items-center justify-end gap-4 px-4 py-3">
+        <CommunicationSlot />
+        <MainButton client:only="react" />
+    </div>
 </div>
+<script>
+    import { editor } from 'monaco-editor/editor/editor.api'
+    import 'monaco-editor/languages/definitions/python/register'
+    import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
+    import {
+        getProject,
+        getProjectIdFromURL,
+        editProject,
+    } from '@/utils/serialization'
+    import { registerCodeProvider } from '@/features/editor/state/codeProvider'
+    import dayjs from 'dayjs'
+
+    globalThis.MonacoEnvironment = {
+        getWorker: () => new EditorWorker(),
+    }
+
+    const container =
+        document.querySelector<HTMLDivElement>('#monacoContainer')
+    if (!container) throw new Error('Monaco container not found')
+
+    const projectId = getProjectIdFromURL()
+    const project = projectId ? await getProject(projectId) : null
+
+    // Both editor bodies render on every load (editorBody.astro picks which
+    // one is visible once it knows the project's type) — skip creating the
+    // Monaco instance entirely when this isn't a python project, mirroring
+    // the equivalent `project.type !== 'block'` guard in loadBlockly.
+    if (!project || project.type === 'python') {
+        const model = editor.createModel(project?.code ?? '', 'python')
+        const codeEditor = editor.create(container, {
+            model,
+            theme: 'vs',
+            automaticLayout: true,
+            minimap: { enabled: false },
+            fontSize: 14,
+        })
+
+        registerCodeProvider(() => codeEditor.getValue())
+
+        let saveTimeoutId = 0
+        model.onDidChangeContent(() => {
+            if (!projectId) return
+            window.clearTimeout(saveTimeoutId)
+            saveTimeoutId = window.setTimeout(() => {
+                void editProject(projectId, {
+                    code: codeEditor.getValue(),
+                    time: dayjs(),
+                })
+            }, 500)
+        })
+
+        document
+            .querySelector('button#pythonUndoButton')
+            ?.addEventListener('click', () => {
+                codeEditor.trigger('toolbar', 'undo', null)
+            })
+        document
+            .querySelector('button#pythonRedoButton')
+            ?.addEventListener('click', () => {
+                codeEditor.trigger('toolbar', 'redo', null)
+            })
+    }
+</script>

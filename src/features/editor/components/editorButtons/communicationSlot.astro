@@ -6,32 +6,28 @@ import CommunicationMethodToggle from "./communicationMethodToggle.astro";
 // to pick — the toggle doesn't ship in that build at all.
 const isIOSBuild = process.env.IOS_BUILD === "true";
 ---
-<div id="communicationSlot" data-ios-build={isIOSBuild ? "true" : "false"}>
+<div class="communicationSlot" data-ios-build={isIOSBuild ? "true" : "false"}>
     {!isIOSBuild && <CommunicationMethodToggle />}
-    <div id="terminalDialogSlot" class={isIOSBuild ? "" : "hidden"}>
+    <div class:list={["terminalDialogSlot", { hidden: !isIOSBuild }]}>
         <TerminalDialog client:only="react" />
     </div>
 </div>
 <script>
+    // The block and python editor bodies both render (one hidden) on every
+    // editor page load, and each uses its own copy of this component — so
+    // this script, which Astro only includes once, has to wire up every
+    // instance it finds rather than assuming there's a single one.
     import { pico } from "@/libs/communication/communicate";
     import { ConnectionStatus } from "src/types/communication";
     import type { PicoState } from "src/types/communication";
 
-    const root = document.querySelector<HTMLDivElement>("#communicationSlot");
-    if (!root) throw new Error("Communication slot root not found");
+    const roots = document.querySelectorAll<HTMLDivElement>(".communicationSlot");
+    if (roots.length === 0) throw new Error("Communication slot root not found");
 
-    if (root.dataset.iosBuild === "true") {
+    if (roots[0].dataset.iosBuild === "true") {
+        // Set once regardless of how many instances are on the page.
         void pico.setCommunicationMethod("iOSBluetooth");
     } else {
-        const toggle = document.querySelector<HTMLDivElement>(
-            "#communicationMethodToggle",
-        );
-        const terminalSlot = document.querySelector<HTMLDivElement>(
-            "#terminalDialogSlot",
-        );
-        if (!toggle || !terminalSlot)
-            throw new Error("Communication slot elements not found");
-
         // Once we're actually talking to a Ro/Box there's no method left to
         // pick, so the toggle makes way for the terminal button.
         const isConnected = (status: ConnectionStatus) =>
@@ -39,13 +35,24 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
             status !== ConnectionStatus.DISCONNECTED &&
             status !== ConnectionStatus.DISCONNECTING
 
-        const updateVisibility = (state: PicoState) => {
-            const connected = isConnected(state.connectionStatus);
-            toggle!.classList.toggle("hidden", connected);
-            terminalSlot!.classList.toggle("hidden", !connected);
-        }
+        roots.forEach((root) => {
+            const toggle = root.querySelector<HTMLDivElement>(
+                ".communicationMethodToggle",
+            );
+            const terminalSlot = root.querySelector<HTMLDivElement>(
+                ".terminalDialogSlot",
+            );
+            if (!toggle || !terminalSlot)
+                throw new Error("Communication slot elements not found");
 
-        updateVisibility(pico.getState());
-        pico.on("stateChange", updateVisibility);
+            const updateVisibility = (state: PicoState) => {
+                const connected = isConnected(state.connectionStatus);
+                toggle!.classList.toggle("hidden", connected);
+                terminalSlot!.classList.toggle("hidden", !connected);
+            }
+
+            updateVisibility(pico.getState());
+            pico.on("stateChange", updateVisibility);
+        });
     }
 </script>
