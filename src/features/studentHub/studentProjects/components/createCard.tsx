@@ -19,12 +19,17 @@ export default function CreateCard() {
             trigger={(setIsOpen) => (
                 // Shaped as a card rather than a button — same width, radius, hard
                 // shadow and hover/press feedback as the project cards it sits beside.
-                // `min-h` is what keeps it card-shaped when it's the only tile there:
-                // with siblings the row's stretch matches it to them, alone it would
-                // otherwise collapse to the height of its own contents.
+                // `min-h` is what keeps it card-shaped when it's the only tile there;
+                // alone it would otherwise collapse to the height of its own contents.
+                //
+                // `h-full` is what matches it to its siblings when there are any: the
+                // flex item in the card row is Dialog's wrapper <div>, not this
+                // button, so the row's stretch reached the wrapper and left the
+                // button top-aligned inside it — a few pixels short at the bottom of
+                // every project card beside it.
                 <button
                     id="create-card"
-                    className="card card-interactive box-shadow w-62.5 min-h-62.5 rounded-3xl bg-blue flex flex-col items-center justify-center p-6 gap-4"
+                    className="card card-interactive box-shadow w-62.5 min-h-62.5 h-full rounded-3xl bg-blue flex flex-col items-center justify-center p-6 gap-4"
                     onClick={() => setIsOpen(true)}
                 >
                     <div className="w-12 h-12 flex items-center justify-center">

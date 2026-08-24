@@ -2,22 +2,26 @@
 ---
 
 <div class="project-rename flex items-center justify-center">
-    <form
-        autocomplete="off"
-        class="flex gap-4 bg-white rounded-lg box-shadow"
-        data-project-rename
-    >
+    <!--
+        Deliberately not a form element: WebKit (iPad WKWebView) does implicit
+        submission on a single-input form without dispatching a `submit` event,
+        so preventDefault() can't stop it and the webview navigates away from
+        ?project=... leaving a blank editor.
+    -->
+    <div class="flex gap-4 bg-white rounded-lg box-shadow">
         <label class="sr-only" for="project-name-input">Project name</label>
         <input
             type="text"
             name="projectName"
             id="project-name-input"
             value="Untitled Project"
+            autocomplete="off"
+            enterkeyhint="done"
             class="border border-gray-300 p-2 rounded-sm w-42 text-black"
             data-project-rename-input
             disabled
         />
-    </form>
+    </div>
 </div>
 
 <script type="module">
@@ -25,13 +29,9 @@
 
     const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
-    const form = document.querySelector('[data-project-rename]')
     const input = document.querySelector('[data-project-rename-input]')
 
-    if (
-        !(form instanceof HTMLFormElement) ||
-        !(input instanceof HTMLInputElement)
-    ) {
+    if (!(input instanceof HTMLInputElement)) {
         throw new Error('Project rename elements are missing')
     }
 
@@ -43,6 +43,14 @@
         input.disabled = false
     }
 
+    const save = () => {
+        if (!projectId) return
+
+        void editProject(projectId, {
+            name: input.value.trim() || DEFAULT_PROJECT_NAME,
+        })
+    }
+
     const scheduleSave = () => {
         if (!projectId) return
 
@@ -50,18 +58,30 @@
             window.clearTimeout(saveTimeoutId)
         }
 
-        saveTimeoutId = window.setTimeout(() => {
-            void editProject(projectId, {
-                name: input.value.trim() || DEFAULT_PROJECT_NAME,
-            })
-        }, 250)
+        saveTimeoutId = window.setTimeout(save, 250)
     }
 
-    form.addEventListener('submit', (event) => {
-        event.preventDefault()
-    })
+    const flushSave = () => {
+        if (!saveTimeoutId) return
+
+        window.clearTimeout(saveTimeoutId)
+        saveTimeoutId = 0
+        save()
+    }
 
     input.addEventListener('input', scheduleSave)
+    input.addEventListener('blur', flushSave)
+
+    input.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter') return
+
+        // Belt and braces alongside dropping the <form>: never let Return
+        // bubble up as a navigation/submission gesture, just commit and dismiss
+        // the (iPad) keyboard.
+        event.preventDefault()
+        flushSave()
+        input.blur()
+    })
 
     const loadProjectName = async () => {
         try {

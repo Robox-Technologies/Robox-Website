@@ -1,5 +1,6 @@
 ---
 import Meta from '@/components/Meta.astro'
+import IOSAppReset from '@/components/IOSAppReset.astro'
 import Analytics from '@/components/Analytics.astro'
 import CookieConsent from '@/components/CookieConsent.astro'
 
@@ -21,9 +22,10 @@ interface Props {
 };
 const { title, description, noindex } = Astro.props as Props;
 ---
-<html lang="en">
+<html lang="en" data-ios-app={isIOSBuild || undefined}>
     <head>
         <Meta title={title} description={description} noindex={noindex} />
+        {isIOSBuild && <IOSAppReset />}
         <!-- Not in the iOS bundle: it's a Capacitor app, and neither the tag nor
              a cookie bar belongs in one. -->
         {!isIOSBuild && <Analytics />}

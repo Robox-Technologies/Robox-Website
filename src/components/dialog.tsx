@@ -124,7 +124,13 @@ export function DialogBody({
     return (
         <div
             className={twMerge(
-                'relative gap-4 flex-1 overflow-auto',
+                // `flex-auto`, not `flex-1`: the dialog sizes itself with
+                // `height: fit-content`, and WebKit (the iPad's WKWebView)
+                // treats a `flex-basis: 0` child as contributing nothing to a
+                // fit-content main size — the body collapsed to its padding and
+                // the dialog rendered as a flattened strip. A content-based
+                // basis still grows to fill a taller dialog.
+                'relative gap-4 flex-auto overflow-auto',
                 className,
             )}
             {...props}

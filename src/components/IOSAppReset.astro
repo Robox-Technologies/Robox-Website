@@ -1,0 +1,48 @@
+---
+/*
+ * Native-app polish for the Capacitor build: no long-press text selection or
+ * callout, no image drag, no grey tap flash. The layouts render this only when
+ * IOS_BUILD is set, so the website is untouched.
+ *
+ * Why a raw <style is:inline> here instead of a block in src/styles/global.css:
+ * Tailwind's Lightning CSS pass drops `-webkit-user-select` from the built
+ * stylesheet as a redundant prefix, and *unprefixed* `user-select` only reached
+ * iOS Safari in 17.4 — so on an older iPad the reset shipped and silently did
+ * nothing. `is:inline` hands this text to the browser verbatim, prefix and all.
+ * Check the emitted CSS before moving any of it back.
+ */
+---
+
+<style is:inline>
+    /*
+     * Set on every element rather than left to inherit from the root: WKWebView
+     * doesn't reliably honour an inherited -webkit-user-select when deciding
+     * whether a long press starts a selection, which is why Ionic's own reset
+     * also reaches for `*`. -webkit-user-drag isn't an inherited property at
+     * all, so it has no other option.
+     */
+    [data-ios-app] * {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-user-drag: none;
+    }
+    /*
+     * Text entry is the exception: selection is how you place a caret and how
+     * the editing callout works. Descendants included — a contenteditable keeps
+     * its selectable text in child nodes, which the rule above would otherwise
+     * reach past the field itself to claim.
+     *
+     * One simple selector per :not(): this runs in a WKWebView as old as iOS 15,
+     * which can't parse a :not() selector list.
+     */
+    [data-ios-app] input,
+    [data-ios-app] textarea,
+    [data-ios-app] [contenteditable]:not([contenteditable='false']),
+    [data-ios-app] [contenteditable]:not([contenteditable='false']) * {
+        -webkit-user-select: text;
+        user-select: text;
+        -webkit-touch-callout: default;
+    }
+</style>
