@@ -27,7 +27,7 @@ export default function SettingDialog() {
         >
             <Button
                 onClick={handleEdit}
-                className="text-black! p-1.5! flex items-center justify-start gap-1.5"
+                className="text-black! p-1.5! flex items-center justify-start gap-1.5 rounded-none"
             >
                 <FontAwesomeIcon className="text-blue" icon={faPencil} /> Edit
             </Button>
