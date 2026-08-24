@@ -56,10 +56,21 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
     // Monaco instance entirely when this isn't a python project, mirroring
     // the equivalent `project.type !== 'block'` guard in loadBlockly.
     if (!project || project.type === 'python') {
+        editor.defineTheme('roboxPython', {
+            base: 'vs',
+            inherit: true,
+            rules: [],
+            colors: {
+                'editorGutter.background': '#f4f4f4',
+                'editorLineNumber.foreground': '#9ca3af',
+                'editorLineNumber.activeForeground': '#6b7280',
+            },
+        })
+
         const model = editor.createModel(project?.code ?? '', 'python')
         const codeEditor = editor.create(container, {
             model,
-            theme: 'vs',
+            theme: 'roboxPython',
             automaticLayout: true,
             minimap: { enabled: false },
             fontSize: 14,
@@ -91,3 +102,9 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
             })
     }
 </script>
+
+<style is:global>
+    #monacoContainer .margin {
+        border-right: 1px solid #e0e0e0;
+    }
+</style>
