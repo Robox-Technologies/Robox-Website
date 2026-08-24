@@ -111,7 +111,6 @@ const systems = [
             {
                 type: 'input_value',
                 name: 'string',
-                check: 'String',
             },
         ],
         inputsInline: true,
