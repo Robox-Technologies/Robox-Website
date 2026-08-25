@@ -7,8 +7,7 @@
  * straddle two reads.
  */
 
-import { BaseTransport } from './transportBase'
-import { errorMessage } from './framing'
+import { BaseTransport, errorMessage } from './transportBase'
 
 const PI_VENDOR_ID = 0x2e8a
 

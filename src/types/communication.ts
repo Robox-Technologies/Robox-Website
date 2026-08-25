@@ -28,7 +28,7 @@ export enum FirmwareStatus {
     NO_RESPONSE = 'noResponse',
 }
 
-export type CommunicationMethod = "USB" | "WebBluetooth" | "iOSBluetooth" | null
+export type CommunicationMethod = 'USB' | 'WebBluetooth' | 'iOSBluetooth' | null
 
 // Types
 

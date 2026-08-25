@@ -52,7 +52,9 @@ interface Verdict {
 function isVerdict(value: unknown): value is Verdict {
     if (!value || typeof value !== 'object') return false
     const candidate = value as Record<string, unknown>
-    return typeof candidate.ok === 'boolean' && typeof candidate.crc === 'string'
+    return (
+        typeof candidate.ok === 'boolean' && typeof candidate.crc === 'string'
+    )
 }
 
 function delay(milliseconds: number): Promise<void> {
@@ -69,8 +71,13 @@ export async function uploadProgram(
     transport: BaseTransport,
     code: string,
 ): Promise<UploadResult> {
-    const frames = encodeProgram(code)
-    const window = new CreditWindow(frames, 0, INITIAL_CREDIT)
+    // Draw from the connection's counter so the upload and the commands around
+    // it form one ordered stream rather than three independent ones.
+    const startSeq = transport.peekSequence()
+    const frames = encodeProgram(code, startSeq)
+    transport.takeSequence(frames.length)
+
+    const window = new CreditWindow(frames, startSeq, INITIAL_CREDIT)
 
     let verdict: Verdict | null = null
     let deviceError: string | null = null

@@ -111,16 +111,23 @@ export function frameChecksum(
 /**
  * Canonical form both ends checksum.
  *
- * The board stores lines newline-terminated and drops blank ones, so raw
- * source would never match stored source even on a perfect link.
+ * Line endings collapse to \n and exactly one trailing newline is guaranteed;
+ * nothing else changes. Blank lines are preserved: the old protocol dropped
+ * them because an empty line was indistinguishable from noise on the UART, but
+ * a frame states its payload length, so an empty line is now explicit and the
+ * stored program can be a faithful copy of what was written.
  */
 export function normaliseProgram(text: string): string {
     const unified = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-    return unified
-        .split('\n')
-        .filter((line) => line.trim().length > 0)
-        .map((line) => line + '\n')
-        .join('')
+    if (!unified) return ''
+
+    const lines = unified.split('\n')
+    // split() leaves a trailing empty element when the text ended in a
+    // newline; that is not a blank line of its own.
+    if (lines[lines.length - 1] === '') lines.pop()
+    if (!lines.length) return ''
+
+    return lines.map((line) => line + '\n').join('')
 }
 
 export function programChecksum(text: string): number {
@@ -183,15 +190,22 @@ export interface Piece {
 }
 
 /**
- * Break one source line into frame-sized payloads.
+ * Break text into frame-sized payloads.
  *
  * Splits on encoded bytes but never inside a multi-byte character, which would
- * decode to a replacement character and corrupt the stored program.
+ * decode to a replacement character and corrupt the result. All but the last
+ * piece are CONTINUE, so CONTINUE means only "the payload continues in the
+ * next frame" and works either direction: program text ends in DATA, a device
+ * message ends in REPLY.
  */
-export function splitLine(line: string, limit = MAX_PAYLOAD): Piece[] {
-    const encoded = encoder.encode(line)
+export function splitPayload(
+    text: string,
+    finalKind: string,
+    limit = MAX_PAYLOAD,
+): Piece[] {
+    const encoded = encoder.encode(text)
     if (encoded.length <= limit) {
-        return [{ kind: Kind.DATA, payload: encoded }]
+        return [{ kind: finalKind, payload: encoded }]
     }
 
     const pieces: Uint8Array[] = []
@@ -211,9 +225,14 @@ export function splitLine(line: string, limit = MAX_PAYLOAD): Piece[] {
     }
 
     return pieces.map((payload, index) => ({
-        kind: index === pieces.length - 1 ? Kind.DATA : Kind.CONTINUE,
+        kind: index === pieces.length - 1 ? finalKind : Kind.CONTINUE,
         payload,
     }))
+}
+
+/** Break one source line into frame-sized payloads, ending in DATA. */
+export function splitLine(line: string, limit = MAX_PAYLOAD): Piece[] {
+    return splitPayload(line, Kind.DATA, limit)
 }
 
 /**
@@ -321,7 +340,9 @@ export class FrameReader {
         // corrupt run cannot pin the buffer for the rest of the session.
         if (this.buffer.length > this.maxBuffer) {
             const last = this.buffer.lastIndexOf(SOH)
-            this.buffer = this.buffer.subarray(last > 0 ? last : this.buffer.length)
+            this.buffer = this.buffer.subarray(
+                last > 0 ? last : this.buffer.length,
+            )
             this.resyncs += 1
         }
 
@@ -419,8 +440,10 @@ function parseHex(data: Uint8Array, offset: number, width: number): number {
 
 /** Forward distance, accounting for wraparound. */
 export function sequenceDistance(later: number, earlier: number): number {
-    return (((later - earlier) % SEQUENCE_MODULO) + SEQUENCE_MODULO) %
+    return (
+        (((later - earlier) % SEQUENCE_MODULO) + SEQUENCE_MODULO) %
         SEQUENCE_MODULO
+    )
 }
 
 /**

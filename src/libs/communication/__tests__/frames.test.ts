@@ -77,9 +77,9 @@ describe('conformance with the firmware', () => {
         'checksums seq=$seq kind=$kind identically',
         ({ seq, kind, payload, checksum, frame }) => {
             const bytes = encoder.encode(payload)
-            expect(frameChecksum(seq, kind, bytes).toString(16).padStart(4, '0')).toBe(
-                checksum,
-            )
+            expect(
+                frameChecksum(seq, kind, bytes).toString(16).padStart(4, '0'),
+            ).toBe(checksum)
             expect(toHex(encodeFrame(seq, kind, payload))).toBe(frame)
         },
     )
@@ -130,7 +130,11 @@ describe('encodeFrame', () => {
 
     it('uses a fixed-width header', () => {
         for (const size of [0, 1, MAX_PAYLOAD]) {
-            const frame = encodeFrame(0, Kind.DATA, new Uint8Array(size).fill(0x78))
+            const frame = encodeFrame(
+                0,
+                Kind.DATA,
+                new Uint8Array(size).fill(0x78),
+            )
             expect(frame.length).toBe(FRAME_OVERHEAD + size)
             expect(frame[0]).toBe(SOH)
             expect(frame[frame.length - 1]).toBe(LF)
@@ -139,9 +143,9 @@ describe('encodeFrame', () => {
     })
 
     it('refuses payloads containing the sentinels', () => {
-        expect(() => encodeFrame(0, Kind.DATA, new Uint8Array([0x61, SOH]))).toThrow(
-            ProtocolError,
-        )
+        expect(() =>
+            encodeFrame(0, Kind.DATA, new Uint8Array([0x61, SOH])),
+        ).toThrow(ProtocolError)
         expect(() => encodeFrame(0, Kind.DATA, 'a\nb')).toThrow(ProtocolError)
     })
 
@@ -152,7 +156,9 @@ describe('encodeFrame', () => {
     })
 
     it('wraps the sequence number', () => {
-        const { frames } = new FrameReader().feed(encodeFrame(300, Kind.DATA, ''))
+        const { frames } = new FrameReader().feed(
+            encodeFrame(300, Kind.DATA, ''),
+        )
         expect(frames[0].seq).toBe(300 % 256)
     })
 })
@@ -161,9 +167,9 @@ describe('splitLine', () => {
     it('never splits inside a multi-byte character', () => {
         const line = '# ' + 'é'.repeat(200)
         const pieces = splitLine(line)
-        expect(new TextDecoder().decode(concat(pieces.map((p) => p.payload)))).toBe(
-            line,
-        )
+        expect(
+            new TextDecoder().decode(concat(pieces.map((p) => p.payload))),
+        ).toBe(line)
         // A split mid-codepoint would produce a replacement character here.
         for (const piece of pieces) {
             expect(
@@ -179,9 +185,9 @@ describe('splitLine', () => {
     it('handles four-byte characters', () => {
         const line = '\u{1f916}'.repeat(60)
         const pieces = splitLine(line)
-        expect(new TextDecoder().decode(concat(pieces.map((p) => p.payload)))).toBe(
-            line,
-        )
+        expect(
+            new TextDecoder().decode(concat(pieces.map((p) => p.payload))),
+        ).toBe(line)
     })
 })
 
@@ -243,7 +249,10 @@ describe('FrameReader', () => {
 
     it('skips leading garbage', () => {
         const { frames } = new FrameReader().feed(
-            concat([encoder.encode('noise'), encodeFrame(1, Kind.DATA, 'payload')]),
+            concat([
+                encoder.encode('noise'),
+                encodeFrame(1, Kind.DATA, 'payload'),
+            ]),
         )
         expect(frames).toHaveLength(1)
     })
@@ -270,7 +279,9 @@ describe('FrameReader', () => {
     it('does not let an unterminated sentinel run pin the buffer', () => {
         const reader = new FrameReader(256)
         for (let i = 0; i < 200; i += 1) {
-            reader.feed(concat([new Uint8Array([SOH]), new Uint8Array(40).fill(0x78)]))
+            reader.feed(
+                concat([new Uint8Array([SOH]), new Uint8Array(40).fill(0x78)]),
+            )
         }
         expect(reader.resyncs).toBeGreaterThan(0)
     })
@@ -374,7 +385,11 @@ describe('recovery over a lossy link', () => {
     /** Drives both endpoints against each other, mirroring the Python test. */
     function runUpload(dropRate: number, seed: number) {
         const next = rng(seed)
-        const window = new CreditWindow(encodeProgram(program), 0, INITIAL_CREDIT)
+        const window = new CreditWindow(
+            encodeProgram(program),
+            0,
+            INITIAL_CREDIT,
+        )
         const reader = new FrameReader()
 
         let expected = 0
@@ -394,7 +409,11 @@ describe('recovery over a lossy link', () => {
             }
             window.advance(batch.length)
 
-            const { out, dropped } = lossyTransmit(concat(batch), next, dropRate)
+            const { out, dropped } = lossyTransmit(
+                concat(batch),
+                next,
+                dropRate,
+            )
             totalDropped += dropped
 
             const { frames, damage } = reader.feed(out)
@@ -402,7 +421,10 @@ describe('recovery over a lossy link', () => {
 
             for (const frame of frames) {
                 if (frame.seq !== expected) {
-                    if (sequenceDistance(expected, frame.seq) >= SEQUENCE_MODULO / 2) {
+                    if (
+                        sequenceDistance(expected, frame.seq) >=
+                        SEQUENCE_MODULO / 2
+                    ) {
                         discarding = true
                     }
                     continue
@@ -417,7 +439,9 @@ describe('recovery over a lossy link', () => {
                     partial.push(frame.payload)
                 } else if (frame.kind === Kind.DATA) {
                     stored.push(
-                        new TextDecoder().decode(concat([...partial, frame.payload])),
+                        new TextDecoder().decode(
+                            concat([...partial, frame.payload]),
+                        ),
                     )
                     partial = []
                 } else if (frame.kind === Kind.END) {

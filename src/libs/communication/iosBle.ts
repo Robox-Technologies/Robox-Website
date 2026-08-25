@@ -15,7 +15,7 @@ import {
 
 import { UART_CHARACTERISTIC, UART_SERVICE } from './protocol'
 import { BleTransport, NOT_FOUND_MESSAGE } from './bleTransport'
-import { errorMessage } from './framing'
+import { errorMessage } from './transportBase'
 
 const SERVICE_UUID = numberToUUID(UART_SERVICE)
 const CHARACTERISTIC_UUID = numberToUUID(UART_CHARACTERISTIC)

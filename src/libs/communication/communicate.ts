@@ -14,13 +14,13 @@ import { BluetoothCommunication } from './webBle'
 import { IOSBluetoothCommunication } from './iosBle'
 import {
     COMMANDS,
-    CURRENT_FIRMWARE_VERSION,
+    MINIMUM_FIRMWARE_VERSION,
     SUPPORTED_PROTOCOL_VERSION,
+    meetsMinimumVersion,
     parseFirmwareReply,
 } from './protocol'
-import { errorMessage } from './framing'
 import { uploadProgram } from './uploader'
-import { BaseTransport } from './transportBase'
+import { BaseTransport, errorMessage } from './transportBase'
 import type { BleDevice } from '@capacitor-community/bluetooth-le'
 
 type PicoEventListener<K extends keyof PicoEventMap> = (
@@ -36,11 +36,12 @@ type PicoEventHandler = (data: unknown) => void
  */
 const FIRMWARE_CHECK_TIMEOUT_MS = 2500
 
-const revertStateMapping: Partial<Record<ConnectionStatus, ConnectionStatus>> = {
-    [ConnectionStatus.CONNECTING]: ConnectionStatus.DISCONNECTED,
-    [ConnectionStatus.RESTARTING]: ConnectionStatus.CONNECTED,
-    [ConnectionStatus.DISCONNECTING]: ConnectionStatus.DISCONNECTED,
-}
+const revertStateMapping: Partial<Record<ConnectionStatus, ConnectionStatus>> =
+    {
+        [ConnectionStatus.CONNECTING]: ConnectionStatus.DISCONNECTED,
+        [ConnectionStatus.RESTARTING]: ConnectionStatus.CONNECTED,
+        [ConnectionStatus.DISCONNECTING]: ConnectionStatus.DISCONNECTED,
+    }
 
 export class Pico {
     private communication: Communication | null
@@ -219,6 +220,26 @@ export class Pico {
             const { version, protocol } = parseFirmwareReply(message)
             this.firmwareConfirmed = true
             this.protocolVersion = protocol
+
+            const usable =
+                protocol >= SUPPORTED_PROTOCOL_VERSION &&
+                meetsMinimumVersion(version, MINIMUM_FIRMWARE_VERSION)
+
+            if (!usable) {
+                // No fallback by design. The unframed path is what corrupted
+                // programs, so an old board is refused rather than quietly
+                // handed a protocol that cannot detect its own failures.
+                this.updateState({
+                    firmwareStatus: FirmwareStatus.OUT_OF_DATE,
+                    connectionStatus: ConnectionStatus.DISCONNECTED,
+                    firmwareVersion: version,
+                })
+                this.emit('error', {
+                    message: `This Ro/Box is running firmware ${version}, and ${MINIMUM_FIRMWARE_VERSION} or newer is required. Please update it before uploading.`,
+                })
+                return
+            }
+
             this.updateState({
                 firmwareStatus: FirmwareStatus.UP_TO_DATE,
                 connectionStatus: ConnectionStatus.CONNECTED,
@@ -248,20 +269,19 @@ export class Pico {
         this.write(COMMANDS.FIRMWARE_CHECK)
 
         this.firmwareCheckTimeout = setTimeout(() => {
-            const hasWrongVersion =
-                this.state.firmwareVersion !== CURRENT_FIRMWARE_VERSION
+            if (this.firmwareConfirmed) return
 
-            if (
-                (!this.firmwareConfirmed && this.responded) ||
-                (this.responded && hasWrongVersion)
-            ) {
-                const message = `The firmware running on the Ro/Box (${this.state.firmwareVersion}) is out of date! Please update it.`
+            if (this.responded) {
+                // Something came back, but not a firmware reply. Pre-2.0.0
+                // boards do not understand a COMMAND frame at all, so this is
+                // the shape an out-of-date board takes.
+                const message = `This Ro/Box did not report a usable firmware version. ${MINIMUM_FIRMWARE_VERSION} or newer is required, so please update it.`
                 this.updateState({
                     connectionStatus: ConnectionStatus.DISCONNECTED,
                     firmwareStatus: FirmwareStatus.OUT_OF_DATE,
                 })
                 this.emit('error', { message })
-            } else if (!this.firmwareConfirmed && !this.responded) {
+            } else {
                 const message =
                     'Ro/Box did not respond to the firmware check! Please try disconnecting and reconnecting it. If this issue persists, try reflashing the Ro/Box.'
                 this.updateState({
@@ -305,42 +325,29 @@ export class Pico {
         void this.communication?.write(COMMANDS.CALIBRATE_COLOR)
     }
 
-    /** True when the board can verify an upload rather than just accept it. */
-    get supportsVerifiedUpload(): boolean {
-        return (
-            this.protocolVersion >= SUPPORTED_PROTOCOL_VERSION &&
-            this.communication instanceof BaseTransport
-        )
-    }
-
     /**
-     * Send a program and, on firmware that supports it, wait for the board to
-     * confirm it arrived intact.
+     * Send a program and wait for the board to confirm it arrived intact.
      *
      * Rejects on a failed verification, so an awaiting caller cannot go on to
-     * run a truncated program. On the legacy path there is nothing to verify
-     * against, so it resolves once the writes are out, as it always did.
+     * run a truncated program.
      */
     async sendCode(code: string): Promise<void> {
-        if (!this.communication) {
+        if (!(this.communication instanceof BaseTransport)) {
             throw new Error('No communication method set')
+        }
+
+        if (this.protocolVersion < SUPPORTED_PROTOCOL_VERSION) {
+            throw new Error(
+                `This Ro/Box needs firmware ${MINIMUM_FIRMWARE_VERSION} or newer before you can upload to it.`,
+            )
         }
 
         this.uploadVerified = false
         this.updateState({ connectionStatus: ConnectionStatus.LOADING })
 
         try {
-            if (this.supportsVerifiedUpload) {
-                await uploadProgram(this.communication as BaseTransport, code)
-                this.uploadVerified = true
-            } else {
-                await this.communication.write(COMMANDS.START_UPLOAD)
-                await this.communication.write(code)
-                await this.communication.write(COMMANDS.END_UPLOAD)
-                // Nothing to check against, so treat it as good and let the
-                // board's own guard be the backstop.
-                this.uploadVerified = true
-            }
+            await uploadProgram(this.communication, code)
+            this.uploadVerified = true
         } catch (error) {
             this.updateState({ connectionStatus: ConnectionStatus.CONNECTED })
             this.emit('error', { message: errorMessage(error) })

@@ -8,8 +8,7 @@
  */
 
 import { BLE_CHUNK_SIZE, BLE_WRITE_DELAY_MS } from './protocol'
-import { BaseTransport, delay } from './transportBase'
-import { errorMessage } from './framing'
+import { BaseTransport, delay, errorMessage } from './transportBase'
 
 export const NOT_FOUND_MESSAGE =
     'Could not request Ro/Box! Make sure you have it powered on and nearby.'
@@ -26,7 +25,11 @@ export abstract class BleTransport extends BaseTransport {
      * can encode to four bytes. Working on bytes makes the bound exact.
      */
     protected async sendRaw(payload: Uint8Array): Promise<void> {
-        for (let offset = 0; offset < payload.length; offset += BLE_CHUNK_SIZE) {
+        for (
+            let offset = 0;
+            offset < payload.length;
+            offset += BLE_CHUNK_SIZE
+        ) {
             if (this.destroyed) return
             // Copied rather than a subarray view: the Web Bluetooth typings
             // require an ArrayBuffer-backed view, not ArrayBufferLike.

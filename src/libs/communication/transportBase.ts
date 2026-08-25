@@ -7,19 +7,48 @@
  * Bluetooth picker restarted the board on one platform and did nothing on
  * another.
  *
- * Subclasses supply only how to open a link, push one message, and tear down.
+ * Subclasses supply only how to open a link, push bytes, and tear down.
  */
 
 import type { Communication, PicoMessage } from 'src/types/communication'
 import type { BleDevice } from '@capacitor-community/bluetooth-le'
 import type { Pico } from './communicate'
-import { errorMessage, parseBufferedMessages } from './framing'
-import { FrameReader, Kind, SOH, frameText, type Frame } from './frames'
+import {
+    FrameReader,
+    Kind,
+    SEQUENCE_MODULO,
+    SOH,
+    encodeFrame,
+    type Frame,
+} from './frames'
+import { MESSAGE_TYPES } from './protocol'
 
 const SOH_CHAR = String.fromCharCode(SOH)
 
 /** Cap on a partial line held while waiting for its newline. */
 const MAX_LINE_LENGTH = 8192
+
+/** Normalises anything throwable into a message safe to show a user. */
+export function errorMessage(
+    error: unknown,
+    fallback = 'Unknown error',
+): string {
+    if (error instanceof Error) return error.message
+    if (typeof error === 'string' && error) return error
+    return String(error || fallback)
+}
+
+function isPicoMessage(value: unknown): value is PicoMessage {
+    if (!value || typeof value !== 'object') return false
+    if (!('type' in value) || !('message' in value)) return false
+
+    const { type, message } = value as Record<string, unknown>
+    return (
+        typeof type === 'string' &&
+        (MESSAGE_TYPES as readonly string[]).includes(type) &&
+        typeof message !== 'undefined'
+    )
+}
 
 export abstract class BaseTransport implements Communication {
     destroyed: boolean = false
@@ -30,16 +59,25 @@ export abstract class BaseTransport implements Communication {
     /** Partial trailing line, waiting for its newline. */
     private buffer: string = ''
 
-    /** Non-frame text, for the legacy JSON framer. */
-    private legacyBuffer: string = ''
+    /** CONTINUE payloads accumulated for a device message still arriving. */
+    private continuation: Uint8Array[] = []
 
-    /** Messages the framer threw away. Non-fatal, but worth counting. */
+    /** Frames or messages thrown away. Non-fatal, but worth counting. */
     private discardedCount: number = 0
 
     private readonly frames = new FrameReader()
 
     /** Set by the uploader while a framed upload is in flight. */
     private flowListener: ((frame: Frame) => void) | null = null
+
+    /**
+     * Outbound sequence for this connection.
+     *
+     * One counter for everything we send, so an upload and the commands around
+     * it form a single ordered stream. The board resynchronises on BEGIN and
+     * COMMAND, so a reconnect starting over at zero is fine.
+     */
+    private outSeq: number = 0
 
     constructor(protected parent: Pico) {}
 
@@ -59,22 +97,39 @@ export abstract class BaseTransport implements Communication {
     protected abstract sendRaw(data: Uint8Array): Promise<void>
 
     abstract request(): Promise<void>
-    abstract connect(port: SerialPort | BluetoothDevice | BleDevice): Promise<void>
+    abstract connect(
+        port: SerialPort | BluetoothDevice | BleDevice,
+    ): Promise<void>
     abstract disconnect(): Promise<void>
     abstract read(): void
 
     /** Most transports have nothing to set up ahead of a connection. */
     initialize(): void {}
 
-    // === shared behaviour ===
+    // === sending ===
 
-    async write(messages: string | string[]): Promise<void> {
-        const queue = Array.isArray(messages) ? messages : [messages]
+    /** The sequence the next frame would use, without consuming it. */
+    peekSequence(): number {
+        return this.outSeq
+    }
+
+    /** Reserve sequence numbers for the next `count` frames. */
+    takeSequence(count: number): number {
+        const start = this.outSeq
+        this.outSeq = (this.outSeq + count) % SEQUENCE_MODULO
+        return start
+    }
+
+    /** Send a control command by name, inside a COMMAND frame. */
+    async write(command: string | string[]): Promise<void> {
+        const queue = Array.isArray(command) ? command : [command]
 
         try {
-            for (const message of queue) {
+            for (const name of queue) {
                 if (this.destroyed) break
-                await this.sendRaw(this.encoder.encode(message + '\n'))
+                await this.sendRaw(
+                    encodeFrame(this.takeSequence(1), Kind.COMMAND, name),
+                )
             }
         } catch (error) {
             this.reportError(errorMessage(error, 'Could not write to Ro/Box!'))
@@ -94,12 +149,13 @@ export abstract class BaseTransport implements Communication {
         this.flowListener = listener
     }
 
+    // === receiving ===
+
     /**
      * Route received text. Every receive path ends here.
      *
-     * Both protocols are line-oriented and a frame always starts with SOH,
-     * which legacy text cannot contain, so the first character of a complete
-     * line decides where it goes. The board routes on the same rule.
+     * Everything the board sends is framed, so a complete line that does not
+     * begin with SOH is noise: counted rather than guessed at.
      */
     protected ingest(chunk: string): void {
         if (this.destroyed) return
@@ -120,21 +176,14 @@ export abstract class BaseTransport implements Communication {
             if (line.startsWith(SOH_CHAR)) {
                 this.ingestFrameLine(line)
             } else if (line.trim()) {
-                this.legacyBuffer += line + '\n'
+                this.discardedCount += line.length
             }
         }
+    }
 
-        if (this.legacyBuffer) {
-            const { messages, remainder, discarded } = parseBufferedMessages(
-                this.legacyBuffer,
-            )
-            this.legacyBuffer = remainder
-            this.discardedCount += discarded
-
-            for (const message of messages) {
-                this.parent.handleMessage(message)
-            }
-        }
+    /** Decode raw bytes from the link, then hand them to `ingest`. */
+    protected ingestBytes(data: ArrayBufferView | ArrayBuffer): void {
+        this.ingest(this.decoder.decode(data))
     }
 
     private ingestFrameLine(line: string): void {
@@ -143,23 +192,46 @@ export abstract class BaseTransport implements Communication {
         )
         this.discardedCount += damage
 
+        // A lost frame means the pieces either side of it no longer belong
+        // together, so a half-built message must not be completed with them.
+        if (damage) this.continuation = []
+
         for (const frame of frames) {
-            if (frame.kind === Kind.REPLY) {
-                // A device message wrapped in a frame; unwrap and dispatch it
-                // through the same path as legacy JSON.
-                const { messages } = parseBufferedMessages(frameText(frame))
-                for (const message of messages) {
-                    this.parent.handleMessage(message)
-                }
+            if (frame.kind === Kind.CONTINUE) {
+                this.continuation.push(frame.payload)
                 continue
             }
+
+            if (frame.kind === Kind.REPLY) {
+                this.dispatchReply([...this.continuation, frame.payload])
+                this.continuation = []
+                continue
+            }
+
             this.flowListener?.(frame)
         }
     }
 
-    /** Decode raw bytes from the link, then hand them to `ingest`. */
-    protected ingestBytes(data: ArrayBufferView | ArrayBuffer): void {
-        this.ingest(this.decoder.decode(data))
+    /** Reassemble a device message and hand it to the connection. */
+    private dispatchReply(parts: Uint8Array[]): void {
+        const total = parts.reduce((sum, part) => sum + part.length, 0)
+        const joined = new Uint8Array(total)
+        let offset = 0
+        for (const part of parts) {
+            joined.set(part, offset)
+            offset += part.length
+        }
+
+        try {
+            const parsed: unknown = JSON.parse(this.decoder.decode(joined))
+            if (isPicoMessage(parsed)) {
+                this.parent.handleMessage(parsed)
+                return
+            }
+        } catch {
+            // The frame passed its checksum but its payload is not a message.
+        }
+        this.discardedCount += total
     }
 
     /**
@@ -173,11 +245,6 @@ export abstract class BaseTransport implements Communication {
         this.parent.emit('error', { message })
     }
 
-    /** Forward a synthetic message as though the board had sent it. */
-    protected dispatch(message: PicoMessage): void {
-        this.parent.handleMessage(message)
-    }
-
     /** Number of malformed or unrecognised payloads discarded so far. */
     get discarded(): number {
         return this.discardedCount
@@ -185,7 +252,7 @@ export abstract class BaseTransport implements Communication {
 
     protected resetBuffer(): void {
         this.buffer = ''
-        this.legacyBuffer = ''
+        this.continuation = []
     }
 
     async destroy(): Promise<void> {

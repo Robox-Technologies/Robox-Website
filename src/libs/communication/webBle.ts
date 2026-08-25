@@ -6,7 +6,7 @@
 
 import { UART_CHARACTERISTIC, UART_SERVICE } from './protocol'
 import { BleTransport, NOT_FOUND_MESSAGE } from './bleTransport'
-import { errorMessage } from './framing'
+import { errorMessage } from './transportBase'
 
 /** 16-bit UUID expanded to the full Bluetooth base UUID. */
 function numberToUUID(value: number): string {
@@ -45,7 +45,8 @@ export class BluetoothCommunication extends BleTransport {
         this.device = device
         this.server = (await device.gatt?.connect()) ?? null
 
-        const service = (await this.server?.getPrimaryService(SERVICE_UUID)) ?? null
+        const service =
+            (await this.server?.getPrimaryService(SERVICE_UUID)) ?? null
         this.characteristic =
             (await service?.getCharacteristic(CHARACTERISTIC_UUID)) ?? null
 

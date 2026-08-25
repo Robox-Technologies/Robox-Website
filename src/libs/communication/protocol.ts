@@ -3,48 +3,30 @@ import type { PicoMessageType } from 'src/types/communication'
 /**
  * The single source of truth for the Ro/Box wire protocol.
  *
- * The firmware has its own copy of this table in `src/main.py`
+ * The firmware has its own copy in `src/main.py` and `src/protocol.py`
  * (Robox-pythonLibs). The two must not drift, so anything added here needs a
- * matching branch in the firmware's receive loop and vice versa.
+ * matching branch there and vice versa.
  */
 
 /**
- * Commands the board acts on.
+ * Commands the board acts on, carried by name inside a COMMAND frame.
  *
- * Sent as bare lines, which is a hazard rather than a design: the firmware
- * compares every received line against this table, so user code that happens
- * to match is executed instead of stored. Choosing a more obscure sentinel
- * does not help; it is still a string somebody can type. The fix is to stop
- * scanning payload content for control markers at all.
+ * The old protocol sent these as bare lines and the firmware compared every
+ * received line against the table, so user code that happened to match was
+ * executed instead of stored. A more obscure sentinel would not have fixed
+ * that: any in-band marker is a string somebody can type into the editor.
+ * These names are safe because a frame's kind, not its payload, decides
+ * whether it is a command, and program text only ever becomes DATA or
+ * CONTINUE frames.
  */
 export const COMMANDS = {
-    FIRMWARE_CHECK: 'x01FIRMCHECK\r',
-    START_UPLOAD: 'x02BEGINUPLD\r',
-    END_UPLOAD: 'x03ENDUPLD\r',
-    START_PROGRAM: 'x04STARTPROG\r',
-    CALIBRATE_COLOR: 'x05COLORCALIBRATE\r',
-    RESTART: 'x06RESTART\r',
-    BOOTLOADER: 'x07BOOTLOADER\r',
-    DISCONNECT: 'x08DISCONNECT\r',
+    FIRMWARE_CHECK: 'firmware_check',
+    START_PROGRAM: 'start_program',
+    CALIBRATE_COLOR: 'calibrate_color',
+    RESTART: 'reset_device',
+    BOOTLOADER: 'boot_loader',
+    DISCONNECT: 'disconnect_device',
 } as const
-
-/**
- * Bare command lines, without the trailing carriage return.
- *
- * Used to detect when user code would collide with a command, so the collision
- * can be reported instead of silently changing what the board does.
- */
-export const COMMAND_LINES: readonly string[] = Object.values(COMMANDS).map(
-    (command) => command.trim(),
-)
-
-/**
- * True when a line of user code would be swallowed as a command by the
- * firmware's in-band dispatch.
- */
-export function collidesWithCommand(line: string): boolean {
-    return COMMAND_LINES.includes(line.trim())
-}
 
 /**
  * Message types the board can send. Anything else is discarded as noise.
@@ -62,30 +44,21 @@ export const MESSAGE_TYPES: readonly PicoMessageType[] = [
     'uploaded',
 ]
 
-/** The firmware version this build of the site expects to be talking to. */
-export const CURRENT_FIRMWARE_VERSION = '1.1.0'
+/**
+ * Minimum firmware this build can talk to at all.
+ *
+ * 2.0.0 removed the unframed protocol. There is deliberately no fallback: an
+ * older board cannot be uploaded to, and the user is told to update rather
+ * than being quietly handed a path that corrupts programs.
+ */
+export const MINIMUM_FIRMWARE_VERSION = '2.0.0'
 
 /** Framed protocol version this build speaks. */
 export const SUPPORTED_PROTOCOL_VERSION = 2
 
 /**
- * Command names carried in a COMMAND frame.
- *
- * Framed commands travel by name in a frame whose kind says it is a command,
- * so unlike the bare-line COMMANDS above, user code cannot impersonate one.
- */
-export const FRAMED_COMMANDS = {
-    FIRMWARE_CHECK: 'firmware_check',
-    START_PROGRAM: 'start_program',
-    CALIBRATE_COLOR: 'calibrate_color',
-    RESTART: 'reset_device',
-    BOOTLOADER: 'boot_loader',
-    DISCONNECT: 'disconnect_device',
-} as const
-
-/**
- * Pull the protocol version out of a firmware reply like "1.1.0+proto2".
- * Firmware 1.0.0 has no suffix, which is protocol 1.
+ * Pull the version and protocol out of a firmware reply like "2.0.0+proto2".
+ * A reply with no suffix is pre-2.0.0 firmware, which is protocol 1.
  */
 export function parseFirmwareReply(reply: string): {
     version: string
@@ -98,6 +71,23 @@ export function parseFirmwareReply(reply: string): {
     }
 }
 
+/** True when `version` is at least `minimum`, compared numerically per part. */
+export function meetsMinimumVersion(version: string, minimum: string): boolean {
+    const parse = (value: string) =>
+        value.split('.').map((part) => Number.parseInt(part, 10) || 0)
+
+    const actual = parse(version)
+    const required = parse(minimum)
+    const length = Math.max(actual.length, required.length)
+
+    for (let index = 0; index < length; index += 1) {
+        const left = actual[index] ?? 0
+        const right = required[index] ?? 0
+        if (left !== right) return left > right
+    }
+    return true
+}
+
 /** HM-10 UART service and characteristic, shared by both Bluetooth transports. */
 export const UART_SERVICE = 0xffe0
 export const UART_CHARACTERISTIC = 0xffe1
@@ -108,5 +98,14 @@ export const UART_CHARACTERISTIC = 0xffe1
  */
 export const BLE_CHUNK_SIZE = 20
 
-/** Pacing between chunks, in milliseconds. */
+/**
+ * Pacing between chunks, in milliseconds.
+ *
+ * The credit window bounds how much is in flight relative to the *board's*
+ * UART buffer, but the HM-10 in between drains to the board at only 9600 baud
+ * (960 B/s) and has a small buffer of its own, so writes still have to be
+ * paced or that buffer is what overflows. 20 bytes at 960 B/s is 20.8 ms, so
+ * this is roughly 2x conservative; `tools/comm-bench --chunk-delay-ms` in the
+ * firmware repo exists to find the real floor on hardware.
+ */
 export const BLE_WRITE_DELAY_MS = 40

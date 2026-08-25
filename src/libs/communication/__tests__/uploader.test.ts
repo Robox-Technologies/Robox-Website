@@ -49,7 +49,7 @@ class MockTransport extends BaseTransport {
     private expected = 0
     private discarding = false
     private sinceAck = 0
-    private outSeq = 0
+    private boardOutSeq = 0
     private partial: Uint8Array[] = []
     private runningCrc = 0
     private storedLines: string[] = []
@@ -91,17 +91,14 @@ class MockTransport extends BaseTransport {
         if (damage) this.discarding = true
 
         for (const frame of frames) {
-            // BEGIN is a resynchronisation point: mirrors framed.py.
-            if (frame.kind === Kind.BEGIN) {
+            // BEGIN and COMMAND are resync points: mirrors framed.py.
+            if (frame.kind === Kind.BEGIN || frame.kind === Kind.COMMAND) {
                 this.expected = frame.seq
                 this.discarding = false
             }
 
             if (frame.seq !== this.expected) {
-                if (
-                    sequenceDistance(this.expected, frame.seq) >=
-                    128
-                ) {
+                if (sequenceDistance(this.expected, frame.seq) >= 128) {
                     this.discarding = true
                 }
                 continue
@@ -161,15 +158,19 @@ class MockTransport extends BaseTransport {
 
     private flush(): void {
         if (this.discarding) {
-            this.send(encodeFlow(this.outSeq++, Kind.NAK, this.expected, 2048))
+            this.send(
+                encodeFlow(this.boardOutSeq++, Kind.NAK, this.expected, 2048),
+            )
         } else if (this.sinceAck) {
             this.sinceAck = 0
-            this.send(encodeFlow(this.outSeq++, Kind.ACK, this.expected, 2048))
+            this.send(
+                encodeFlow(this.boardOutSeq++, Kind.ACK, this.expected, 2048),
+            )
         }
     }
 
     private reply(json: string): void {
-        this.send(encodeFrame(this.outSeq++, Kind.REPLY, json))
+        this.send(encodeFrame(this.boardOutSeq++, Kind.REPLY, json))
     }
 
     /** Loop a board frame back through the real receive path. */
