@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { Pico } from '../communicate'
 import { BaseTransport } from '../transportBase'
+import { BluetoothCommunication } from '../webBle'
 import { FrameReader, Kind, encodeFrame } from '../frames'
 import { COMMANDS } from '../protocol'
 import { ConnectionStatus, FirmwareStatus } from 'src/types/communication'
@@ -129,6 +130,30 @@ describe('releasing the board', () => {
         expect(pico.getState().connectionStatus).toBe(
             ConnectionStatus.DISCONNECTED,
         )
+    })
+})
+
+describe('a dropped Bluetooth link', () => {
+    it('propagates whatever the device is called', () => {
+        const pico = new Pico()
+        const transport = new BluetoothCommunication(pico)
+
+        let disconnected = false
+        pico.disconnect = async () => {
+            disconnected = true
+        }
+
+        // Boards are named things like Robox20. Filtering this event on a
+        // 'RoBox' prefix left the app in CONNECTED with nothing behind it.
+        ;(
+            transport as unknown as {
+                handleDisconnected: (event: Event) => void
+            }
+        ).handleDisconnected({
+            target: { name: 'Robox20' },
+        } as unknown as Event)
+
+        expect(disconnected).toBe(true)
     })
 })
 

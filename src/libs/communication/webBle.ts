@@ -83,11 +83,12 @@ export class BluetoothCommunication extends BleTransport {
         this.ingestBytes(value)
     }
 
-    private handleDisconnected(event: Event): void {
-        const device = event.target as BluetoothDevice | null
-        if (device?.name?.startsWith('RoBox')) {
-            void this.parent.disconnect()
-        }
+    private handleDisconnected(): void {
+        // No name check: the listener is bound to our own device, and
+        // `requestDevice` already filtered on the UART service. Matching on a
+        // 'RoBox' prefix silently missed boards named anything else, leaving the
+        // app sitting in CONNECTED with nothing on the other end.
+        void this.parent.disconnect()
     }
 
     async disconnect(): Promise<void> {
