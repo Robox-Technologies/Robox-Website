@@ -57,10 +57,16 @@ export default function MainButton() {
             ? { [ConnectionStatus.DISCONNECTED]: () => connect() }
             : {}),
         [ConnectionStatus.CONNECTED]: async () => {
-            await sendCode()
+            try {
+                await sendCode()
+            } catch {
+                // sendCode rejects when the board could not confirm the
+                // program arrived intact, and has already reported why. Not
+                // running it is the whole point, so stop here.
+                return
+            }
             //TODO: Make this not run every time
             runCode()
-            // runCode()
         },
         [ConnectionStatus.RUNNING]: () => {
             restart()

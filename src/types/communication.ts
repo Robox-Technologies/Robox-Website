@@ -46,6 +46,7 @@ export type PicoMessageType =
     | 'firmware'
     | 'connect'
     | 'calibrated'
+    | 'uploaded'
 
 export interface PicoMessage {
     type: PicoMessageType
@@ -65,6 +66,8 @@ export interface PicoEventMap {
     console: { message: string }
     calibrated: { message: string }
     downloaded: object
+    /** The board's verdict on a framed upload: line count and CRC. */
+    uploaded: unknown
     error: { message: string }
     firmware: { status: FirmwareStatus; version: string }
 }

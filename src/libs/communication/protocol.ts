@@ -59,10 +59,44 @@ export const MESSAGE_TYPES: readonly PicoMessageType[] = [
     'firmware',
     'connect',
     'calibrated',
+    'uploaded',
 ]
 
 /** The firmware version this build of the site expects to be talking to. */
-export const CURRENT_FIRMWARE_VERSION = '1.0.0'
+export const CURRENT_FIRMWARE_VERSION = '1.1.0'
+
+/** Framed protocol version this build speaks. */
+export const SUPPORTED_PROTOCOL_VERSION = 2
+
+/**
+ * Command names carried in a COMMAND frame.
+ *
+ * Framed commands travel by name in a frame whose kind says it is a command,
+ * so unlike the bare-line COMMANDS above, user code cannot impersonate one.
+ */
+export const FRAMED_COMMANDS = {
+    FIRMWARE_CHECK: 'firmware_check',
+    START_PROGRAM: 'start_program',
+    CALIBRATE_COLOR: 'calibrate_color',
+    RESTART: 'reset_device',
+    BOOTLOADER: 'boot_loader',
+    DISCONNECT: 'disconnect_device',
+} as const
+
+/**
+ * Pull the protocol version out of a firmware reply like "1.1.0+proto2".
+ * Firmware 1.0.0 has no suffix, which is protocol 1.
+ */
+export function parseFirmwareReply(reply: string): {
+    version: string
+    protocol: number
+} {
+    const [version, suffix] = reply.split('+proto')
+    return {
+        version: version || reply,
+        protocol: suffix ? Number.parseInt(suffix, 10) || 1 : 1,
+    }
+}
 
 /** HM-10 UART service and characteristic, shared by both Bluetooth transports. */
 export const UART_SERVICE = 0xffe0

@@ -48,12 +48,15 @@ export class USBCommunication extends BaseTransport {
         void readLoop()
     }
 
-    protected async sendMessage(message: string): Promise<void> {
+    protected async sendRaw(data: Uint8Array): Promise<void> {
         if (!this.currentWriter || this.destroyed) {
             throw new Error('Could not write to Ro/Box!')
         }
 
-        await this.currentWriter.write(`${message}\n`)
+        // The port is behind a TextEncoderStream, so bytes go out as text.
+        // Lossless for our traffic: frames and legacy messages are both valid
+        // UTF-8, so decode-then-encode reproduces them exactly.
+        await this.currentWriter.write(this.decoder.decode(data))
     }
 
     async connect(port: SerialPort): Promise<void> {

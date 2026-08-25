@@ -19,15 +19,13 @@ export abstract class BleTransport extends BaseTransport {
     protected abstract writeChunk(chunk: Uint8Array<ArrayBuffer>): Promise<void>
 
     /**
-     * Chunk by encoded bytes, not string index.
+     * Chunk by bytes, never by string index.
      *
-     * Slicing the string then encoding, as the Web Bluetooth implementation
-     * used to, overflows the MTU on any multi-byte character, since one UTF-16
-     * unit can encode to four bytes. Encoding first makes the bound exact.
+     * Slicing a string then encoding, as the Web Bluetooth implementation used
+     * to, overflows the MTU on any multi-byte character, since one UTF-16 unit
+     * can encode to four bytes. Working on bytes makes the bound exact.
      */
-    protected async sendMessage(message: string): Promise<void> {
-        const payload = this.encoder.encode(message + '\n')
-
+    protected async sendRaw(payload: Uint8Array): Promise<void> {
         for (let offset = 0; offset < payload.length; offset += BLE_CHUNK_SIZE) {
             if (this.destroyed) return
             // Copied rather than a subarray view: the Web Bluetooth typings

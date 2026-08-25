@@ -12,8 +12,15 @@ import { toast } from '@/libs/ui/toast'
 import { USBCommunication } from './usb'
 import { BluetoothCommunication } from './webBle'
 import { IOSBluetoothCommunication } from './iosBle'
-import { COMMANDS, CURRENT_FIRMWARE_VERSION } from './protocol'
+import {
+    COMMANDS,
+    CURRENT_FIRMWARE_VERSION,
+    SUPPORTED_PROTOCOL_VERSION,
+    parseFirmwareReply,
+} from './protocol'
 import { errorMessage } from './framing'
+import { uploadProgram } from './uploader'
+import { BaseTransport } from './transportBase'
 import type { BleDevice } from '@capacitor-community/bluetooth-le'
 
 type PicoEventListener<K extends keyof PicoEventMap> = (
@@ -42,6 +49,17 @@ export class Pico {
     private firmwareCheckTimeout: ReturnType<typeof setTimeout> | null = null
     private responded: boolean = false
     private firmwareConfirmed: boolean = false
+
+    /** Protocol the board speaks. 1 is the unframed legacy path. */
+    private protocolVersion: number = 1
+
+    /**
+     * Whether the program currently on the board arrived intact.
+     *
+     * Cleared the moment a new upload starts, so a failed upload cannot leave
+     * a stale pass behind and let `runCode` fire on a truncated program.
+     */
+    private uploadVerified: boolean = false
 
     constructor() {
         this.communication = null
@@ -116,6 +134,8 @@ export class Pico {
 
         this.responded = false
         this.firmwareConfirmed = false
+        this.protocolVersion = 1
+        this.uploadVerified = false
         this.updateState({
             communicationMethod: method,
             connectionStatus: ConnectionStatus.DISCONNECTED,
@@ -196,11 +216,13 @@ export class Pico {
         }
 
         if (type === 'firmware') {
+            const { version, protocol } = parseFirmwareReply(message)
             this.firmwareConfirmed = true
+            this.protocolVersion = protocol
             this.updateState({
                 firmwareStatus: FirmwareStatus.UP_TO_DATE,
                 connectionStatus: ConnectionStatus.CONNECTED,
-                firmwareVersion: message,
+                firmwareVersion: version,
             })
         } else if (type === 'connect' && this.state.isRestarting) {
             this.updateState({ connectionStatus: ConnectionStatus.CONNECTED })
@@ -213,6 +235,8 @@ export class Pico {
             this.emit('downloaded', {})
         } else if (type === 'calibrated') {
             this.emit('calibrated', { message })
+        } else if (type === 'uploaded') {
+            this.emit('uploaded', payload.message)
         } else if (type === 'error') {
             this.emit('error', { message })
             this.restart()
@@ -281,18 +305,58 @@ export class Pico {
         void this.communication?.write(COMMANDS.CALIBRATE_COLOR)
     }
 
+    /** True when the board can verify an upload rather than just accept it. */
+    get supportsVerifiedUpload(): boolean {
+        return (
+            this.protocolVersion >= SUPPORTED_PROTOCOL_VERSION &&
+            this.communication instanceof BaseTransport
+        )
+    }
+
+    /**
+     * Send a program and, on firmware that supports it, wait for the board to
+     * confirm it arrived intact.
+     *
+     * Rejects on a failed verification, so an awaiting caller cannot go on to
+     * run a truncated program. On the legacy path there is nothing to verify
+     * against, so it resolves once the writes are out, as it always did.
+     */
     async sendCode(code: string): Promise<void> {
         if (!this.communication) {
             throw new Error('No communication method set')
         }
 
+        this.uploadVerified = false
         this.updateState({ connectionStatus: ConnectionStatus.LOADING })
-        await this.communication.write(COMMANDS.START_UPLOAD)
-        await this.communication.write(code)
-        await this.communication.write(COMMANDS.END_UPLOAD)
+
+        try {
+            if (this.supportsVerifiedUpload) {
+                await uploadProgram(this.communication as BaseTransport, code)
+                this.uploadVerified = true
+            } else {
+                await this.communication.write(COMMANDS.START_UPLOAD)
+                await this.communication.write(code)
+                await this.communication.write(COMMANDS.END_UPLOAD)
+                // Nothing to check against, so treat it as good and let the
+                // board's own guard be the backstop.
+                this.uploadVerified = true
+            }
+        } catch (error) {
+            this.updateState({ connectionStatus: ConnectionStatus.CONNECTED })
+            this.emit('error', { message: errorMessage(error) })
+            throw error
+        }
     }
 
     runCode(): void {
+        if (!this.uploadVerified) {
+            this.emit('error', {
+                message:
+                    'Your program has not been sent to the Ro/Box yet, so there is nothing to run.',
+            })
+            return
+        }
+
         void this.communication?.write(COMMANDS.START_PROGRAM)
         this.updateState({ connectionStatus: ConnectionStatus.RUNNING })
     }
