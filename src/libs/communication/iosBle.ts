@@ -1,5 +1,11 @@
-import type { Communication } from 'src/types/communication'
-import type { Pico } from './communicate'
+/**
+ * iOS Bluetooth transport, via the Capacitor BLE plugin.
+ *
+ * Web Bluetooth does not exist in the Capacitor WebView, so the app talks to
+ * the same HM-10 service through the plugin instead. Everything above the
+ * plugin calls is shared with `webBle.ts`.
+ */
+
 import {
     BleClient,
     numbersToDataView,
@@ -7,201 +13,103 @@ import {
     type BleDevice,
 } from '@capacitor-community/bluetooth-le'
 
-const WRITE_TIMEOUT = 40 // ms
-const UART_SERVICE = 0xffe0
-const UART_CHARACTERISTIC = 0xffe1
-const CHUNK_SIZE = 20
+import { UART_CHARACTERISTIC, UART_SERVICE } from './protocol'
+import { BleTransport, NOT_FOUND_MESSAGE } from './bleTransport'
+import { errorMessage } from './framing'
 
-export class IOSBluetoothCommunication implements Communication {
-    destroyed: boolean = false
+const SERVICE_UUID = numberToUUID(UART_SERVICE)
+const CHARACTERISTIC_UUID = numberToUUID(UART_CHARACTERISTIC)
+
+export class IOSBluetoothCommunication extends BleTransport {
     private deviceId: string | null = null
-    private buffer: string = ''
-    private decoder: TextDecoder
-    private encoder: TextEncoder
-    private readonly notificationCallbackBound: (value: DataView) => void
-    private readonly onDisconnectBound: (deviceId: string) => void
 
-    constructor(private parent: Pico) {
-        this.decoder = new TextDecoder()
-        this.encoder = new TextEncoder()
-        this.notificationCallbackBound = this.handleNotification.bind(this)
-        this.onDisconnectBound = this.handleDisconnect.bind(this)
-    }
+    private readonly notificationBound = this.handleNotification.bind(this)
+    private readonly disconnectedBound = this.handleDisconnected.bind(this)
 
-    // Shows the native device picker on iOS (via the plugin) and calls parent.connect with the selected device.
+    /** Shows the native picker and hands the choice to the shared connect path. */
     async request(): Promise<void> {
         try {
             await BleClient.initialize()
+
             const device = await BleClient.requestDevice({
-                services: [numberToUUID(UART_SERVICE)],
+                services: [SERVICE_UUID],
                 displayMode: 'list',
             })
+
             if (!device) {
-                this.parent.emit('error', {
-                    message:
-                        'Could not request Ro/Box! Make sure you have it powered on and nearby.',
-                })
+                this.reportError(NOT_FOUND_MESSAGE)
                 return
             }
+
             await this.parent.connect(device)
         } catch (error) {
-            if (error instanceof Error && error.name === 'NotFoundError') {
-                this.parent.revertConnectionState()
-                throw error
-            } else {
-                const message =
-                    error instanceof Error
-                        ? error.message
-                        : 'Failed to connect to Ro/Box'
-                this.parent.emit('error', { message })
-            }
+            this.handleRequestFailure(error)
         }
     }
 
-    // Accepts either the BleDevice object (from requestDevice) or a saved deviceId (string).
     async connect(device: BleDevice): Promise<void> {
         const { deviceId } = device
+
         try {
             this.deviceId = deviceId
-
-            // Connect and register an onDisconnect callback
-            await BleClient.connect(deviceId, this.onDisconnectBound)
-
-            // Start notifications on our UART characteristic
+            await BleClient.connect(deviceId, this.disconnectedBound)
             this.read()
-            return
         } catch (error) {
             this.deviceId = null
-            this.buffer = ''
-            throw new Error(
-                error instanceof Error
-                    ? error.message
-                    : String(error || 'Could not connect to Ro/Box'),
-            )
+            this.resetBuffer()
+            throw new Error(errorMessage(error, 'Could not connect to Ro/Box'))
         }
     }
+
     read(): void {
         if (!this.deviceId) return
 
-        BleClient.startNotifications(
+        void BleClient.startNotifications(
             this.deviceId,
-            numberToUUID(UART_SERVICE),
-            numberToUUID(UART_CHARACTERISTIC),
-            this.notificationCallbackBound,
+            SERVICE_UUID,
+            CHARACTERISTIC_UUID,
+            this.notificationBound,
         )
-        return
-    }
-    private handleNotification(value: DataView): void {
-        if (this.destroyed) return
-
-        // DataView -> Uint8Array -> string
-        const bytes = new Uint8Array(
-            value.buffer,
-            value.byteOffset,
-            value.byteLength,
-        )
-        const chunk = this.decoder.decode(bytes)
-
-        this.buffer += chunk
-
-        const { messages, remainder } = this.parent.parseBufferedMessages(
-            this.buffer,
-        )
-        this.buffer = remainder
-
-        for (const message of messages) {
-            this.parent.handleMessage(message)
-        }
     }
 
-    private handleDisconnect(deviceId: string): void {
-        // The plugin calls our onDisconnect callback when the device disconnects
-        if (!this.deviceId) return
-        if (deviceId === this.deviceId) {
-            this.parent.disconnect()
-        }
-    }
-
-    async write(messages: string | string[]): Promise<void> {
+    protected async writeChunk(chunk: Uint8Array<ArrayBuffer>): Promise<void> {
         if (!this.deviceId) throw new Error('Not connected')
 
-        try {
-            if (Array.isArray(messages)) {
-                for (const message of messages) {
-                    if (this.destroyed) break
-                    await this.chunkedWrite(message)
-                }
-            } else {
-                if (this.destroyed) return
-                await this.chunkedWrite(messages)
-            }
-        } catch (error) {
-            const message =
-                error instanceof Error ? error.message : String(error)
-            this.parent.emit('error', { message })
-            throw new Error('Could not write to Ro/Box!', {
-                cause: error,
-            })
-        }
+        await BleClient.writeWithoutResponse(
+            this.deviceId,
+            SERVICE_UUID,
+            CHARACTERISTIC_UUID,
+            numbersToDataView(Array.from(chunk)),
+        )
     }
 
-    private async chunkedWrite(message: string): Promise<void> {
-        // ensure newline termination like web implementation
-        message += '\n'
-
-        const bytes = this.encoder.encode(message)
-
-        for (let i = 0; i < bytes.length; i += CHUNK_SIZE) {
-            const slice = bytes.slice(i, i + CHUNK_SIZE)
-            // convert to numbers array for numbersToDataView helper
-            const nums = Array.from(slice)
-            const dataView = numbersToDataView(nums)
-            await BleClient.writeWithoutResponse(
-                this.deviceId!,
-                numberToUUID(UART_SERVICE),
-                numberToUUID(UART_CHARACTERISTIC),
-                dataView,
-            )
-
-            // small pause between chunks
-            await new Promise((resolve) => setTimeout(resolve, WRITE_TIMEOUT))
-        }
+    private handleNotification(value: DataView): void {
+        this.ingestBytes(
+            new Uint8Array(value.buffer, value.byteOffset, value.byteLength),
+        )
     }
 
-    initialize(): void {
-        // No-op: initialization is handled in request() via BleClient.initialize()
+    private handleDisconnected(deviceId: string): void {
+        if (this.deviceId && deviceId === this.deviceId) {
+            void this.parent.disconnect()
+        }
     }
 
     async disconnect(): Promise<void> {
+        if (!this.deviceId) return
+
+        const deviceId = this.deviceId
+        // Cleared first so a disconnect callback fired by the plugin during
+        // teardown does not recurse back into `parent.disconnect`.
+        this.deviceId = null
+        this.resetBuffer()
+
         try {
-            if (!this.deviceId) return
-
-
-            await BleClient.disconnect(this.deviceId)
-
-            this.deviceId = null
-            this.buffer = ''
+            await BleClient.disconnect(deviceId)
         } catch (error) {
             throw new Error(
-                error instanceof Error
-                    ? error.message
-                    : String(error || 'Could not disconnect from Ro/Box'),
+                errorMessage(error, 'Could not disconnect from Ro/Box'),
             )
-        }
-    }
-
-    async destroy(): Promise<void> {
-        try {
-            this.destroyed = true
-            if (this.deviceId) {
-                try {
-                    await this.disconnect()
-                } catch {
-                    /* ignore */
-                }
-            }
-        } finally {
-            this.destroyed = true
         }
     }
 }

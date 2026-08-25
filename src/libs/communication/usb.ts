@@ -1,31 +1,30 @@
-import type { Communication, PicoMessage } from 'src/types/communication'
-import type { Pico } from './communicate'
+/**
+ * Web Serial transport.
+ *
+ * The reliable link: USB CDC does its own retransmission, so nothing arrives
+ * corrupted. It still needs the shared framer, because a `TextDecoderStream`
+ * splits its output wherever the chunk boundaries fall and a single message can
+ * straddle two reads.
+ */
+
+import { BaseTransport } from './transportBase'
+import { errorMessage } from './framing'
 
 const PI_VENDOR_ID = 0x2e8a
 
-export class USBCommunication implements Communication {
-    destroyed: boolean = false
-    private baudRate: number
+export class USBCommunication extends BaseTransport {
     private port: SerialPort | null = null
     private textEncoder: TextEncoderStream | null = null
-    private currentWriter: WritableStreamDefaultWriter | null = null
     private textDecoder: TextDecoderStream | null = null
+    private currentWriter: WritableStreamDefaultWriter | null = null
     private currentReader: ReadableStreamDefaultReader | null = null
-    private currentWriterStreamClosed: Promise<void> = Promise.resolve()
-    private currentReadableStreamClosed: Promise<void> = Promise.resolve()
-    private readonly initPortsBound = this.initPorts.bind(this)
+    private writerStreamClosed: Promise<void> = Promise.resolve()
+    private readableStreamClosed: Promise<void> = Promise.resolve()
 
-    constructor(
-        private parent: Pico,
-        baudRate = 9600,
-    ) {
-        this.baudRate = baudRate
-    }
+    private readonly initPortsBound = this.initPorts.bind(this)
 
     read(): void {
         if (!this.currentReader) return
-
-        let errorString = ''
 
         const readLoop = async () => {
             try {
@@ -37,75 +36,35 @@ export class USBCommunication implements Communication {
                         break
                     }
 
-                    let consoleMessages: PicoMessage[] = []
-
-                    try {
-                        if (typeof value !== 'string') continue
-                        consoleMessages = [JSON.parse(value)]
-                        errorString = ''
-                    } catch {
-                        errorString += value
-                        const rawErrorMessages = errorString.split('\n')
-                        let index = 0
-
-                        for (const errorMessage of rawErrorMessages) {
-                            try {
-                                if (typeof errorMessage !== 'string') {
-                                    throw new Error(
-                                        'Received non-string message from the Ro/Box!',
-                                    )
-                                }
-                                consoleMessages.push(JSON.parse(errorMessage))
-                                index += 1
-                            } catch {
-                                break
-                            }
-                        }
-
-                        rawErrorMessages.splice(0, index)
-                        errorString = rawErrorMessages.join('\n').trim()
-                    }
-
-                    for (const message of consoleMessages) {
-                        this.parent.handleMessage(message)
+                    if (typeof value === 'string') {
+                        this.ingest(value)
                     }
                 }
-            } catch (err) {
-                console.warn('USB read error:', err)
+            } catch (error) {
+                console.warn('USB read error:', error)
             }
         }
 
-        readLoop()
+        void readLoop()
     }
 
-    async write(messages: string | string[]): Promise<void> {
+    protected async sendMessage(message: string): Promise<void> {
         if (!this.currentWriter || this.destroyed) {
             throw new Error('Could not write to Ro/Box!')
         }
 
-        try {
-            if (Array.isArray(messages)) {
-                for (const message of messages) {
-                    if (this.destroyed) break
-                    await this.currentWriter.write(`${message}\n`)
-                }
-            } else {
-                await this.currentWriter.write(`${messages}\n`)
-            }
-        } catch {
-            throw new Error('Could not write to Ro/Box!')
-        }
+        await this.currentWriter.write(`${message}\n`)
     }
 
     async connect(port: SerialPort): Promise<void> {
         this.port = port
 
-        if (this.port?.readable?.locked || this.port?.writable?.locked) {
+        if (this.port.readable?.locked || this.port.writable?.locked) {
             throw new Error('Port already in use')
         }
 
         try {
-            await this.port.open({ baudRate: this.baudRate })
+            await this.port.open({ baudRate: 9600 })
         } catch {
             throw new Error(
                 'We are unable to open the port on the Ro/Box! Try resetting it? This could also be caused by another application using the Ro/Box.',
@@ -119,10 +78,10 @@ export class USBCommunication implements Communication {
         this.textEncoder = new TextEncoderStream()
         this.textDecoder = new TextDecoderStream()
 
-        this.currentWriterStreamClosed = this.textEncoder.readable.pipeTo(
+        this.writerStreamClosed = this.textEncoder.readable.pipeTo(
             this.port.writable,
         )
-        this.currentReadableStreamClosed = this.port.readable.pipeTo(
+        this.readableStreamClosed = this.port.readable.pipeTo(
             //@ts-expect-error There is a type mismatch in the Streams API typings that causes this to error, but it works correctly at runtime
             // as seen here https://github.com/microsoft/typescript/issues/62168
             this.textDecoder.writable as WritableStream<BufferSource>,
@@ -132,47 +91,6 @@ export class USBCommunication implements Communication {
         this.currentReader = this.textDecoder.readable.getReader()
 
         this.read()
-    }
-
-    async disconnect(): Promise<void> {
-        try {
-            if (this.currentReader) {
-                try {
-                    await this.currentReader.cancel()
-                    this.currentReader.releaseLock()
-                    await this.currentReadableStreamClosed?.catch(() => {})
-                } catch (error) {
-                    console.warn('Error closing reader:', error)
-                }
-            }
-
-            if (this.currentWriter) {
-                try {
-                    await this.currentWriter.close()
-                    this.currentWriter.releaseLock()
-                    await this.currentWriterStreamClosed?.catch(() => {})
-                } catch (error) {
-                    console.warn('Error closing writer:', error)
-                }
-            }
-
-            if (this.port) {
-                try {
-                    await this.port.close()
-                } catch {
-                    throw new Error('Could not close the port!')
-                }
-            }
-
-            this.textEncoder = new TextEncoderStream()
-            this.textDecoder = new TextDecoderStream()
-        } catch (error) {
-            throw new Error(
-                error instanceof Error
-                    ? error.message
-                    : String(error || 'Could not disconnect from Ro/Box!'),
-            )
-        }
     }
 
     async request(): Promise<void> {
@@ -188,13 +106,53 @@ export class USBCommunication implements Communication {
             ) {
                 this.parent.revertConnectionState()
                 throw error
-            } else {
-                this.parent.handleMessage({
-                    type: 'error',
-                    message:
-                        'Could not request Ro/Box! Make sure you have it connected via USB.',
-                })
             }
+
+            this.reportError(
+                'Could not request Ro/Box! Make sure you have it connected via USB.',
+            )
+        }
+    }
+
+    async disconnect(): Promise<void> {
+        try {
+            if (this.currentReader) {
+                try {
+                    await this.currentReader.cancel()
+                    this.currentReader.releaseLock()
+                    await this.readableStreamClosed?.catch(() => {})
+                } catch (error) {
+                    console.warn('Error closing reader:', error)
+                }
+            }
+
+            if (this.currentWriter) {
+                try {
+                    await this.currentWriter.close()
+                    this.currentWriter.releaseLock()
+                    await this.writerStreamClosed?.catch(() => {})
+                } catch (error) {
+                    console.warn('Error closing writer:', error)
+                }
+            }
+
+            if (this.port) {
+                try {
+                    await this.port.close()
+                } catch {
+                    throw new Error('Could not close the port!')
+                }
+            }
+
+            this.currentReader = null
+            this.currentWriter = null
+            this.textEncoder = null
+            this.textDecoder = null
+            this.resetBuffer()
+        } catch (error) {
+            throw new Error(
+                errorMessage(error, 'Could not disconnect from Ro/Box!'),
+            )
         }
     }
 
@@ -202,17 +160,15 @@ export class USBCommunication implements Communication {
         if (!event.target || !('getInfo' in event.target)) return
 
         const port = event.target as SerialPort
-        const portInfo = port.getInfo()
+        if (port.getInfo().usbVendorId !== PI_VENDOR_ID) return
 
-        if (portInfo.usbVendorId === PI_VENDOR_ID) {
-            if (event.type === 'connect') {
-                await this.parent.connect(port)
-            } else if (
-                event.type === 'disconnect' &&
-                !this.parent.getState().isRestarting
-            ) {
-                await this.parent.disconnect()
-            }
+        if (event.type === 'connect') {
+            await this.parent.connect(port)
+        } else if (
+            event.type === 'disconnect' &&
+            !this.parent.getState().isRestarting
+        ) {
+            await this.parent.disconnect()
         }
     }
 
@@ -232,10 +188,7 @@ export class USBCommunication implements Communication {
             )
         }
 
-        await this.disconnect()
-        this.destroyed = true
+        await super.destroy()
         this.port = null
-        this.currentReader = null
-        this.currentWriter = null
     }
 }

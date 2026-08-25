@@ -31,8 +31,24 @@ export enum FirmwareStatus {
 export type CommunicationMethod = "USB" | "WebBluetooth" | "iOSBluetooth" | null
 
 // Types
+
+/**
+ * Message types the board can send.
+ *
+ * `calibrated` was missing here while the firmware was already sending it
+ * (main.py, calibrate_color), so the framer treated every calibration
+ * confirmation as noise and dropped it.
+ */
+export type PicoMessageType =
+    | 'console'
+    | 'download'
+    | 'error'
+    | 'firmware'
+    | 'connect'
+    | 'calibrated'
+
 export interface PicoMessage {
-    type: 'console' | 'download' | 'error' | 'firmware' | 'connect'
+    type: PicoMessageType
     message: unknown
 }
 

@@ -1,108 +1,65 @@
-import type { Communication } from 'src/types/communication'
-import type { Pico } from './communicate'
+/**
+ * Web Bluetooth transport (Chromium desktop/Android).
+ *
+ * Everything shared with the iOS plugin transport -- chunking, pacing, framing,
+ * error normalisation -- lives in `bleTransport.ts` and `transportBase.ts`.
+ */
 
-const WRITE_TIMEOUT = 40
-const UART_SERVICE = 0xffe0
-const UART_CHARACTERISTIC = 0xffe1
-const CHUNK_SIZE = 20
-function numberToUUID(num: number): string {
-    return '0000' + num.toString(16) + '-0000-1000-8000-00805f9b34fb'
+import { UART_CHARACTERISTIC, UART_SERVICE } from './protocol'
+import { BleTransport, NOT_FOUND_MESSAGE } from './bleTransport'
+import { errorMessage } from './framing'
+
+/** 16-bit UUID expanded to the full Bluetooth base UUID. */
+function numberToUUID(value: number): string {
+    return `0000${value.toString(16).padStart(4, '0')}-0000-1000-8000-00805f9b34fb`
 }
-export class BluetoothCommunication implements Communication {
-    destroyed: boolean = false
+
+const SERVICE_UUID = numberToUUID(UART_SERVICE)
+const CHARACTERISTIC_UUID = numberToUUID(UART_CHARACTERISTIC)
+
+export class BluetoothCommunication extends BleTransport {
     private device: BluetoothDevice | null = null
     private server: BluetoothRemoteGATTServer | null = null
     private characteristic: BluetoothRemoteGATTCharacteristic | null = null
-    private decoder: TextDecoder
-    private encoder: TextEncoder
-    private buffer: string = ''
-    private readonly valueChangedBound = this.valueChanged.bind(this)
-    private readonly initPortsBound = this.initPorts.bind(this)
 
-    constructor(private parent: Pico) {
-        this.decoder = new TextDecoder()
-        this.encoder = new TextEncoder()
-    }
+    private readonly valueChangedBound = this.valueChanged.bind(this)
+    private readonly disconnectedBound = this.handleDisconnected.bind(this)
 
     async request(): Promise<void> {
         try {
             const device = await navigator.bluetooth.requestDevice({
-                filters: [{ services: [numberToUUID(UART_SERVICE)] }],
-                optionalServices: [UART_SERVICE],
+                filters: [{ services: [SERVICE_UUID] }],
             })
 
             if (!device) {
-                this.parent.handleMessage({
-                    type: 'error',
-                    message:
-                        'Could not request Ro/Box! Make sure you have it powered on and nearby.',
-                })
+                this.reportError(NOT_FOUND_MESSAGE)
                 return
             }
 
             await this.parent.connect(device)
         } catch (error) {
-            if (
-                error instanceof DOMException &&
-                error.name === 'NotFoundError'
-            ) {
-                this.parent.revertConnectionState()
-                throw error
-            } else {
-                const message =
-                    error instanceof Error ? error.message : String(error)
-                this.parent.handleMessage({ type: 'error', message })
-            }
+            this.handleRequestFailure(error)
         }
     }
 
     async connect(device: BluetoothDevice): Promise<void> {
         this.device = device
-        this.server = (await device.gatt?.connect()) || null
-        const service =
-            (await this.server?.getPrimaryService(UART_SERVICE)) || null
+        this.server = (await device.gatt?.connect()) ?? null
+
+        const service = (await this.server?.getPrimaryService(SERVICE_UUID)) ?? null
         this.characteristic =
-            (await service?.getCharacteristic(UART_CHARACTERISTIC)) || null
-        await this.characteristic?.startNotifications()
+            (await service?.getCharacteristic(CHARACTERISTIC_UUID)) ?? null
 
         if (!this.server || !this.characteristic) {
             throw new Error('Could not connect to Ro/Box! Try resetting it?')
         }
 
+        await this.characteristic.startNotifications()
         this.device.addEventListener(
             'gattserverdisconnected',
-            this.initPortsBound,
+            this.disconnectedBound,
         )
         this.read()
-    }
-
-    private valueChanged(event: Event): void {
-        if (this.destroyed) return
-        if (event.type !== 'characteristicvaluechanged') return
-
-        const target = event.target
-        if (
-            !target ||
-            !('value' in target) ||
-            typeof target.value === 'undefined'
-        )
-            return
-        const rawValue = target.value
-        if (!rawValue || !(rawValue instanceof DataView)) return
-
-        const value = this.decoder.decode(rawValue)
-        if (typeof value !== 'string') return
-
-        this.buffer += value
-        const { messages, remainder } = this.parent.parseBufferedMessages(
-            this.buffer,
-        )
-
-        this.buffer = remainder
-
-        for (const message of messages) {
-            this.parent.handleMessage(message)
-        }
     }
 
     read(): void {
@@ -112,48 +69,24 @@ export class BluetoothCommunication implements Communication {
         )
     }
 
-    private async chunkedWrite(message: string): Promise<void> {
-        message += '\n'
-        for (let i = 0; i < message.length; i += CHUNK_SIZE) {
-            const chunk = message.slice(i, i + CHUNK_SIZE)
-            const data = this.encoder.encode(chunk)
-            await this.characteristic?.writeValueWithoutResponse(data)
-
-            await new Promise((resolve) => setTimeout(resolve, WRITE_TIMEOUT))
-        }
+    protected async writeChunk(chunk: Uint8Array<ArrayBuffer>): Promise<void> {
+        // Fire-and-forget: writeValueWithResponse costs a round trip per
+        // 20 bytes, which the upload path cannot afford.
+        await this.characteristic?.writeValueWithoutResponse(chunk)
     }
 
-    async write(messages: string | string[]): Promise<void> {
-        try {
-            if (Array.isArray(messages)) {
-                for (const message of messages) {
-                    if (this.destroyed) break
-                    await this.chunkedWrite(message)
-                }
-            } else {
-                if (this.destroyed) return
-                await this.chunkedWrite(messages)
-            }
-        } catch (error) {
-            const message =
-                error instanceof Error ? error.message : String(error)
-            this.parent.handleMessage({ type: 'error', message })
-            throw new Error('Could not write to Ro/Box!', { cause: error })
-        }
+    private valueChanged(event: Event): void {
+        const target = event.target as BluetoothRemoteGATTCharacteristic | null
+        const value = target?.value
+        if (!value) return
+
+        this.ingestBytes(value)
     }
 
-    initialize(): void {
-        return
-    }
-
-    private initPorts(event: Event): void {
-        if (!event.target) return
-
-        const device = event.target as BluetoothDevice
-        if (device.name && device.name.startsWith('RoBox')) {
-            if (event.type === 'gattserverdisconnected') {
-                this.parent.disconnect()
-            }
+    private handleDisconnected(event: Event): void {
+        const device = event.target as BluetoothDevice | null
+        if (device?.name?.startsWith('RoBox')) {
+            void this.parent.disconnect()
         }
     }
 
@@ -161,10 +94,10 @@ export class BluetoothCommunication implements Communication {
         try {
             this.device?.removeEventListener(
                 'gattserverdisconnected',
-                this.initPortsBound,
+                this.disconnectedBound,
             )
 
-            if (this.server && this.server.connected && this.characteristic) {
+            if (this.server?.connected && this.characteristic) {
                 await this.characteristic.stopNotifications()
                 this.characteristic.removeEventListener(
                     'characteristicvaluechanged',
@@ -172,28 +105,18 @@ export class BluetoothCommunication implements Communication {
                 )
             }
 
-            if (this.server && this.server.connected) {
+            if (this.server?.connected) {
                 this.server.disconnect()
             }
 
             this.device = null
             this.server = null
             this.characteristic = null
+            this.resetBuffer()
         } catch (error) {
             throw new Error(
-                error instanceof Error
-                    ? error.message
-                    : String(error || 'Could not disconnect from Ro/Box!'),
+                errorMessage(error, 'Could not disconnect from Ro/Box!'),
             )
         }
-    }
-
-    async destroy(): Promise<void> {
-        this.device?.removeEventListener(
-            'gattserverdisconnected',
-            this.initPortsBound,
-        )
-        await this.disconnect()
-        this.destroyed = true
     }
 }

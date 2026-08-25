@@ -12,18 +12,9 @@ import { toast } from '@/libs/ui/toast'
 import { USBCommunication } from './usb'
 import { BluetoothCommunication } from './webBle'
 import { IOSBluetoothCommunication } from './iosBle'
+import { COMMANDS, CURRENT_FIRMWARE_VERSION } from './protocol'
+import { errorMessage } from './framing'
 import type { BleDevice } from '@capacitor-community/bluetooth-le'
-
-const COMMANDS = {
-    FIRMWARE_CHECK: 'x01FIRMCHECK\r',
-    START_UPLOAD: 'x02BEGINUPLD\r',
-    END_UPLOAD: 'x03ENDUPLD\r',
-    START_PROGRAM: 'x04STARTPROG\r',
-    CALIBRATE_COLOR: 'x05COLORCALIBRATE\r',
-    RESTART: 'x06RESTART\r',
-    BOOTLOADER: 'x07BOOTLOADER\r',
-    KEYBOARD_INTERRUPT: '\x03\n',
-} as const
 
 type PicoEventListener<K extends keyof PicoEventMap> = (
     data: PicoEventMap[K],
@@ -31,7 +22,12 @@ type PicoEventListener<K extends keyof PicoEventMap> = (
 
 type PicoEventHandler = (data: unknown) => void
 
-const CURRENT_FIRMWARE_VERSION = '1.0.0'
+/**
+ * The board's own send throttle plus the chunked write latency mean a reply can
+ * take well over half a second to arrive, so this has to be generous or a
+ * healthy board gets reported as unresponsive.
+ */
+const FIRMWARE_CHECK_TIMEOUT_MS = 2500
 
 const revertStateMapping: Partial<Record<ConnectionStatus, ConnectionStatus>> = {
     [ConnectionStatus.CONNECTING]: ConnectionStatus.DISCONNECTED,
@@ -59,116 +55,9 @@ export class Pico {
         }
     }
 
-    static parseBufferedMessages(buffer: string): {
-        messages: PicoMessage[]
-        remainder: string
-    } {
-        // Remove control characters that can corrupt JSON framing (e.g. null bytes from BLE payloads).
-        const sanitized = buffer.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
-        const messages: PicoMessage[] = []
-        let cursor = 0
-        let firstIncompleteStart = -1
-
-        while (cursor < sanitized.length) {
-            const start = sanitized.indexOf('{', cursor)
-            if (start === -1) {
-                break
-            }
-
-            const end = Pico.findJsonObjectEnd(sanitized, start)
-            if (end === -1) {
-                if (firstIncompleteStart === -1) {
-                    firstIncompleteStart = start
-                }
-                // Keep scanning: a later '{' may begin a valid JSON object even if this one is malformed.
-                cursor = start + 1
-                continue
-            }
-
-            const candidate = sanitized.slice(start, end + 1)
-
-            try {
-                const parsed: unknown = JSON.parse(candidate)
-                if (Pico.isPicoMessage(parsed)) {
-                    messages.push(parsed)
-                    cursor = end + 1
-                    firstIncompleteStart = -1
-                    continue
-                }
-            } catch {
-                // Ignore malformed object and continue searching from the next '{'.
-            }
-
-            cursor = start + 1
-        }
-        const remainder =
-            firstIncompleteStart === -1
-                ? ''
-                : sanitized.slice(firstIncompleteStart)
-
-        return { messages, remainder }
-    }
-
-    private static findJsonObjectEnd(input: string, startIndex: number): number {
-        let depth = 0
-        let inString = false
-        let escaped = false
-
-        for (let i = startIndex; i < input.length; i += 1) {
-            const char = input[i]
-
-            if (inString) {
-                if (escaped) {
-                    escaped = false
-                } else if (char === '\\') {
-                    escaped = true
-                } else if (char === '"') {
-                    inString = false
-                }
-                continue
-            }
-
-            if (char === '"') {
-                inString = true
-                continue
-            }
-
-            if (char === '{') {
-                depth += 1
-            } else if (char === '}') {
-                depth -= 1
-                if (depth === 0) {
-                    return i
-                }
-                if (depth < 0) {
-                    return -1
-                }
-            }
-        }
-
-        return -1
-    }
-
-    private static isPicoMessage(value: unknown): value is PicoMessage {
-        if (!value || typeof value !== 'object') return false
-        if (!('type' in value) || !('message' in value)) return false
-
-        const { type, message } = value as Record<string, unknown>
-
-        const validTypes = ['console', 'download', 'error', 'firmware', 'connect']
-        return typeof type === 'string' && validTypes.includes(type) && typeof message !== 'undefined'
-    }
-
     // Public getters for state
     getState(): PicoState {
         return { ...this.state }
-    }
-
-    parseBufferedMessages(buffer: string): {
-        messages: PicoMessage[]
-        remainder: string
-    } {
-        return Pico.parseBufferedMessages(buffer)
     }
 
     isConnected(): boolean {
@@ -254,18 +143,16 @@ export class Pico {
 
         try {
             await this.communication.connect(port)
-            
+
             toast.success({
                 title: 'Ro/Box Connected',
                 message: 'Your Ro/Box is connected and ready to run.',
                 durationMs: 3000,
             })
-            
+
             this.firmwareCheck()
         } catch (error) {
-            const message =
-                error instanceof Error ? error.message : String(error)
-            this.emit('error', { message })
+            this.emit('error', { message: errorMessage(error) })
         }
     }
 
@@ -287,19 +174,27 @@ export class Pico {
                 firmwareStatus: FirmwareStatus.UNKNOWN,
             })
         } catch (error) {
-            const message =
-                error instanceof Error ? error.message : String(error)
-            this.emit('error', { message })
+            this.emit('error', { message: errorMessage(error) })
         }
     }
 
+    /**
+     * A message that genuinely came from the board.
+     *
+     * Host-side failures must not come through here: an `error` arriving from
+     * the board restarts it, which is right for a crashed user program and very
+     * wrong for a cancelled device picker. Transports call `emit('error')`
+     * directly for their own failures.
+     */
     handleMessage(payload: PicoMessage): void {
         const { type } = payload
         const message = String(payload.message)
+
         // First message means we're connected
         if (!this.responded) {
             this.responded = true
         }
+
         if (type === 'firmware') {
             this.firmwareConfirmed = true
             this.updateState({
@@ -311,7 +206,13 @@ export class Pico {
             this.updateState({ connectionStatus: ConnectionStatus.CONNECTED })
         } else if (type === 'console') {
             this.emit('console', { message })
-
+        } else if (type === 'download') {
+            // The board confirming it finished writing program.py. Previously
+            // parsed and then dropped on the floor, which is why the run
+            // command could be sent before the upload had landed.
+            this.emit('downloaded', {})
+        } else if (type === 'calibrated') {
+            this.emit('calibrated', { message })
         } else if (type === 'error') {
             this.emit('error', { message })
             this.restart()
@@ -330,29 +231,27 @@ export class Pico {
                 (!this.firmwareConfirmed && this.responded) ||
                 (this.responded && hasWrongVersion)
             ) {
-                const errorMessage = `The firmware running on the Ro/Box (${this.state.firmwareVersion}) is out of date! Please update it.`
+                const message = `The firmware running on the Ro/Box (${this.state.firmwareVersion}) is out of date! Please update it.`
                 this.updateState({
                     connectionStatus: ConnectionStatus.DISCONNECTED,
                     firmwareStatus: FirmwareStatus.OUT_OF_DATE,
                 })
-                this.emit('error', { message: errorMessage })
+                this.emit('error', { message })
             } else if (!this.firmwareConfirmed && !this.responded) {
-                const errorMessage =
+                const message =
                     'Ro/Box did not respond to the firmware check! Please try disconnecting and reconnecting it. If this issue persists, try reflashing the Ro/Box.'
                 this.updateState({
                     connectionStatus: ConnectionStatus.DISCONNECTED,
                     firmwareStatus: FirmwareStatus.NO_RESPONSE,
                 })
-                this.emit('error', { message: errorMessage })
+                this.emit('error', { message })
             }
-        }, 1000)
+        }, FIRMWARE_CHECK_TIMEOUT_MS)
     }
 
     write(command: string | string[]): void {
         this.communication?.write(command).catch((error) => {
-            const message =
-                error instanceof Error ? error.message : String(error)
-            this.emit('error', { message })
+            this.emit('error', { message: errorMessage(error) })
         })
     }
 
@@ -361,11 +260,11 @@ export class Pico {
             connectionStatus: ConnectionStatus.RESTARTING,
             isRestarting: true,
         })
-        this.communication?.write(COMMANDS.RESTART)
+        void this.communication?.write(COMMANDS.RESTART)
     }
 
     bootloaderMode(): void {
-        this.communication?.write(COMMANDS.BOOTLOADER)
+        void this.communication?.write(COMMANDS.BOOTLOADER)
     }
 
     request(): void {
@@ -379,21 +278,22 @@ export class Pico {
     }
 
     colorCalibrate(): void {
-        this.communication?.write(COMMANDS.CALIBRATE_COLOR)
+        void this.communication?.write(COMMANDS.CALIBRATE_COLOR)
     }
 
     async sendCode(code: string): Promise<void> {
-        if (!this.communication)
-            return Promise.reject(new Error('No communication method set'))
+        if (!this.communication) {
+            throw new Error('No communication method set')
+        }
+
         this.updateState({ connectionStatus: ConnectionStatus.LOADING })
         await this.communication.write(COMMANDS.START_UPLOAD)
         await this.communication.write(code)
         await this.communication.write(COMMANDS.END_UPLOAD)
-        return Promise.resolve()
     }
 
     runCode(): void {
-        this.communication?.write(COMMANDS.START_PROGRAM)
+        void this.communication?.write(COMMANDS.START_PROGRAM)
         this.updateState({ connectionStatus: ConnectionStatus.RUNNING })
     }
 }
