@@ -37,6 +37,8 @@ export interface UploadResult {
     expectedChecksum: string
     retransmits: number
     frames: number
+    /** Pacing state after the upload, when the transport paces itself. */
+    pacing: Record<string, number> | null
     /** Present when the board reported a problem instead of a verdict. */
     error?: string
 }
@@ -85,10 +87,14 @@ export async function uploadProgram(
     const onFrame = (frame: Frame) => {
         if (frame.kind === Kind.ACK) {
             const { expectedSeq, credit } = parseFlow(frame.payload)
-            window.onAck(expectedSeq, credit)
+            const advanced = window.onAck(expectedSeq, credit)
+            // Only an ACK that actually moved the window is evidence the link
+            // is coping. A repeat of one we already had proves nothing.
+            if (advanced) transport.notePacingClean()
         } else if (frame.kind === Kind.NAK) {
             const { expectedSeq } = parseFlow(frame.payload)
             window.onNak(expectedSeq)
+            transport.notePacingLoss()
         }
     }
 
@@ -141,6 +147,9 @@ export async function uploadProgram(
                     )
                 }
                 window.rewindToBase()
+                // A silent peer is the same evidence as a NAK: we are offering
+                // faster than it can take.
+                transport.notePacingLoss()
                 lastProgress = Date.now()
             } else {
                 await delay(5)
@@ -176,6 +185,7 @@ export async function uploadProgram(
             expectedChecksum,
             retransmits: window.retransmits,
             frames: window.total,
+            pacing: transport.pacingStats(),
         }
 
         if (!result.verified) {

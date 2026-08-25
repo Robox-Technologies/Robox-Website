@@ -92,20 +92,5 @@ export function meetsMinimumVersion(version: string, minimum: string): boolean {
 export const UART_SERVICE = 0xffe0
 export const UART_CHARACTERISTIC = 0xffe1
 
-/**
- * Bytes per write-without-response. 20 is the guaranteed-safe ATT payload for
- * the default 23-byte MTU, which is all the HM-10 negotiates.
- */
-export const BLE_CHUNK_SIZE = 20
-
-/**
- * Pacing between chunks, in milliseconds.
- *
- * The credit window bounds how much is in flight relative to the *board's*
- * UART buffer, but the HM-10 in between drains to the board at only 9600 baud
- * (960 B/s) and has a small buffer of its own, so writes still have to be
- * paced or that buffer is what overflows. 20 bytes at 960 B/s is 20.8 ms, so
- * this is roughly 2x conservative; `tools/comm-bench --chunk-delay-ms` in the
- * firmware repo exists to find the real floor on hardware.
- */
-export const BLE_WRITE_DELAY_MS = 40
+// Chunk size and pacing live in frames.ts, next to the AdaptivePacer that
+// decides them.

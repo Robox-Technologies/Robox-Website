@@ -7,13 +7,21 @@
  * they live here.
  */
 
-import { BLE_CHUNK_SIZE, BLE_WRITE_DELAY_MS } from './protocol'
+import { AdaptivePacer, BLE_CHUNK_SIZE } from './frames'
 import { BaseTransport, delay, errorMessage } from './transportBase'
 
 export const NOT_FOUND_MESSAGE =
     'Could not request Ro/Box! Make sure you have it powered on and nearby.'
 
 export abstract class BleTransport extends BaseTransport {
+    /**
+     * Inter-chunk pacing for this connection, tuned from observed loss.
+     *
+     * Lives on the transport rather than the upload, so what the link taught
+     * us survives into the next one.
+     */
+    readonly pacer = new AdaptivePacer()
+
     /** Push one MTU-sized chunk over the link. */
     protected abstract writeChunk(chunk: Uint8Array<ArrayBuffer>): Promise<void>
 
@@ -38,8 +46,22 @@ export abstract class BleTransport extends BaseTransport {
                     payload.subarray(offset, offset + BLE_CHUNK_SIZE),
                 ),
             )
-            await delay(BLE_WRITE_DELAY_MS)
+            // Read fresh each time, so a mid-upload backoff takes effect on
+            // the very next chunk rather than the next upload.
+            await delay(this.pacer.delayMs)
         }
+    }
+
+    notePacingClean(): void {
+        this.pacer.onCleanBatch()
+    }
+
+    notePacingLoss(): void {
+        this.pacer.onLoss()
+    }
+
+    pacingStats(): Record<string, number> {
+        return { ...this.pacer.stats() }
     }
 
     /**

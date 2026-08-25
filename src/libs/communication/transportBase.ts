@@ -149,6 +149,20 @@ export abstract class BaseTransport implements Communication {
         this.flowListener = listener
     }
 
+    /**
+     * Pacing feedback from the uploader.
+     *
+     * Only BLE paces itself, so these are no-ops elsewhere: USB is a reliable
+     * stream with its own flow control and nothing to tune.
+     */
+    notePacingClean(): void {}
+    notePacingLoss(): void {}
+
+    /** Pacing state for reporting, when the transport has any. */
+    pacingStats(): Record<string, number> | null {
+        return null
+    }
+
     // === receiving ===
 
     /**

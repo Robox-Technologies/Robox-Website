@@ -11,6 +11,12 @@ import { describe, expect, it } from 'vitest'
 import vectors from './vectors/frames.json'
 import {
     ACK_EVERY,
+    AdaptivePacer,
+    BLE_CHUNK_SIZE,
+    MAX_CHUNK_DELAY_MS,
+    MIN_CHUNK_DELAY_MS,
+    START_CHUNK_DELAY_MS,
+    UART_BYTES_PER_SECOND,
     CreditWindow,
     DEFAULT_CREDIT,
     FRAME_OVERHEAD,
@@ -480,4 +486,100 @@ describe('recovery over a lossy link', () => {
             expect(result.verified).toBe(true)
         },
     )
+})
+
+describe('AdaptivePacer', () => {
+    it('derives its floor from the UART drain time', () => {
+        // Arithmetic, not a tuning guess: the time the HM-10 needs to forward
+        // one chunk to the board.
+        const drainMs = (BLE_CHUNK_SIZE * 1000) / UART_BYTES_PER_SECOND
+        expect(MIN_CHUNK_DELAY_MS).toBeGreaterThan(drainMs)
+        expect(MIN_CHUNK_DELAY_MS).toBeLessThan(drainMs + 2)
+    })
+
+    it('probes down to the floor on a clean link and stops', () => {
+        const pacer = new AdaptivePacer()
+        for (let i = 0; i < 500; i += 1) pacer.onCleanBatch()
+        expect(pacer.delayMs).toBe(MIN_CHUNK_DELAY_MS)
+    })
+
+    it('never goes below the floor', () => {
+        const pacer = new AdaptivePacer(MIN_CHUNK_DELAY_MS)
+        for (let i = 0; i < 50; i += 1) {
+            pacer.onCleanBatch()
+            expect(pacer.delayMs).toBeGreaterThanOrEqual(MIN_CHUNK_DELAY_MS)
+        }
+    })
+
+    it('requires a streak before probing', () => {
+        const pacer = new AdaptivePacer(
+            40,
+            MIN_CHUNK_DELAY_MS,
+            MAX_CHUNK_DELAY_MS,
+            3,
+        )
+        pacer.onCleanBatch()
+        pacer.onCleanBatch()
+        expect(pacer.delayMs).toBe(40)
+        pacer.onCleanBatch()
+        expect(pacer.delayMs).toBeLessThan(40)
+    })
+
+    it('backs off multiplicatively on loss', () => {
+        const pacer = new AdaptivePacer(30)
+        pacer.onLoss()
+        expect(pacer.delayMs).toBeGreaterThan(30)
+        expect(pacer.delayMs).toBeLessThanOrEqual(MAX_CHUNK_DELAY_MS)
+    })
+
+    it('resets the clean streak on loss', () => {
+        // Otherwise one clean batch after loss would probe straight back down.
+        const pacer = new AdaptivePacer(
+            40,
+            MIN_CHUNK_DELAY_MS,
+            MAX_CHUNK_DELAY_MS,
+            2,
+        )
+        pacer.onCleanBatch()
+        pacer.onLoss()
+        const before = pacer.delayMs
+        pacer.onCleanBatch()
+        expect(pacer.delayMs).toBe(before)
+    })
+
+    it('is capped above', () => {
+        const pacer = new AdaptivePacer(MAX_CHUNK_DELAY_MS)
+        expect(pacer.onLoss()).toBe(false)
+        expect(pacer.delayMs).toBe(MAX_CHUNK_DELAY_MS)
+    })
+
+    it.each([24, 28, 34, 45])(
+        'converges near a link whose true capacity is %ims',
+        (capacity) => {
+            // The controller cannot know `capacity`; it only sees loss.
+            const pacer = new AdaptivePacer()
+            const seen: number[] = []
+            for (let i = 0; i < 400; i += 1) {
+                if (pacer.delayMs < capacity) pacer.onLoss()
+                else pacer.onCleanBatch()
+                seen.push(pacer.delayMs)
+            }
+
+            const settled = seen.slice(-100)
+            expect(Math.min(...settled)).toBeGreaterThanOrEqual(
+                MIN_CHUNK_DELAY_MS,
+            )
+            const average = settled.reduce((a, b) => a + b, 0) / settled.length
+            expect(Math.abs(average - capacity)).toBeLessThan(capacity * 0.35)
+        },
+    )
+
+    it('keeps what it learned for the next upload', () => {
+        const pacer = new AdaptivePacer()
+        for (let i = 0; i < 20; i += 1) pacer.onCleanBatch()
+        const learned = pacer.delayMs
+        expect(learned).toBeLessThan(START_CHUNK_DELAY_MS)
+        pacer.onCleanBatch()
+        expect(pacer.delayMs).toBeLessThanOrEqual(learned)
+    })
 })

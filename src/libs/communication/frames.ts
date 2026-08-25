@@ -47,6 +47,134 @@ export const DEFAULT_CREDIT = 2048
 /** What the sender assumes before the first ACK. */
 export const INITIAL_CREDIT = 512
 
+// === pacing ===
+//
+// Credit bounds what the *board* buffers. It says nothing about the HM-10 in
+// between, which drains to the board over a 9600 baud UART and has a small
+// buffer of its own, so writes have to be paced as well.
+
+/** Bytes per BLE write-without-response. */
+export const BLE_CHUNK_SIZE = 20
+
+/** HM-10 UART egress: 9600 baud, 8N1, ten bits on the wire per byte. */
+export const UART_BYTES_PER_SECOND = 960
+
+/**
+ * The floor, and it is arithmetic rather than a guess: the time the module
+ * needs to forward one chunk to the board. Pace faster than this and bytes are
+ * offered faster than they can leave, so overflow is certain given enough of
+ * them. Measured sweeps agree: 25ms held with strain, 20ms collapsed to a
+ * seventh of the goodput at 7x the wire traffic.
+ */
+export const MIN_CHUNK_DELAY_MS =
+    Math.floor((BLE_CHUNK_SIZE * 1000) / UART_BYTES_PER_SECOND) + 1
+
+/**
+ * Where a fresh connection starts. Deliberately well clear of the floor: the
+ * first upload should be safe, not fast.
+ */
+export const START_CHUNK_DELAY_MS = 40
+
+/** Ceiling, for a link bad enough that backing off keeps helping. */
+export const MAX_CHUNK_DELAY_MS = 120
+
+/** Clean acknowledged batches required before probing faster. */
+export const CLEAN_BATCHES_BEFORE_PROBE = 2
+
+/** Milliseconds shaved per probe. */
+export const PROBE_STEP_MS = 2
+
+/**
+ * Multiplier applied on loss. Backing off hard and probing back gently is the
+ * right asymmetry here, because the downside of being too fast is a collapse
+ * and the downside of being too slow is a few percent.
+ */
+export const BACKOFF_FACTOR = 1.3
+
+export interface PacerStats {
+    delayMs: number
+    fastestMs: number
+    slowestMs: number
+    probes: number
+    backoffs: number
+    floorMs: number
+}
+
+/**
+ * Chooses the inter-chunk delay from the loss the link is showing.
+ *
+ * Additive decrease, multiplicative increase, on the delay. A fixed constant
+ * cannot be right for every board: the same firmware runs behind HM-10s of
+ * varying quality, at varying distances, in varying interference. The protocol
+ * already produces the signal needed to tune it, so this uses it.
+ *
+ * State lives on the connection rather than the upload, so a second upload
+ * starts from what the link already taught us instead of probing again.
+ *
+ * Mirrors AdaptivePacer in src/protocol.py.
+ */
+export class AdaptivePacer {
+    private cleanStreak = 0
+
+    probes = 0
+    backoffs = 0
+    fastestMs: number
+    slowestMs: number
+
+    constructor(
+        public delayMs: number = START_CHUNK_DELAY_MS,
+        readonly minimumMs: number = MIN_CHUNK_DELAY_MS,
+        readonly maximumMs: number = MAX_CHUNK_DELAY_MS,
+        readonly cleanBeforeProbe: number = CLEAN_BATCHES_BEFORE_PROBE,
+        readonly probeStepMs: number = PROBE_STEP_MS,
+        readonly backoff: number = BACKOFF_FACTOR,
+    ) {
+        this.delayMs = this.clamp(delayMs)
+        this.fastestMs = this.delayMs
+        this.slowestMs = this.delayMs
+    }
+
+    private clamp(value: number): number {
+        return Math.max(this.minimumMs, Math.min(this.maximumMs, value))
+    }
+
+    /** A batch was acknowledged with nothing lost. Consider probing. */
+    onCleanBatch(): boolean {
+        this.cleanStreak += 1
+        if (this.cleanStreak < this.cleanBeforeProbe) return false
+
+        this.cleanStreak = 0
+        if (this.delayMs <= this.minimumMs) return false
+
+        this.delayMs = this.clamp(this.delayMs - this.probeStepMs)
+        this.probes += 1
+        this.fastestMs = Math.min(this.fastestMs, this.delayMs)
+        return true
+    }
+
+    /** A NAK, a damaged frame, or a timeout. Back off. */
+    onLoss(): boolean {
+        this.cleanStreak = 0
+        if (this.delayMs >= this.maximumMs) return false
+
+        this.delayMs = this.clamp(Math.round(this.delayMs * this.backoff))
+        this.backoffs += 1
+        this.slowestMs = Math.max(this.slowestMs, this.delayMs)
+        return true
+    }
+
+    stats(): PacerStats {
+        return {
+            delayMs: this.delayMs,
+            fastestMs: this.fastestMs,
+            slowestMs: this.slowestMs,
+            probes: this.probes,
+            backoffs: this.backoffs,
+            floorMs: this.minimumMs,
+        }
+    }
+}
+
 export class ProtocolError extends Error {}
 
 // === CRC-32 ===
@@ -498,11 +626,16 @@ export class CreditWindow {
         this.nextIndex = Math.min(this.frames.length, this.nextIndex + count)
     }
 
-    onAck(expectedSeq: number, credit: number): void {
+    /** Returns true when the acknowledgement actually moved the window. */
+    onAck(expectedSeq: number, credit: number): boolean {
         if (credit) this.credit = credit
+
         const index = this.indexForSeq(expectedSeq)
-        if (index > this.base) this.base = Math.min(index, this.frames.length)
+        if (index <= this.base) return false
+
+        this.base = Math.min(index, this.frames.length)
         if (this.nextIndex < this.base) this.nextIndex = this.base
+        return true
     }
 
     /** Rewind so transmission resumes where the receiver wants. */
