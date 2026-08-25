@@ -48,7 +48,7 @@ export abstract class BleTransport extends BaseTransport {
             )
             // Read fresh each time, so a mid-upload backoff takes effect on
             // the very next chunk rather than the next upload.
-            await delay(this.pacer.delayMs)
+            await delay(this.pacer.takeDelayMs())
         }
     }
 
@@ -60,7 +60,7 @@ export abstract class BleTransport extends BaseTransport {
         this.pacer.onLoss()
     }
 
-    pacingStats(): Record<string, number> {
+    pacingStats(): Record<string, number | null> {
         return { ...this.pacer.stats() }
     }
 

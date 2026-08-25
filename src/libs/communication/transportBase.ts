@@ -159,7 +159,7 @@ export abstract class BaseTransport implements Communication {
     notePacingLoss(): void {}
 
     /** Pacing state for reporting, when the transport has any. */
-    pacingStats(): Record<string, number> | null {
+    pacingStats(): Record<string, number | null> | null {
         return null
     }
 

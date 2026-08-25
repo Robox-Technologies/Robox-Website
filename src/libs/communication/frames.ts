@@ -75,28 +75,34 @@ export const MIN_CHUNK_DELAY_MS =
  */
 export const START_CHUNK_DELAY_MS = 40
 
-/** Ceiling, for a link bad enough that backing off keeps helping. */
-export const MAX_CHUNK_DELAY_MS = 120
+/**
+ * Ceiling. Past this the link is not slow, it is broken, and crawling is worse
+ * than reporting a failure.
+ */
+export const MAX_CHUNK_DELAY_MS = 80
 
 /** Clean acknowledged batches required before probing faster. */
 export const CLEAN_BATCHES_BEFORE_PROBE = 2
 
-/** Milliseconds shaved per probe. */
-export const PROBE_STEP_MS = 2
-
 /**
- * Multiplier applied on loss. Backing off hard and probing back gently is the
- * right asymmetry here, because the downside of being too fast is a collapse
- * and the downside of being too slow is a few percent.
+ * Fraction shaved per probe. Proportional rather than a fixed step so the time
+ * to recover from a backoff does not depend on how far it went: a fixed 2ms
+ * step needed eighty acknowledgements to come back from 100ms, which is longer
+ * than most uploads, so the controller spent its life crawling downhill.
  */
-export const BACKOFF_FACTOR = 1.3
+export const PROBE_FRACTION = 0.1
+
+/** Multiplier applied per loss *episode*. */
+export const BACKOFF_FACTOR = 1.25
 
 export interface PacerStats {
     delayMs: number
+    meanDelayMs: number | null
     fastestMs: number
     slowestMs: number
     probes: number
     backoffs: number
+    episodesIgnored: number
     floorMs: number
 }
 
@@ -116,17 +122,33 @@ export interface PacerStats {
 export class AdaptivePacer {
     private cleanStreak = 0
 
+    /**
+     * One backoff per loss episode, not per lost frame.
+     *
+     * Go-back-N resends a whole run of frames after a gap, so a single bad
+     * patch of radio draws a NAK for each one. Reacting to every NAK compounded
+     * the factor six times over and sent the delay to the ceiling for something
+     * that warranted one step. Rearmed by the next clean acknowledgement, which
+     * is the evidence the episode is over.
+     */
+    private armed = true
+
     probes = 0
     backoffs = 0
+    episodesIgnored = 0
     fastestMs: number
     slowestMs: number
+
+    /** Time-weighted, via the chunks actually paced. */
+    private pacedChunks = 0
+    private delayMsTotal = 0
 
     constructor(
         public delayMs: number = START_CHUNK_DELAY_MS,
         readonly minimumMs: number = MIN_CHUNK_DELAY_MS,
         readonly maximumMs: number = MAX_CHUNK_DELAY_MS,
         readonly cleanBeforeProbe: number = CLEAN_BATCHES_BEFORE_PROBE,
-        readonly probeStepMs: number = PROBE_STEP_MS,
+        readonly probeFraction: number = PROBE_FRACTION,
         readonly backoff: number = BACKOFF_FACTOR,
     ) {
         this.delayMs = this.clamp(delayMs)
@@ -140,21 +162,35 @@ export class AdaptivePacer {
 
     /** A batch was acknowledged with nothing lost. Consider probing. */
     onCleanBatch(): boolean {
+        this.armed = true
         this.cleanStreak += 1
         if (this.cleanStreak < this.cleanBeforeProbe) return false
 
         this.cleanStreak = 0
         if (this.delayMs <= this.minimumMs) return false
 
-        this.delayMs = this.clamp(this.delayMs - this.probeStepMs)
+        const step = Math.max(1, Math.round(this.delayMs * this.probeFraction))
+        this.delayMs = this.clamp(this.delayMs - step)
         this.probes += 1
         this.fastestMs = Math.min(this.fastestMs, this.delayMs)
         return true
     }
 
-    /** A NAK, a damaged frame, or a timeout. Back off. */
+    /**
+     * A NAK, a damaged frame, or a timeout.
+     *
+     * Backs off once per episode. Further losses before the next clean
+     * acknowledgement are the same episode and are counted, not acted on.
+     */
     onLoss(): boolean {
         this.cleanStreak = 0
+
+        if (!this.armed) {
+            this.episodesIgnored += 1
+            return false
+        }
+        this.armed = false
+
         if (this.delayMs >= this.maximumMs) return false
 
         this.delayMs = this.clamp(Math.round(this.delayMs * this.backoff))
@@ -163,13 +199,27 @@ export class AdaptivePacer {
         return true
     }
 
+    /** The current delay, and a note that a chunk was paced by it. */
+    takeDelayMs(): number {
+        this.pacedChunks += 1
+        this.delayMsTotal += this.delayMs
+        return this.delayMs
+    }
+
+    meanDelayMs(): number | null {
+        if (!this.pacedChunks) return null
+        return Math.round((this.delayMsTotal / this.pacedChunks) * 10) / 10
+    }
+
     stats(): PacerStats {
         return {
             delayMs: this.delayMs,
+            meanDelayMs: this.meanDelayMs(),
             fastestMs: this.fastestMs,
             slowestMs: this.slowestMs,
             probes: this.probes,
             backoffs: this.backoffs,
+            episodesIgnored: this.episodesIgnored,
             floorMs: this.minimumMs,
         }
     }

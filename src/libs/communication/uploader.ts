@@ -38,7 +38,7 @@ export interface UploadResult {
     retransmits: number
     frames: number
     /** Pacing state after the upload, when the transport paces itself. */
-    pacing: Record<string, number> | null
+    pacing: Record<string, number | null> | null
     /** Present when the board reported a problem instead of a verdict. */
     error?: string
 }

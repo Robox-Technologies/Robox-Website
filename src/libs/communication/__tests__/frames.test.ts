@@ -556,12 +556,18 @@ describe('AdaptivePacer', () => {
     it.each([24, 28, 34, 45])(
         'converges near a link whose true capacity is %ims',
         (capacity) => {
-            // The controller cannot know `capacity`; it only sees loss.
+            // Loss arrives in bursts, because that is what go-back-N
+            // produces from one bad patch. An earlier version of this test
+            // used a single loss per event and passed while the controller
+            // was badly broken on hardware.
             const pacer = new AdaptivePacer()
             const seen: number[] = []
             for (let i = 0; i < 400; i += 1) {
-                if (pacer.delayMs < capacity) pacer.onLoss()
-                else pacer.onCleanBatch()
+                if (pacer.delayMs < capacity) {
+                    for (let n = 0; n < 6; n += 1) pacer.onLoss()
+                } else {
+                    pacer.onCleanBatch()
+                }
                 seen.push(pacer.delayMs)
             }
 
@@ -571,6 +577,8 @@ describe('AdaptivePacer', () => {
             )
             const average = settled.reduce((a, b) => a + b, 0) / settled.length
             expect(Math.abs(average - capacity)).toBeLessThan(capacity * 0.35)
+            // A burst is one episode, so it must not spike far above capacity.
+            expect(Math.max(...settled)).toBeLessThanOrEqual(capacity * 1.6)
         },
     )
 
