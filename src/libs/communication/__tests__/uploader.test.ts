@@ -91,6 +91,12 @@ class MockTransport extends BaseTransport {
         if (damage) this.discarding = true
 
         for (const frame of frames) {
+            // BEGIN is a resynchronisation point: mirrors framed.py.
+            if (frame.kind === Kind.BEGIN) {
+                this.expected = frame.seq
+                this.discarding = false
+            }
+
             if (frame.seq !== this.expected) {
                 if (
                     sequenceDistance(this.expected, frame.seq) >=
@@ -251,6 +257,21 @@ describe('uploadProgram', () => {
         expect(result.verified).toBe(true)
         expect(transport.stored).toBe(normaliseProgram(risky))
         expect(transport.stored).toContain('x04STARTPROG')
+    })
+
+    it('verifies two uploads in a row on one connection', async () => {
+        // Without BEGIN acting as a resync point, the second upload restarts
+        // at sequence 0 while the board still expects N, so every frame reads
+        // as a stale duplicate and the upload is silently ignored.
+        const transport = build()
+
+        const first = await uploadProgram(transport, program)
+        expect(first.verified).toBe(true)
+
+        const second = "print('second upload')\nx = 1\n"
+        const result = await uploadProgram(transport, second)
+        expect(result.verified).toBe(true)
+        expect(transport.stored).toBe(normaliseProgram(second))
     })
 
     it('handles a program of one line', async () => {
