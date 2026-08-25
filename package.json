@@ -13,7 +13,9 @@
         "build": "astro check && astro build",
         "email:build": "email build src/features/emails/templates --out build/emails --use-preview-props --plain",
         "email:preview": "email preview src/features/emails/templates",
-        "fix": "prettier --write . && eslint --fix ."
+        "fix": "prettier --write . && eslint --fix .",
+        "test": "vitest run",
+        "test:watch": "vitest"
     },
     "dependencies": {
         "@astrojs/check": "^0.9.9",
@@ -83,7 +85,8 @@
         "eslint-plugin-react": "^7.37.5",
         "prettier": "^3.8.1",
         "sql.js": "1.11.0",
-        "typescript-eslint": "^8.58.0"
+        "typescript-eslint": "^8.58.0",
+        "vitest": "^4.1.11"
     },
     "overrides": {
         "react-router": "^7.18.1",
