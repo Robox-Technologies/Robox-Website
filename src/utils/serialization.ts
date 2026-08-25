@@ -7,9 +7,78 @@ import { getDB, persist, PROJECTS_TABLE } from '@/utils/db'
 
 const ExtensionKeys = Object.keys(extensions) as ExtensionKey[]
 
+/**
+ * Fills in fields a stored project predates or is missing.
+ *
+ * Projects saved before `type`/`code` existed have neither, and an absent
+ * `type` is not `'block'` — which is enough to make the block editor treat a
+ * perfectly good project as someone else's and refuse to load its blocks. So
+ * every read normalises rather than trusting the stored shape, and the first
+ * subsequent `editProject` writes the filled-in project back.
+ */
+function normalizeProject(stored: Record<string, unknown>): UserProject {
+    const type: ProjectType =
+        stored.type === 'block' || stored.type === 'python'
+            ? stored.type
+            : // Pre-`type` projects are block projects: the python editor
+              // didn't exist yet. `code` is the tie-breaker for anything
+              // written by a build in between.
+              typeof stored.code === 'string' && !stored.workspace
+              ? 'python'
+              : 'block'
+
+    const storedExtensions =
+        stored.extensions && typeof stored.extensions === 'object'
+            ? (stored.extensions as Record<string, unknown>)
+            : {}
+    const extensions = ExtensionKeys.reduce(
+        (acc, key) => {
+            acc[key] = storedExtensions[key] === true
+            return acc
+        },
+        {} as Record<ExtensionKey, boolean>,
+    )
+
+    return {
+        name:
+            typeof stored.name === 'string' ? stored.name : 'Untitled Project',
+        time:
+            typeof stored.time === 'string' || typeof stored.time === 'number'
+                ? dayjs(stored.time)
+                : dayjs(),
+        type,
+        workspace:
+            stored.workspace && typeof stored.workspace === 'object'
+                ? (stored.workspace as Record<string, unknown>)
+                : null,
+        code:
+            typeof stored.code === 'string'
+                ? stored.code
+                : type === 'python'
+                  ? ''
+                  : null,
+        thumbnail:
+            typeof stored.thumbnail === 'string' && stored.thumbnail
+                ? stored.thumbnail
+                : null,
+        extensions,
+        sensors:
+            stored.sensors &&
+            typeof stored.sensors === 'object' &&
+            !Array.isArray(stored.sensors)
+                ? (stored.sensors as UserProject['sensors'])
+                : {},
+    }
+}
+
 function parseProject(id: string, data: string): UserProject | null {
     try {
-        return JSON.parse(data) as UserProject
+        const parsed: unknown = JSON.parse(data)
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+            console.error('Stored project is not an object:', id)
+            return null
+        }
+        return normalizeProject(parsed as Record<string, unknown>)
     } catch (e) {
         console.error('Failed to parse stored project:', id, e)
         return null
@@ -135,29 +204,17 @@ export async function renameProject(
 }
 export async function deleteProject(id: string): Promise<boolean> {
     const db = await getDB()
-    const res = await db.run(`DELETE FROM ${PROJECTS_TABLE} WHERE id = ?;`, [id])
+    const res = await db.run(`DELETE FROM ${PROJECTS_TABLE} WHERE id = ?;`, [
+        id,
+    ])
     await persist()
     return (res.changes?.changes ?? 0) > 0
 }
 
+// Normalising an empty object is exactly "an empty project of this type", so
+// the defaults live in one place rather than drifting between the two.
 function generateEmptyProject(type: ProjectType): UserProject {
-    const userExtensions = ExtensionKeys.reduce(
-        (acc, key) => {
-            acc[key] = false
-            return acc
-        },
-        {} as Record<ExtensionKey, boolean>,
-    )
-    return {
-        name: 'Untitled Project',
-        time: dayjs(),
-        type,
-        workspace: null,
-        code: type === 'python' ? '' : null,
-        thumbnail: null,
-        extensions: userExtensions,
-        sensors: {},
-    }
+    return normalizeProject({ type })
 }
 export async function editProject(
     id: string,

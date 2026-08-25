@@ -14,7 +14,6 @@ import type { ExtensionKey } from 'src/types/extensions'
 import { pythonGenerator } from 'blockly/python'
 import { buildPreamble } from '@/features/editor/utils/preamble'
 export async function loadBlockly(workspace: WorkspaceSvg) {
-
     const projectId = getProjectIdFromURL()
     if (!projectId) return
 
@@ -52,6 +51,10 @@ export async function saveBlockly(workspace: WorkspaceSvg) {
             const data = Blockly.serialization.workspaces.save(workspace)
             const project = await getProject(projectId)
             if (!project) throw new Error('Project not found')
+            // The guard in loadBlockly stops a non-block project's blocks from
+            // being read; without the same guard here the empty workspace that
+            // results would be written straight back over its data.
+            if (project.type !== 'block') return
             project['time'] = dayjs()
             project['workspace'] = data
             project['thumbnail'] = sanitizeImageDataUrl(thumburi)
