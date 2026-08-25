@@ -21,7 +21,7 @@ import {
     encodeFrame,
     type Frame,
 } from './frames'
-import { MESSAGE_TYPES } from './protocol'
+import { COMMANDS, MESSAGE_TYPES } from './protocol'
 
 const SOH_CHAR = String.fromCharCode(SOH)
 
@@ -137,6 +137,30 @@ export abstract class BaseTransport implements Communication {
         }
     }
 
+    /**
+     * Hand the board back before the link goes away, so it stops claiming this
+     * interface.
+     *
+     * Quiet, unlike `write`: a link that has already dropped is the ordinary
+     * reason this fails, and reporting it would put a write error in front of
+     * the user on every unexpected disconnect.
+     */
+    async release(): Promise<void> {
+        if (this.destroyed) return
+
+        try {
+            await this.sendRaw(
+                encodeFrame(
+                    this.takeSequence(1),
+                    Kind.COMMAND,
+                    COMMANDS.DISCONNECT,
+                ),
+            )
+        } catch {
+            // The link is already gone, so there is nothing to hand back.
+        }
+    }
+
     /** Send pre-encoded frames, in order. */
     async writeFrames(frames: Uint8Array[]): Promise<void> {
         for (const frame of frames) {
@@ -168,8 +192,8 @@ export abstract class BaseTransport implements Communication {
     /**
      * Route received text. Every receive path ends here.
      *
-     * Everything the board sends is framed, so a complete line that does not
-     * begin with SOH is noise: counted rather than guessed at.
+     * Everything the board sends is framed, so anything outside a frame is
+     * noise: counted rather than guessed at.
      */
     protected ingest(chunk: string): void {
         if (this.destroyed) return
@@ -180,18 +204,26 @@ export abstract class BaseTransport implements Communication {
         const lines = this.buffer.split('\n')
         this.buffer = lines.pop() ?? ''
 
-        // A line that never terminates would otherwise grow without bound.
+        // Unterminated chatter would otherwise grow without bound. Keep
+        // everything from the newest sentinel, where a frame can still start.
         if (this.buffer.length > MAX_LINE_LENGTH) {
-            this.discardedCount += this.buffer.length
-            this.buffer = ''
+            const start = this.buffer.lastIndexOf(SOH_CHAR)
+            this.discardedCount += start === -1 ? this.buffer.length : start
+            this.buffer = start > 0 ? this.buffer.slice(start) : ''
         }
 
         for (const line of lines) {
-            if (line.startsWith(SOH_CHAR)) {
-                this.ingestFrameLine(line)
-            } else if (line.trim()) {
-                this.discardedCount += line.length
+            // Taken from wherever the sentinel is, not only from the front:
+            // the module's unterminated chatter arrives glued to the next
+            // frame, and insisting otherwise discarded that frame with it.
+            const start = line.indexOf(SOH_CHAR)
+            if (start === -1) {
+                if (line.trim()) this.discardedCount += line.length
+                continue
             }
+
+            this.discardedCount += start
+            this.ingestFrameLine(line.slice(start))
         }
     }
 

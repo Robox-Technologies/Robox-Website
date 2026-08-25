@@ -6,6 +6,8 @@ export interface Communication {
     disconnect(): Promise<void>
     destroy(): Promise<void>
     write(message: string | string[]): Promise<void>
+    /** Tell the board this client is done, so it stops claiming the link. */
+    release(): Promise<void>
     read(): void
     initialize(): void
 }

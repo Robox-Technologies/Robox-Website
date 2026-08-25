@@ -130,6 +130,9 @@ export class Pico {
 
     async setCommunicationMethod(method: CommunicationMethod): Promise<void> {
         if (this.communication) {
+            // Before the transport goes away: an interface can only be
+            // released over itself.
+            await this.releaseBoard()
             await this.communication.destroy()
         }
 
@@ -181,13 +184,11 @@ export class Pico {
         if (!this.communication) return
 
         try {
+            await this.releaseBoard()
+
             this.responded = false
             this.firmwareConfirmed = false
-
-            if (this.firmwareCheckTimeout) {
-                clearTimeout(this.firmwareCheckTimeout)
-                this.firmwareCheckTimeout = null
-            }
+            this.clearFirmwareCheck()
 
             await this.communication.disconnect()
             this.updateState({
@@ -240,6 +241,7 @@ export class Pico {
                 return
             }
 
+            this.clearFirmwareCheck()
             this.updateState({
                 firmwareStatus: FirmwareStatus.UP_TO_DATE,
                 connectionStatus: ConnectionStatus.CONNECTED,
@@ -259,9 +261,49 @@ export class Pico {
         } else if (type === 'uploaded') {
             this.emit('uploaded', payload.message)
         } else if (type === 'error') {
+            // A refusal while the check is outstanding is the check's answer.
+            // Falling through would restart a healthy board, then time out
+            // blaming its firmware version.
+            if (this.firmwareCheckPending()) {
+                this.failFirmwareCheck(message)
+                return
+            }
+
             this.emit('error', { message })
             this.restart()
         }
+    }
+
+    /** Tell the board this client is done. Safe on every teardown path. */
+    private async releaseBoard(): Promise<void> {
+        await this.communication?.release()
+    }
+
+    /** True while the firmware check is still waiting for its answer. */
+    private firmwareCheckPending(): boolean {
+        return this.firmwareCheckTimeout !== null && !this.firmwareConfirmed
+    }
+
+    private clearFirmwareCheck(): void {
+        if (!this.firmwareCheckTimeout) return
+
+        clearTimeout(this.firmwareCheckTimeout)
+        this.firmwareCheckTimeout = null
+    }
+
+    /**
+     * The board refused the firmware check. Report its own words plus a remedy,
+     * and leave the status UNKNOWN: the firmware itself is not the problem.
+     */
+    private failFirmwareCheck(reason: string): void {
+        this.clearFirmwareCheck()
+        this.updateState({
+            connectionStatus: ConnectionStatus.DISCONNECTED,
+            firmwareStatus: FirmwareStatus.UNKNOWN,
+        })
+        this.emit('error', {
+            message: `The Ro/Box refused the connection: ${reason}. Turn it off and on again, then reconnect.`,
+        })
     }
 
     private firmwareCheck(): void {
@@ -269,6 +311,9 @@ export class Pico {
         this.write(COMMANDS.FIRMWARE_CHECK)
 
         this.firmwareCheckTimeout = setTimeout(() => {
+            // Dropped first, so an error arriving later is treated as a board
+            // error rather than as this check's answer.
+            this.firmwareCheckTimeout = null
             if (this.firmwareConfirmed) return
 
             if (this.responded) {
