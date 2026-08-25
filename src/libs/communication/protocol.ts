@@ -11,11 +11,10 @@ import type { PicoMessageType } from 'src/types/communication'
 /**
  * Commands the board acts on.
  *
- * These are sent as bare lines, which is a hazard rather than a design: the
- * firmware compares every received line against this table, so a line of
- * *user code* that happens to match is executed instead of being stored.
- * Nothing about the strings themselves can fix that -- a more obscure sentinel
- * is still a string somebody can type into the editor. The fix is to stop
+ * Sent as bare lines, which is a hazard rather than a design: the firmware
+ * compares every received line against this table, so user code that happens
+ * to match is executed instead of stored. Choosing a more obscure sentinel
+ * does not help; it is still a string somebody can type. The fix is to stop
  * scanning payload content for control markers at all.
  */
 export const COMMANDS = {

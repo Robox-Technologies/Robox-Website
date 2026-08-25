@@ -1,15 +1,13 @@
 /**
- * The behaviour every transport shares.
+ * Behaviour every transport shares.
  *
- * USB, Web Bluetooth and the iOS Bluetooth plugin previously carried their own
- * copies of the write fan-out, the receive buffer, the message dispatch and the
- * error normalisation. They drifted -- most consequentially in *how* they
- * reported errors, which meant a cancelled Bluetooth picker restarted the board
- * on one platform and did nothing on another. Keeping it in one place is what
- * stops that recurring.
+ * USB, Web Bluetooth and the iOS plugin each carried their own copy of the
+ * write fan-out, receive buffer, dispatch and error normalisation, and they
+ * drifted. Most consequentially in how they reported errors, so a cancelled
+ * Bluetooth picker restarted the board on one platform and did nothing on
+ * another.
  *
- * A subclass supplies only the platform-specific parts: how to open a link, how
- * to push one message, and how to tear down.
+ * Subclasses supply only how to open a link, push one message, and tear down.
  */
 
 import type { Communication, PicoMessage } from 'src/types/communication'
@@ -31,7 +29,7 @@ export abstract class BaseTransport implements Communication {
 
     constructor(protected parent: Pico) {}
 
-    // -- platform hooks -----------------------------------------------------
+    // === platform hooks ===
 
     /** Push one logical message. Implementations handle their own chunking. */
     protected abstract sendMessage(message: string): Promise<void>
@@ -44,7 +42,7 @@ export abstract class BaseTransport implements Communication {
     /** Most transports have nothing to set up ahead of a connection. */
     initialize(): void {}
 
-    // -- shared behaviour ---------------------------------------------------
+    // === shared behaviour ===
 
     async write(messages: string | string[]): Promise<void> {
         const queue = Array.isArray(messages) ? messages : [messages]
@@ -60,10 +58,8 @@ export abstract class BaseTransport implements Communication {
         }
     }
 
-    /**
-     * Feed received text through the framer and dispatch whatever completes.
-     * Every transport's receive path ends here.
-     */
+    /** Frame received text and dispatch whatever completes. Every receive
+     * path ends here. */
     protected ingest(chunk: string): void {
         if (this.destroyed) return
         if (!chunk) return
@@ -86,13 +82,11 @@ export abstract class BaseTransport implements Communication {
     }
 
     /**
-     * Report a *host-side* failure: a cancelled picker, a write that never
-     * left, a link that dropped.
+     * Report a host-side failure: cancelled picker, failed write, dropped link.
      *
-     * Deliberately distinct from `parent.handleMessage({type: 'error'})`, which
-     * means "the board reported an error" and consequently restarts it.
-     * Conflating the two is why a failed `requestDevice` used to send a RESTART
-     * command over Web Bluetooth.
+     * Distinct from `handleMessage({type: 'error'})`, which means the board
+     * reported an error and therefore restarts it. Conflating the two is why a
+     * failed `requestDevice` used to send RESTART over Web Bluetooth.
      */
     protected reportError(message: string): void {
         this.parent.emit('error', { message })

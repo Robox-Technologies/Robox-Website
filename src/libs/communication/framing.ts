@@ -1,43 +1,36 @@
 /**
  * Turning a byte stream into messages.
  *
- * Every transport receives arbitrarily-split chunks -- BLE notifications are
- * capped at 20 bytes and a `TextDecoderStream` splits wherever it likes -- so
- * none of them may assume a chunk is a whole message. They all funnel through
- * `parseBufferedMessages`, which extracts complete JSON objects and hands back
- * the unconsumed tail to be prepended to the next chunk.
+ * Chunks arrive split arbitrarily: BLE notifications cap at 20 bytes and a
+ * `TextDecoderStream` splits wherever it likes. So every transport funnels
+ * through `parseBufferedMessages`, which extracts complete JSON objects and
+ * returns the unconsumed tail for the next chunk.
  */
 
 import type { PicoMessage } from 'src/types/communication'
 import { MESSAGE_TYPES } from './protocol'
 
 /**
- * Control characters that corrupt JSON framing. Stripped before parsing
- * because a dropped BLE packet often leaves a stray null byte behind.
- * Tab, newline and carriage return are deliberately excluded -- they are legal
- * whitespace and appear inside real payloads.
+ * Control characters that corrupt JSON framing, stripped before parsing since
+ * a dropped BLE packet often leaves a stray null byte. Tab, newline and
+ * carriage return are excluded: legal whitespace that appears in real
+ * payloads.
  */
 const CONTROL_CHARACTERS =
     /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g
 
 /**
- * Hard cap on the retained tail.
- *
- * Without this, a single unterminated `{` -- exactly what a dropped packet
- * leaves behind -- pins the buffer forever and it grows without bound for the
- * rest of the session. On overflow we drop everything before the most recent
- * `{`, which resynchronises on the next whole message.
+ * Hard cap on the retained tail. Without it, one unterminated `{` (exactly
+ * what a dropped packet leaves) pins the buffer and grows it unbounded for the
+ * rest of the session. On overflow, drop to the newest `{` and resynchronise.
  */
 export const MAX_BUFFER_LENGTH = 8192
 
 export interface ParseResult {
     messages: PicoMessage[]
     remainder: string
-    /**
-     * Count of things thrown away: objects that failed to parse, objects that
-     * were not valid messages, and buffer overflow discards. Surfaced so
-     * dropped packets can be counted instead of vanishing silently.
-     */
+    /** Failed parses, invalid messages and overflow discards, so dropped
+     * packets can be counted rather than vanish silently. */
     discarded: number
 }
 

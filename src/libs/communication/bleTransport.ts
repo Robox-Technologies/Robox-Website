@@ -19,13 +19,11 @@ export abstract class BleTransport extends BaseTransport {
     protected abstract writeChunk(chunk: Uint8Array<ArrayBuffer>): Promise<void>
 
     /**
-     * Chunk by *encoded bytes*, not by string index.
+     * Chunk by encoded bytes, not string index.
      *
-     * Slicing the string first and encoding after -- which the Web Bluetooth
-     * implementation used to do -- produces chunks larger than the MTU as soon
-     * as the payload contains a multi-byte character, because one UTF-16 unit
-     * can encode to up to four bytes. Encoding first makes the bound exact and
-     * stops a comment with an accent in it from silently overflowing a write.
+     * Slicing the string then encoding, as the Web Bluetooth implementation
+     * used to, overflows the MTU on any multi-byte character, since one UTF-16
+     * unit can encode to four bytes. Encoding first makes the bound exact.
      */
     protected async sendMessage(message: string): Promise<void> {
         const payload = this.encoder.encode(message + '\n')
@@ -44,11 +42,9 @@ export abstract class BleTransport extends BaseTransport {
     }
 
     /**
-     * Shared handling for the device picker.
-     *
-     * A user dismissing the picker throws `NotFoundError`, which is not a
-     * failure worth showing them -- it just reverts the connecting state and
-     * propagates so the caller can stay quiet about it.
+     * Shared handling for the device picker. Dismissing it throws
+     * `NotFoundError`, which is not worth surfacing: revert the connecting
+     * state and rethrow so the caller can stay quiet.
      */
     protected handleRequestFailure(error: unknown): never | void {
         const isDismissal =

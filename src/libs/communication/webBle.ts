@@ -1,8 +1,7 @@
 /**
- * Web Bluetooth transport (Chromium desktop/Android).
- *
- * Everything shared with the iOS plugin transport -- chunking, pacing, framing,
- * error normalisation -- lives in `bleTransport.ts` and `transportBase.ts`.
+ * Web Bluetooth transport (Chromium desktop and Android). Chunking, pacing,
+ * framing and error handling are shared with the iOS plugin transport in
+ * `bleTransport.ts` and `transportBase.ts`.
  */
 
 import { UART_CHARACTERISTIC, UART_SERVICE } from './protocol'
