@@ -3,18 +3,17 @@ import type { Product } from 'src/types/shop'
 import slugify from 'slugify'
 import { stripeAPI } from './index.server'
 import { isValidStatus } from 'src/types/guards/shop'
+import { readPriceDetails } from './readPrice.server'
 
 export async function getProductById(id: string): Promise<Product | null> {
     try {
         const product = await stripeAPI.products.retrieve(id, {
-            expand: ['default_price'],
+            expand: ['default_price.currency_options'],
         })
-        const price = product.default_price as Stripe.Price
-        if (price.unit_amount === null) {
-            throw new Error(
-                `Price for product ${product.name} is missing unit_amount`,
-            )
-        }
+        const priceDetails = readPriceDetails(
+            product.default_price as Stripe.Price,
+            product.name,
+        )
         const status = product.metadata.status || 'not-available'
         if (!isValidStatus(status)) {
             throw new Error(
@@ -32,7 +31,7 @@ export async function getProductById(id: string): Promise<Product | null> {
             item_id: product.id,
             status: status,
             banner: '',
-            price: price.unit_amount,
+            ...priceDetails,
             weight: Number(weight),
             unitVolume: Number(product.metadata.unitVolume ?? 0),
         }
