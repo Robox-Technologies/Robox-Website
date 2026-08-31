@@ -40,6 +40,7 @@ async function findSessionForIntent(
             'data.line_items',
             'data.payment_intent',
             'data.payment_intent.payment_method',
+            'data.shipping_cost.shipping_rate',
         ],
     })
     return sessions.data[0] ?? null

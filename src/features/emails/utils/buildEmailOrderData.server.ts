@@ -11,6 +11,7 @@ export interface EmailOrderData {
     orderId: string
     items: OrderItem[]
     shipping: string
+    shippingMethod?: string
     discount?: string
     total: string
     address: string
@@ -62,6 +63,14 @@ export async function buildEmailOrderData(
     // the row when one actually applied.
     const discountMinor = session.total_details?.amount_discount ?? 0
 
+    // The service the customer chose. Only present when the rate was expanded,
+    // so the summary falls back to a plain "Shipping" rather than an empty row.
+    const shippingRate = session.shipping_cost?.shipping_rate
+    const shippingMethod =
+        shippingRate && typeof shippingRate !== 'string'
+            ? (shippingRate.display_name ?? undefined)
+            : undefined
+
     return {
         to: session.customer_details?.email ?? '',
         name: name || 'Customer',
@@ -72,6 +81,7 @@ export async function buildEmailOrderData(
         orderId: paymentIntentId ?? session.id,
         items,
         shipping: money(session.shipping_cost?.amount_total ?? 0),
+        shippingMethod,
         discount: discountMinor > 0 ? money(discountMinor) : undefined,
         total: money(session.amount_total ?? 0),
         address,

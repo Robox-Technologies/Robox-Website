@@ -13,11 +13,6 @@ import {
     type Shipment,
 } from './packaging.server'
 import { applyShippingSurcharge } from './shippingCost.server'
-import {
-    calculateDiscountCents,
-    resolveDiscount,
-    type DiscountStatus,
-} from './discount.server'
 
 const MIN_CHARGE_CENTS = 50
 const DOMESTIC_COUNTRY_CODE = 'AU'
@@ -45,8 +40,6 @@ export type CheckoutTotals = {
     shippingCents: number
     /** Every service Australia Post will carry, cheapest first. */
     shippingOptions: ShippingOption[]
-    discountCents: number
-    discountStatus: DiscountStatus
     totalCents: number
     /**
      * What is physically being sent. Recorded on the payment so an Australia
@@ -68,20 +61,23 @@ export type ResolvedEntry = {
 
 type CartLike = Record<string, number> | CartItems
 
+/**
+ * A cart quantity, whatever shape the client sent it in - the store holds
+ * `{ quantity }` but older payloads sent a bare number. Anything non-finite
+ * becomes 0 and is dropped, so a hand-crafted request can't smuggle in a NaN.
+ */
+function readQuantity(value: number | { quantity: number }): number {
+    const quantity = typeof value === 'number' ? value : value.quantity
+    return Number.isFinite(quantity) ? Math.floor(quantity) : 0
+}
+
 function sanitizeCart(
     cart: CartLike,
 ): Array<{ productKey: string; quantity: number }> {
     return Object.entries(cart)
         .map(([productKey, value]) => ({
             productKey,
-            quantity:
-                typeof value === 'number'
-                    ? Number.isFinite(value)
-                        ? Math.floor(value)
-                        : 0
-                    : Number.isFinite(value.quantity)
-                      ? Math.floor(value.quantity)
-                      : 0,
+            quantity: readQuantity(value),
         }))
         .filter((entry) => entry.quantity > 0)
 }
@@ -127,7 +123,6 @@ async function resolveEntries(cart: CartLike): Promise<ResolvedEntry[]> {
 export async function calculateCheckoutTotals(
     cart: CartLike,
     shippingInfo?: ShippingInfo | null,
-    voucher?: string | null,
 ): Promise<CheckoutTotals> {
     const entries = await resolveEntries(cart)
 
@@ -190,33 +185,10 @@ export async function calculateCheckoutTotals(
         shipment = plan
     }
 
-    const preDiscountTotalCents = subtotalCents + shippingCents
-
-    // The discount comes off the post-shipping total, and is always resolved
-    // here rather than trusted from the client — this is the amount charged.
-    let discountCents = 0
-    let discountStatus: DiscountStatus = 'unset'
-
-    if (voucher?.trim()) {
-        const discount = await resolveDiscount(voucher)
-
-        if (!discount) {
-            discountStatus = 'error'
-        } else {
-            discountCents = calculateDiscountCents({
-                discount,
-                lines: entries.map((entry) => ({
-                    itemId: entry.itemId,
-                    lineTotalCents: entry.unitPriceCents * entry.quantity,
-                })),
-                preDiscountTotalCents,
-            })
-            // Valid code that happens to take nothing off this cart.
-            discountStatus = discountCents === 0 ? 'stale' : 'success'
-        }
-    }
-
-    const totalCents = preDiscountTotalCents - discountCents
+    // Discounts are Stripe's now: a promotion code is applied against the
+    // Checkout Session and it re-prices the order. Nothing is computed here, so
+    // there is no second arithmetic to disagree with what is charged.
+    const totalCents = subtotalCents + shippingCents
 
     if (totalCents < MIN_CHARGE_CENTS) {
         throw new Error('Validated total is below minimum charge amount')
@@ -226,8 +198,6 @@ export async function calculateCheckoutTotals(
         subtotalCents,
         shippingCents,
         shippingOptions,
-        discountCents,
-        discountStatus,
         shipment,
         totalCents,
     }

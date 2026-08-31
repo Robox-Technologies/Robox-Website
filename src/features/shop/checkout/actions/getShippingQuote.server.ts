@@ -18,18 +18,13 @@ export const getShippingQuote = defineAction({
             })
             .nullable()
             .optional(),
-        voucher: z.string().trim().max(64).nullable().optional(),
     }),
-    async handler({ products, shippingInfo, voucher }, context) {
+    async handler({ products, shippingInfo }, context) {
         // The one action that reaches AusPost on every call. A customer quotes
         // once per completed address, so this only bites on scripted abuse.
         enforceRateLimit(context, { name: 'getShippingQuote', max: 40 })
 
-        const totals = await calculateCheckoutTotals(
-            products,
-            shippingInfo,
-            voucher,
-        )
+        const totals = await calculateCheckoutTotals(products, shippingInfo)
 
         return {
             subtotal: totals.subtotalCents,
@@ -37,8 +32,6 @@ export const getShippingQuote = defineAction({
             // Every service, so the address step can say what the cheapest is
             // and that faster ones exist, before asking for a card.
             options: totals.shippingOptions,
-            discount: totals.discountCents,
-            discountStatus: totals.discountStatus,
             total: totals.totalCents,
             currency: 'aud' as const,
         }

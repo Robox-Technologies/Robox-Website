@@ -16,6 +16,7 @@ export interface ReceiptEmailProps {
     orderId: string;
     items: OrderItem[];
     shipping: string;
+    shippingMethod?: string;
     discount?: string;
     total: string;
     address: string;
@@ -32,6 +33,7 @@ export const ReceiptEmail = ({
     orderId,
     items,
     shipping,
+    shippingMethod,
     discount,
     total,
     address,
@@ -59,6 +61,7 @@ export const ReceiptEmail = ({
                 date={date}
                 items={items}
                 shipping={shipping}
+                shippingMethod={shippingMethod}
                 discount={discount}
                 total={total}
             />
@@ -95,6 +98,7 @@ export const previewProps: ReceiptEmailProps = {
         { name: 'Sensor Pack', quantity: 2, subtotal: 'AU$58.00' }
     ],
     shipping: 'AU$9.95',
+    shippingMethod: 'Express shipping',
     discount: 'AU$10.00',
     total: 'AU$186.95',
     address: '42 Analytical Engine Way\nMelbourne VIC 3000\nAustralia',

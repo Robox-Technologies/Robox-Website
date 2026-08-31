@@ -35,28 +35,25 @@ export async function sendOrderEmail(
     // arrived with its masthead, totals table and footer folded away.
     const subject = success ? `Your Ro/Box Receipt` : `Ro/Box Payment Failed`
 
+    // Both templates take the same order details; only the receipt also shows
+    // the delivery address, since a failed payment isn't going anywhere. Shared
+    // rather than restated so a new field cannot reach one template and not the
+    // other.
+    const shared = {
+        name: orderData.name,
+        date: orderData.date,
+        orderId: orderData.orderId,
+        items: orderData.items,
+        shipping: orderData.shipping,
+        shippingMethod: orderData.shippingMethod,
+        discount: orderData.discount,
+        total: orderData.total,
+        billing: orderData.billing,
+    }
+
     const element = success
-        ? ReceiptEmail({
-              name: orderData.name,
-              date: orderData.date,
-              orderId: orderData.orderId,
-              items: orderData.items,
-              shipping: orderData.shipping,
-              discount: orderData.discount,
-              total: orderData.total,
-              address: orderData.address,
-              billing: orderData.billing,
-          })
-        : PaymentFailedEmail({
-              name: orderData.name,
-              date: orderData.date,
-              orderId: orderData.orderId,
-              items: orderData.items,
-              shipping: orderData.shipping,
-              discount: orderData.discount,
-              total: orderData.total,
-              billing: orderData.billing,
-          })
+        ? ReceiptEmail({ ...shared, address: orderData.address })
+        : PaymentFailedEmail(shared)
 
     const html = await render(element)
     // Hand-written rather than render(..., { plainText: true }); see orderEmailText.ts.
