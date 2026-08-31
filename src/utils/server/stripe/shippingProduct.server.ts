@@ -34,6 +34,19 @@ export async function resolveShippingProductId(): Promise<string> {
     const found = existing.data[0]
     if (found) {
         cachedProductId = found.id
+        // The name is what the browser summary matches postage on - it cannot
+        // see the marker metadata - so a rename in the dashboard would quietly
+        // fold postage into the subtotal and show shipping as free. Put back
+        // rather than trusted, so the invariant survives whatever anyone does
+        // to the product. Only written when it actually drifted.
+        if (found.name !== SHIPPING_LINE_ITEM_NAME) {
+            console.warn(
+                `[shipping-product] ${found.id} is named "${found.name}"; renaming it back to "${SHIPPING_LINE_ITEM_NAME}", which the checkout summary matches on`,
+            )
+            await stripeAPI.products.update(found.id, {
+                name: SHIPPING_LINE_ITEM_NAME,
+            })
+        }
         return found.id
     }
 

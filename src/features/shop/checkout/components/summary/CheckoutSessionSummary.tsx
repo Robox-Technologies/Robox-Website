@@ -2,7 +2,10 @@ import { useCheckoutElements } from '@stripe/react-stripe-js/checkout'
 import { useStore } from '@nanostores/react'
 import SummaryCard from '@/components/shop/summary/SummaryCard'
 import { formatMoney } from '@/utils/formatPrice'
-import { SHIPPING_LINE_ITEM_NAME } from '../../utils/shippingLineItem'
+import {
+    SHIPPING_LINE_ITEM_NAME,
+    isShippingLineName,
+} from '../../utils/shippingLineItem'
 import { shippingServiceId } from '../../state/checkoutStore'
 import { shippingQuote } from '../../state/shippingStore'
 import CheckoutSummaryRow from './CheckoutSummaryRow'
@@ -46,18 +49,29 @@ export default function CheckoutSessionSummary() {
     // Postage is a line item rather than a shipping rate (see
     // `createCheckoutSession`), so `total.shippingRate` is always zero and the
     // figure has to come off the line. The client session exposes no product
-    // metadata, so this matches on the name Stripe renders for our shipping
-    // product.
-    const postageLine = checkout.lineItems.find(
-        (line) => line.name === SHIPPING_LINE_ITEM_NAME,
+    // metadata, so unlike the server this can only match on the name - which
+    // `resolveShippingProductId` keeps pinned for exactly this reason.
+    const postageLine = checkout.lineItems.find((line) =>
+        isShippingLineName(line.name),
     )
     const productLines = checkout.lineItems.filter(
-        (line) => line.name !== SHIPPING_LINE_ITEM_NAME,
+        (line) => !isShippingLineName(line.name),
     )
     const productSubtotalMinor = productLines.reduce(
         (sum, line) => sum + line.subtotal.minorUnitsAmount,
         0,
     )
+
+    // Every session this component sees was built with a postage line, so a
+    // miss means the name drifted. It fails quietly - postage folds into the
+    // subtotal and shipping reads as free, and the rows still add up to the
+    // total - so it has to announce itself rather than wait to be noticed on a
+    // receipt.
+    if (!postageLine && checkout.lineItems.length > 0) {
+        console.error(
+            `[checkout-summary] no line named "${SHIPPING_LINE_ITEM_NAME}" in this session; postage is being counted as part of the subtotal`,
+        )
+    }
 
     // The line item carries only an amount, so the service name comes from the
     // option chosen a step earlier. Cosmetic - the amount beside it is the

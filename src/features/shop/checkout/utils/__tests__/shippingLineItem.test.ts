@@ -7,7 +7,12 @@
 import { describe, expect, it } from 'vitest'
 import type { Stripe } from 'stripe'
 
-import { SHIPPING_PRODUCT_MARKER, isShippingLine } from '../shippingLineItem'
+import {
+    SHIPPING_LINE_ITEM_NAME,
+    SHIPPING_PRODUCT_MARKER,
+    isShippingLine,
+    isShippingLineName,
+} from '../shippingLineItem'
 
 const SHIPPING_PRODUCT_ID = 'prod_shipping'
 
@@ -78,5 +83,25 @@ describe('isShippingLine', () => {
         expect(isShippingLine({} as Stripe.LineItem, SHIPPING_PRODUCT_ID)).toBe(
             false,
         )
+    })
+})
+
+/**
+ * The browser's only handle on the postage line, because the client-side
+ * session carries no product to read metadata off. Safe only for as long as
+ * `resolveShippingProductId` keeps the product's name pinned to this.
+ */
+describe('isShippingLineName', () => {
+    it('matches the name the shipping product is held at', () => {
+        expect(isShippingLineName(SHIPPING_LINE_ITEM_NAME)).toBe(true)
+    })
+
+    it('matches nothing else, including a near miss', () => {
+        expect(isShippingLineName('Ro/Box')).toBe(false)
+        expect(isShippingLineName('shipping')).toBe(false)
+        expect(isShippingLineName('Shipping ')).toBe(false)
+        expect(isShippingLineName('Postage and packaging')).toBe(false)
+        expect(isShippingLineName(null)).toBe(false)
+        expect(isShippingLineName(undefined)).toBe(false)
     })
 })
