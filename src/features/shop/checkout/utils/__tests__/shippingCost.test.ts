@@ -38,11 +38,13 @@ describe('applyShippingSurcharge', () => {
         }
     })
 
-    it('leaves free shipping free', () => {
-        // A zero quote is how "no shipping requested yet" reaches the summary,
-        // so it must not acquire a packaging charge of its own.
+    it('still charges packaging on a zero postage quote', () => {
+        // The box costs the same whether or not the postage was free. This is
+        // only reachable when Australia Post itself quotes 0 - "no address
+        // yet" never gets here, because `calculateCheckoutTotals` leaves
+        // shipping at 0 without calling this at all.
         expect(applyShippingSurcharge(0)).toBe(
-            PACKAGING_CENTS === 0 ? 0 : Math.ceil(PACKAGING_CENTS / 10) * 10,
+            Math.ceil(PACKAGING_CENTS / 10) * 10,
         )
     })
 

@@ -7,11 +7,10 @@
  * so the quote shown on the address step, the rate written onto the Checkout
  * Session and the figure on the receipt cannot drift apart.
  *
- * TODO(yuma): set this to the real per-parcel packaging cost. At 0 the
- * behaviour is exactly what it was before, so shipping the mechanism ahead of
- * the figure is safe.
+ * $3.39 for the box and $0.38 for glassine bags, in AUD. Other presentment
+ * currencies are converted from this along with the postage itself.
  */
-export const PACKAGING_CENTS = 0
+export const PACKAGING_CENTS = 339 + 38
 
 /**
  * Round up to the nearest 10c. A quote of $12.37 becoming $12.40 costs the

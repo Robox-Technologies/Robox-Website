@@ -2,12 +2,30 @@ import { AddressElement, Elements } from '@stripe/react-stripe-js'
 import type { StripeAddressElementChangeEvent } from '@stripe/stripe-js'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { GOOGLE_MAPS_API_KEY } from 'astro:env/client'
 import type { Product } from '@/types/shop'
 import { formatPrice } from '@/utils/formatPrice'
 import { stripePromise } from '../../utils/stripe.client'
 import { createCheckoutAppearance } from '../../utils/appearance'
 import { checkoutStep, shippingDetails } from '../../state/checkoutStore'
 import { useShipping } from '../../hooks/useShipping'
+
+/**
+ * Google powers the address suggestions, but only with a key.
+ *
+ * Stripe supplies its own Google Maps key for free when the Address Element
+ * sits in the same Elements group as a Payment Element. This checkout collects
+ * the address a step earlier than the card, so that no longer applies and the
+ * key has to be ours. Without one, `automatic` leaves the fields working
+ * exactly as they do now, just without suggestions - a missing key is a
+ * degraded form, not a broken one.
+ *
+ * Autocomplete covers AU and 25 other countries; Stripe falls back to plain
+ * fields elsewhere on its own.
+ */
+const ADDRESS_AUTOCOMPLETE = GOOGLE_MAPS_API_KEY
+    ? ({ mode: 'google_maps_api', apiKey: GOOGLE_MAPS_API_KEY } as const)
+    : ({ mode: 'automatic' } as const)
 
 /**
  * Step one: the delivery address, and the postage it implies.
@@ -71,6 +89,7 @@ export default function CheckoutAddressSection({
                         // orders are domestic, and the customer can still
                         // change it - Australia Post quotes internationally.
                         defaultValues: { address: { country: 'AU' } },
+                        autocomplete: ADDRESS_AUTOCOMPLETE,
                     }}
                     onChange={handleChange}
                 />
