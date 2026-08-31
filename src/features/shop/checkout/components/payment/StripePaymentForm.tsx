@@ -1,19 +1,41 @@
 import {
     PaymentElement,
-    AddressElement,
     ContactDetailsElement,
     useElements,
     useStripe,
 } from '@stripe/react-stripe-js'
-import type {
-    StripeAddressElementChangeEvent,
-    StripeContactDetailsElementChangeEvent,
-} from '@stripe/stripe-js'
+import type { StripeContactDetailsElementChangeEvent } from '@stripe/stripe-js'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { useStore } from '@nanostores/react'
 import { useState, type SetStateAction } from 'react'
 import type { Dispatch } from 'react'
-import { useShipping } from '../../hooks/useShipping'
+import {
+    checkoutStep,
+    shippingDetails,
+    type ShippingDetails,
+} from '../../state/checkoutStore'
+
+/**
+ * The address came from step one, so hand it to the intent rather than relying
+ * on whatever the payment method happens to carry. This is the branch
+ * `resolveBilling` prefers, and until now nothing populated it.
+ */
+function toConfirmShipping(details: ShippingDetails | null) {
+    if (!details) return undefined
+
+    return {
+        name: details.name,
+        address: {
+            line1: details.address.line1,
+            line2: details.address.line2 ?? undefined,
+            city: details.address.city,
+            state: details.address.state ?? undefined,
+            postal_code: details.address.postal_code,
+            country: details.address.country,
+        },
+    }
+}
 
 export function StripePaymentForm({
     setReady,
@@ -22,34 +44,11 @@ export function StripePaymentForm({
 }) {
     const stripe = useStripe()
     const elements = useElements()
-    const { setShippingInfo } = useShipping()
+    const shipping = useStore(shippingDetails)
     const [submitting, setSubmitting] = useState(false)
     const [message, setMessage] = useState<string | null>(null)
     const [email, setEmail] = useState<string | null>(null)
     const [termsAccepted, setTermsAccepted] = useState(false)
-
-    const handleAddressChange = (
-        event: StripeAddressElementChangeEvent,
-    ) => {
-        // Wait for Stripe's own `complete` before quoting. This fires on every
-        // keystroke, and AusPost rejects half-typed postcodes with a 404 — so
-        // quoting eagerly meant a burst of errors on the way to a valid
-        // address. `complete` is country-aware, unlike a hand-rolled check.
-        if (!event.complete) {
-            setShippingInfo(null)
-            return
-        }
-        const country = event.value.address.country.trim()
-        const postcode = event.value.address.postal_code.trim()
-        if (!country) {
-            setShippingInfo(null)
-            return
-        }
-        setShippingInfo({
-            country,
-            postcode,
-        })
-    }
 
     const handleContactChange = (
         event: StripeContactDetailsElementChangeEvent,
@@ -64,11 +63,13 @@ export function StripePaymentForm({
         }
         setSubmitting(true)
         setMessage(null)
+
         const { error } = await stripe.confirmPayment({
             elements,
             confirmParams: {
                 return_url: `${window.location.origin}/shop/checkout/status`,
                 receipt_email: email ?? undefined,
+                shipping: toConfirmShipping(shipping),
             },
         })
         if (error) {
@@ -84,9 +85,28 @@ export function StripePaymentForm({
             className="flex w-full flex-1 flex-col gap-4"
             onSubmit={handleSubmit}
         >
+            {shipping && (
+                <p className="mb-0 text-base text-gray-700">
+                    Delivering to {shipping.name}, {shipping.address.line1},{' '}
+                    {shipping.address.city} {shipping.address.postal_code}
+                    {' — '}
+                    <button
+                        type="button"
+                        onClick={() => {
+                            checkoutStep.set('address')
+                        }}
+                        className="underline"
+                    >
+                        change
+                    </button>
+                </p>
+            )}
             <ContactDetailsElement onChange={handleContactChange} />
-            <AddressElement options={{ mode: 'billing' }} onChange={handleAddressChange} />
-            <PaymentElement onReady={() => { setReady(true) }} />
+            <PaymentElement
+                onReady={() => {
+                    setReady(true)
+                }}
+            />
             {message ? (
                 <p className="mb-0 text-sm text-red-600">{message}</p>
             ) : null}

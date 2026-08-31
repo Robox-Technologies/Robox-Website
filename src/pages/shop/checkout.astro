@@ -4,7 +4,7 @@ import StandardLayout from '@/layouts/StandardLayout.astro'
 import Article from '@/components/article/Article'
 import {
     CheckoutPaymentLoadingState,
-    CheckoutPaymentSection,
+    CheckoutSteps,
     CheckoutSummaryCard,
     CheckoutSummaryLoadingState,
 } from '@/features/shop/checkout'
@@ -26,9 +26,9 @@ const products = await getAllProducts()
             column-reverse below 900px so the summary leads on narrow screens.
         -->
         <div class="flex flex-col-reverse gap-[50px] min-[900px]:flex-row min-[900px]:items-start">
-            <CheckoutPaymentSection products={products} client:only="react">
+            <CheckoutSteps products={products} client:only="react">
                 <CheckoutPaymentLoadingState slot="fallback" />
-            </CheckoutPaymentSection>
+            </CheckoutSteps>
             <CheckoutSummaryCard products={products} client:only="react">
                 <CheckoutSummaryLoadingState slot="fallback" />
             </CheckoutSummaryCard>

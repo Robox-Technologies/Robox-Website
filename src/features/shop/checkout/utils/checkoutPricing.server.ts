@@ -1,6 +1,7 @@
 import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 import type { CartItems } from '@/features/shop/cart/types/cart'
 import { calculateAuspostShippingCents } from './auspost.server'
+import { applyShippingSurcharge } from './shippingCost.server'
 import {
     calculateDiscountCents,
     resolveDiscount,
@@ -33,7 +34,9 @@ type ResolvedEntry = {
 
 type CartLike = Record<string, number> | CartItems
 
-function sanitizeCart(cart: CartLike): Array<{ productKey: string; quantity: number }> {
+function sanitizeCart(
+    cart: CartLike,
+): Array<{ productKey: string; quantity: number }> {
     return Object.entries(cart)
         .map(([productKey, value]) => ({
             productKey,
@@ -43,21 +46,21 @@ function sanitizeCart(cart: CartLike): Array<{ productKey: string; quantity: num
                         ? Math.floor(value)
                         : 0
                     : Number.isFinite(value.quantity)
-                        ? Math.floor(value.quantity)
-                        : 0,
+                      ? Math.floor(value.quantity)
+                      : 0,
         }))
         .filter((entry) => entry.quantity > 0)
 }
 
-async function resolveEntries(
-    cart: CartLike,
-): Promise<ResolvedEntry[]> {
+async function resolveEntries(cart: CartLike): Promise<ResolvedEntry[]> {
     const allProducts = await getAllProducts()
 
     const byInternalName = new Map(
         allProducts.map((product) => [product.internalName, product]),
     )
-    const byItemId = new Map(allProducts.map((product) => [product.item_id, product]))
+    const byItemId = new Map(
+        allProducts.map((product) => [product.item_id, product]),
+    )
 
     const sanitized = sanitizeCart(cart)
     if (sanitized.length === 0) {
@@ -65,7 +68,8 @@ async function resolveEntries(
     }
 
     return sanitized.map(({ productKey, quantity }) => {
-        const product = byInternalName.get(productKey) ?? byItemId.get(productKey)
+        const product =
+            byInternalName.get(productKey) ?? byItemId.get(productKey)
 
         if (!product) {
             throw new Error(`Unknown product ${productKey}`)
@@ -120,12 +124,14 @@ export async function calculateCheckoutTotals(
             0,
         )
 
-        shippingCents = await calculateAuspostShippingCents({
-            country,
-            postcode,
-            totalWeightGrams,
-            totalUnitVolume,
-        })
+        shippingCents = applyShippingSurcharge(
+            await calculateAuspostShippingCents({
+                country,
+                postcode,
+                totalWeightGrams,
+                totalUnitVolume,
+            }),
+        )
     }
 
     const preDiscountTotalCents = subtotalCents + shippingCents
@@ -169,9 +175,7 @@ export async function calculateCheckoutTotals(
     }
 }
 
-export async function normalizeCartMetadata(
-    cart: CartLike,
-): Promise<string> {
+export async function normalizeCartMetadata(cart: CartLike): Promise<string> {
     const entries = await resolveEntries(cart)
     const products: Record<string, number> = {}
     for (const entry of entries) {

@@ -76,7 +76,6 @@ export function useShipping(products?: Product[]) {
     return {
         quote,
         shippingInfo: address,
-        setShippingInfo: shippingAddress.set,
         loading,
         error,
     }

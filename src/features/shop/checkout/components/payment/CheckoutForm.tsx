@@ -1,9 +1,10 @@
 import { Elements } from '@stripe/react-stripe-js'
 import type { StripeElementsOptions } from '@stripe/stripe-js'
 import { stripePromise } from '../../utils/stripe.client'
+import { createCheckoutAppearance } from '../../utils/appearance'
 import CheckoutPaymentLoadingState from './CheckoutPaymentLoadingState'
 import { StripePaymentForm } from './StripePaymentForm'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 export default function CheckoutForm({
     clientSecret,
@@ -15,42 +16,20 @@ export default function CheckoutForm({
     const [isReady, setReady] = useState(false)
     const isLoading = !isReady || !clientSecret
 
-    const elementsOptions: StripeElementsOptions = {
-        loader: 'always',
-        clientSecret: clientSecret ?? undefined,
-        appearance: {
-            theme: 'stripe',
-            variables: {
-                colorPrimaryText: '#262626',
-                colorText: '#0f172a',
-                colorPrimary: '#2563eb',
-                fontFamily:
-                    'Nunito, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
-                fontSizeBase: '16px',
-            },
-            rules: {
-                // Only card is offered, so Stripe still wraps it in an
-                // accordion item — strip the card chrome so it sits flat on
-                // the page like the elements above it.
-                '.AccordionItem': {
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    boxShadow: 'none',
-                    paddingTop: '0',
-                    paddingRight: '0',
-                    paddingBottom: '0',
-                    paddingLeft: '0',
-                },
-                '.AccordionItem--selected': {
-                    backgroundColor: 'transparent',
-                    boxShadow: 'none',
-                },
-                '.Input': {
-                    backgroundColor: '#fff',
-                },
-            },
-        },
-    }
+    // Memoised on the client secret, not rebuilt per render. `<Elements>`
+    // reacts to a new `options` identity by calling `elements.update()`, and
+    // this component re-renders on every cart and payment-intent change - so a
+    // fresh object each time meant a stream of updates that the elements never
+    // finished initialising through. They stayed 0px high and `onReady` never
+    // fired, leaving the form hidden behind its own spinner.
+    const elementsOptions: StripeElementsOptions = useMemo(
+        () => ({
+            loader: 'always',
+            clientSecret: clientSecret ?? undefined,
+            appearance: createCheckoutAppearance(),
+        }),
+        [clientSecret],
+    )
 
     return (
         <>
@@ -77,7 +56,10 @@ export default function CheckoutForm({
                     <div
                         className={`flex flex-1 flex-col${isLoading ? ' invisible' : ''}`}
                     >
-                        <Elements stripe={stripePromise} options={elementsOptions}>
+                        <Elements
+                            stripe={stripePromise}
+                            options={elementsOptions}
+                        >
                             <StripePaymentForm setReady={setReady} />
                         </Elements>
                     </div>
