@@ -33,17 +33,17 @@ function loadSession(id: string): Promise<Stripe.Checkout.Session> {
 async function findSessionForIntent(
     paymentIntentId: string,
 ): Promise<Stripe.Checkout.Session | null> {
+    // Only the id is taken from the list, because the expansions the emails
+    // need are a level too deep for a list call - Stripe caps expansion at four
+    // levels, and `data.line_items.data.price.product` is five. Re-reading the
+    // session through `loadSession` gets the same shape the success path uses.
     const sessions = await stripeAPI.checkout.sessions.list({
         payment_intent: paymentIntentId,
         limit: 1,
-        expand: [
-            'data.line_items',
-            'data.payment_intent',
-            'data.payment_intent.payment_method',
-            'data.shipping_cost.shipping_rate',
-        ],
     })
-    return sessions.data[0] ?? null
+
+    const id = sessions.data[0]?.id
+    return id ? await loadSession(id) : null
 }
 
 export const POST = (async ({ request }) => {

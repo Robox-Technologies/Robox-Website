@@ -7,6 +7,7 @@ import { renderBanner } from '@/utils/server/renderBanner.server'
 
 import { isValidStatus } from 'src/types/guards/shop'
 import { readPriceDetails } from './readPrice.server'
+import { SHIPPING_PRODUCT_MARKER } from '@/features/shop/checkout/utils/shippingLineItem'
 import { readCombo, readPackaging } from './readPackaging.server'
 
 /**
@@ -34,21 +35,30 @@ async function fetchAllProducts(): Promise<Product[]> {
         expand: ['data.default_price.currency_options'],
     })
     const products = await Promise.all(
-        stripeProducts.data.map(async (product) => {
-            try {
-                return await readProduct(product)
-            } catch (error) {
-                // One unusable product used to take down the whole build, which
-                // meant a half-finished draft in the dashboard - or a fixture
-                // left behind by `stripe trigger` - broke the site. Skip it and
-                // say so instead: it disappears from the shop, which is the
-                // safe direction, and the log names what to fix.
-                console.error(
-                    `[catalog] skipping product ${product.id} (${product.name}): ${(error as Error).message}`,
-                )
-                return null
-            }
-        }),
+        stripeProducts.data
+            // Postage is billed through a Product of our own, which is not
+            // something the shop sells. Filtered before validation so it never
+            // reports itself as a misconfigured product.
+            .filter(
+                (product) =>
+                    product.metadata[SHIPPING_PRODUCT_MARKER.key] !==
+                    SHIPPING_PRODUCT_MARKER.value,
+            )
+            .map(async (product) => {
+                try {
+                    return await readProduct(product)
+                } catch (error) {
+                    // One unusable product used to take down the whole build, which
+                    // meant a half-finished draft in the dashboard - or a fixture
+                    // left behind by `stripe trigger` - broke the site. Skip it and
+                    // say so instead: it disappears from the shop, which is the
+                    // safe direction, and the log names what to fix.
+                    console.error(
+                        `[catalog] skipping product ${product.id} (${product.name}): ${(error as Error).message}`,
+                    )
+                    return null
+                }
+            }),
     )
     return products.filter((product): product is Product => product !== null)
 }

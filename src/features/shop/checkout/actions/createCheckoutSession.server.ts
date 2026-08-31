@@ -2,6 +2,7 @@ import { defineAction } from 'astro:actions'
 import { z } from 'astro/zod'
 import type { Stripe } from 'stripe'
 import { stripeAPI } from '@/utils/server/stripe/index.server'
+import { resolveShippingProductId } from '@/utils/server/stripe/shippingProduct.server'
 import { enforceRateLimit } from '@/utils/server/rateLimit.server'
 import {
     CHECKOUT_OWNER_KEY,
@@ -30,12 +31,20 @@ const shippingDetailsSchema = z.object({
 /**
  * Creates the Checkout Session the payment step runs on.
  *
- * The delivery address is already known, so the exact Australia Post rate goes
- * in as the session's one `shipping_option` and the session deliberately sets
- * no `shipping_address_collection`. That combination is what keeps Apple Pay
- * and Google Pay usable: Stripe turns those wallets off when the server owns
- * the shipping details, and a wallet that collects its own address would
- * bypass the quote entirely.
+ * The delivery address and the postage are both settled before this runs, and
+ * neither is anything the session collects: there is no
+ * `shipping_address_collection` and no `shipping_options`. Postage is an
+ * ordinary line item instead.
+ *
+ * That shape is deliberate. A session carrying shipping options is a shipping
+ * order as far as the wallets are concerned, and both Apple Pay and Link
+ * respond by offering a delivery address of their own - Link defaults to the
+ * customer's saved address, which is generally not the one they just typed. An
+ * order could then ship somewhere the postage was never quoted for. With a
+ * fixed total and no shipping fields, the wallets have nothing to ask about.
+ *
+ * The address still reaches the order through `payment_intent_data.shipping`,
+ * which the server sets and the customer cannot touch.
  *
  * There is no update counterpart. `payment_intent_data` cannot be changed after
  * creation, and it carries the figures the receipt email reads - so a cart that
@@ -87,10 +96,12 @@ export const createCheckoutSession = defineAction({
 
         // Resolved once and shared by both metadata blocks: two calls would be
         // two catalog reads for the same answer.
-        const [productsMetadata, productSummary] = await Promise.all([
-            normalizeCartMetadata(products),
-            describeCartForHumans(products),
-        ])
+        const [productsMetadata, productSummary, shippingProductId] =
+            await Promise.all([
+                normalizeCartMetadata(products),
+                describeCartForHumans(products),
+                resolveShippingProductId(),
+            ])
 
         // The client chooses *which* service; the price comes from our own
         // quote, never from the request. An unrecognised id falls back to the
@@ -109,36 +120,24 @@ export const createCheckoutSession = defineAction({
             mode: 'payment',
             // Reference the Price rather than restate an amount, so the charge
             // is whatever Stripe holds for the product.
-            line_items: entries.map((entry) => ({
-                price: entry.priceId,
-                quantity: entry.quantity,
-            })),
-            // Exactly one rate, the one the customer already chose. A session
-            // offering several is not a static transaction, and Apple Pay
-            // answers that by putting its own editable delivery address in the
-            // sheet - which would let it ship somewhere we never quoted. The
-            // choice belongs on the address step, before the session exists.
-            shipping_options: [
+            line_items: [
+                ...entries.map((entry) => ({
+                    price: entry.priceId,
+                    quantity: entry.quantity,
+                })),
+                // Postage as a line item, not a `shipping_option`. Any session
+                // carrying shipping options makes the wallets collect a
+                // delivery address of their own - Apple Pay and Link both do -
+                // which would let an order ship somewhere the postage was never
+                // quoted for. As a line item the session is an ordinary
+                // fixed-total order and the wallets have nothing to ask about.
                 {
-                    shipping_rate_data: {
-                        display_name: chosen.label,
-                        type: 'fixed_amount' as const,
-                        fixed_amount: {
-                            amount: chosen.amountCents,
-                            currency: 'aud',
-                        },
-                        delivery_estimate: {
-                            minimum: {
-                                unit: 'business_day' as const,
-                                value: chosen.estimateDays.minimum,
-                            },
-                            maximum: {
-                                unit: 'business_day' as const,
-                                value: chosen.estimateDays.maximum,
-                            },
-                        },
-                        metadata: { serviceId: chosen.id },
+                    price_data: {
+                        currency: 'aud',
+                        product: shippingProductId,
+                        unit_amount: chosen.amountCents,
                     },
+                    quantity: 1,
                 },
             ],
             allow_promotion_codes: true,
