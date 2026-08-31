@@ -8,6 +8,7 @@
  */
 
 import { BaseTransport, errorMessage } from './transportBase'
+import { ConnectionStatus } from 'src/types/communication'
 
 const PI_VENDOR_ID = 0x2e8a
 
@@ -164,7 +165,23 @@ export class USBCommunication extends BaseTransport {
         const port = event.target as SerialPort
         if (port.getInfo().usbVendorId !== PI_VENDOR_ID) return
 
+        // The board re-enumerates itself several times during its own USB
+        // boot handoff, so one physical plug-in can fire several 'connect'
+        // (and sometimes 'disconnect') events. `Pico`'s connectionStatus is
+        // the shared record of an attempt already in flight - a lock check on
+        // the port itself can't see it, since `port.readable`/`writable` stay
+        // null until `port.open()` resolves deep inside `connect()`. RESTARTING
+        // has to stay allowed here too: a restart bounces the same way a
+        // plug-in does, and the disconnect side already lets that bounce
+        // through untouched, so the connect side has to complete it.
         if (event.type === 'connect') {
+            const { connectionStatus } = this.parent.getState()
+            if (
+                connectionStatus !== ConnectionStatus.DISCONNECTED &&
+                connectionStatus !== ConnectionStatus.RESTARTING
+            ) {
+                return
+            }
             await this.parent.connect(port)
         } else if (
             event.type === 'disconnect' &&
@@ -176,9 +193,24 @@ export class USBCommunication extends BaseTransport {
 
     initialize(): void {
         if (!navigator.serial) return
-
         navigator.serial.addEventListener('connect', this.initPortsBound)
         navigator.serial.addEventListener('disconnect', this.initPortsBound)
+
+        // 'connect' only fires for ports that appear after the listener is
+        // attached, so a board already plugged in when the page loads needs
+        // this explicit scan to be picked up at all.
+        void this.connectExistingPort()
+    }
+
+    private async connectExistingPort(): Promise<void> {
+        const ports = await navigator.serial.getPorts()
+
+        for (const port of ports) {
+            if (port.getInfo().usbVendorId === PI_VENDOR_ID) {
+                await this.parent.connect(port)
+                break
+            }
+        }
     }
 
     async destroy(): Promise<void> {

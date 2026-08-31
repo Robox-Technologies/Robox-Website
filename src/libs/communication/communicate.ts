@@ -63,6 +63,18 @@ export class Pico {
      */
     private uploadVerified: boolean = false
 
+    /**
+     * A duplicate 'connect' arriving mid-attempt - the board's own USB
+     * re-enumeration during boot, or an auto-reconnect racing the manual
+     * `request()` flow - joins the attempt already running instead of
+     * starting a second one over the same port.
+     *
+     * This can't be a `connectionStatus !== DISCONNECTED` check like
+     * `disconnect()` uses: `request()` sets CONNECTING before this ever
+     * runs, so that would reject every ordinary manual connect too.
+     */
+    private connectAttempt: Promise<void> | null = null
+
     constructor() {
         this.communication = null
         this.listeners = new Map()
@@ -153,7 +165,6 @@ export class Pico {
             firmwareStatus: FirmwareStatus.UNKNOWN,
             isRestarting: false,
         })
-
         if (method === 'USB') {
             this.communication = new USBCommunication(this)
         } else if (method === 'WebBluetooth') {
@@ -161,19 +172,36 @@ export class Pico {
         } else if (method === 'iOSBluetooth') {
             this.communication = new IOSBluetoothCommunication(this)
         }
-
         this.communication?.initialize()
     }
 
     async connect(
         port: SerialPort | BluetoothDevice | BleDevice,
     ): Promise<void> {
-        if (!this.communication) {
+        const communication = this.communication
+        if (!communication) {
             throw new Error('Communication method not set')
         }
 
+        if (this.connectAttempt) return this.connectAttempt
+
+        this.connectAttempt = this.attemptConnect(communication, port).finally(
+            () => {
+                this.connectAttempt = null
+            },
+        )
+
+        return this.connectAttempt
+    }
+
+    private async attemptConnect(
+        communication: Communication,
+        port: SerialPort | BluetoothDevice | BleDevice,
+    ): Promise<void> {
+        this.updateState({ connectionStatus: ConnectionStatus.CONNECTING })
+
         try {
-            await this.communication.connect(port)
+            await communication.connect(port)
 
             if (this.toastsEnabled) {
                 toast.success({
@@ -185,12 +213,28 @@ export class Pico {
 
             this.firmwareCheck()
         } catch (error) {
+            this.revertConnectionState()
             this.emit('error', { message: errorMessage(error) })
         }
     }
 
+    /**
+     * The board's own USB re-enumeration during boot, or a flaky BLE link, can
+     * report the same disconnect several times over. The DISCONNECTING/
+     * DISCONNECTED guard makes every extra report a no-op instead of racing
+     * a second teardown against the first.
+     */
     async disconnect(): Promise<void> {
         if (!this.communication) return
+
+        if (
+            this.state.connectionStatus === ConnectionStatus.DISCONNECTING ||
+            this.state.connectionStatus === ConnectionStatus.DISCONNECTED
+        ) {
+            return
+        }
+
+        this.updateState({ connectionStatus: ConnectionStatus.DISCONNECTING })
 
         try {
             await this.releaseBoard()
@@ -200,12 +244,13 @@ export class Pico {
             this.clearFirmwareCheck()
 
             await this.communication.disconnect()
+        } catch (error) {
+            this.emit('error', { message: errorMessage(error) })
+        } finally {
             this.updateState({
                 connectionStatus: ConnectionStatus.DISCONNECTED,
                 firmwareStatus: FirmwareStatus.UNKNOWN,
             })
-        } catch (error) {
-            this.emit('error', { message: errorMessage(error) })
         }
     }
 
