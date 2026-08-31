@@ -50,6 +50,7 @@ export class Pico {
     private firmwareCheckTimeout: ReturnType<typeof setTimeout> | null = null
     private responded: boolean = false
     private firmwareConfirmed: boolean = false
+    private toastsEnabled: boolean = true
 
     /** Protocol the board speaks. 1 is the unframed legacy path. */
     private protocolVersion: number = 1
@@ -83,6 +84,12 @@ export class Pico {
         return this.state.connectionStatus === ConnectionStatus.CONNECTED
     }
 
+    // Callers that surface their own inline connection feedback (e.g. the
+    // flash device flow) don't want the global toast host talking over it.
+    setToastsEnabled(enabled: boolean): void {
+        this.toastsEnabled = enabled
+    }
+
     // Event listener management (for React hooks)
     on<K extends keyof PicoEventMap>(
         event: K,
@@ -103,7 +110,7 @@ export class Pico {
 
     emit<K extends keyof PicoEventMap>(event: K, data: PicoEventMap[K]): void {
         // Emit toasts for error events only
-        if (event === 'error') {
+        if (event === 'error' && this.toastsEnabled) {
             const errorData = data as { message: string }
             toast.danger({
                 title: 'Ro/Box Error',
@@ -168,11 +175,13 @@ export class Pico {
         try {
             await this.communication.connect(port)
 
-            toast.success({
-                title: 'Ro/Box Connected',
-                message: 'Your Ro/Box is connected and ready to run.',
-                durationMs: 3000,
-            })
+            if (this.toastsEnabled) {
+                toast.success({
+                    title: 'Ro/Box Connected',
+                    message: 'Your Ro/Box is connected and ready to run.',
+                    durationMs: 3000,
+                })
+            }
 
             this.firmwareCheck()
         } catch (error) {
@@ -359,10 +368,12 @@ export class Pico {
     request(): void {
         this.updateState({ connectionStatus: ConnectionStatus.CONNECTING })
         this.communication?.request().catch(() => {
-            toast.warning({
-                title: 'Connection Cancelled',
-                message: 'Ro/Box connection was cancelled.',
-            })
+            if (this.toastsEnabled) {
+                toast.warning({
+                    title: 'Connection Cancelled',
+                    message: 'Ro/Box connection was cancelled.',
+                })
+            }
         })
     }
 
