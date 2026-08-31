@@ -244,6 +244,29 @@ export const socialsCaptionStyle: React.CSSProperties = {
 
 export const footerStyle: React.CSSProperties = { marginTop: '32px' };
 
+/* Internal notices ------------------------------ */
+
+/**
+ * The sandbox banner at the top of an internal order email.
+ *
+ * A solid coral fill rather than a tint, so it survives the dark-mode override
+ * in `globalCss` untouched: that rule repaints every <p> in `colors.textDark`,
+ * which is the same near-white this already uses on the coral.
+ */
+export const testBannerStyle: React.CSSProperties = {
+    backgroundColor: colors.accent,
+    borderRadius: '8px',
+    padding: '4px 16px',
+    marginBottom: '32px'
+};
+
+export const testBannerTextStyle: React.CSSProperties = {
+    ...textStyle,
+    color: colors.buttonText,
+    fontWeight: 'bold',
+    textAlign: 'center'
+};
+
 /* Non-inlinable CSS ------------------------------ */
 
 /**

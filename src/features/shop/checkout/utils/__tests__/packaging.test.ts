@@ -11,6 +11,7 @@ import {
     BAG_SIZES,
     PARCEL_LIMITS,
     expandToPackingUnits,
+    parseShipmentMetadata,
     planShipment,
     shipmentToMetadata,
     type PackingUnit,
@@ -370,5 +371,73 @@ describe('shipmentToMetadata', () => {
         const metadata = shipmentToMetadata(planShipment([]))
         expect(metadata.parcelCount).toBe('0')
         expect(metadata.parcel1).toBeUndefined()
+    })
+})
+
+/**
+ * The metadata is the only record of how an order was packed, and the internal
+ * order email reads it back to say what to put in the post - so the round trip
+ * is pinned here, not just the write.
+ */
+describe('parseShipmentMetadata', () => {
+    it('reads the parcels back out of what it wrote', () => {
+        const summary = parseShipmentMetadata(
+            shipmentToMetadata(planShipment(units([KIT, 11]))),
+        )
+
+        expect(summary).toEqual({
+            description: '2 large satchels',
+            weightGrams: 2200,
+            unlistedParcels: 0,
+            parcels: [
+                {
+                    label: 'large satchel',
+                    contents: '10x kit',
+                    dimensions: '48.5x36x5cm',
+                    weight: '2000g',
+                },
+                {
+                    label: 'large satchel',
+                    contents: '1x kit',
+                    dimensions: '48.5x36x5cm',
+                    weight: '200g',
+                },
+            ],
+        })
+    })
+
+    it('reports the parcels the metadata had no room for', () => {
+        const summary = parseShipmentMetadata(
+            shipmentToMetadata(planShipment(units([KIT, 250]))),
+        )
+
+        expect(summary?.parcels).toHaveLength(20)
+        expect(summary?.unlistedParcels).toBe(5)
+    })
+
+    it('keeps a product name that contains the field separator', () => {
+        const odd = bagged('a | b', { small: 1, medium: 3, large: 10 })
+        const summary = parseShipmentMetadata(
+            shipmentToMetadata(planShipment(units([odd, 1]))),
+        )
+
+        expect(summary?.parcels[0]?.contents).toBe('1x a | b')
+        expect(summary?.parcels[0]?.weight).toBe('200g')
+    })
+
+    it('has nothing to report for a payment with no shipment on it', () => {
+        expect(parseShipmentMetadata({})).toBeNull()
+        expect(parseShipmentMetadata(null)).toBeNull()
+        expect(parseShipmentMetadata({ products: 'kit:1' })).toBeNull()
+    })
+
+    it('describes an empty order without inventing parcels', () => {
+        const summary = parseShipmentMetadata(
+            shipmentToMetadata(planShipment([])),
+        )
+
+        expect(summary?.parcels).toEqual([])
+        expect(summary?.description).toBe('no packaging')
+        expect(summary?.unlistedParcels).toBe(0)
     })
 })

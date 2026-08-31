@@ -1,9 +1,11 @@
 import type { Stripe } from 'stripe'
 
 import type { OrderItem } from '@/features/emails/components/OrderSummary'
+import type { PackingSummary } from '@/features/emails/components/PackingList'
 import { resolveBilling } from '@/utils/server/stripe/resolveBilling.server'
 import { formatMoney } from '@/utils/formatPrice'
 import { SHIPPING_PRODUCT_MARKER } from '@/features/shop/checkout/utils/shippingLineItem'
+import { parseShipmentMetadata } from '@/features/shop/checkout/utils/packaging.server'
 
 export interface EmailOrderData {
     to: string
@@ -17,6 +19,46 @@ export interface EmailOrderData {
     total: string
     address: string
     billing: string
+    /**
+     * How the order was packed, read back off the PaymentIntent metadata the
+     * checkout wrote. Null for an order that carries none - one placed before
+     * the metadata existed, or one whose shipment could not be planned.
+     *
+     * Only the internal email shows this; the customer has no use for it.
+     */
+    packing: PackingSummary | null
+    /**
+     * Whether the payment was taken in Stripe's sandbox, i.e. from localhost or
+     * the dev site. The internal email says so in its subject so a test order
+     * is never mistaken for one to pack.
+     */
+    testMode: boolean
+}
+
+/**
+ * The packing plan the checkout recorded on the PaymentIntent, in the shape the
+ * internal email renders.
+ *
+ * The metadata is the only surviving record of it - the shipment is planned
+ * when the session is created and stored nowhere else - so this reads it back
+ * rather than re-planning from the cart, which could land on a different answer
+ * than the postage was quoted on.
+ */
+function toPackingSummary(
+    metadata: Stripe.Metadata | null | undefined,
+): PackingSummary | null {
+    const shipment = parseShipmentMetadata(metadata)
+    if (!shipment) return null
+
+    return {
+        description: shipment.description,
+        parcels: shipment.parcels,
+        totalWeight:
+            shipment.weightGrams === null
+                ? undefined
+                : `${shipment.weightGrams}g`,
+        unlistedParcels: shipment.unlistedParcels,
+    }
 }
 
 /**
@@ -125,5 +167,10 @@ export async function buildEmailOrderData(
         total: money(session.amount_total ?? 0),
         address,
         billing,
+        packing: toPackingSummary(intent?.metadata),
+        // `livemode` is Stripe's own word for which set of keys took the
+        // payment, so this cannot drift from whichever environment actually
+        // charged the card - unlike inferring it from a hostname or an env var.
+        testMode: !session.livemode,
     }
 }

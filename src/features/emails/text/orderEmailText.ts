@@ -1,4 +1,5 @@
 import type { OrderItem } from '@/features/emails/components/OrderSummary';
+import type { PackingSummary } from '@/features/emails/components/PackingList';
 
 /**
  * Plain-text bodies for the transactional emails.
@@ -109,4 +110,76 @@ If you believe this is a mistake, please contact us at hello@robox.com.au for as
 
 
 ${SIGNATURE}`;
+}
+
+/** What the internal order email needs on top of the customer-facing fields. */
+export interface InternalOrderTextData extends OrderEmailTextData {
+    /** The customer's email address. */
+    to: string;
+    packing: PackingSummary | null;
+    testMode: boolean;
+}
+
+function buildPacking(packing: PackingSummary | null): string {
+    if (!packing || packing.parcels.length === 0) {
+        return packing?.description
+            ? `${packing.description} - no parcel breakdown was recorded for this order.`
+            : 'No packing plan was recorded for this order. Pack it by hand from the items above.';
+    }
+
+    const parcels = packing.parcels
+        .map(
+            (parcel, index) =>
+                `${index + 1}. ${parcel.label}: ${parcel.contents} - ${parcel.dimensions}, ${parcel.weight}`
+        )
+        .join('\n');
+
+    const total = packing.totalWeight ? `\nTotal weight: ${packing.totalWeight}` : '';
+    const unlisted =
+        packing.unlistedParcels > 0
+            ? `\n+ ${packing.unlistedParcels} further parcel${packing.unlistedParcels === 1 ? '' : 's'} not listed - see the payment in Stripe for the full plan.`
+            : '';
+
+    return `${packing.description}${total}\n\n${parcels}${unlisted}`;
+}
+
+/**
+ * Subject line for the internal notice.
+ *
+ * Carries the order id for the same Gmail-threading reason as the receipt, and
+ * the customer's name so the inbox is scannable.
+ *
+ * A sandbox order is marked `[TEST]` up front, so a test is never mistaken for
+ * one to pack. `testMode` is Stripe's own `livemode`, so it tracks which set of
+ * keys took the payment rather than which hostname served the checkout.
+ */
+export function buildInternalOrderSubject(data: InternalOrderTextData): string {
+    const prefix = data.testMode ? '[TEST] ' : '';
+    return `${prefix}New order - ${data.name} (${data.orderId})`;
+}
+
+/**
+ * The internal fulfilment notice. No signature block: this is a work order
+ * going to our own inbox, not a letter to anyone.
+ */
+export function buildInternalOrderText(data: InternalOrderTextData): string {
+    const banner = data.testMode
+        ? '[TEST] Sandbox payment - do not pack or post this order.\n\n'
+        : '';
+
+    return `${banner}New order from ${data.name}
+
+Customer: ${data.name}
+Email: ${data.to}
+Shipping: ${data.shippingMethod ?? 'Not recorded'}
+
+Deliver to:
+${data.address}
+
+
+PACKAGING
+${buildPacking(data.packing)}
+
+
+${buildSummary(data)}`;
 }

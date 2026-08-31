@@ -413,6 +413,26 @@ function pluralise(label: string): string {
 const MAX_LISTED_PARCELS = 20
 
 /**
+ * Between the four fields of a `parcelN` line. Shared by the writer and the
+ * reader below so the format is stated once.
+ */
+const PARCEL_FIELD_SEPARATOR = ' | '
+
+function formatParcelLine(parcel: Parcel): string {
+    const contents = parcel.contents
+        .map((entry) => `${entry.quantity}x ${entry.name}`)
+        .join(' + ')
+    const { length, width, height } = parcel.dimensions
+
+    return [
+        parcel.label,
+        contents,
+        `${length}x${width}x${height}cm`,
+        `${parcel.weightGrams}g`,
+    ].join(PARCEL_FIELD_SEPARATOR)
+}
+
+/**
  * The shipment flattened into metadata's string-only values.
  *
  * One key per parcel, because this is what someone reads to pack the order: each
@@ -427,14 +447,94 @@ export function shipmentToMetadata(shipment: Shipment): Record<string, string> {
     }
 
     shipment.parcels.slice(0, MAX_LISTED_PARCELS).forEach((parcel, index) => {
-        const contents = parcel.contents
-            .map((entry) => `${entry.quantity}x ${entry.name}`)
-            .join(' + ')
-        const { length, width, height } = parcel.dimensions
-
-        metadata[`parcel${index + 1}`] =
-            `${parcel.label} | ${contents} | ${length}x${width}x${height}cm | ${parcel.weightGrams}g`
+        metadata[`parcel${index + 1}`] = formatParcelLine(parcel)
     })
 
     return metadata
+}
+
+/** One parcel as it reads back out of metadata, already formatted for display. */
+export type ParcelSummary = {
+    /** What to reach for, e.g. "large satchel". */
+    label: string
+    /** What goes inside, e.g. "10x Ro/Box Kit". */
+    contents: string
+    /** e.g. "48.5x36x5cm". */
+    dimensions: string
+    /** e.g. "2000g". */
+    weight: string
+}
+
+export type ShipmentSummary = {
+    /** Readable summary, e.g. "2 large satchels, 1 box". */
+    description: string
+    parcels: ParcelSummary[]
+    /** Total shipment weight, or null when the metadata didn't carry one. */
+    weightGrams: number | null
+    /**
+     * Parcels the order has beyond the ones metadata could hold
+     * (`MAX_LISTED_PARCELS`), so a packing list can say some are missing rather
+     * than quietly showing fewer parcels than were packed.
+     */
+    unlistedParcels: number
+}
+
+/**
+ * Reads a `parcelN` line back into its fields.
+ *
+ * Anchored on the first and last two fields rather than on position, so a
+ * product name containing the separator loses nothing - it stays in `contents`.
+ */
+function parseParcelLine(line: string): ParcelSummary | null {
+    const parts = line.split(PARCEL_FIELD_SEPARATOR)
+    if (parts.length < 4) return null
+
+    return {
+        label: parts[0]!,
+        contents: parts.slice(1, -2).join(PARCEL_FIELD_SEPARATOR),
+        dimensions: parts[parts.length - 2]!,
+        weight: parts[parts.length - 1]!,
+    }
+}
+
+/**
+ * The inverse of `shipmentToMetadata`, for anything downstream of the payment
+ * that needs the parcels back - the internal order email packs from this.
+ *
+ * The metadata is the only surviving record of how the order was packed: the
+ * shipment is planned when the Checkout Session is created and never stored
+ * anywhere else. Re-planning it from the cart would risk a different answer
+ * than the one the customer's postage was quoted on.
+ *
+ * Returns null for a payment that carries no shipment at all - an order placed
+ * before this metadata existed, which has to be packed by hand either way.
+ */
+export function parseShipmentMetadata(
+    metadata: Record<string, string> | null | undefined,
+): ShipmentSummary | null {
+    if (!metadata) return null
+
+    const parcels: ParcelSummary[] = []
+    for (let index = 1; index <= MAX_LISTED_PARCELS; index++) {
+        const line = metadata[`parcel${index}`]
+        if (!line) break
+
+        const parcel = parseParcelLine(line)
+        if (parcel) parcels.push(parcel)
+    }
+
+    const description = metadata.packaging
+    if (parcels.length === 0 && !description) return null
+
+    const parcelCount = Number.parseInt(metadata.parcelCount ?? '', 10)
+    const weightGrams = Number.parseInt(metadata.weightGrams ?? '', 10)
+
+    return {
+        description: description ?? '',
+        parcels,
+        weightGrams: Number.isFinite(weightGrams) ? weightGrams : null,
+        unlistedParcels: Number.isFinite(parcelCount)
+            ? Math.max(0, parcelCount - parcels.length)
+            : 0,
+    }
 }
