@@ -1,4 +1,5 @@
-import { atom } from 'nanostores'
+import { atom, computed } from 'nanostores'
+import { shippingDetails } from './checkoutStore'
 
 export type ShippingAddress = {
     country: string
@@ -16,7 +17,23 @@ export type ShippingQuote = {
     currency: 'aud'
 }
 
-export const shippingAddress = atom<ShippingAddress | null>(null)
+/**
+ * The two fields a postage quote actually keys on, derived from the address the
+ * customer confirmed on the first step. Computed rather than written directly:
+ * there is one place an address enters the checkout now, and letting the payment
+ * step also set this is how the two could disagree.
+ */
+export const shippingAddress = computed(
+    shippingDetails,
+    (details): ShippingAddress | null => {
+        if (!details) return null
+        return {
+            country: details.address.country,
+            postcode: details.address.postal_code,
+        }
+    },
+)
+
 export const shippingQuote = atom<ShippingQuote | null>(null)
 
 /**

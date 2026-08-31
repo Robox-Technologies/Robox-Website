@@ -1,29 +1,35 @@
 import Card from '@/components/card'
+import { formatStatus } from '@/features/catalog/utils/formatStatus'
+import { formatPrice } from '@/utils/formatPrice'
+import type { Product } from '@/types/shop'
 import type React from 'react'
+
 interface ProductCardProps {
     className?: string
     image: ImageMetadata
-    price: string
-    href: string
+    /**
+     * The catalog entry, so the name, availability and price on the homepage
+     * are the ones Stripe holds rather than a second set of literals that goes
+     * stale the next time a price moves.
+     */
+    product: Product
     absolute?: React.ReactNode
-    title: string
 }
 export default function ProductCard({
     className,
     image,
-    price,
-    href,
+    product,
     absolute,
-    title,
 }: ProductCardProps) {
+    const status = formatStatus(product.status)
     return (
         // Same behaviour as the shop's own product cards: the whole card is the
         // link, and the pill inside it is a label the card drives.
         <Card
-            href={href}
+            href={`/shop/product/${product.internalName}`}
             className={`card-interactive w-[350px] basis-[350px] box-shadow bg-gray-100 ${className ?? ''}`}
             absolute={absolute}
-            title={<h1 className="text-2xl font-bold">{title}</h1>}
+            title={<h1 className="text-2xl font-bold">{product.name}</h1>}
             image={
                 <img
                     src={image.src}
@@ -35,9 +41,9 @@ export default function ProductCard({
             }
             description={
                 <p className="text-lg">
-                    <span className="text-[#4aa21e]">Available for Purchase</span>
+                    <span className={status.color}>{status.text}</span>
                     <br />
-                    AU${price}
+                    {formatPrice(product.price)}
                 </p>
             }
         >

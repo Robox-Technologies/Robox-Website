@@ -6,6 +6,32 @@ import { sendOrderEmail } from '@/features/emails/utils/sendOrderEmail.server'
 import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 import type { Product } from '@/types/shop'
 
+/**
+ * The address on the order carries the recipient, but the email does not.
+ *
+ * `checkout.confirm()` takes no `receipt_email` — the customer's address is
+ * collected by the Contact Details Element and lands on the Checkout Session,
+ * not on the PaymentIntent. So when the intent has no email of its own, find
+ * the session that created it and read it from there.
+ */
+async function resolveReceiptEmail(
+    paymentIntent: Stripe.PaymentIntent,
+): Promise<Stripe.PaymentIntent> {
+    if (paymentIntent.receipt_email) return paymentIntent
+
+    const sessions = await stripeAPI.checkout.sessions.list({
+        payment_intent: paymentIntent.id,
+        limit: 1,
+    })
+    const email = sessions.data[0]?.customer_details?.email
+
+    if (!email) return paymentIntent
+
+    // Returned as a copy rather than mutating Stripe's object, so the only
+    // thing downstream sees changed is the field we filled in.
+    return { ...paymentIntent, receipt_email: email }
+}
+
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
 
 export const POST = (async ({ request }) => {
@@ -64,7 +90,11 @@ export const POST = (async ({ request }) => {
                     allProducts.map((product) => [product.item_id, product]),
                 )
 
-            await sendOrderEmail(paymentIntent, verifiedProducts, succeeded)
+            await sendOrderEmail(
+                await resolveReceiptEmail(paymentIntent),
+                verifiedProducts,
+                succeeded,
+            )
         } catch (error) {
             console.error('[stripe-webhook] error processing email:', error)
         }

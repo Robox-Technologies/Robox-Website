@@ -14,6 +14,16 @@ import {
 
 const resend = new Resend(process.env.RESEND_KEY || 're_...');
 
+/**
+ * The mailbox a human reads - deliberately not the `from` address, which has to
+ * stay on the Resend-verified sending domain.
+ *
+ * Every order email is blind-copied here so there is a record of exactly what
+ * the customer was sent, and `replyTo` points here so a customer hitting reply
+ * reaches someone rather than the sending subdomain.
+ */
+const ORDER_MAILBOX = 'hello@robox.com.au';
+
 export async function sendOrderEmail(
     paymentIntent: Stripe.PaymentIntent,
     verifiedProducts: Record<string, Product>,
@@ -61,8 +71,10 @@ export async function sendOrderEmail(
     const text = success ? buildReceiptText(orderData) : buildPaymentFailedText(orderData);
 
     await resend.emails.send({
-        from: 'Ro/Box <hello@robox.com.au>',
+        from: 'Ro/Box <hello@store.robox.com.au>',
         to: [orderData.to],
+        bcc: [ORDER_MAILBOX],
+        replyTo: ORDER_MAILBOX,
         subject,
         html,
         text

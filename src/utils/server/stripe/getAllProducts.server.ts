@@ -6,6 +6,8 @@ import { createCachedLoader } from '@/utils/server/cache.server'
 import { renderBanner } from '@/utils/server/renderBanner.server'
 
 import { isValidStatus } from 'src/types/guards/shop'
+import { readPriceDetails } from './readPrice.server'
+import { readCombo, readPackaging } from './readPackaging.server'
 
 /**
  * Short enough that a price or availability change in the Stripe dashboard shows
@@ -18,22 +20,32 @@ const PRODUCT_CACHE_TTL_MS = 60_000
 
 async function fetchAllProducts(): Promise<Product[]> {
     const stripeProducts = await stripeAPI.products.list({
-        expand: ['data.default_price'],
+        // Unfiltered, this returns archived products too, so archiving a
+        // product in the dashboard would leave it on the shop. Availability
+        // still runs through `metadata.status`; this is the harder off switch.
+        active: true,
+        // Stripe pages at 10 by default, so without this the catalog would
+        // silently stop at the tenth product. 100 is the API's ceiling; past
+        // that this needs `autoPagingToArray`.
+        limit: 100,
+        // `currency_options` is only returned when explicitly expanded, and it
+        // is what the storefront's currency switcher reads - without it every
+        // product looks single-currency.
+        expand: ['data.default_price.currency_options'],
     })
     const products: Product[] = await Promise.all(
         stripeProducts.data.map(async (product) => {
-            const price = product.default_price as Stripe.Price
-            if (price.unit_amount === null) {
-                throw new Error(
-                    `Price for product ${product.name} is missing unit_amount`,
-                )
-            }
+            const priceDetails = readPriceDetails(
+                product.default_price as Stripe.Price,
+                product.name,
+            )
             const status = product.metadata.status || 'not-available'
             if (!isValidStatus(status)) {
                 throw new Error(
                     `Invalid status for product ${product.name}: ${status}`,
                 )
             }
+            const combo = readCombo(product.metadata, product.name)
             const weight = product.metadata.weight
             if (weight === undefined) {
                 throw new Error(`Missing weight for product ${product.name}`)
@@ -50,10 +62,12 @@ async function fetchAllProducts(): Promise<Product[]> {
                 item_id: product.id,
                 status: status,
                 banner: await renderBanner(product.metadata.banner),
-                price: price.unit_amount,
-                currency: price.currency,
+                ...priceDetails,
                 weight: Number(weight),
-                unitVolume: Number(product.metadata.unitVolume ?? 0),
+                packaging: readPackaging(product.metadata, product.name, {
+                    isBundle: combo !== null,
+                }),
+                combo,
             }
         }),
     )

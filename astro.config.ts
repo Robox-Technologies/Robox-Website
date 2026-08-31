@@ -45,6 +45,19 @@ export default defineConfig({
                 access: 'public',
                 optional: true,
             }),
+            /*
+             * Google Maps Places key for the checkout's address autocomplete.
+             * Stripe only supplies its own key when the Address Element sits in
+             * the same Elements group as a Payment Element, and the checkout
+             * collects the address a step earlier than that - so this one is
+             * ours. Optional: without it the address fields still work, just
+             * without suggestions.
+             */
+            GOOGLE_MAPS_API_KEY: envField.string({
+                context: 'client',
+                access: 'public',
+                optional: true,
+            }),
         },
     },
     integrations: [
