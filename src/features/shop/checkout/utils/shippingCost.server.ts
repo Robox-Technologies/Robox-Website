@@ -1,16 +1,12 @@
 /**
- * What we add to a raw Australia Post quote before charging it.
+ * The last step between an Australia Post quote and what the customer is
+ * charged for postage.
  *
- * Postage is not the whole cost of getting a parcel out the door - the box,
- * padding and label are real money that used to be absorbed silently. Kept as
- * one constant so there is a single number to change, and applied in one place
- * so the quote shown on the address step, the rate written onto the Checkout
- * Session and the figure on the receipt cannot drift apart.
- *
- * $3.39 for the box and $0.38 for glassine bags, in AUD. Other presentment
- * currencies are converted from this along with the postage itself.
+ * Packaging is no longer a constant: it is the sum of the satchels and cartons
+ * the order actually needs, worked out in `packaging.server.ts`. This applies it
+ * in one place so the figure shown on the address step, the rate written onto
+ * the Checkout Session and the figure on the receipt cannot drift apart.
  */
-export const PACKAGING_CENTS = 339 + 38
 
 /**
  * Round up to the nearest 10c. A quote of $12.37 becoming $12.40 costs the
@@ -19,7 +15,10 @@ export const PACKAGING_CENTS = 339 + 38
  */
 const ROUNDING_CENTS = 10
 
-export function applyShippingSurcharge(auspostCents: number): number {
-    const withPackaging = auspostCents + PACKAGING_CENTS
+export function applyShippingSurcharge(
+    auspostCents: number,
+    packagingCents: number,
+): number {
+    const withPackaging = auspostCents + packagingCents
     return Math.ceil(withPackaging / ROUNDING_CENTS) * ROUNDING_CENTS
 }

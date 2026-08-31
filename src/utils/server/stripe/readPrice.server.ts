@@ -1,5 +1,4 @@
 import type { Stripe } from 'stripe'
-import type { Packaging } from '@/types/shop'
 
 export type PriceDetails = {
     priceId: string
@@ -44,57 +43,3 @@ export function readPriceDetails(
     }
 }
 
-/**
- * Parcel dimensions for a product, in centimetres.
- *
- * Falls back to the box the shipping code used to hardcode for everything, so
- * a product without the metadata still quotes as it did before rather than
- * failing the build. Set `packagedLength` / `packagedWidth` /
- * `packagedHeight` on each product in Stripe to get its real box.
- */
-export const DEFAULT_PACKAGING: Packaging = {
-    length: 24,
-    width: 16,
-    height: 8,
-}
-
-function readDimension(
-    value: string | undefined,
-    fallback: number,
-    productName: string,
-    key: string,
-): number {
-    if (value === undefined) return fallback
-
-    const parsed = Number(value)
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-        throw new Error(`Invalid ${key} for product ${productName}: ${value}`)
-    }
-    return parsed
-}
-
-export function readPackaging(
-    metadata: Stripe.Metadata,
-    productName: string,
-): Packaging {
-    return {
-        length: readDimension(
-            metadata.packagedLength,
-            DEFAULT_PACKAGING.length,
-            productName,
-            'packagedLength',
-        ),
-        width: readDimension(
-            metadata.packagedWidth,
-            DEFAULT_PACKAGING.width,
-            productName,
-            'packagedWidth',
-        ),
-        height: readDimension(
-            metadata.packagedHeight,
-            DEFAULT_PACKAGING.height,
-            productName,
-            'packagedHeight',
-        ),
-    }
-}

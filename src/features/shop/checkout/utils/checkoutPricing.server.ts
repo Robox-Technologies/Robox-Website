@@ -1,8 +1,8 @@
 import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 import type { CartItems } from '@/features/shop/cart/types/cart'
-import type { Packaging } from '@/types/shop'
-import { DEFAULT_PACKAGING } from '@/utils/server/stripe/readPrice.server'
+import type { Product } from '@/types/shop'
 import { calculateAuspostShippingCents } from './auspost.server'
+import { expandToPackingUnits, planParcel } from './packaging.server'
 import { applyShippingSurcharge } from './shippingCost.server'
 import {
     calculateDiscountCents,
@@ -24,17 +24,27 @@ export type CheckoutTotals = {
     discountCents: number
     discountStatus: DiscountStatus
     totalCents: number
+    /**
+     * What is physically being sent. Recorded on the payment so an Australia
+     * Post consignment can be raised from the order without re-deriving it.
+     */
+    shipment: {
+        weightGrams: number
+        parcel: { length: number; width: number; height: number }
+        packagingCents: number
+        packagingDescription: string
+    } | null
 }
 
 export type ResolvedEntry = {
     itemId: string
-    packaging: Packaging
     /** Stripe Price id, so a Checkout Session can name the price rather than an amount. */
     priceId: string
     quantity: number
     unitPriceCents: number
     weight: number
-    unitVolume: number
+    /** The catalog entry, so packing can read its packaging and combo. */
+    product: Product
 }
 
 type CartLike = Record<string, number> | CartItems
@@ -90,8 +100,7 @@ async function resolveEntries(cart: CartLike): Promise<ResolvedEntry[]> {
             quantity,
             unitPriceCents: product.price,
             weight: product.weight,
-            unitVolume: product.unitVolume,
-            packaging: product.packaging,
+            product,
         }
     })
 }
@@ -109,6 +118,7 @@ export async function calculateCheckoutTotals(
     )
 
     let shippingCents = 0
+    let shipment: CheckoutTotals['shipment'] = null
     if (shippingInfo) {
         const country = shippingInfo.country.trim().toUpperCase()
         const postcode = shippingInfo.postcode.trim()
@@ -122,18 +132,45 @@ export async function calculateCheckoutTotals(
             throw new Error('Postcode is required for domestic shipping')
         }
 
-        const totalWeightGrams = entries.reduce(
+        // Weight is a plain tally of what is in the cart. Bundles are not
+        // expanded for it - their own weight already covers their contents.
+        const weightGrams = entries.reduce(
             (sum, entry) => sum + entry.weight * entry.quantity,
             0,
         )
+
+        const catalogById = new Map(
+            (await getAllProducts()).map((product) => [
+                product.item_id,
+                product,
+            ]),
+        )
+        const plan = planParcel(
+            expandToPackingUnits(
+                entries.map((entry) => ({
+                    product: entry.product,
+                    quantity: entry.quantity,
+                })),
+                catalogById,
+            ),
+        )
+
         shippingCents = applyShippingSurcharge(
             await calculateAuspostShippingCents({
                 country,
                 postcode,
-                totalWeightGrams,
-                parcel: resolveParcel(entries),
+                totalWeightGrams: weightGrams,
+                parcel: plan.parcel,
             }),
+            plan.packagingCents,
         )
+
+        shipment = {
+            weightGrams,
+            parcel: plan.parcel,
+            packagingCents: plan.packagingCents,
+            packagingDescription: plan.description,
+        }
     }
 
     const preDiscountTotalCents = subtotalCents + shippingCents
@@ -173,31 +210,9 @@ export async function calculateCheckoutTotals(
         shippingCents,
         discountCents,
         discountStatus,
+        shipment,
         totalCents,
     }
-}
-
-/**
- * One parcel big enough to hold the whole order.
- *
- * Each product carries its own box, so a single kit is quoted on a single kit's
- * dimensions rather than on a constant. For a mixed order the boxes are stacked:
- * the footprint is the largest of them and the heights add up. That over-states
- * an order whose items could sit side by side, which is the direction the error
- * should fall - Australia Post prices on dimensions, and a parcel quoted too
- * small costs us the difference.
- */
-export function resolveParcel(entries: ResolvedEntry[]): Packaging {
-    if (entries.length === 0) return DEFAULT_PACKAGING
-
-    return entries.reduce<Packaging>(
-        (parcel, entry) => ({
-            length: Math.max(parcel.length, entry.packaging.length),
-            width: Math.max(parcel.width, entry.packaging.width),
-            height: parcel.height + entry.packaging.height * entry.quantity,
-        }),
-        { length: 0, width: 0, height: 0 },
-    )
 }
 
 /**

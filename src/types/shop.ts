@@ -31,17 +31,17 @@ export type Product = {
     item_id: string
     status: ProductStatus
     weight: number
-    unitVolume: number
+    /** How this product is packed, and what that implies for the parcel. */
+    packaging: ProductPackaging
     /**
-     * The parcel this product ships in, in centimetres, from the Stripe
-     * metadata keys `packagedLength` / `packagedWidth` / `packagedHeight`.
-     *
-     * Australia Post prices on dimensions as well as weight, so these belong
-     * beside `weight` on the product rather than as a constant in the shipping
-     * code - a 10-pack does not ship in the same box as a single kit.
+     * For a bundle, the products it is actually made of, keyed by Stripe product
+     * id. Used for packing only - the bundle's own `weight` already accounts for
+     * its contents, so expanding this for weight would double-count.
      */
-    packaging: Packaging
+    combo: Record<string, number> | null
 }
+
+export type ProductStatus = 'available' | 'not-available' | 'preorder'
 
 /** Parcel dimensions in centimetres. */
 export type Packaging = {
@@ -49,4 +49,25 @@ export type Packaging = {
     width: number
     height: number
 }
-export type ProductStatus = 'available' | 'not-available' | 'preorder'
+
+export type PackagingType = 'box' | 'bag'
+
+/**
+ * How many of this product fit in each shop-standard satchel. `null` means it
+ * does not fit that size at all.
+ */
+export type BagCapacity = {
+    small: number | null
+    medium: number | null
+    large: number | null
+}
+
+/**
+ * Boxed products carry their own carton and their own packaging cost, because
+ * both vary per product. Bagged products carry only how many of them fit per
+ * satchel size - the satchels themselves are shop-wide, so their dimensions and
+ * cost live in `packaging.server.ts` rather than being restated per product.
+ */
+export type ProductPackaging =
+    | { type: 'box'; dimensions: Packaging; packagingCents: number }
+    | { type: 'bag'; capacity: BagCapacity }

@@ -24,6 +24,25 @@ const DELIVERY_ESTIMATE = {
     maximum: { unit: 'business_day' as const, value: 8 },
 }
 
+/**
+ * The shipment written onto the PaymentIntent, flattened into metadata's
+ * string-only values. Absent rather than empty when there is nothing to ship,
+ * so a missing key means "no shipment was priced" instead of "zero grams".
+ */
+function shipmentMetadata(
+    shipment: Awaited<ReturnType<typeof calculateCheckoutTotals>>['shipment'],
+): Record<string, string> {
+    if (!shipment) return {}
+
+    const { parcel } = shipment
+    return {
+        weightGrams: shipment.weightGrams.toString(),
+        parcelDimensionsCm: `${parcel.length}x${parcel.width}x${parcel.height}`,
+        packagingCents: shipment.packagingCents.toString(),
+        packaging: shipment.packagingDescription,
+    }
+}
+
 const shippingDetailsSchema = z.object({
     name: z.string().trim().min(1).max(200),
     address: z.object({
@@ -145,6 +164,10 @@ export const createCheckoutSession = defineAction({
                     productSummary,
                     subtotalCents: totals.subtotalCents.toString(),
                     shippingCents: totals.shippingCents.toString(),
+                    // What is physically being sent, so an Australia Post
+                    // consignment can be raised straight off the payment
+                    // rather than re-deriving the parcel from the cart.
+                    ...shipmentMetadata(totals.shipment),
                 },
             },
         })

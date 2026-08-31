@@ -3,7 +3,11 @@ import type { Product } from 'src/types/shop'
 import slugify from 'slugify'
 import { stripeAPI } from './index.server'
 import { isValidStatus } from 'src/types/guards/shop'
-import { readPackaging, readPriceDetails } from './readPrice.server'
+import { readPriceDetails } from './readPrice.server'
+import {
+    readCombo,
+    readPackaging,
+} from './readPackaging.server'
 
 export async function getProductById(id: string): Promise<Product | null> {
     try {
@@ -33,8 +37,8 @@ export async function getProductById(id: string): Promise<Product | null> {
             banner: '',
             ...priceDetails,
             weight: Number(weight),
-            unitVolume: Number(product.metadata.unitVolume ?? 0),
             packaging: readPackaging(product.metadata, product.name),
+            combo: readCombo(product.metadata, product.name),
         }
     } catch (error) {
         if (
