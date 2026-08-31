@@ -1,6 +1,6 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEyeDropper, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faEyeDropper, faSpinner, faPlugCircleXmark } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/button';
 ---
 <div class="calibrationCalibrate flex flex-col gap-4">
@@ -13,10 +13,15 @@ import Button from '@/components/button';
         <FontAwesomeIcon icon={faSpinner} className="busySpinner mr-2 hidden! fa-spin" />
         Calibrate
     </Button>
+    <Button id="calibration-disconnected" className="bg-gray-500 self-start hidden">
+        <FontAwesomeIcon icon={faPlugCircleXmark} className="mr-2" />
+        Ro/Box Not Connected — Back to Connect
+    </Button>
 </div>
 <script>
     import { pico } from "@/libs/communication/communicate";
-    import type { PicoEventMap } from "src/types/communication";
+    import type { PicoEventMap, PicoState } from "src/types/communication";
+    import { ConnectionStatus } from "src/types/communication";
     import { setButtonBusy, dispatchCalibrationAdvance, dispatchCalibrationClearError, dispatchCalibrationError } from "../stage";
 
     /**
@@ -32,7 +37,8 @@ import Button from '@/components/button';
     // single one.
     document.querySelectorAll<HTMLDivElement>(".calibrationCalibrate").forEach((root) => {
         const calibrateButton = root.querySelector<HTMLButtonElement>("#calibrate-button");
-        if (!calibrateButton) throw new Error("Calibrate stage elements not found");
+        const disconnectedButton = root.querySelector<HTMLButtonElement>("#calibration-disconnected");
+        if (!calibrateButton || !disconnectedButton) throw new Error("Calibrate stage elements not found");
 
         let waitingForResult = false;
         let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
@@ -48,6 +54,25 @@ import Button from '@/components/button';
             setButtonBusy(calibrateButton!, false);
             action();
         }
+
+        // Reachable either by URL (a reload or a bookmark landing straight
+        // on `?step=calibrate`) or by the Ro/Box dropping out mid-stage, not
+        // just by arriving here normally from a successful Connect stage —
+        // so this stage checks the connection itself rather than trusting
+        // that it was already verified upstream.
+        function updateConnectionUI(state: PicoState) {
+            const connected = state.connectionStatus === ConnectionStatus.CONNECTED;
+            if (!connected && waitingForResult) {
+                // Nothing is going to answer a request sent to a Ro/Box
+                // that's no longer there.
+                finish(() => dispatchCalibrationClearError(root));
+            }
+            calibrateButton!.classList.toggle("hidden", !connected);
+            disconnectedButton!.classList.toggle("hidden", connected);
+        }
+
+        pico.on("stateChange", updateConnectionUI);
+        updateConnectionUI(pico.getState());
 
         pico.on("calibrated", () => {
             if (!waitingForResult) return;
@@ -76,6 +101,11 @@ import Button from '@/components/button';
                     ),
                 );
             }, CALIBRATION_TIMEOUT_MS);
+        });
+
+        disconnectedButton.addEventListener("click", () => {
+            dispatchCalibrationClearError(root);
+            dispatchCalibrationAdvance(root, "connect");
         });
     });
 </script>

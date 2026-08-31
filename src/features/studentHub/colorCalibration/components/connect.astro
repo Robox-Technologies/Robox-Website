@@ -37,15 +37,22 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
 
         // A Ro/Box that's already connected (e.g. arriving here straight from
         // the editor) skips straight past this stage instead of asking to
-        // reconnect to a device that's already talking to us.
+        // reconnect to a device that's already talking to us. Resets on
+        // every disconnect rather than firing once for the whole page's
+        // lifetime, so coming back here after the Calibrate stage sends you
+        // back (a dropped connection) still advances on the next reconnect.
         let hasAdvanced = false;
 
         function updateUI(state: PicoState) {
             const connecting = state.connectionStatus === ConnectionStatus.CONNECTING;
             const connected = state.connectionStatus === ConnectionStatus.CONNECTED;
-            if (connected && !hasAdvanced) {
-                hasAdvanced = true;
-                dispatchCalibrationAdvance(root, "calibrate");
+            if (connected) {
+                if (!hasAdvanced) {
+                    hasAdvanced = true;
+                    dispatchCalibrationAdvance(root, "calibrate");
+                }
+            } else {
+                hasAdvanced = false;
             }
             setButtonBusy(connectButton!, connecting);
             // The toggle picks the method (or the iOS branch above sets it
