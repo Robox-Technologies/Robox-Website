@@ -50,6 +50,11 @@ export default function CheckoutPaymentStep() {
             stripe={stripePromise}
             options={{
                 clientSecret,
+                // Declares that this page displays whatever currency the
+                // session comes back in and renders the currency selector, which
+                // is Stripe's condition for converting at all. Whether it
+                // actually converts is the dashboard's call.
+                adaptivePricing: { allowed: true },
                 elementsOptions: {
                     appearance: createCheckoutAppearance(),
                     loader: 'always',
