@@ -1,0 +1,81 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEyeDropper, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/button';
+---
+<div class="calibrationCalibrate flex flex-col gap-4">
+    <p class="text-gray-800">
+        Make sure the colour sensor has a clear view of the surface it will
+        be reading from, then press Calibrate.
+    </p>
+    <Button id="calibrate-button" className="bg-blue self-start">
+        <FontAwesomeIcon icon={faEyeDropper} className="busyIcon mr-2" />
+        <FontAwesomeIcon icon={faSpinner} className="busySpinner mr-2 hidden! fa-spin" />
+        Calibrate
+    </Button>
+</div>
+<script>
+    import { pico } from "@/libs/communication/communicate";
+    import type { PicoEventMap } from "src/types/communication";
+    import { setButtonBusy, dispatchCalibrationAdvance, dispatchCalibrationClearError, dispatchCalibrationError } from "../stage";
+
+    /**
+     * Calibration involves an actual sensor read on the board, not just an
+     * echoed command, so this is more generous than the firmware check's
+     * timeout - long enough for a healthy board to genuinely finish before
+     * being reported as unresponsive.
+     */
+    const CALIBRATION_TIMEOUT_MS = 6000;
+
+    // Astro only includes this script once no matter how many instances
+    // render, so wire up every instance found rather than assuming there's a
+    // single one.
+    document.querySelectorAll<HTMLDivElement>(".calibrationCalibrate").forEach((root) => {
+        const calibrateButton = root.querySelector<HTMLButtonElement>("#calibrate-button");
+        if (!calibrateButton) throw new Error("Calibrate stage elements not found");
+
+        let waitingForResult = false;
+        let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+
+        function clearTimer() {
+            if (timeoutHandle) clearTimeout(timeoutHandle);
+            timeoutHandle = null;
+        }
+
+        function finish(action: () => void) {
+            clearTimer();
+            waitingForResult = false;
+            setButtonBusy(calibrateButton!, false);
+            action();
+        }
+
+        pico.on("calibrated", () => {
+            if (!waitingForResult) return;
+            finish(() => dispatchCalibrationAdvance(root, "done"));
+        });
+
+        pico.on("error", (data: PicoEventMap["error"]) => {
+            if (!waitingForResult) return;
+            finish(() => dispatchCalibrationError(root, "Calibration Failed", data.message));
+        });
+
+        calibrateButton.addEventListener("click", () => {
+            dispatchCalibrationClearError(root);
+            setButtonBusy(calibrateButton, true);
+            waitingForResult = true;
+            pico.colorCalibrate();
+
+            clearTimer();
+            timeoutHandle = setTimeout(() => {
+                if (!waitingForResult) return;
+                finish(() =>
+                    dispatchCalibrationError(
+                        root,
+                        "Calibration Failed",
+                        "The Ro/Box didn't respond to the calibration request. Check that it's connected, then try again.",
+                    ),
+                );
+            }, CALIBRATION_TIMEOUT_MS);
+        });
+    });
+</script>

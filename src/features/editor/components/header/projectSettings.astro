@@ -1,6 +1,7 @@
 ---
 import { faEyeDropper, faScrewdriver, faDownload } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import Button from "@/components/button"
 ---
 
 <div class="project-settings relative">
@@ -18,13 +19,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
         class="modal absolute top-1/2 right-full -translate-x-full rounded-lg drop-shadow-xl ml-2 transform border-2 border-black p-0! z-50"
     >
         <div class="modal-content bg-white min-h-25 w-50 rounded flex flex-col">
-            <button
-                type="button"
-                class="button-interactive text-black! text-md p-2 text-left flex items-center gap-2"
+            <Button
+                href="../calibrate"
+                className="text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
             >
                 <FontAwesomeIcon icon={faEyeDropper}/>
                 Calibrate Colour
-            </button>
+            </Button>
             <button
                 type="button"
                 class="button-interactive text-black! text-md p-2 text-left flex items-center gap-2"

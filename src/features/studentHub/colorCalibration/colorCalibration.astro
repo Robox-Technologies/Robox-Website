@@ -1,0 +1,39 @@
+---
+import StageStepper from '@/components/stageStepper.astro';
+import StageErrorBanner from '@/components/stageErrorBanner.astro';
+import Connect from './components/connect.astro';
+import Calibrate from './components/calibrate.astro';
+import CalibrationComplete from './components/calibrationComplete.astro';
+import { STAGES, STAGE_LABELS } from './stage';
+---
+<div class="colorCalibration flex flex-col gap-6" data-stage-flow-root>
+    <StageStepper namespace="colorcalibration" stages={STAGES} stageLabels={STAGE_LABELS} />
+    <StageErrorBanner />
+    <div class="stageFlowStages overflow-hidden rounded-3xl bg-white box-shadow transition-[height] duration-300 ease-out motion-reduce:transition-none">
+        <div class="stageFlowStage flex flex-col gap-4 p-6" data-stage="connect">
+            <h2 class="text-xl font-bold text-black">Step 1: Connect your Ro/Box</h2>
+            <Connect />
+        </div>
+        <div class="stageFlowStage hidden flex flex-col gap-4 p-6" data-stage="calibrate">
+            <h2 class="text-xl font-bold text-black">Step 2: Calibrate the colour sensor</h2>
+            <Calibrate />
+        </div>
+        <div class="stageFlowStage hidden flex flex-col items-start gap-4 p-6" data-stage="done">
+            <CalibrationComplete />
+        </div>
+    </div>
+</div>
+<script>
+    import { STAGES, isStage } from "./stage";
+    import { createStageFlow } from "@/components/stageFlow";
+
+    document.querySelectorAll<HTMLDivElement>(".colorCalibration").forEach((root) => {
+        createStageFlow({
+            root,
+            namespace: "colorcalibration",
+            stages: STAGES,
+            isStage,
+            stageParam: "step",
+        });
+    });
+</script>

@@ -1,0 +1,21 @@
+---
+import StandardLayout from '@/layouts/StandardLayout.astro';
+import Article from '@/components/article/Article';
+import ColorCalibration from '@/features/studentHub/colorCalibration/colorCalibration.astro';
+---
+<StandardLayout
+    title="Calibrate Your Ro/Box"
+    description="Calibrate your Ro/Box's colour sensor against its surroundings, right from your browser."
+    header="workshop"
+>
+    <Article className="mx-auto max-w-2xl">
+        <h1 class="text-5xl font-bold mb-8">
+            Calibrate Your Ro/Box
+        </h1>
+        <p class="mb-8 text-lg text-tone3">
+            If your Ro/Box isn't reading colours reliably, calibrate its
+            colour sensor against its surroundings below.
+        </p>
+        <ColorCalibration />
+    </Article>
+</StandardLayout>

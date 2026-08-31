@@ -1,0 +1,11 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+---
+<div class="stageFlowError flex items-start gap-3 rounded-xl border-2 border-red bg-red/15 p-4" style="display: none;">
+    <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5 text-xl text-black" />
+    <div>
+        <p class="stageFlowErrorTitle font-bold text-black"></p>
+        <p class="stageFlowErrorMessage mt-1 text-sm text-black"></p>
+    </div>
+</div>

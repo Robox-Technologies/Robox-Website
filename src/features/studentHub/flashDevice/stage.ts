@@ -1,3 +1,6 @@
+import { setButtonBusy } from '@/components/busyButton'
+import { dispatchStageAdvance, dispatchStageClearError, dispatchStageError } from '@/components/stageFlow'
+
 export type Stage = 'bootloader' | 'flash' | 'done'
 
 export const STAGES: Stage[] = ['bootloader', 'flash', 'done']
@@ -13,38 +16,24 @@ export const STAGE_LABELS: Record<Stage, string> = {
     done: 'Done',
 }
 
+const NAMESPACE = 'flashdevice'
+
 // Stage components report progress upward by dispatching these on their own
 // root (bubbles: true), so the flashDevice orchestrator — an ancestor in the
 // DOM — can react without knowing anything about the component internally.
 export function dispatchFlashAdvance(target: EventTarget, stage: Stage): void {
-    target.dispatchEvent(
-        new CustomEvent('flashdevice:advance', { detail: { stage }, bubbles: true }),
-    )
+    dispatchStageAdvance(target, NAMESPACE, stage)
 }
 
-export function dispatchFlashError(
-    target: EventTarget,
-    title: string,
-    message: string,
-): void {
-    target.dispatchEvent(
-        new CustomEvent('flashdevice:error', { detail: { title, message }, bubbles: true }),
-    )
+export function dispatchFlashError(target: EventTarget, title: string, message: string): void {
+    dispatchStageError(target, NAMESPACE, title, message)
 }
 
 export function dispatchFlashClearError(target: EventTarget): void {
-    target.dispatchEvent(new CustomEvent('flashdevice:clear-error', { bubbles: true }))
+    dispatchStageClearError(target, NAMESPACE)
 }
 
-export function setButtonBusy(button: HTMLButtonElement, busy: boolean): void {
-    button.disabled = busy
-    // `hidden!` (not `hidden`): FontAwesome's own stylesheet sets
-    // `.svg-inline--fa { display: inline-block }` at the same specificity as
-    // Tailwind's `.hidden`, and it loads after Tailwind in global.css, so a
-    // plain `hidden` toggle on an icon/spinner never actually hides it.
-    button.querySelector('.flashDeviceIcon')?.classList.toggle('hidden!', busy)
-    button.querySelector('.flashDeviceSpinner')?.classList.toggle('hidden!', !busy)
-}
+export { setButtonBusy }
 
 /**
  * Shows the FlashProgress bar nested in `root` and resets it to 0 — called
@@ -72,4 +61,3 @@ export function setFlashProgress(root: ParentNode, percent: number): void {
     if (fill) fill.style.width = `${clamped}%`
     if (label) label.textContent = String(clamped)
 }
-

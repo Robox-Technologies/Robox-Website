@@ -1,59 +1,67 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
-import { STAGES, STAGE_LABELS } from '../stage';
+
+interface Props {
+    /** Must match the `namespace` passed to `createStageFlow` for the same flow. */
+    namespace: string
+    stages: readonly string[]
+    stageLabels: Record<string, string>
+}
+
+const { namespace, stages, stageLabels } = Astro.props
 ---
-<ol class="flashStepper flex items-center gap-2">
-    {STAGES.map((stage, index) => (
+<ol class="stageStepper flex items-center gap-2" data-namespace={namespace}>
+    {stages.map((stage, index) => (
         <>
-            <li class="flashStep flex shrink-0 items-center gap-2">
-                <div class="flashStepCircle relative flex size-8 shrink-0 items-center justify-center rounded-full bg-gray-300 font-bold text-white transition-colors duration-300">
-                    <span class="flashStepNumber absolute inset-0 flex scale-100 items-center justify-center opacity-100 transition-[opacity,scale] duration-200 ease-out">
+            <li class="stageStep flex shrink-0 items-center gap-2" data-stage={stage}>
+                <div class="stageStepCircle relative flex size-8 shrink-0 items-center justify-center rounded-full bg-gray-300 font-bold text-white transition-colors duration-300">
+                    <span class="stageStepNumber absolute inset-0 flex scale-100 items-center justify-center opacity-100 transition-[opacity,scale] duration-200 ease-out">
                         {index + 1}
                     </span>
                     <!--
                         A separate wrapping span, not the bare icon: the icon
-                        itself never has `display` toggled anymore (it's an
-                        opacity/scale crossfade with .flashStepNumber, not a
+                        itself never has `display` toggled (it's an
+                        opacity/scale crossfade with .stageStepNumber, not a
                         show/hide), so it doesn't need the `!important` the
                         old `hidden!` toggle needed to beat FontAwesome's own
                         `display: inline-block` rule — but its *text colour*
-                        still does, for the same reason `.flashStepNumber`
+                        still does, for the same reason `.stageStepNumber`
                         does: this span is still forced dark by the global
                         base-layer `span` rule.
                     -->
-                    <span class="flashStepCheck absolute inset-0 flex scale-75 items-center justify-center text-white! opacity-0 transition-[opacity,scale] duration-200 ease-out">
+                    <span class="stageStepCheck absolute inset-0 flex scale-75 items-center justify-center text-white! opacity-0 transition-[opacity,scale] duration-200 ease-out">
                         <FontAwesomeIcon icon={faCircleCheck} />
                     </span>
                 </div>
-                <span class="flashStepLabel text-sm font-semibold text-gray-400 transition-colors duration-300">{STAGE_LABELS[stage]}</span>
+                <span class="stageStepLabel text-sm font-semibold text-gray-400 transition-colors duration-300">{stageLabels[stage]}</span>
             </li>
-            {index < STAGES.length - 1 && (
-
+            {index < stages.length - 1 && (
                 // The line itself stays a flat gray track; a separate fill
                 // layer scales in from the left on completion, like the
                 // firmware progress bar's fill, instead of the color just
                 // flipping instantly.
-                <li class="flashStepConnector relative h-0.5 flex-1 overflow-hidden bg-gray-300" aria-hidden="true">
-                    <div class="flashStepConnectorFill absolute inset-0 origin-left scale-x-0 bg-green transition-transform duration-500 ease-out"></div>
+                <li class="stageStepConnector relative h-0.5 flex-1 overflow-hidden bg-gray-300" aria-hidden="true">
+                    <div class="stageStepConnectorFill absolute inset-0 origin-left scale-x-0 bg-green transition-transform duration-500 ease-out"></div>
                 </li>
             )}
         </>
     ))}
 </ol>
 <script>
-    import { STAGES, type Stage } from "../stage";
-
     // Astro only includes this script once no matter how many steppers
     // render, so wire up every instance found rather than assuming there's a
     // single one.
-    document.querySelectorAll<HTMLOListElement>(".flashStepper").forEach((stepper) => {
-        const steps = stepper.querySelectorAll<HTMLLIElement>(":scope > .flashStep");
-        const connectors = stepper.querySelectorAll<HTMLLIElement>(":scope > .flashStepConnector");
+    document.querySelectorAll<HTMLOListElement>(".stageStepper").forEach((stepper) => {
+        const namespace = stepper.dataset.namespace
+        if (!namespace) throw new Error("Stage stepper missing its namespace");
+
+        const steps = stepper.querySelectorAll<HTMLLIElement>(":scope > .stageStep");
+        const connectors = stepper.querySelectorAll<HTMLLIElement>(":scope > .stageStepConnector");
         // The orchestrator dispatches on its own root rather than bubbling,
         // since it needs to reach a descendant instead of an ancestor.
-        const root = stepper.closest(".flashDevice");
-        if (!root) throw new Error("Flash stepper must be nested inside .flashDevice");
+        const root = stepper.closest<HTMLElement>("[data-stage-flow-root]");
+        if (!root) throw new Error("Stage stepper must be nested inside a [data-stage-flow-root] element");
 
         function setIconVisible(icon: HTMLElement, visible: boolean) {
             icon.classList.toggle("opacity-100", visible);
@@ -62,13 +70,13 @@ import { STAGES, STAGE_LABELS } from '../stage';
             icon.classList.toggle("scale-75", !visible);
         }
 
-        function highlight(stage: Stage) {
-            const activeIndex = STAGES.indexOf(stage);
+        function highlight(stage: string) {
+            const activeIndex = [...steps].findIndex((step) => step.dataset.stage === stage);
             steps.forEach((step, index) => {
-                const circle = step.querySelector<HTMLDivElement>(".flashStepCircle");
-                const number = step.querySelector<HTMLElement>(".flashStepNumber");
-                const check = step.querySelector<HTMLElement>(".flashStepCheck");
-                const label = step.querySelector<HTMLSpanElement>(".flashStepLabel");
+                const circle = step.querySelector<HTMLDivElement>(".stageStepCircle");
+                const number = step.querySelector<HTMLElement>(".stageStepNumber");
+                const check = step.querySelector<HTMLElement>(".stageStepCheck");
+                const label = step.querySelector<HTMLSpanElement>(".stageStepLabel");
                 if (!circle || !number || !check || !label) return;
 
                 circle.classList.remove("bg-gray-300", "bg-blue", "bg-green");
@@ -88,16 +96,17 @@ import { STAGES, STAGE_LABELS } from '../stage';
                 number.classList.toggle("text-gray-400!", index !== activeIndex);
             });
             connectors.forEach((connector, index) => {
-                const fill = connector.querySelector<HTMLDivElement>(".flashStepConnectorFill");
+                const fill = connector.querySelector<HTMLDivElement>(".stageStepConnectorFill");
                 fill?.classList.toggle("scale-x-100", index < activeIndex);
                 fill?.classList.toggle("scale-x-0", index >= activeIndex);
             });
         }
 
-        root.addEventListener("flashdevice:stage-changed", (event) => {
-            highlight((event as CustomEvent<{ stage: Stage }>).detail.stage);
+        root.addEventListener(`${namespace}:stage-changed`, (event) => {
+            highlight((event as CustomEvent<{ stage: string }>).detail.stage);
         });
 
-        highlight(STAGES[0]);
+        const firstStage = steps[0]?.dataset.stage;
+        if (firstStage) highlight(firstStage);
     });
 </script>

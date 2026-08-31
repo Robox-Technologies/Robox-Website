@@ -1,15 +1,16 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
-import FlashStepper from './components/flashStepper.astro';
+import StageStepper from '@/components/stageStepper.astro';
+import StageErrorBanner from '@/components/stageErrorBanner.astro';
 import AutomaticBootsel from './components/automaticBootsel.astro';
 import ManualBootsel from './components/manualBootsel.astro';
 import SelectDrive from './components/selectDrive.astro';
 import FlashComplete from './components/flashComplete.astro';
+import { STAGES, STAGE_LABELS } from './stage';
 ---
-<div class="flashDevice flex flex-col gap-6">
-    <FlashStepper />
-
+<div class="flashDevice flex flex-col gap-6" data-stage-flow-root>
+    <StageStepper namespace="flashdevice" stages={STAGES} stageLabels={STAGE_LABELS} />
     <div class="flashDeviceUnsupported flex items-start gap-3 rounded-xl border-2 border-red bg-red/15 p-4" style="display: none;">
         <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5 text-xl text-black" />
         <div>
@@ -20,171 +21,48 @@ import FlashComplete from './components/flashComplete.astro';
             </p>
         </div>
     </div>
-
-    <div class="flashDeviceError flex items-start gap-3 rounded-xl border-2 border-red bg-red/15 p-4" style="display: none;">
-        <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5 text-xl text-black" />
-        <div>
-            <p class="flashDeviceErrorTitle font-bold text-black"></p>
-            <p class="flashDeviceErrorMessage mt-1 text-sm text-black"></p>
-        </div>
-    </div>
-
-    <!--
-        The card (rounded/shadowed/bg) lives on this wrapper, not on the
-        individual stages, so its `height` can be transitioned in JS: each
-        stage change measures the old and new content height and animates
-        between them instead of snapping, without leaving the tall-stage-
-        sized blank space a fixed shared height left behind. `overflow-hidden`
-        clips the incoming/outgoing stage during that animation.
-    -->
-    <div class="flashDeviceStages overflow-hidden rounded-3xl bg-white box-shadow transition-[height] duration-300 ease-out motion-reduce:transition-none">
-        <div class="flashDeviceStage flex flex-col gap-4 p-6" data-stage="bootloader">
+    <StageErrorBanner />
+    <div class="stageFlowStages overflow-hidden rounded-3xl bg-white box-shadow transition-[height] duration-300 ease-out motion-reduce:transition-none">
+        <div class="stageFlowStage flex flex-col gap-4 p-6" data-stage="bootloader">
             <h2 class="text-xl font-bold text-black">Step 1: Reboot into firmware update mode</h2>
-            <p class="text-gray-800">
-                Connect your Ro/Box over USB and we'll ask it to reboot itself
-                into firmware update mode.
-            </p>
+            <p class="text-gray-800">Connect your Ro/Box over USB and we'll ask it to reboot itself into firmware update mode.</p>
             <AutomaticBootsel />
             <ManualBootsel />
         </div>
-
-        <div class="flashDeviceStage hidden flex flex-col gap-4 p-6" data-stage="flash">
+        <div class="stageFlowStage hidden flex flex-col gap-4 p-6" data-stage="flash">
             <h2 class="text-xl font-bold text-black">Step 2: Select your Ro/Box's drive</h2>
             <SelectDrive />
         </div>
-
-        <div class="flashDeviceStage hidden flex flex-col items-start gap-4 p-6" data-stage="done">
+        <div class="stageFlowStage hidden flex flex-col items-start gap-4 p-6" data-stage="done">
             <FlashComplete />
         </div>
     </div>
 </div>
 <script>
-    import { STAGES, isStage, type Stage } from "./stage";
+    import { STAGES, isStage } from "./stage";
+    import { createStageFlow } from "@/components/stageFlow";
 
-    // Query param, not sessionStorage: it rides on the actual history entry,
-    // so it's what makes the browser's Back/Forward buttons step through the
-    // wizard, and it survives a plain reload the same way any URL does.
-    const STAGE_PARAM = "step";
-
-    // Astro only includes this script once no matter how many instances
-    // render, so wire up every instance found rather than assuming there's a
-    // single one.
     document.querySelectorAll<HTMLDivElement>(".flashDevice").forEach((root) => {
         const unsupportedBanner = root.querySelector<HTMLDivElement>(".flashDeviceUnsupported");
-        const errorBanner = root.querySelector<HTMLDivElement>(".flashDeviceError");
-        const errorTitle = root.querySelector<HTMLParagraphElement>(".flashDeviceErrorTitle");
-        const errorMessage = root.querySelector<HTMLParagraphElement>(".flashDeviceErrorMessage");
-        const stepper = root.querySelector<HTMLOListElement>(".flashStepper");
-        const stagesWrapper = root.querySelector<HTMLDivElement>(".flashDeviceStages");
-        const stages = root.querySelectorAll<HTMLDivElement>(".flashDeviceStage");
-
-        if (!unsupportedBanner || !errorBanner || !errorTitle || !errorMessage || !stepper || !stagesWrapper) {
+        const stepper = root.querySelector<HTMLOListElement>(".stageStepper");
+        const stagesWrapper = root.querySelector<HTMLDivElement>(".stageFlowStages");
+        if (!unsupportedBanner || !stepper || !stagesWrapper) {
             throw new Error("Flash device elements not found");
         }
 
-        // Only the firmware write inside SelectDrive needs the File System
-        // Access API; the bootloader step degrades to manual instructions
-        // without USB/Bluetooth, so it doesn't gate the whole page.
         if (!("showDirectoryPicker" in window)) {
             unsupportedBanner.style.display = "flex";
             stepper.style.display = "none";
-            // display:none on the whole wrapper here (not `invisible` on
-            // each stage): there's no wizard to show at all, so unlike a
-            // normal stage switch, the space should actually collapse.
             stagesWrapper.style.display = "none";
             return;
         }
 
-        function stageFromURL(): Stage {
-            const value = new URLSearchParams(window.location.search).get(STAGE_PARAM);
-            return isStage(value) ? value : STAGES[0];
-        }
-
-        function urlForStage(stage: Stage): string {
-            const url = new URL(window.location.href);
-            url.searchParams.set(STAGE_PARAM, stage);
-            return url.toString();
-        }
-
-        /**
-         * Animates the card's height from whatever it currently is to the
-         * incoming stage's natural height, rather than snapping straight to
-         * it — a plain CSS transition can't animate to/from `height: auto`,
-         * so this pins both ends in pixels around the swap instead.
-         */
-        function showStage(stage: Stage, animate = true) {
-            if (!animate) {
-                stages.forEach((stageEl) => {
-                    stageEl.classList.toggle("hidden", stageEl.dataset.stage !== stage);
-                });
-                stagesWrapper!.style.height = "";
-                root.dispatchEvent(new CustomEvent("flashdevice:stage-changed", { detail: { stage } }));
-                return;
-            }
-
-            const fromHeight = stagesWrapper!.offsetHeight;
-            stagesWrapper!.style.height = `${fromHeight}px`;
-            // Flushes the height set above before the swap below, so the
-            // browser has an actual "from" value to animate away from
-            // instead of coalescing both writes into one.
-            void stagesWrapper!.offsetHeight;
-
-            stages.forEach((stageEl) => {
-                stageEl.classList.toggle("hidden", stageEl.dataset.stage !== stage);
-            });
-            root.dispatchEvent(new CustomEvent("flashdevice:stage-changed", { detail: { stage } }));
-
-            const activeStage = [...stages].find((stageEl) => stageEl.dataset.stage === stage);
-            const toHeight = activeStage?.scrollHeight ?? fromHeight;
-            stagesWrapper!.style.height = `${toHeight}px`;
-
-            stagesWrapper!.addEventListener(
-                "transitionend",
-                () => {
-                    // Back to auto once settled, so a later window resize or
-                    // content change (an error banner, a longer message)
-                    // reflows normally instead of staying pinned to this
-                    // stage's height forever.
-                    stagesWrapper!.style.height = "";
-                },
-                { once: true },
-            );
-        }
-
-        // Stage components report progress by bubbling these events up from
-        // their own root, so this orchestrator can react without knowing
-        // anything about how any individual stage works.
-        root.addEventListener("flashdevice:advance", (event) => {
-            errorBanner.style.display = "none";
-            const stage = (event as CustomEvent<{ stage: Stage }>).detail.stage;
-            showStage(stage);
-            // A fresh history entry per stage — including the manual "Go
-            // Back" out of "flash" — so Back genuinely retraces the wizard
-            // instead of leaving the page.
-            history.pushState({ flashStage: stage }, "", urlForStage(stage));
-        });
-
-        root.addEventListener("flashdevice:error", (event) => {
-            const { title, message } = (event as CustomEvent<{ title: string; message: string }>).detail;
-            errorTitle.textContent = title;
-            errorMessage.textContent = message;
-            errorBanner.style.display = "flex";
-        });
-
-        root.addEventListener("flashdevice:clear-error", () => {
-            errorBanner.style.display = "none";
-        });
-
-        // Restores the stage from the URL on a fresh load (a reload, or a
-        // shared/bookmarked link) and re-tags the *current* history entry
-        // rather than pushing a new one — otherwise the very first Back
-        // press would just reload this same stage.
-        const initialStage = stageFromURL();
-        history.replaceState({ flashStage: initialStage }, "", urlForStage(initialStage));
-        showStage(initialStage, false);
-
-        window.addEventListener("popstate", (event) => {
-            showStage(isStage(event.state?.flashStage) ? event.state.flashStage : STAGES[0]);
+        createStageFlow({
+            root,
+            namespace: "flashdevice",
+            stages: STAGES,
+            isStage,
+            stageParam: "step",
         });
     });
 </script>

@@ -1,0 +1,42 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/button';
+---
+<div class="calibrationComplete flex flex-col items-start gap-4">
+    <div class="flex items-center gap-3">
+        <FontAwesomeIcon icon={faCircleCheck} className="text-2xl text-green" />
+        <h2 class="text-xl font-bold text-black">Ro/Box calibrated!</h2>
+    </div>
+    <p class="text-gray-800">
+        The calibration settings have been saved to your Ro/Box.
+    </p>
+    <div class="flex gap-4">
+        <Button id="calibration-back" className="bg-green">Back to Editor</Button>
+        <Button id="calibrate-again" className="bg-gray-500">Calibrate Again</Button>
+    </div>
+</div>
+<script>
+    import { dispatchCalibrationAdvance } from "../stage";
+
+    // Astro only includes this script once no matter how many instances
+    // render, so wire up every instance found rather than assuming there's a
+    // single one.
+    document.querySelectorAll<HTMLDivElement>(".calibrationComplete").forEach((root) => {
+        const backButton = root.querySelector<HTMLButtonElement>("#calibration-back");
+        const again = root.querySelector<HTMLButtonElement>("#calibrate-again");
+        if (!backButton || !again) throw new Error("Calibration complete elements not found");
+
+        // This page is always reached by navigating away from somewhere in
+        // the hub, so going back returns there directly rather than
+        // guessing a destination.
+        backButton.addEventListener("click", () => {
+            if (window.history.length > 1) window.history.back();
+            else window.location.assign("../");
+        });
+
+        again.addEventListener("click", () => {
+            dispatchCalibrationAdvance(root, "calibrate");
+        });
+    });
+</script>
