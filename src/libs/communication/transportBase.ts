@@ -106,6 +106,9 @@ export abstract class BaseTransport implements Communication {
     /** Most transports have nothing to set up ahead of a connection. */
     initialize(): void {}
 
+    /** Only USB has an auto-connect behaviour to toggle. */
+    setAutoConnect(): void {}
+
     // === sending ===
 
     /** The sequence the next frame would use, without consuming it. */

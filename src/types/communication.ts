@@ -10,6 +10,8 @@ export interface Communication {
     release(): Promise<void>
     read(): void
     initialize(): void
+    /** Whether reconnecting to a previously authorised port/device happens automatically. */
+    setAutoConnect(enabled: boolean): void
 }
 // Enums for better type safety
 export enum ConnectionStatus {

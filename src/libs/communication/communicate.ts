@@ -102,6 +102,11 @@ export class Pico {
         this.toastsEnabled = enabled
     }
 
+    /** Whether reconnecting to a previously authorised port/device happens automatically. */
+    setAutoConnect(enabled: boolean): void {
+        this.communication?.setAutoConnect(enabled)
+    }
+
     // Event listener management (for React hooks)
     on<K extends keyof PicoEventMap>(
         event: K,

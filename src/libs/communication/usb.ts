@@ -23,6 +23,20 @@ export class USBCommunication extends BaseTransport {
 
     private readonly initPortsBound = this.initPorts.bind(this)
 
+    /**
+     * On by default, so a page reload with the Ro/Box already plugged in
+     * reconnects on its own (e.g. the editor). Flows where that would be
+     * unwanted - flashing must only ever connect from an explicit
+     * `request()` click - turn it off. Only governs (re)connecting: noticing
+     * an actual disconnect is never gated by this, since that just keeps
+     * `parent`'s state honest and has nothing "automatic" about it.
+     */
+    private autoConnectEnabled = true
+
+    setAutoConnect(enabled: boolean = true): void {
+        this.autoConnectEnabled = enabled
+    }
+
     read(): void {
         if (!this.currentReader) return
 
@@ -175,6 +189,15 @@ export class USBCommunication extends BaseTransport {
         // plug-in does, and the disconnect side already lets that bounce
         // through untouched, so the connect side has to complete it.
         if (event.type === 'connect') {
+            // Only reconnecting is opt-in - noticing a disconnect below
+            // always has to run regardless, or a board that vanishes while
+            // this is off (e.g. rebooting into BOOTSEL during flashing)
+            // leaves `parent` reporting CONNECTED to a port that is long
+            // gone, with nothing left to clean it up until something else
+            // tries to reuse the transport and hangs on a port the browser
+            // never got told to let go of.
+            if (!this.autoConnectEnabled) return
+
             const { connectionStatus } = this.parent.getState()
             if (
                 connectionStatus !== ConnectionStatus.DISCONNECTED &&
@@ -204,6 +227,7 @@ export class USBCommunication extends BaseTransport {
 
     private async connectExistingPort(): Promise<void> {
         const ports = await navigator.serial.getPorts()
+        if (!this.autoConnectEnabled) return
 
         for (const port of ports) {
             if (port.getInfo().usbVendorId === PI_VENDOR_ID) {
