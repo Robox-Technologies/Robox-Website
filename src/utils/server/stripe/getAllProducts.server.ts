@@ -33,45 +33,73 @@ async function fetchAllProducts(): Promise<Product[]> {
         // product looks single-currency.
         expand: ['data.default_price.currency_options'],
     })
-    const products: Product[] = await Promise.all(
+    const products = await Promise.all(
         stripeProducts.data.map(async (product) => {
-            const priceDetails = readPriceDetails(
-                product.default_price as Stripe.Price,
-                product.name,
-            )
-            const status = product.metadata.status || 'not-available'
-            if (!isValidStatus(status)) {
-                throw new Error(
-                    `Invalid status for product ${product.name}: ${status}`,
+            try {
+                return await readProduct(product)
+            } catch (error) {
+                // One unusable product used to take down the whole build, which
+                // meant a half-finished draft in the dashboard - or a fixture
+                // left behind by `stripe trigger` - broke the site. Skip it and
+                // say so instead: it disappears from the shop, which is the
+                // safe direction, and the log names what to fix.
+                console.error(
+                    `[catalog] skipping product ${product.id} (${product.name}): ${(error as Error).message}`,
                 )
-            }
-            const combo = readCombo(product.metadata, product.name)
-            const weight = product.metadata.weight
-            if (weight === undefined) {
-                throw new Error(`Missing weight for product ${product.name}`)
-            }
-            return {
-                //URL slug for product page, can be generated from name but allowing it to be set manually for better control
-                internalName: slugify(product.name, {
-                    lower: true,
-                    strict: true,
-                }),
-                name: product.name,
-                description: product.description ?? '',
-                // Looking into what this is
-                item_id: product.id,
-                status: status,
-                banner: await renderBanner(product.metadata.banner),
-                ...priceDetails,
-                weight: Number(weight),
-                packaging: readPackaging(product.metadata, product.name, {
-                    isBundle: combo !== null,
-                }),
-                combo,
+                return null
             }
         }),
     )
-    return products
+    return products.filter((product): product is Product => product !== null)
+}
+
+/**
+ * One product, or a throw naming what's wrong with it. Validation stays strict
+ * here - the caller decides that an invalid product is skipped rather than
+ * fatal, so the reason still has to be specific enough to act on.
+ */
+async function readProduct(product: Stripe.Product): Promise<Product> {
+    // Checked rather than cast: a product with no default price is the shape a
+    // half-finished dashboard draft takes, and dereferencing it would report a
+    // TypeError instead of naming the product that needs a price.
+    const price = product.default_price
+    if (!price || typeof price === 'string') {
+        throw new Error('has no expanded default price')
+    }
+
+    const priceDetails = readPriceDetails(price, product.name)
+
+    const status = product.metadata.status || 'not-available'
+    if (!isValidStatus(status)) {
+        throw new Error(`invalid status: ${status}`)
+    }
+
+    const combo = readCombo(product.metadata, product.name)
+
+    const weight = product.metadata.weight
+    if (weight === undefined) {
+        throw new Error('missing weight metadata')
+    }
+
+    return {
+        // URL slug for the product page. Derived from the name rather than set
+        // by hand so it cannot drift from what the catalog shows.
+        internalName: slugify(product.name, {
+            lower: true,
+            strict: true,
+        }),
+        name: product.name,
+        description: product.description ?? '',
+        item_id: product.id,
+        status,
+        banner: await renderBanner(product.metadata.banner),
+        ...priceDetails,
+        weight: Number(weight),
+        packaging: readPackaging(product.metadata, product.name, {
+            isBundle: combo !== null,
+        }),
+        combo,
+    }
 }
 
 /**
