@@ -4,7 +4,8 @@ import type { OrderItem } from '@/features/emails/components/OrderSummary'
 import type { PackingSummary } from '@/features/emails/components/PackingList'
 import { resolveBilling } from '@/utils/server/stripe/resolveBilling.server'
 import { formatMoney } from '@/utils/formatPrice'
-import { SHIPPING_PRODUCT_MARKER } from '@/features/shop/checkout/utils/shippingLineItem'
+import { isShippingLine } from '@/features/shop/checkout/utils/shippingLineItem'
+import { resolveShippingProductId } from '@/utils/server/stripe/shippingProduct.server'
 import { parseShipmentMetadata } from '@/features/shop/checkout/utils/packaging.server'
 
 export interface EmailOrderData {
@@ -96,19 +97,23 @@ export async function buildEmailOrderData(
 
     // Postage rides in as a line item so the wallets don't ask for an address
     // (see `createCheckoutSession`), which means it has to be told apart from
-    // the things the customer actually ordered. Matched on the product's marker
-    // metadata rather than its name, so renaming the product can't break this.
+    // the things the customer actually ordered.
     const lines = session.line_items?.data ?? []
-    const isPostage = (line: Stripe.LineItem) => {
-        const product = line.price?.product
-        if (!product || typeof product === 'string' || product.deleted) {
-            return false
-        }
-        return (
-            product.metadata?.[SHIPPING_PRODUCT_MARKER.key] ===
-            SHIPPING_PRODUCT_MARKER.value
-        )
-    }
+
+    // `isShippingLine` reads the product's marker metadata, which is only there
+    // when the caller expanded `line_items.data.price.product`. Resolving the
+    // id as well means a session loaded without that expansion still tells
+    // postage apart - getting this wrong is silent and looked like a real
+    // order: postage billed as an item called "Shipping", and the shipping row
+    // itself charging nothing.
+    const shippingProductId = lines.some(
+        (line) => typeof line.price?.product === 'string',
+    )
+        ? await resolveShippingProductId()
+        : null
+
+    const isPostage = (line: Stripe.LineItem) =>
+        isShippingLine(line, shippingProductId)
 
     const postageLine = lines.find(isPostage)
 

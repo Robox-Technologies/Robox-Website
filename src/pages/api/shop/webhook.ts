@@ -13,11 +13,19 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
  * rendered at the endpoint's configured API version and carries no expansions,
  * so `line_items` — which is where the item names and charged amounts now come
  * from — would be missing.
+ *
+ * `line_items.data.price.product` is expanded too, because the emails tell the
+ * postage line apart from the things the customer ordered by the marker
+ * metadata on its product. Without it Stripe returns the product as a bare id,
+ * postage reads as an item called "Shipping", and the shipping row shows
+ * nothing charged. Four levels, which is Stripe's cap — the list call in
+ * `findSessionForIntent` can't ask for the same thing, hence the note there.
  */
 function loadSession(id: string): Promise<Stripe.Checkout.Session> {
     return stripeAPI.checkout.sessions.retrieve(id, {
         expand: [
             'line_items',
+            'line_items.data.price.product',
             'payment_intent',
             'payment_intent.payment_method',
         ],
