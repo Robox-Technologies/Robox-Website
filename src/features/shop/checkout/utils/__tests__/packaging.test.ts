@@ -12,6 +12,7 @@ import {
     PARCEL_LIMITS,
     expandToPackingUnits,
     planShipment,
+    shipmentToMetadata,
     type PackingUnit,
 } from '../packaging.server'
 
@@ -308,5 +309,66 @@ describe('planShipment - every parcel is shippable', () => {
                 }
             }
         }
+    })
+})
+
+describe('shipmentToMetadata', () => {
+    it('writes one key per parcel, saying what to pack', () => {
+        const metadata = shipmentToMetadata(planShipment(units([KIT, 11])))
+
+        expect(metadata.parcelCount).toBe('2')
+        expect(metadata.parcel1).toBe(
+            'large satchel | 10x kit | 48.5x36x5cm | 2000g',
+        )
+        expect(metadata.parcel2).toBe(
+            'large satchel | 1x kit | 48.5x36x5cm | 200g',
+        )
+        expect(metadata.parcel3).toBeUndefined()
+    })
+
+    it('carries the order-level figures too', () => {
+        const metadata = shipmentToMetadata(planShipment(units([KIT, 11])))
+        expect(metadata.weightGrams).toBe('2200')
+        expect(metadata.packagingCents).toBe('690')
+        expect(metadata.packaging).toBe('2 large satchels')
+    })
+
+    it('names the product inside a carton', () => {
+        const box = boxed('box', { length: 24, width: 16, height: 8 })
+        const metadata = shipmentToMetadata(planShipment(units([box, 1])))
+        expect(metadata.parcel1).toBe('box | 1x box | 24x16x8cm | 500g')
+    })
+
+    it('lists every parcel of a mixed order', () => {
+        const box = boxed('box', { length: 24, width: 16, height: 8 })
+        const metadata = shipmentToMetadata(
+            planShipment(units([KIT, 1], [box, 1])),
+        )
+        expect(metadata.parcelCount).toBe('2')
+        expect(metadata.parcel1).toContain('small satchel')
+        expect(metadata.parcel2).toContain('box')
+    })
+
+    it('stops listing past the cap but still counts them all', () => {
+        // 250 kits is 25 large satchels, past the 20 the keys stop at.
+        const metadata = shipmentToMetadata(planShipment(units([KIT, 250])))
+        expect(metadata.parcelCount).toBe('25')
+        expect(metadata.parcel20).toBeDefined()
+        expect(metadata.parcel21).toBeUndefined()
+    })
+
+    it("stays inside Stripe's metadata limits", () => {
+        const metadata = shipmentToMetadata(planShipment(units([KIT, 250])))
+        expect(Object.keys(metadata).length).toBeLessThanOrEqual(40)
+        for (const [key, value] of Object.entries(metadata)) {
+            expect(key.length).toBeLessThanOrEqual(40)
+            expect(value.length).toBeLessThanOrEqual(500)
+        }
+    })
+
+    it('has nothing to say about an empty order', () => {
+        const metadata = shipmentToMetadata(planShipment([]))
+        expect(metadata.parcelCount).toBe('0')
+        expect(metadata.parcel1).toBeUndefined()
     })
 })

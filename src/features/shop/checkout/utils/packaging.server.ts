@@ -404,3 +404,37 @@ function describe(parcels: Parcel[]): string {
 function pluralise(label: string): string {
     return label.endsWith('x') ? `${label}es` : `${label}s`
 }
+
+/**
+ * Stripe caps a metadata value at 500 characters and an object at 50 keys, so
+ * the per-parcel lines stop here. Well past any real order - it exists so a
+ * freak cart can't push out the keys that matter.
+ */
+const MAX_LISTED_PARCELS = 20
+
+/**
+ * The shipment flattened into metadata's string-only values.
+ *
+ * One key per parcel, because this is what someone reads to pack the order: each
+ * line says what to reach for, what goes in it, and what to declare.
+ */
+export function shipmentToMetadata(shipment: Shipment): Record<string, string> {
+    const metadata: Record<string, string> = {
+        weightGrams: shipment.weightGrams.toString(),
+        packagingCents: shipment.packagingCents.toString(),
+        packaging: shipment.description,
+        parcelCount: shipment.parcels.length.toString(),
+    }
+
+    shipment.parcels.slice(0, MAX_LISTED_PARCELS).forEach((parcel, index) => {
+        const contents = parcel.contents
+            .map((entry) => `${entry.quantity}x ${entry.name}`)
+            .join(' + ')
+        const { length, width, height } = parcel.dimensions
+
+        metadata[`parcel${index + 1}`] =
+            `${parcel.label} | ${contents} | ${length}x${width}x${height}cm | ${parcel.weightGrams}g`
+    })
+
+    return metadata
+}

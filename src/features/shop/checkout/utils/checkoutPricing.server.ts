@@ -5,7 +5,7 @@ import { calculateShipmentShippingCents } from './auspost.server'
 import {
     expandToPackingUnits,
     planShipment,
-    type Parcel,
+    type Shipment,
 } from './packaging.server'
 import { applyShippingSurcharge } from './shippingCost.server'
 import {
@@ -32,13 +32,7 @@ export type CheckoutTotals = {
      * What is physically being sent. Recorded on the payment so an Australia
      * Post consignment can be raised from the order without re-deriving it.
      */
-    shipment: {
-        weightGrams: number
-        packagingCents: number
-        packagingDescription: string
-        /** One entry per physical parcel - an order can ship as several. */
-        parcels: Parcel[]
-    } | null
+    shipment: Shipment | null
 }
 
 export type ResolvedEntry = {
@@ -123,7 +117,7 @@ export async function calculateCheckoutTotals(
     )
 
     let shippingCents = 0
-    let shipment: CheckoutTotals['shipment'] = null
+    let shipment: Shipment | null = null
     if (shippingInfo) {
         const country = shippingInfo.country.trim().toUpperCase()
         const postcode = shippingInfo.postcode.trim()
@@ -161,12 +155,7 @@ export async function calculateCheckoutTotals(
             plan.packagingCents,
         )
 
-        shipment = {
-            weightGrams: plan.weightGrams,
-            packagingCents: plan.packagingCents,
-            packagingDescription: plan.description,
-            parcels: plan.parcels,
-        }
+        shipment = plan
     }
 
     const preDiscountTotalCents = subtotalCents + shippingCents

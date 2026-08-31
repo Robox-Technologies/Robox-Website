@@ -13,6 +13,7 @@ import {
     normalizeCartMetadata,
     resolveCartEntries,
 } from '../utils/checkoutPricing.server'
+import { shipmentToMetadata } from '../utils/packaging.server'
 
 /**
  * How long Australia Post says a domestic parcel takes. Shown against the
@@ -22,47 +23,6 @@ import {
 const DELIVERY_ESTIMATE = {
     minimum: { unit: 'business_day' as const, value: 2 },
     maximum: { unit: 'business_day' as const, value: 8 },
-}
-
-/**
- * Stripe caps a metadata value at 500 characters and an object at 50 keys, so
- * the per-parcel lines stop here and fall back to the summary. Well past any
- * real order - it exists so a freak cart can't drop the keys that matter.
- */
-const MAX_LISTED_PARCELS = 20
-
-/**
- * The shipment written onto the PaymentIntent, flattened into metadata's
- * string-only values.
- *
- * One key per parcel, because this is what someone reads to pack the order: each
- * line says what to reach for, what goes in it, and what to declare. Absent
- * rather than empty when nothing was priced, so a missing key means "no shipment
- * was priced" instead of "zero grams".
- */
-function shipmentMetadata(
-    shipment: Awaited<ReturnType<typeof calculateCheckoutTotals>>['shipment'],
-): Record<string, string> {
-    if (!shipment) return {}
-
-    const metadata: Record<string, string> = {
-        weightGrams: shipment.weightGrams.toString(),
-        packagingCents: shipment.packagingCents.toString(),
-        packaging: shipment.packagingDescription,
-        parcelCount: shipment.parcels.length.toString(),
-    }
-
-    shipment.parcels.slice(0, MAX_LISTED_PARCELS).forEach((parcel, index) => {
-        const contents = parcel.contents
-            .map((entry) => `${entry.quantity}x ${entry.name}`)
-            .join(' + ')
-        const { length, width, height } = parcel.dimensions
-
-        metadata[`parcel${index + 1}`] =
-            `${parcel.label} | ${contents} | ${length}x${width}x${height}cm | ${parcel.weightGrams}g`
-    })
-
-    return metadata
 }
 
 const shippingDetailsSchema = z.object({
@@ -189,7 +149,9 @@ export const createCheckoutSession = defineAction({
                     // What is physically being sent, so an Australia Post
                     // consignment can be raised straight off the payment
                     // rather than re-deriving the parcel from the cart.
-                    ...shipmentMetadata(totals.shipment),
+                    ...(totals.shipment
+                        ? shipmentToMetadata(totals.shipment)
+                        : {}),
                 },
             },
         })
