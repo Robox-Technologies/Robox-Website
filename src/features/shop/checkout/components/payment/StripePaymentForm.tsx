@@ -16,6 +16,11 @@ import { useState } from 'react'
 import { checkoutStep, shippingDetails } from '../../state/checkoutStore'
 import CheckoutPaymentLoadingState from './CheckoutPaymentLoadingState'
 
+/** Case- and whitespace-insensitive, so "3184 " and "3184" are the same place. */
+function normalise(value: string | null | undefined): string {
+    return (value ?? '').trim().toUpperCase().replace(/\s+/g, ' ')
+}
+
 /**
  * Every key is spelled out because Stripe's type requires all of them present,
  * even though each value is itself optional - so this can't be narrowed to just
@@ -67,6 +72,31 @@ export function StripePaymentForm({ error }: { error?: string | null }) {
     const handleWalletConfirm = async (
         event: StripeExpressCheckoutElementConfirmEvent,
     ) => {
+        // The session carries one fixed rate precisely so the wallet has no
+        // reason to collect an address. If one turns up anyway and it isn't
+        // where we quoted, the postage on this order is wrong - so refuse
+        // rather than charge it. `paymentFailed` shows the reason inside the
+        // wallet sheet and nothing is taken.
+        //
+        // Only country and postcode are compared: those are what Australia Post
+        // prices on, and they are canonical enough not to reject a legitimate
+        // payment over a formatting difference.
+        const walletAddress = event.shippingAddress?.address
+        if (
+            walletAddress &&
+            shipping &&
+            (normalise(walletAddress.country) !==
+                normalise(shipping.address.country) ||
+                normalise(walletAddress.postal_code) !==
+                    normalise(shipping.address.postal_code))
+        ) {
+            event.paymentFailed({ reason: 'invalid_shipping_address' })
+            setMessage(
+                'That delivery address is different to the one this order was priced for. Choose "change" above to update it, then try again.',
+            )
+            return
+        }
+
         setSubmitting(true)
         const result = await checkout.confirm({
             expressCheckoutConfirmEvent: event,

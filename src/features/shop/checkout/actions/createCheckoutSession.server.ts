@@ -51,8 +51,9 @@ export const createCheckoutSession = defineAction({
             }),
         ),
         shippingDetails: shippingDetailsSchema,
+        shippingServiceId: z.string().trim().max(32),
     }),
-    async handler({ products, shippingDetails }, context) {
+    async handler({ products, shippingDetails, shippingServiceId }, context) {
         // Ahead of the Stripe and AusPost reads below, so a flood costs us
         // nothing upstream.
         enforceRateLimit(context, { name: 'createCheckoutSession', max: 15 })
@@ -91,6 +92,18 @@ export const createCheckoutSession = defineAction({
             describeCartForHumans(products),
         ])
 
+        // The client chooses *which* service; the price comes from our own
+        // quote, never from the request. An unrecognised id falls back to the
+        // cheapest rather than failing the checkout.
+        const chosen =
+            totals.shippingOptions.find(
+                (option) => option.id === shippingServiceId,
+            ) ?? totals.shippingOptions[0]
+
+        if (!chosen) {
+            throw new Error('No shipping service available for this address')
+        }
+
         const session = await stripeAPI.checkout.sessions.create({
             ui_mode: 'elements',
             mode: 'payment',
@@ -100,30 +113,34 @@ export const createCheckoutSession = defineAction({
                 price: entry.priceId,
                 quantity: entry.quantity,
             })),
-            // One per service Australia Post will carry, cheapest first so
-            // Stripe pre-selects it. The customer switches with
-            // `updateShippingOption` and Stripe re-totals the session.
-            shipping_options: totals.shippingOptions.map((option) => ({
-                shipping_rate_data: {
-                    display_name: option.label,
-                    type: 'fixed_amount' as const,
-                    fixed_amount: {
-                        amount: option.amountCents,
-                        currency: 'aud',
-                    },
-                    delivery_estimate: {
-                        minimum: {
-                            unit: 'business_day' as const,
-                            value: option.estimateDays.minimum,
+            // Exactly one rate, the one the customer already chose. A session
+            // offering several is not a static transaction, and Apple Pay
+            // answers that by putting its own editable delivery address in the
+            // sheet - which would let it ship somewhere we never quoted. The
+            // choice belongs on the address step, before the session exists.
+            shipping_options: [
+                {
+                    shipping_rate_data: {
+                        display_name: chosen.label,
+                        type: 'fixed_amount' as const,
+                        fixed_amount: {
+                            amount: chosen.amountCents,
+                            currency: 'aud',
                         },
-                        maximum: {
-                            unit: 'business_day' as const,
-                            value: option.estimateDays.maximum,
+                        delivery_estimate: {
+                            minimum: {
+                                unit: 'business_day' as const,
+                                value: chosen.estimateDays.minimum,
+                            },
+                            maximum: {
+                                unit: 'business_day' as const,
+                                value: chosen.estimateDays.maximum,
+                            },
                         },
+                        metadata: { serviceId: chosen.id },
                     },
-                    metadata: { serviceId: option.id },
                 },
-            })),
+            ],
             allow_promotion_codes: true,
             return_url: `${context.url.origin}/shop/checkout/status?session_id={CHECKOUT_SESSION_ID}`,
             metadata: {
@@ -146,7 +163,8 @@ export const createCheckoutSession = defineAction({
                     products: productsMetadata,
                     productSummary,
                     subtotalCents: totals.subtotalCents.toString(),
-                    shippingCents: totals.shippingCents.toString(),
+                    shippingCents: chosen.amountCents.toString(),
+                    shippingService: chosen.label,
                     // What is physically being sent, so an Australia Post
                     // consignment can be raised straight off the payment
                     // rather than re-deriving the parcel from the cart.

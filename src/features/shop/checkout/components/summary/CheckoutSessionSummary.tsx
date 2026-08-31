@@ -2,7 +2,6 @@ import { useCheckoutElements } from '@stripe/react-stripe-js/checkout'
 import SummaryCard from '@/components/shop/summary/SummaryCard'
 import { formatMoney } from '@/utils/formatPrice'
 import CheckoutSummaryRow from './CheckoutSummaryRow'
-import CheckoutShippingOptions from './CheckoutShippingOptions'
 import CheckoutVoucher from './CheckoutVoucher'
 import { SUMMARY_CARD_CLASS } from './summaryCardClass'
 
@@ -53,13 +52,6 @@ export default function CheckoutSessionSummary() {
                 <CheckoutSummaryRow
                     label="Shipping"
                     value={money(total.shippingRate)}
-                />
-
-                <CheckoutShippingOptions
-                    options={checkout.shippingOptions}
-                    selectedId={checkout.shipping?.shippingOption?.id ?? null}
-                    currency={checkout.currency}
-                    updateShippingOption={checkout.updateShippingOption}
                 />
 
                 {discountCents > 0 && (

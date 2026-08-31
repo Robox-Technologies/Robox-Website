@@ -36,3 +36,14 @@ export const checkoutStep = atom<CheckoutStep>('address')
  * is not.
  */
 export const shippingDetails = atom<ShippingDetails | null>(null)
+
+/**
+ * The delivery speed, chosen on the address step.
+ *
+ * It has to be settled *before* the Checkout Session exists. A session carrying
+ * more than one shipping option is not a static transaction, and Apple Pay
+ * responds by offering its own editable delivery address inside the sheet -
+ * which would let a customer ship somewhere we never quoted postage for. One
+ * fixed rate keeps the wallet out of the shipping business entirely.
+ */
+export const shippingServiceId = atom<string>('standard')
