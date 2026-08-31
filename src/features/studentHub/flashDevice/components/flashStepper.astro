@@ -5,16 +5,40 @@ import { STAGES, STAGE_LABELS } from '../stage';
 ---
 <ol class="flashStepper flex items-center gap-2">
     {STAGES.map((stage, index) => (
-        <li class="flex flex-1 items-center gap-2">
-            <div class="flashStepCircle flex size-8 shrink-0 items-center justify-center rounded-full bg-gray-300 font-bold text-white">
-                <span class="flashStepNumber">{index + 1}</span>
-                <FontAwesomeIcon icon={faCircleCheck} className="flashStepCheck hidden!" />
-            </div>
-            <span class="flashStepLabel text-sm font-semibold text-gray-400">{STAGE_LABELS[stage]}</span>
+        <>
+            <li class="flashStep flex shrink-0 items-center gap-2">
+                <div class="flashStepCircle relative flex size-8 shrink-0 items-center justify-center rounded-full bg-gray-300 font-bold text-white transition-colors duration-300">
+                    <span class="flashStepNumber absolute inset-0 flex scale-100 items-center justify-center opacity-100 transition-[opacity,scale] duration-200 ease-out">
+                        {index + 1}
+                    </span>
+                    <!--
+                        A separate wrapping span, not the bare icon: the icon
+                        itself never has `display` toggled anymore (it's an
+                        opacity/scale crossfade with .flashStepNumber, not a
+                        show/hide), so it doesn't need the `!important` the
+                        old `hidden!` toggle needed to beat FontAwesome's own
+                        `display: inline-block` rule — but its *text colour*
+                        still does, for the same reason `.flashStepNumber`
+                        does: this span is still forced dark by the global
+                        base-layer `span` rule.
+                    -->
+                    <span class="flashStepCheck absolute inset-0 flex scale-75 items-center justify-center text-white! opacity-0 transition-[opacity,scale] duration-200 ease-out">
+                        <FontAwesomeIcon icon={faCircleCheck} />
+                    </span>
+                </div>
+                <span class="flashStepLabel text-sm font-semibold text-gray-400 transition-colors duration-300">{STAGE_LABELS[stage]}</span>
+            </li>
             {index < STAGES.length - 1 && (
-                <div class="flashStepConnector h-0.5 flex-1 bg-gray-300"></div>
+
+                // The line itself stays a flat gray track; a separate fill
+                // layer scales in from the left on completion, like the
+                // firmware progress bar's fill, instead of the color just
+                // flipping instantly.
+                <li class="flashStepConnector relative h-0.5 flex-1 overflow-hidden bg-gray-300" aria-hidden="true">
+                    <div class="flashStepConnectorFill absolute inset-0 origin-left scale-x-0 bg-green transition-transform duration-500 ease-out"></div>
+                </li>
             )}
-        </li>
+        </>
     ))}
 </ol>
 <script>
@@ -24,20 +48,27 @@ import { STAGES, STAGE_LABELS } from '../stage';
     // render, so wire up every instance found rather than assuming there's a
     // single one.
     document.querySelectorAll<HTMLOListElement>(".flashStepper").forEach((stepper) => {
-        const steps = stepper.querySelectorAll<HTMLLIElement>(":scope > li");
+        const steps = stepper.querySelectorAll<HTMLLIElement>(":scope > .flashStep");
+        const connectors = stepper.querySelectorAll<HTMLLIElement>(":scope > .flashStepConnector");
         // The orchestrator dispatches on its own root rather than bubbling,
         // since it needs to reach a descendant instead of an ancestor.
         const root = stepper.closest(".flashDevice");
         if (!root) throw new Error("Flash stepper must be nested inside .flashDevice");
 
+        function setIconVisible(icon: HTMLElement, visible: boolean) {
+            icon.classList.toggle("opacity-100", visible);
+            icon.classList.toggle("scale-100", visible);
+            icon.classList.toggle("opacity-0", !visible);
+            icon.classList.toggle("scale-75", !visible);
+        }
+
         function highlight(stage: Stage) {
             const activeIndex = STAGES.indexOf(stage);
             steps.forEach((step, index) => {
                 const circle = step.querySelector<HTMLDivElement>(".flashStepCircle");
-                const number = step.querySelector<HTMLSpanElement>(".flashStepNumber");
+                const number = step.querySelector<HTMLElement>(".flashStepNumber");
                 const check = step.querySelector<HTMLElement>(".flashStepCheck");
                 const label = step.querySelector<HTMLSpanElement>(".flashStepLabel");
-                const connector = step.querySelector<HTMLDivElement>(".flashStepConnector");
                 if (!circle || !number || !check || !label) return;
 
                 circle.classList.remove("bg-gray-300", "bg-blue", "bg-green");
@@ -46,20 +77,20 @@ import { STAGES, STAGE_LABELS } from '../stage';
                 );
                 label.classList.toggle("text-black", index <= activeIndex);
                 label.classList.toggle("text-gray-400", index > activeIndex);
-                // `hidden!`, not `hidden`: FontAwesome's own stylesheet sets
-                // `.svg-inline--fa { display: inline-block }` at the same
-                // specificity as Tailwind's `.hidden`, and it loads after
-                // Tailwind in global.css, so a plain `hidden` toggle on the
-                // checkmark icon never actually hides it.
-                number.classList.toggle("hidden", index < activeIndex);
-                check.classList.toggle("hidden!", index >= activeIndex);
-                // Same story for colour: `span` is forced dark by a global
-                // base-layer rule, so only an `!important` utility actually
-                // wins. White reads on the active step's blue fill; the
-                // upcoming steps' pale gray fill needs the darker gray back.
+
+                const completed = index < activeIndex;
+                setIconVisible(check, completed);
+                setIconVisible(number, !completed);
+                // Same story as the check icon's colour above: `span` is
+                // forced dark by a global base-layer rule, so only an
+                // `!important` utility actually wins.
                 number.classList.toggle("text-white!", index === activeIndex);
                 number.classList.toggle("text-gray-400!", index !== activeIndex);
-                connector?.classList.toggle("bg-green", index < activeIndex);
+            });
+            connectors.forEach((connector, index) => {
+                const fill = connector.querySelector<HTMLDivElement>(".flashStepConnectorFill");
+                fill?.classList.toggle("scale-x-100", index < activeIndex);
+                fill?.classList.toggle("scale-x-0", index >= activeIndex);
             });
         }
 

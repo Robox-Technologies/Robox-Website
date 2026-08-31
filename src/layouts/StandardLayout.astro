@@ -31,15 +31,21 @@ const { title, description, noindex, header='standard' } = Astro.props as Props;
              nor a cookie bar belongs in one. -->
         {!isIOSBuild && <Analytics />}
     </head>
-    <body>
+    <body class="flex min-h-screen flex-col">
         {!isIOSBuild && <Header type={header} />}
 
-        <slot />
+        <!-- `flex-1`, so a page shorter than the viewport (an empty cart, a
+             thin wizard step) still pushes the footer to the bottom of the
+             screen instead of leaving a gap under it; taller pages just push
+             this past 100% and scroll normally. -->
+        <main class="flex-1">
+            <slot />
+        </main>
         <ToastHost client:only="react" />
         <!-- Sits with the footer, which is where the original kept it. -->
         {!isIOSBuild && <CookieConsent />}
+        {!isIOSBuild && <Footer />}
     </body>
-    {!isIOSBuild && <Footer />}
 </html>
 
 <script>

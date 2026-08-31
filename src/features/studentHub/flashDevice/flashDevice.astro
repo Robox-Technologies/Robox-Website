@@ -29,23 +29,33 @@ import FlashComplete from './components/flashComplete.astro';
         </div>
     </div>
 
-    <div class="flashDeviceStage flex flex-col gap-4 rounded-3xl bg-white box-shadow p-6" data-stage="bootloader">
-        <h2 class="text-xl font-bold text-black">Step 1: Reboot into firmware update mode</h2>
-        <p class="text-gray-800">
-            Connect your Ro/Box over USB and we'll ask it to reboot itself
-            into firmware update mode.
-        </p>
-        <AutomaticBootsel />
-        <ManualBootsel />
-    </div>
+    <!--
+        The card (rounded/shadowed/bg) lives on this wrapper, not on the
+        individual stages, so its `height` can be transitioned in JS: each
+        stage change measures the old and new content height and animates
+        between them instead of snapping, without leaving the tall-stage-
+        sized blank space a fixed shared height left behind. `overflow-hidden`
+        clips the incoming/outgoing stage during that animation.
+    -->
+    <div class="flashDeviceStages overflow-hidden rounded-3xl bg-white box-shadow transition-[height] duration-300 ease-out motion-reduce:transition-none">
+        <div class="flashDeviceStage flex flex-col gap-4 p-6" data-stage="bootloader">
+            <h2 class="text-xl font-bold text-black">Step 1: Reboot into firmware update mode</h2>
+            <p class="text-gray-800">
+                Connect your Ro/Box over USB and we'll ask it to reboot itself
+                into firmware update mode.
+            </p>
+            <AutomaticBootsel />
+            <ManualBootsel />
+        </div>
 
-    <div class="flashDeviceStage flex flex-col gap-4 rounded-3xl bg-white box-shadow p-6" data-stage="flash" style="display: none;">
-        <h2 class="text-xl font-bold text-black">Step 2: Select your Ro/Box's drive</h2>
-        <SelectDrive />
-    </div>
+        <div class="flashDeviceStage hidden flex flex-col gap-4 p-6" data-stage="flash">
+            <h2 class="text-xl font-bold text-black">Step 2: Select your Ro/Box's drive</h2>
+            <SelectDrive />
+        </div>
 
-    <div class="flashDeviceStage flex flex-col items-start gap-4 rounded-3xl bg-white box-shadow p-6" data-stage="done" style="display: none;">
-        <FlashComplete />
+        <div class="flashDeviceStage hidden flex flex-col items-start gap-4 p-6" data-stage="done">
+            <FlashComplete />
+        </div>
     </div>
 </div>
 <script>
@@ -65,9 +75,10 @@ import FlashComplete from './components/flashComplete.astro';
         const errorTitle = root.querySelector<HTMLParagraphElement>(".flashDeviceErrorTitle");
         const errorMessage = root.querySelector<HTMLParagraphElement>(".flashDeviceErrorMessage");
         const stepper = root.querySelector<HTMLOListElement>(".flashStepper");
+        const stagesWrapper = root.querySelector<HTMLDivElement>(".flashDeviceStages");
         const stages = root.querySelectorAll<HTMLDivElement>(".flashDeviceStage");
 
-        if (!unsupportedBanner || !errorBanner || !errorTitle || !errorMessage || !stepper) {
+        if (!unsupportedBanner || !errorBanner || !errorTitle || !errorMessage || !stepper || !stagesWrapper) {
             throw new Error("Flash device elements not found");
         }
 
@@ -77,7 +88,10 @@ import FlashComplete from './components/flashComplete.astro';
         if (!("showDirectoryPicker" in window)) {
             unsupportedBanner.style.display = "flex";
             stepper.style.display = "none";
-            stages.forEach((stage) => { stage.style.display = "none"; });
+            // display:none on the whole wrapper here (not `invisible` on
+            // each stage): there's no wizard to show at all, so unlike a
+            // normal stage switch, the space should actually collapse.
+            stagesWrapper.style.display = "none";
             return;
         }
 
@@ -92,14 +106,49 @@ import FlashComplete from './components/flashComplete.astro';
             return url.toString();
         }
 
-        function showStage(stage: Stage) {
+        /**
+         * Animates the card's height from whatever it currently is to the
+         * incoming stage's natural height, rather than snapping straight to
+         * it — a plain CSS transition can't animate to/from `height: auto`,
+         * so this pins both ends in pixels around the swap instead.
+         */
+        function showStage(stage: Stage, animate = true) {
+            if (!animate) {
+                stages.forEach((stageEl) => {
+                    stageEl.classList.toggle("hidden", stageEl.dataset.stage !== stage);
+                });
+                stagesWrapper!.style.height = "";
+                root.dispatchEvent(new CustomEvent("flashdevice:stage-changed", { detail: { stage } }));
+                return;
+            }
+
+            const fromHeight = stagesWrapper!.offsetHeight;
+            stagesWrapper!.style.height = `${fromHeight}px`;
+            // Flushes the height set above before the swap below, so the
+            // browser has an actual "from" value to animate away from
+            // instead of coalescing both writes into one.
+            void stagesWrapper!.offsetHeight;
+
             stages.forEach((stageEl) => {
-                stageEl.style.display = stageEl.dataset.stage === stage ? "flex" : "none";
+                stageEl.classList.toggle("hidden", stageEl.dataset.stage !== stage);
             });
-            // Dispatched on this same root (not bubbled) so descendants like
-            // FlashStepper can react without this orchestrator knowing
-            // anything about their internals.
             root.dispatchEvent(new CustomEvent("flashdevice:stage-changed", { detail: { stage } }));
+
+            const activeStage = [...stages].find((stageEl) => stageEl.dataset.stage === stage);
+            const toHeight = activeStage?.scrollHeight ?? fromHeight;
+            stagesWrapper!.style.height = `${toHeight}px`;
+
+            stagesWrapper!.addEventListener(
+                "transitionend",
+                () => {
+                    // Back to auto once settled, so a later window resize or
+                    // content change (an error banner, a longer message)
+                    // reflows normally instead of staying pinned to this
+                    // stage's height forever.
+                    stagesWrapper!.style.height = "";
+                },
+                { once: true },
+            );
         }
 
         // Stage components report progress by bubbling these events up from
@@ -132,7 +181,7 @@ import FlashComplete from './components/flashComplete.astro';
         // press would just reload this same stage.
         const initialStage = stageFromURL();
         history.replaceState({ flashStage: initialStage }, "", urlForStage(initialStage));
-        showStage(initialStage);
+        showStage(initialStage, false);
 
         window.addEventListener("popstate", (event) => {
             showStage(isStage(event.state?.flashStage) ? event.state.flashStage : STAGES[0]);
