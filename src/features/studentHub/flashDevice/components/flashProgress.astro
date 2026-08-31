@@ -1,7 +1,12 @@
 ---
+interface Props {
+    class?: string
+}
+
+const { class: className } = Astro.props
 ---
 <div
-    class="flashProgress hidden flex flex-col gap-1.5"
+    class:list={["flashProgress hidden flex flex-col gap-1.5", className]}
     role="progressbar"
     aria-valuemin="0"
     aria-valuemax="100"

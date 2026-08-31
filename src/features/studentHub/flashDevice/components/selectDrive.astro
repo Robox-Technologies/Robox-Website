@@ -9,16 +9,20 @@ import FlashProgress from './flashProgress.astro';
         Your Ro/Box should now show up as a drive named <span class="font-mono">RPI-RP2</span>.
         Select it below to flash the latest firmware.
     </p>
-    <Button id="flash-select-drive" className="bg-blue self-start">
-        <FontAwesomeIcon icon={faFolderOpen} className="flashDeviceIcon mr-2" />
-        <FontAwesomeIcon icon={faSpinner} className="flashDeviceSpinner mr-2 hidden! fa-spin" />
-        Select RPI-RP2 Drive
-    </Button>
-    <FlashProgress />
-    <Button id="flash-back-to-bootloader" className="bg-gray-500 self-start">
-        <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-        Not Seeing the Drive? Go Back
-    </Button>
+    <div class="selectDriveActions grid grid-cols-1">
+        <div class="selectDriveButtons col-start-1 row-start-1 flex flex-col gap-4">
+            <Button id="flash-select-drive" className="bg-blue self-start">
+                <FontAwesomeIcon icon={faFolderOpen} className="flashDeviceIcon mr-2" />
+                <FontAwesomeIcon icon={faSpinner} className="flashDeviceSpinner mr-2 hidden! fa-spin" />
+                Select RPI-RP2 Drive
+            </Button>
+            <Button id="flash-back-to-bootloader" className="bg-gray-500 self-start">
+                <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+                Not Seeing the Drive? Go Back
+            </Button>
+        </div>
+        <FlashProgress class="col-start-1 row-start-1 self-center" />
+    </div>
 </div>
 <script>
     import {
@@ -77,7 +81,8 @@ import FlashProgress from './flashProgress.astro';
     document.querySelectorAll<HTMLDivElement>(".selectDrive").forEach((root) => {
         const button = root.querySelector<HTMLButtonElement>("#flash-select-drive");
         const backButton = root.querySelector<HTMLButtonElement>("#flash-back-to-bootloader");
-        if (!button || !backButton) throw new Error("Select drive elements not found");
+        const buttonsGroup = root.querySelector<HTMLDivElement>(".selectDriveButtons");
+        if (!button || !backButton || !buttonsGroup) throw new Error("Select drive elements not found");
 
         // The "Go Back" escape hatch is disabled mid-write too: leaving this
         // stage doesn't cancel the in-flight write, so re-enabling it while
@@ -90,17 +95,18 @@ import FlashProgress from './flashProgress.astro';
 
         // The progress bar replaces the buttons rather than sitting next to
         // a disabled one — there's nothing left to click once the write has
-        // actually started.
+        // actually started. `invisible`, not `hidden`: the buttons group
+        // stays in the grid's layout flow so its height keeps pinning the
+        // card at its taller size instead of shrinking around the much
+        // shorter progress bar stacked in the same cell.
         function enterWriting() {
-            button!.classList.add("hidden");
-            backButton!.classList.add("hidden");
+            buttonsGroup!.classList.add("invisible");
             showFlashProgress(root);
         }
 
         function exitWriting() {
             hideFlashProgress(root);
-            button!.classList.remove("hidden");
-            backButton!.classList.remove("hidden");
+            buttonsGroup!.classList.remove("invisible");
         }
 
         async function flash() {
