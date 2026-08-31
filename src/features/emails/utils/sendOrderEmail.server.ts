@@ -2,8 +2,6 @@ import { render } from 'jsx-email';
 import { Resend } from 'resend';
 import type { Stripe } from 'stripe';
 
-import type { Product } from '@/types/shop';
-
 import { ReceiptEmail } from '@/features/emails/templates/ReceiptEmail';
 import { PaymentFailedEmail } from '@/features/emails/templates/PaymentFailedEmail';
 import { buildEmailOrderData } from '@/features/emails/utils/buildEmailOrderData.server';
@@ -25,11 +23,10 @@ const resend = new Resend(process.env.RESEND_KEY || 're_...');
 const ORDER_MAILBOX = 'hello@robox.com.au';
 
 export async function sendOrderEmail(
-    paymentIntent: Stripe.PaymentIntent,
-    verifiedProducts: Record<string, Product>,
+    session: Stripe.Checkout.Session,
     success: boolean
 ) {
-    const orderData = await buildEmailOrderData(paymentIntent, verifiedProducts);
+    const orderData = await buildEmailOrderData(session);
     if (!orderData.to) {
         throw new Error('Receipt Email is not defined');
     }
@@ -70,7 +67,12 @@ export async function sendOrderEmail(
     // Hand-written rather than render(..., { plainText: true }); see orderEmailText.ts.
     const text = success ? buildReceiptText(orderData) : buildPaymentFailedText(orderData);
 
-    await resend.emails.send({
+    // Resend reports API failures in the resolved value rather than by
+    // throwing, so an invalid key, a suspended domain or a rejected recipient
+    // all came back looking like a successful send. A receipt that silently
+    // didn't arrive is worse than a loud failure - the caller logs this, and
+    // Stripe will retry the webhook.
+    const { data, error } = await resend.emails.send({
         from: 'Ro/Box <hello@store.robox.com.au>',
         to: [orderData.to],
         bcc: [ORDER_MAILBOX],
@@ -80,5 +82,11 @@ export async function sendOrderEmail(
         text
     });
 
-    return { sent: true, to: orderData.to };
+    if (error) {
+        throw new Error(
+            `Resend rejected the ${success ? 'receipt' : 'payment failed'} email for ${orderData.to}: ${error.message}`
+        );
+    }
+
+    return { sent: true, to: orderData.to, id: data?.id };
 }
