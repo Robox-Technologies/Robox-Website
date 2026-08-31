@@ -82,6 +82,12 @@ function parseCapacity(
 export function readPackaging(
     metadata: Stripe.Metadata,
     productName: string,
+    /**
+     * A bundle is expanded into its contents before anything is packed, so its
+     * own packaging is never consulted - and warning about it being absent would
+     * be noise pointing at the wrong product.
+     */
+    { isBundle = false }: { isBundle?: boolean } = {},
 ): ProductPackaging {
     const declared = metadata.packagingType?.trim().toLowerCase()
 
@@ -108,13 +114,14 @@ export function readPackaging(
         metadata.bagCapacityLarge !== undefined
 
     if (!hasCapacities) {
-        // Loud rather than silent: a product falling back is being quoted on a
-        // guess, and for a bundle the guess is wrong in the expensive
-        // direction - it will be packed as one item rather than as its
-        // contents. See docs/packaging.md for the keys to set.
-        console.warn(
-            `[packaging] ${productName} has no bagCapacity metadata; assuming ${LEGACY_BAG_CAPACITY.small}/${LEGACY_BAG_CAPACITY.medium}/${LEGACY_BAG_CAPACITY.large} per small/medium/large satchel`,
-        )
+        // Loud rather than silent for anything that actually gets packed: a
+        // product falling back is being quoted on a guess. See
+        // docs/packaging.md for the keys to set.
+        if (!isBundle) {
+            console.warn(
+                `[packaging] ${productName} has no bagCapacity metadata; assuming ${LEGACY_BAG_CAPACITY.small}/${LEGACY_BAG_CAPACITY.medium}/${LEGACY_BAG_CAPACITY.large} per small/medium/large satchel`,
+            )
+        }
         return { type: 'bag', capacity: LEGACY_BAG_CAPACITY }
     }
 

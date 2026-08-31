@@ -1,5 +1,6 @@
 import { createCachedLoader } from '@/utils/server/cache.server'
 import type { Packaging } from '@/types/shop'
+import type { Parcel } from './packaging.server'
 
 const AUSPOST_BASE_URL = 'https://digitalapi.auspost.com.au'
 const DOMESTIC_COUNTRY_CODE = 'AU'
@@ -154,4 +155,44 @@ export function calculateAuspostShippingCents(
     request: ShippingRequest,
 ): Promise<number> {
     return loadShippingCents(request)
+}
+
+/**
+ * Quotes every parcel in a shipment and adds them up.
+ *
+ * Identical parcels are quoted once and multiplied. Australia Post is metered,
+ * and an order of ten identical boxes would otherwise be ten requests for one
+ * answer - the per-request cache would collapse them eventually, but only after
+ * they had all been issued in parallel and all missed.
+ */
+export async function calculateShipmentShippingCents(
+    destination: { country: string; postcode: string },
+    parcels: Parcel[],
+): Promise<number> {
+    const groups = new Map<string, { parcel: Parcel; count: number }>()
+
+    for (const parcel of parcels) {
+        const { length, width, height } = parcel.dimensions
+        const key = `${length}x${width}x${height}|${parcel.weightGrams}`
+        const existing = groups.get(key)
+        if (existing) {
+            existing.count += 1
+            continue
+        }
+        groups.set(key, { parcel, count: 1 })
+    }
+
+    const quotes = await Promise.all(
+        [...groups.values()].map(async ({ parcel, count }) => {
+            const cents = await calculateAuspostShippingCents({
+                country: destination.country,
+                postcode: destination.postcode,
+                totalWeightGrams: parcel.weightGrams,
+                parcel: parcel.dimensions,
+            })
+            return cents * count
+        }),
+    )
+
+    return quotes.reduce((sum, cents) => sum + cents, 0)
 }

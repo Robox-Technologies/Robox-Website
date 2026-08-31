@@ -25,22 +25,44 @@ const DELIVERY_ESTIMATE = {
 }
 
 /**
+ * Stripe caps a metadata value at 500 characters and an object at 50 keys, so
+ * the per-parcel lines stop here and fall back to the summary. Well past any
+ * real order - it exists so a freak cart can't drop the keys that matter.
+ */
+const MAX_LISTED_PARCELS = 20
+
+/**
  * The shipment written onto the PaymentIntent, flattened into metadata's
- * string-only values. Absent rather than empty when there is nothing to ship,
- * so a missing key means "no shipment was priced" instead of "zero grams".
+ * string-only values.
+ *
+ * One key per parcel, because this is what someone reads to pack the order: each
+ * line says what to reach for, what goes in it, and what to declare. Absent
+ * rather than empty when nothing was priced, so a missing key means "no shipment
+ * was priced" instead of "zero grams".
  */
 function shipmentMetadata(
     shipment: Awaited<ReturnType<typeof calculateCheckoutTotals>>['shipment'],
 ): Record<string, string> {
     if (!shipment) return {}
 
-    const { parcel } = shipment
-    return {
+    const metadata: Record<string, string> = {
         weightGrams: shipment.weightGrams.toString(),
-        parcelDimensionsCm: `${parcel.length}x${parcel.width}x${parcel.height}`,
         packagingCents: shipment.packagingCents.toString(),
         packaging: shipment.packagingDescription,
+        parcelCount: shipment.parcels.length.toString(),
     }
+
+    shipment.parcels.slice(0, MAX_LISTED_PARCELS).forEach((parcel, index) => {
+        const contents = parcel.contents
+            .map((entry) => `${entry.quantity}x ${entry.name}`)
+            .join(' + ')
+        const { length, width, height } = parcel.dimensions
+
+        metadata[`parcel${index + 1}`] =
+            `${parcel.label} | ${contents} | ${length}x${width}x${height}cm | ${parcel.weightGrams}g`
+    })
+
+    return metadata
 }
 
 const shippingDetailsSchema = z.object({

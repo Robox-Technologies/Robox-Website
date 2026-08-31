@@ -1,7 +1,7 @@
 /**
- * Packing decides both the parcel Australia Post is quoted on and what the
- * customer pays for packaging, so the rules are pinned here rather than
- * discovered from a live quote.
+ * Packing decides the parcels Australia Post is quoted on, what the customer
+ * pays for packaging, and what the warehouse is told to send - so the rules are
+ * pinned here rather than discovered from a live quote.
  */
 
 import { describe, expect, it } from 'vitest'
@@ -9,9 +9,10 @@ import { describe, expect, it } from 'vitest'
 import type { BagCapacity, Packaging, Product } from '@/types/shop'
 import {
     BAG_SIZES,
-    chooseBags,
+    PARCEL_LIMITS,
     expandToPackingUnits,
-    planParcel,
+    planShipment,
+    type PackingUnit,
 } from '../packaging.server'
 
 const [SMALL_BAG, MEDIUM_BAG, LARGE_BAG] = BAG_SIZES
@@ -38,66 +39,95 @@ function baseProduct(id: string, overrides: Partial<Product> = {}): Product {
     }
 }
 
-function bagged(id: string, capacity: BagCapacity): Product {
-    return baseProduct(id, { packaging: { type: 'bag', capacity } })
+function bagged(id: string, capacity: BagCapacity, weight = 200): Product {
+    return baseProduct(id, { weight, packaging: { type: 'bag', capacity } })
 }
 
 function boxed(
     id: string,
     dimensions: Packaging,
     packagingCents = 377,
+    weight = 500,
 ): Product {
     return baseProduct(id, {
+        weight,
         packaging: { type: 'box', dimensions, packagingCents },
     })
 }
 
 const KIT = bagged('kit', { small: 1, medium: 3, large: 10 })
 
-function catalog(...products: Product[]) {
-    return new Map(products.map((product) => [product.item_id, product]))
-}
+const catalog = (...products: Product[]) =>
+    new Map(products.map((product) => [product.item_id, product]))
+
+const units = (...lines: Array<[Product, number]>): PackingUnit[] =>
+    expandToPackingUnits(
+        lines.map(([product, quantity]) => ({ product, quantity })),
+        catalog(...lines.map(([product]) => product)),
+    )
 
 describe('expandToPackingUnits', () => {
     it('leaves a plain product alone', () => {
-        const units = expandToPackingUnits(
-            [{ product: KIT, quantity: 2 }],
-            catalog(KIT),
-        )
-        expect(units).toStrictEqual([{ product: KIT, quantity: 2 }])
+        expect(units([KIT, 2])).toStrictEqual([
+            { product: KIT, quantity: 2, weightGrams: 400 },
+        ])
     })
 
     it('expands a bundle into its constituents', () => {
-        const pack = baseProduct('pack', { combo: { kit: 10 } })
-        const units = expandToPackingUnits(
+        const pack = baseProduct('pack', { combo: { kit: 10 }, weight: 2000 })
+        const expanded = expandToPackingUnits(
             [{ product: pack, quantity: 1 }],
             catalog(KIT, pack),
         )
-        expect(units).toStrictEqual([{ product: KIT, quantity: 10 }])
+        expect(expanded).toStrictEqual([
+            { product: KIT, quantity: 10, weightGrams: 2000 },
+        ])
     })
 
-    it('multiplies bundle contents by how many bundles were ordered', () => {
-        const pack = baseProduct('pack', { combo: { kit: 10 } })
-        const units = expandToPackingUnits(
-            [{ product: pack, quantity: 2 }],
-            catalog(KIT, pack),
+    it("keeps the bundle's own weight rather than its constituents'", () => {
+        // The heavy kit would say 10 x 900g; the bundle says 2000g, and the
+        // bundle is the thing being shipped.
+        const heavyKit = bagged('kit', { small: 1, medium: 3, large: 10 }, 900)
+        const pack = baseProduct('pack', { combo: { kit: 10 }, weight: 2000 })
+        const expanded = expandToPackingUnits(
+            [{ product: pack, quantity: 1 }],
+            catalog(heavyKit, pack),
         )
-        expect(units).toStrictEqual([{ product: KIT, quantity: 20 }])
+        expect(expanded[0]!.weightGrams).toBe(2000)
     })
 
-    it('merges a bundle with loose copies of the same product', () => {
-        const pack = baseProduct('pack', { combo: { kit: 10 } })
-        const units = expandToPackingUnits(
+    it('merges a bundle with loose copies, keeping the total weight exact', () => {
+        const pack = baseProduct('pack', { combo: { kit: 10 }, weight: 2000 })
+        const expanded = expandToPackingUnits(
             [
                 { product: KIT, quantity: 1 },
                 { product: pack, quantity: 1 },
             ],
             catalog(KIT, pack),
         )
-        expect(units).toStrictEqual([{ product: KIT, quantity: 11 }])
+        expect(expanded).toStrictEqual([
+            { product: KIT, quantity: 11, weightGrams: 2200 },
+        ])
     })
 
-    it('rejects a bundle naming a product that is not in the catalog', () => {
+    it('splits a mixed bundle weight across its constituents', () => {
+        const other = bagged('other', { small: 1, medium: 2, large: 4 })
+        const pack = baseProduct('pack', {
+            combo: { kit: 3, other: 1 },
+            weight: 800,
+        })
+        const expanded = expandToPackingUnits(
+            [{ product: pack, quantity: 1 }],
+            catalog(KIT, other, pack),
+        )
+        const total = expanded.reduce((sum, u) => sum + u.weightGrams, 0)
+        expect(total).toBe(800)
+        expect(
+            expanded.find((u) => u.product.item_id === 'kit')!.weightGrams,
+        ).toBe(600)
+    })
+
+    it('rejects a bundle naming a product outside the catalog', () => {
         const pack = baseProduct('pack', { combo: { missing: 1 } })
         expect(() =>
             expandToPackingUnits(
@@ -118,55 +148,72 @@ describe('expandToPackingUnits', () => {
     })
 })
 
-describe('chooseBags', () => {
+describe('planShipment - satchels', () => {
     it('takes the smallest satchel the order fits in', () => {
-        expect(chooseBags([{ product: KIT, quantity: 1 }])).toStrictEqual([
-            SMALL_BAG,
-        ])
-        expect(chooseBags([{ product: KIT, quantity: 3 }])).toStrictEqual([
-            MEDIUM_BAG,
-        ])
-        expect(chooseBags([{ product: KIT, quantity: 10 }])).toStrictEqual([
-            LARGE_BAG,
-        ])
+        expect(
+            planShipment(units([KIT, 1])).parcels[0]!.dimensions,
+        ).toStrictEqual(SMALL_BAG.dimensions)
+        expect(
+            planShipment(units([KIT, 3])).parcels[0]!.dimensions,
+        ).toStrictEqual(MEDIUM_BAG.dimensions)
+        expect(
+            planShipment(units([KIT, 10])).parcels[0]!.dimensions,
+        ).toStrictEqual(LARGE_BAG.dimensions)
     })
 
-    it('opens more large satchels once one is full', () => {
-        // 11 kits is 1.1 large satchels; a part-full satchel still needs a
-        // whole satchel.
-        expect(chooseBags([{ product: KIT, quantity: 11 }])).toStrictEqual([
-            LARGE_BAG,
-            LARGE_BAG,
-        ])
-        expect(chooseBags([{ product: KIT, quantity: 20 }])).toHaveLength(2)
-        expect(chooseBags([{ product: KIT, quantity: 21 }])).toHaveLength(3)
+    it('ships one satchel as one parcel', () => {
+        const shipment = planShipment(units([KIT, 1]))
+        expect(shipment.parcels).toHaveLength(1)
+        expect(shipment.packagingCents).toBe(SMALL_BAG.costCents)
+        expect(shipment.description).toBe('1 small satchel')
+    })
+
+    it('splits into several parcels once one satchel is full', () => {
+        const shipment = planShipment(units([KIT, 11]))
+        expect(shipment.parcels).toHaveLength(2)
+        expect(shipment.packagingCents).toBe(LARGE_BAG.costCents * 2)
+        expect(shipment.description).toBe('2 large satchels')
+    })
+
+    it('spreads the order across those parcels without losing weight', () => {
+        const shipment = planShipment(units([KIT, 11]))
+        const packed = shipment.parcels.flatMap((parcel) => parcel.contents)
+        const total = packed.reduce((sum, entry) => sum + entry.quantity, 0)
+        expect(total).toBe(11)
+        expect(shipment.weightGrams).toBe(2200)
     })
 
     it('lets different products share one satchel by fractions', () => {
         const half = bagged('half', { small: null, medium: null, large: 2 })
-        // A fifth of a large satchel plus a half of one still fits in one.
-        expect(
-            chooseBags([
-                { product: KIT, quantity: 2 },
-                { product: half, quantity: 1 },
-            ]),
-        ).toStrictEqual([LARGE_BAG])
+        const shipment = planShipment(units([KIT, 2], [half, 1]))
+        expect(shipment.parcels).toHaveLength(1)
+        expect(shipment.parcels[0]!.dimensions).toStrictEqual(
+            LARGE_BAG.dimensions,
+        )
     })
 
-    it('will not use a size that one of the products does not fit', () => {
+    it('will not use a size one of the products does not fit', () => {
         const bulky = bagged('bulky', { small: null, medium: null, large: 4 })
-        // The kit alone would fit a small satchel; the bulky item forces large.
-        expect(
-            chooseBags([
-                { product: KIT, quantity: 1 },
-                { product: bulky, quantity: 1 },
-            ]),
-        ).toStrictEqual([LARGE_BAG])
+        const shipment = planShipment(units([KIT, 1], [bulky, 1]))
+        expect(shipment.parcels[0]!.dimensions).toStrictEqual(
+            LARGE_BAG.dimensions,
+        )
     })
 
-    it('returns nothing when the order is all boxes', () => {
-        const box = boxed('box', { length: 24, width: 16, height: 8 })
-        expect(chooseBags([{ product: box, quantity: 2 }])).toStrictEqual([])
+    it('opens another satchel rather than exceeding the weight limit', () => {
+        // Ten fit by bulk, but 10 x 3kg is past the 22kg parcel limit.
+        const heavy = bagged(
+            'heavy',
+            { small: null, medium: null, large: 10 },
+            3000,
+        )
+        const shipment = planShipment(units([heavy, 10]))
+        expect(shipment.parcels.length).toBeGreaterThan(1)
+        for (const parcel of shipment.parcels) {
+            expect(parcel.weightGrams).toBeLessThanOrEqual(
+                PARCEL_LIMITS.maxWeightGrams,
+            )
+        }
     })
 
     it('refuses a bagged product that fits no satchel', () => {
@@ -175,98 +222,91 @@ describe('chooseBags', () => {
             medium: null,
             large: null,
         })
-        expect(() =>
-            chooseBags([{ product: unpackable, quantity: 1 }]),
-        ).toThrow(/does not fit any satchel/)
+        expect(() => planShipment(units([unpackable, 2]))).toThrow(
+            /does not fit any satchel/,
+        )
     })
 })
 
-describe('planParcel', () => {
-    it('quotes a single bagged item as its satchel', () => {
-        const plan = planParcel([{ product: KIT, quantity: 1 }])
-        expect(plan.parcel).toStrictEqual({
-            length: SMALL_BAG.dimensions.length,
-            width: SMALL_BAG.dimensions.width,
-            height: SMALL_BAG.dimensions.height,
-        })
-        expect(plan.packagingCents).toBe(SMALL_BAG.costCents)
-        expect(plan.description).toBe('1 small satchel')
+describe('planShipment - boxes', () => {
+    it('ships one parcel per boxed item, each at its own cost', () => {
+        const box = boxed('box', { length: 24, width: 16, height: 8 }, 377)
+        const shipment = planShipment(units([box, 3]))
+        expect(shipment.parcels).toHaveLength(3)
+        expect(shipment.packagingCents).toBe(377 * 3)
+        expect(shipment.description).toBe('3 boxes')
     })
 
-    it('adds volume rather than stacking heights', () => {
-        // Two large satchels: same footprint, twice the volume, so twice the
-        // height - not four satchels' worth.
-        const plan = planParcel([{ product: KIT, quantity: 11 }])
-        expect(plan.parcel.length).toBe(LARGE_BAG.dimensions.length)
-        expect(plan.parcel.width).toBe(LARGE_BAG.dimensions.width)
-        expect(plan.parcel.height).toBe(LARGE_BAG.dimensions.height * 2)
-        expect(plan.packagingCents).toBe(LARGE_BAG.costCents * 2)
-        expect(plan.description).toBe('2 large satchels')
-    })
-
-    it('preserves total volume across a mixed order', () => {
+    it('keeps satchels and cartons as separate parcels', () => {
         const box = boxed('box', { length: 24, width: 16, height: 8 })
-        const plan = planParcel([
-            { product: KIT, quantity: 1 },
-            { product: box, quantity: 1 },
+        const shipment = planShipment(units([KIT, 1], [box, 1]))
+        expect(shipment.parcels).toHaveLength(2)
+        expect(shipment.parcels.map((parcel) => parcel.kind)).toStrictEqual([
+            'satchel',
+            'box',
         ])
+        expect(shipment.packagingCents).toBe(SMALL_BAG.costCents + 377)
+    })
 
-        const bagVolume =
-            SMALL_BAG.dimensions.length *
-            SMALL_BAG.dimensions.width *
-            SMALL_BAG.dimensions.height
-        const boxVolume = 24 * 16 * 8
-        const quoted =
-            plan.parcel.length * plan.parcel.width * plan.parcel.height
+    it('rejects a carton past the length limit', () => {
+        const long = boxed('long', { length: 120, width: 10, height: 10 })
+        expect(() => planShipment(units([long, 1]))).toThrow(/longest side/)
+    })
 
-        // Rounding the height to a whole centimetre can only ever add volume.
-        expect(quoted).toBeGreaterThanOrEqual(bagVolume + boxVolume)
-        expect(quoted).toBeLessThan(
-            bagVolume + boxVolume + plan.parcel.length * plan.parcel.width,
+    it('rejects a carton past the volume limit', () => {
+        const huge = boxed('huge', { length: 100, width: 100, height: 100 })
+        expect(() => planShipment(units([huge, 1]))).toThrow(/m³/)
+    })
+
+    it('rejects a carton past the weight limit', () => {
+        const heavy = boxed(
+            'heavy',
+            { length: 30, width: 30, height: 30 },
+            377,
+            25_000,
+        )
+        expect(() => planShipment(units([heavy, 1]))).toThrow(
+            /past Australia Post/,
         )
     })
 
-    it('uses the largest footprint in the order', () => {
-        const wide = boxed('wide', { length: 60, width: 40, height: 2 })
-        const plan = planParcel([
-            { product: KIT, quantity: 1 },
-            { product: wide, quantity: 1 },
-        ])
-        expect(plan.parcel.length).toBe(60)
-        expect(plan.parcel.width).toBe(40)
+    it('rejects a carton thinner than the minimum', () => {
+        const flat = boxed('flat', { length: 30, width: 20, height: 1 })
+        expect(() => planShipment(units([flat, 1]))).toThrow(/thinner than/)
     })
+})
 
-    it('is never shorter than the tallest thing inside it', () => {
-        const tall = boxed('tall', { length: 5, width: 5, height: 30 })
-        const plan = planParcel([{ product: tall, quantity: 1 }])
-        expect(plan.parcel.height).toBeGreaterThanOrEqual(30)
+describe('planShipment - empty', () => {
+    it('has nothing to ship and nothing to charge', () => {
+        const shipment = planShipment([])
+        expect(shipment.parcels).toStrictEqual([])
+        expect(shipment.packagingCents).toBe(0)
+        expect(shipment.weightGrams).toBe(0)
+        expect(shipment.description).toBe('no packaging')
     })
+})
 
-    it('charges each box its own packaging cost, per unit', () => {
-        const box = boxed('box', { length: 24, width: 16, height: 8 }, 377)
-        const plan = planParcel([{ product: box, quantity: 3 }])
-        expect(plan.packagingCents).toBe(377 * 3)
-        expect(plan.description).toBe('3 boxes')
-    })
-
-    it('sums satchel and box costs together', () => {
-        const box = boxed('box', { length: 24, width: 16, height: 8 }, 377)
-        const plan = planParcel([
-            { product: KIT, quantity: 1 },
-            { product: box, quantity: 1 },
-        ])
-        expect(plan.packagingCents).toBe(SMALL_BAG.costCents + 377)
-        expect(plan.description).toBe('1 small satchel, 1 box')
-    })
-
-    it('falls back to a quotable parcel for an empty order', () => {
-        const plan = planParcel([])
-        expect(plan.parcel).toStrictEqual(SMALL_BAG.dimensions)
-        expect(plan.packagingCents).toBe(0)
-    })
-
-    it('reports whole-centimetre dimensions for the height', () => {
-        const plan = planParcel([{ product: KIT, quantity: 7 }])
-        expect(Number.isInteger(plan.parcel.height)).toBe(true)
+describe('planShipment - every parcel is shippable', () => {
+    it('holds for a wide spread of orders', () => {
+        const box = boxed('box', { length: 24, width: 16, height: 8 })
+        for (let quantity = 1; quantity <= 60; quantity++) {
+            for (const shipment of [
+                planShipment(units([KIT, quantity])),
+                planShipment(units([KIT, quantity], [box, 2])),
+            ]) {
+                for (const parcel of shipment.parcels) {
+                    const { length, width, height } = parcel.dimensions
+                    expect(Math.max(length, width, height)).toBeLessThanOrEqual(
+                        PARCEL_LIMITS.maxDimensionCm,
+                    )
+                    expect(length * width * height).toBeLessThanOrEqual(
+                        PARCEL_LIMITS.maxVolumeCm3,
+                    )
+                    expect(parcel.weightGrams).toBeLessThanOrEqual(
+                        PARCEL_LIMITS.maxWeightGrams,
+                    )
+                }
+            }
+        }
     })
 })

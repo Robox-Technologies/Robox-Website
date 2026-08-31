@@ -30,18 +30,50 @@ type BagSize = (typeof BAG_SIZES)[number]
 /** The largest satchel, which is what an overflowing order is packed into. */
 const LARGEST_BAG = BAG_SIZES[BAG_SIZES.length - 1]!
 
+/**
+ * Australia Post's limits for a single domestic parcel. An order past any of
+ * them is split across more parcels rather than refused.
+ *
+ * @see https://auspost.com.au/business/shipping/shipping-guidelines/size-weight-guidelines
+ */
+export const PARCEL_LIMITS = {
+    /** Greatest linear dimension. */
+    maxDimensionCm: 105,
+    /** 0.25 m³. */
+    maxVolumeCm3: 250_000,
+    maxWeightGrams: 22_000,
+    /** A box-shaped parcel must be at least this along its two smallest sides. */
+    minBoxSideCm: 5,
+}
+
+/** A bundle containing itself would otherwise recurse until the stack gives out. */
+const MAX_COMBO_DEPTH = 5
+
 /** A product and how many of it are being packed, after bundles are expanded. */
 export type PackingUnit = {
     product: Product
     quantity: number
+    /** Total grams for all `quantity` of them. */
+    weightGrams: number
 }
 
-export type ParcelPlan = {
-    /** One parcel covering the whole order. */
-    parcel: Packaging
-    /** What the packaging itself costs: every satchel and every carton used. */
+/** One physical thing that gets a postage label. */
+export type Parcel = {
+    kind: 'satchel' | 'box'
+    /** What to reach for: "large satchel" or "box". What goes in it is `contents`. */
+    label: string
+    dimensions: Packaging
+    weightGrams: number
     packagingCents: number
-    /** Readable breakdown, e.g. "1 large satchel, 2 boxes". */
+    /** What goes inside, so the parcel can be picked without re-deriving it. */
+    contents: Array<{ name: string; quantity: number }>
+}
+
+export type Shipment = {
+    parcels: Parcel[]
+    packagingCents: number
+    weightGrams: number
+    /** Readable summary, e.g. "2 large satchels, 1 box". */
     description: string
 }
 
@@ -57,9 +89,11 @@ export type CartProductLine = {
  * is ten kits in one satchel, so it has to be measured as ten kits rather than
  * as one opaque item.
  *
- * Only dimensions come through here. Weight is taken from each cart product's
- * own `weight`, which already accounts for a bundle's contents - expanding for
- * weight would count them twice.
+ * The bundle's own `weight` is split across the units it expands to, in
+ * proportion to how many there are. That keeps the order's total weight exactly
+ * what the cart says it is - a bundle's weight already covers its contents, so
+ * reading the constituents' own weights instead would both double-count and
+ * depend on figures nobody maintains for products only ever sold in a bundle.
  */
 export function expandToPackingUnits(
     lines: CartProductLine[],
@@ -67,24 +101,41 @@ export function expandToPackingUnits(
 ): PackingUnit[] {
     const totals = new Map<string, PackingUnit>()
 
-    const add = (product: Product, quantity: number, depth: number) => {
-        // A bundle containing itself, directly or through a chain, would other-
-        // wise recurse until the stack gives out.
-        if (depth > 5) {
+    const add = (
+        product: Product,
+        quantity: number,
+        weightGrams: number,
+        depth: number,
+    ) => {
+        if (depth > MAX_COMBO_DEPTH) {
             throw new Error(
                 `Bundle nesting is too deep at product ${product.name} - check for a combo cycle`,
             )
         }
 
-        if (product.combo) {
-            for (const [productId, count] of Object.entries(product.combo)) {
+        const combo = product.combo
+        if (combo) {
+            const perBundle = Object.values(combo).reduce(
+                (sum, count) => sum + count,
+                0,
+            )
+            const totalChildren = perBundle * quantity
+
+            for (const [productId, count] of Object.entries(combo)) {
                 const constituent = catalogById.get(productId)
                 if (!constituent) {
                     throw new Error(
                         `Product ${product.name} lists ${productId} in its combo, which is not in the catalog`,
                     )
                 }
-                add(constituent, quantity * count, depth + 1)
+
+                const childQuantity = quantity * count
+                add(
+                    constituent,
+                    childQuantity,
+                    weightGrams * (childQuantity / totalChildren),
+                    depth + 1,
+                )
             }
             return
         }
@@ -92,162 +143,264 @@ export function expandToPackingUnits(
         const existing = totals.get(product.item_id)
         if (existing) {
             existing.quantity += quantity
+            existing.weightGrams += weightGrams
             return
         }
-        totals.set(product.item_id, { product, quantity })
+        totals.set(product.item_id, { product, quantity, weightGrams })
     }
 
     for (const line of lines) {
-        add(line.product, line.quantity, 0)
+        add(line.product, line.quantity, line.product.weight * line.quantity, 0)
     }
 
     return [...totals.values()]
 }
 
-function volumeOf({ length, width, height }: Packaging): number {
-    return length * width * height
+/** One physical item, so it can be assigned to a particular satchel. */
+type BaggedItem = {
+    product: Product
+    capacity: BagCapacity
+    weightGrams: number
 }
 
-function footprintOf({ length, width }: Packaging): number {
-    return length * width
-}
+function baggedItems(units: PackingUnit[]): BaggedItem[] {
+    const items: BaggedItem[] = []
 
-/**
- * How much of one satchel of the given size this order's bagged items take up.
- *
- * Each unit consumes `1 / capacity` of the satchel, so products can share one:
- * an item that fits ten to a large satchel takes a tenth of it. A product that
- * doesn't fit the size at all makes the whole size unusable.
- */
-function occupancy(units: PackingUnit[], size: keyof BagCapacity): number {
-    let total = 0
-    for (const unit of units) {
-        if (unit.product.packaging.type !== 'bag') continue
-
-        const capacity = unit.product.packaging.capacity[size]
-        if (capacity === null) return Infinity
-        total += unit.quantity / capacity
-    }
-    return total
-}
-
-/**
- * The satchels needed for the bagged part of an order.
- *
- * Takes the smallest single satchel everything fits in. Past that it opens whole
- * large satchels and rounds up, which over-states a part-full last satchel -
- * the direction the error should fall, since Australia Post prices on size.
- */
-export function chooseBags(units: PackingUnit[]): BagSize[] {
-    const hasBagged = units.some(
-        (unit) => unit.product.packaging.type === 'bag',
-    )
-    if (!hasBagged) return []
-
-    for (const bag of BAG_SIZES) {
-        if (occupancy(units, bag.size) <= 1) return [bag]
-    }
-
-    const needed = occupancy(units, LARGEST_BAG.size)
-    if (!Number.isFinite(needed)) {
-        const offender = units.find(
-            (unit) =>
-                unit.product.packaging.type === 'bag' &&
-                unit.product.packaging.capacity[LARGEST_BAG.size] === null,
-        )
-        throw new Error(
-            `Product ${offender?.product.name ?? 'unknown'} does not fit any satchel size - it needs bagCapacity metadata or a box`,
-        )
-    }
-
-    return Array.from({ length: Math.ceil(needed) }, () => LARGEST_BAG)
-}
-
-/**
- * Turns an order into the single parcel Australia Post is quoted on.
- *
- * Volumes are added rather than heights stacked. Australia Post prices a parcel
- * on its cubic size, so total volume is the figure that matters; stacking
- * heights instead invents a tall thin parcel that quotes far above what the
- * order really costs to send.
- *
- * The footprint is that of the largest single item, and the height is whatever
- * makes the volume add up - floored at the tallest item, since a parcel can
- * never be shorter than what is inside it.
- */
-export function planParcel(units: PackingUnit[]): ParcelPlan {
-    const bags = chooseBags(units)
-
-    const boxes: Array<{ dimensions: Packaging; costCents: number }> = []
     for (const unit of units) {
         const packaging = unit.product.packaging
-        if (packaging.type !== 'box') continue
+        if (packaging.type !== 'bag') continue
 
+        const perItem = unit.weightGrams / unit.quantity
         for (let index = 0; index < unit.quantity; index++) {
-            boxes.push({
-                dimensions: packaging.dimensions,
-                costCents: packaging.packagingCents,
+            items.push({
+                product: unit.product,
+                capacity: packaging.capacity,
+                weightGrams: perItem,
             })
         }
     }
 
-    const components = [
-        ...bags.map((bag) => bag.dimensions),
-        ...boxes.map((box) => box.dimensions),
-    ]
+    return items
+}
 
-    if (components.length === 0) {
-        // Nothing to ship, but Australia Post still needs a parcel to price.
-        return {
-            parcel: BAG_SIZES[0]!.dimensions,
-            packagingCents: 0,
-            description: 'no packaging',
-        }
+/**
+ * How much of one satchel of the given size an item takes up.
+ *
+ * A product that fits ten to a large satchel takes a tenth of it, so several
+ * products can share one. `null` capacity means it doesn't fit that size at all.
+ */
+function share(item: BaggedItem, size: keyof BagCapacity): number {
+    const capacity = item.capacity[size]
+    return capacity === null ? Infinity : 1 / capacity
+}
+
+function summarise(items: BaggedItem[]): Array<{
+    name: string
+    quantity: number
+}> {
+    const counts = new Map<string, number>()
+    for (const item of items) {
+        counts.set(item.product.name, (counts.get(item.product.name) ?? 0) + 1)
     }
+    return [...counts].map(([name, quantity]) => ({ name, quantity }))
+}
 
-    const totalVolume = components.reduce(
-        (sum, component) => sum + volumeOf(component),
-        0,
-    )
-
-    const widest = components.reduce((largest, component) =>
-        footprintOf(component) > footprintOf(largest) ? component : largest,
-    )
-    const tallest = Math.max(...components.map((component) => component.height))
-
-    const height = Math.max(tallest, totalVolume / footprintOf(widest))
-
-    const packagingCents =
-        bags.reduce((sum, bag) => sum + bag.costCents, 0) +
-        boxes.reduce((sum, box) => sum + box.costCents, 0)
-
+function toSatchel(bag: BagSize, items: BaggedItem[]): Parcel {
     return {
-        parcel: {
-            length: widest.length,
-            width: widest.width,
-            // Australia Post takes whole centimetres; rounding up keeps the
-            // quote from describing a parcel smaller than the one we send.
-            height: Math.ceil(height),
-        },
-        packagingCents,
-        description: describePackaging(bags, boxes.length),
+        kind: 'satchel',
+        label: `${bag.size} satchel`,
+        dimensions: bag.dimensions,
+        weightGrams: Math.ceil(
+            items.reduce((sum, item) => sum + item.weightGrams, 0),
+        ),
+        packagingCents: bag.costCents,
+        contents: summarise(items),
     }
 }
 
-function describePackaging(bags: BagSize[], boxCount: number): string {
-    const parts: string[] = []
+/**
+ * Packs the bagged part of an order into satchels.
+ *
+ * Everything in one satchel if it fits - the smallest size that holds it all.
+ * Otherwise large satchels are filled one at a time, closing each when the next
+ * item would overflow it either by bulk or by Australia Post's weight limit.
+ */
+function packSatchels(units: PackingUnit[]): Parcel[] {
+    const items = baggedItems(units)
+    if (items.length === 0) return []
 
-    const bySize = new Map<string, number>()
-    for (const bag of bags) {
-        bySize.set(bag.size, (bySize.get(bag.size) ?? 0) + 1)
-    }
-    for (const [size, count] of bySize) {
-        parts.push(`${count} ${size} satchel${count === 1 ? '' : 's'}`)
+    const totalWeight = items.reduce((sum, item) => sum + item.weightGrams, 0)
+
+    for (const bag of BAG_SIZES) {
+        const occupancy = items.reduce(
+            (sum, item) => sum + share(item, bag.size),
+            0,
+        )
+        if (occupancy <= 1 && totalWeight <= PARCEL_LIMITS.maxWeightGrams) {
+            return [toSatchel(bag, items)]
+        }
     }
 
-    if (boxCount > 0) {
-        parts.push(`${boxCount} box${boxCount === 1 ? '' : 'es'}`)
+    // Heaviest and bulkiest first, so a part-full satchel is filled with the
+    // small items rather than leaving a big one stranded on its own.
+    const ordered = [...items].sort(
+        (a, b) =>
+            share(b, LARGEST_BAG.size) - share(a, LARGEST_BAG.size) ||
+            b.weightGrams - a.weightGrams,
+    )
+
+    const satchels: BaggedItem[][] = []
+    let current: BaggedItem[] = []
+    let occupancy = 0
+    let weight = 0
+
+    for (const item of ordered) {
+        const itemShare = share(item, LARGEST_BAG.size)
+
+        if (!Number.isFinite(itemShare)) {
+            throw new Error(
+                `Product ${item.product.name} does not fit any satchel size - it needs bagCapacity metadata or a box`,
+            )
+        }
+        if (item.weightGrams > PARCEL_LIMITS.maxWeightGrams) {
+            throw new Error(
+                `Product ${item.product.name} is heavier than Australia Post's ${PARCEL_LIMITS.maxWeightGrams}g parcel limit on its own`,
+            )
+        }
+
+        const overflows =
+            occupancy + itemShare > 1 ||
+            weight + item.weightGrams > PARCEL_LIMITS.maxWeightGrams
+
+        if (current.length > 0 && overflows) {
+            satchels.push(current)
+            current = []
+            occupancy = 0
+            weight = 0
+        }
+
+        current.push(item)
+        occupancy += itemShare
+        weight += item.weightGrams
     }
 
-    return parts.join(', ')
+    if (current.length > 0) satchels.push(current)
+
+    return satchels.map((contents) => toSatchel(LARGEST_BAG, contents))
+}
+
+/** One carton per boxed item; cartons are not shared. */
+function packBoxes(units: PackingUnit[]): Parcel[] {
+    const parcels: Parcel[] = []
+
+    for (const unit of units) {
+        const packaging = unit.product.packaging
+        if (packaging.type !== 'box') continue
+
+        const perItem = unit.weightGrams / unit.quantity
+        for (let index = 0; index < unit.quantity; index++) {
+            parcels.push({
+                kind: 'box',
+                label: 'box',
+                dimensions: packaging.dimensions,
+                weightGrams: Math.ceil(perItem),
+                packagingCents: packaging.packagingCents,
+                contents: [{ name: unit.product.name, quantity: 1 }],
+            })
+        }
+    }
+
+    return parcels
+}
+
+/**
+ * Australia Post rejects a parcel past any of its limits, so a parcel that
+ * can't be split down further - a single carton, or one item too heavy for one
+ * satchel - is a data problem and says so rather than being quoted and refused
+ * at the counter.
+ */
+function assertShippable(parcel: Parcel): void {
+    const { length, width, height } = parcel.dimensions
+    const sides = [length, width, height]
+
+    if (Math.max(...sides) > PARCEL_LIMITS.maxDimensionCm) {
+        throw new Error(
+            `${parcel.label} is ${Math.max(...sides)}cm along its longest side, past Australia Post's ${PARCEL_LIMITS.maxDimensionCm}cm limit`,
+        )
+    }
+
+    const volume = length * width * height
+    if (volume > PARCEL_LIMITS.maxVolumeCm3) {
+        throw new Error(
+            `${parcel.label} is ${(volume / 1_000_000).toFixed(3)}m³, past Australia Post's ${PARCEL_LIMITS.maxVolumeCm3 / 1_000_000}m³ limit`,
+        )
+    }
+
+    if (parcel.weightGrams > PARCEL_LIMITS.maxWeightGrams) {
+        throw new Error(
+            `${parcel.label} weighs ${parcel.weightGrams}g, past Australia Post's ${PARCEL_LIMITS.maxWeightGrams}g limit`,
+        )
+    }
+
+    if (
+        parcel.kind === 'box' &&
+        sides
+            .sort((a, b) => a - b)
+            .slice(0, 2)
+            .some((side) => side < PARCEL_LIMITS.minBoxSideCm)
+    ) {
+        throw new Error(
+            `${parcel.label} is thinner than Australia Post's ${PARCEL_LIMITS.minBoxSideCm}cm minimum on a box-shaped parcel`,
+        )
+    }
+}
+
+/**
+ * Turns an order into the parcels it actually ships as.
+ *
+ * Each satchel and each carton is its own parcel, quoted separately and summed.
+ * An earlier version merged them into one notional parcel by totalling volume,
+ * which both described something that doesn't exist - you can't put a carton
+ * inside a flat satchel - and undercharged, since two physical parcels are two
+ * postages.
+ */
+export function planShipment(units: PackingUnit[]): Shipment {
+    const parcels = [...packSatchels(units), ...packBoxes(units)]
+
+    for (const parcel of parcels) {
+        assertShippable(parcel)
+    }
+
+    return {
+        parcels,
+        packagingCents: parcels.reduce(
+            (sum, parcel) => sum + parcel.packagingCents,
+            0,
+        ),
+        weightGrams: parcels.reduce(
+            (sum, parcel) => sum + parcel.weightGrams,
+            0,
+        ),
+        description: describe(parcels),
+    }
+}
+
+function describe(parcels: Parcel[]): string {
+    if (parcels.length === 0) return 'no packaging'
+
+    const counts = new Map<string, number>()
+    for (const parcel of parcels) {
+        counts.set(parcel.label, (counts.get(parcel.label) ?? 0) + 1)
+    }
+
+    return [...counts]
+        .map(([label, count]) =>
+            count === 1 ? `1 ${label}` : `${count} ${pluralise(label)}`,
+        )
+        .join(', ')
+}
+
+/** Enough for the two words this produces: "satchel" and "box". */
+function pluralise(label: string): string {
+    return label.endsWith('x') ? `${label}es` : `${label}s`
 }

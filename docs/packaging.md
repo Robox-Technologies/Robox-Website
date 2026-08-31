@@ -8,6 +8,10 @@ the dimensions wrong costs real money in either direction — quote too small an
 we absorb the difference, quote too large and the customer is overcharged and
 may not buy.
 
+An order can ship as **several parcels**. Nothing is capped and checkout is never
+blocked on size: satchels are filled until the next item would overflow one, then
+another is opened.
+
 - Code: [`src/features/shop/checkout/utils/packaging.server.ts`](../src/features/shop/checkout/utils/packaging.server.ts)
 - Metadata reading: [`src/utils/server/stripe/readPackaging.server.ts`](../src/utils/server/stripe/readPackaging.server.ts)
 - Tests: [`src/features/shop/checkout/utils/__tests__/packaging.test.ts`](../src/features/shop/checkout/utils/__tests__/packaging.test.ts)
@@ -69,7 +73,7 @@ A bundle is a billing concept; the warehouse packs its contents. A product with
 
 ---
 
-## How the parcel is worked out
+## How the shipment is worked out
 
 ### 1. Expand bundles
 
@@ -100,25 +104,43 @@ whole one, which over-states slightly — the direction the error should fall.
 
 One carton per unit, at its own dimensions and its own cost. No sharing.
 
-### 5. Combine into one parcel
+### 5. Every satchel and carton is its own parcel
 
-Australia Post is quoted on a single parcel, so the satchels and cartons are
-combined **by volume, not by stacking heights**:
+There is no attempt to merge them. Each satchel and each carton is quoted
+separately and the quotes are added up, because that is what actually happens at
+the counter: two physical parcels are two postages, and you cannot put a carton
+inside a flat satchel.
 
-- **Volume** = the sum of every satchel's and carton's volume.
-- **Footprint** = that of the single largest item, by area.
-- **Height** = whatever makes the volume add up, floored at the tallest item
-  (a parcel cannot be shorter than its contents) and rounded up to a whole
-  centimetre.
+Identical parcels are quoted once and multiplied, so an order of ten identical
+boxes is one request to Australia Post rather than ten.
 
-Stacking heights instead would invent a tall, thin parcel and quote far above
-what the order really costs to send. Volume is what Australia Post cubes on, so
-volume is what is preserved.
+### 6. Australia Post's limits
 
-### 6. Cost
+Enforced per parcel, from
+[Australia Post's size and weight guidelines](https://auspost.com.au/business/shipping/shipping-guidelines/size-weight-guidelines):
+
+| Limit | Value |
+| --- | --- |
+| Greatest linear dimension | 105 cm |
+| Volume | 0.25 m³ |
+| Weight | 22 kg |
+| Minimum side (box-shaped) | 5 cm on the two smallest sides |
+
+Large orders are **split across more parcels** rather than refused — satchels are
+filled until the next item would overflow one by bulk *or* by weight, then a new
+one is opened. So there is no cap on order size and no reason to block checkout.
+
+What splitting cannot fix raises an error instead, because it is a data problem
+rather than an order problem:
+
+- a carton whose `boxDimensions` exceed the size limits,
+- a single item heavier than 22 kg,
+- a bagged product with no satchel it fits (`bagCapacity*` all zero).
+
+### 7. Cost
 
 ```
-postage charged = roundUpTo10c( AusPost quote + Σ satchel costs + Σ carton costs )
+postage charged = roundUpTo10c( Σ AusPost quote per parcel + Σ satchel costs + Σ carton costs )
 ```
 
 Satchel costs are shop-wide constants; carton costs come from
@@ -142,38 +164,44 @@ site's `fees.json`. Change them there, not in product metadata.
 ## What ends up on the payment
 
 So an Australia Post consignment can be raised straight from a Stripe payment
-without re-deriving anything, the PaymentIntent metadata carries:
+without re-deriving anything, the PaymentIntent metadata carries a line per
+parcel saying what to reach for, what goes in it, and what to declare:
 
 | Key | Example |
 | --- | --- |
-| `weightGrams` | `2200` |
-| `parcelDimensionsCm` | `48.5x36x10` |
-| `packagingCents` | `690` |
+| `parcelCount` | `2` |
+| `parcel1` | `large satchel \| 10x Ro/Box \| 48.5x36x5cm \| 3000g` |
+| `parcel2` | `large satchel \| 1x Ro/Box \| 48.5x36x5cm \| 300g` |
 | `packaging` | `2 large satchels` |
-| `productSummary` | `Ro/Box x 11` |
-| `products` | `{"prod_QYzaVvEwI509MU":11}` |
-| `subtotalCents` / `shippingCents` | `38500` / `3140` |
+| `weightGrams` | `3300` |
+| `packagingCents` | `690` |
+| `productSummary` | `Ro/Box 10-Pack x 1, Ro/Box x 1` |
+| `products` | `{"prod_Rq4KbfaKyka8u5":1,"prod_QYzaVvEwI509MU":1}` |
+| `subtotalCents` / `shippingCents` | `36500` / `3890` |
 
-These keys are absent, rather than zero, when no shipment was priced.
+`parcelN` keys stop at 20 to stay inside Stripe's 50-key limit; `parcelCount` is
+always exact. These keys are absent, rather than zero, when no shipment was
+priced.
 
 ---
 
 ## Worked examples
 
-Using the current V1 kit (bag, 1/3/10 per satchel, 200 g) and a hypothetical V2
-box (24 × 16 × 8, $3.77, 500 g).
+Using the current V1 kit (bag, 1/3/10 per satchel, 300 g) and a hypothetical V2
+box (24 × 16 × 8, $3.77).
 
-| Cart | Packing | Parcel (cm) | Packaging |
-| --- | --- | --- | --- |
-| 1 kit | 1/1 of a small satchel | 22.9 × 15.1 × 5 | $1.65 |
-| 3 kits | 3/3 of a medium satchel | 43 × 28.5 × 5 | $2.75 |
-| 4 kits | 4/10 of a large satchel | 48.5 × 36 × 5 | $3.45 |
-| 10 kits | 10/10 of a large satchel | 48.5 × 36 × 5 | $3.45 |
-| 11 kits | 1.1 → 2 large satchels | 48.5 × 36 × 10 | $6.90 |
-| 1 ten-pack (`combo: 10 kits`) | expands to 10 kits → 1 large satchel | 48.5 × 36 × 5 | $3.45 |
-| 1 ten-pack + 1 kit | expands to 11 kits → 2 large satchels | 48.5 × 36 × 10 | $6.90 |
-| 3 V2 boxes | 3 cartons | 24 × 16 × 24 | $11.31 |
-| 1 kit + 1 V2 box | 1 small satchel + 1 carton | 24 × 16 × 13 | $5.42 |
+| Cart | Parcels | Packaging |
+| --- | --- | --- |
+| 1 kit | 1 small satchel — 1 kit, 300 g | $1.65 |
+| 3 kits | 1 medium satchel — 3 kits, 900 g | $2.75 |
+| 4 kits | 1 large satchel — 4 kits, 1.2 kg | $3.45 |
+| 10 kits | 1 large satchel — 10 kits, 3 kg | $3.45 |
+| 11 kits | 2 large satchels — 10 kits + 1 kit | $6.90 |
+| 1 ten-pack (`combo: 10 kits`) | 1 large satchel — 10 kits, 3 kg | $3.45 |
+| 1 ten-pack + 1 kit | 2 large satchels — 10 kits + 1 kit | $6.90 |
+| 3 ten-packs | 3 large satchels — 10 kits each | $10.35 |
+| 3 V2 boxes | 3 boxes, one kit each | $11.31 |
+| 1 kit + 1 V2 box | 1 small satchel + 1 box | $5.42 |
 
 ---
 
@@ -193,7 +221,14 @@ box (24 × 16 × 8, $3.77, 500 g).
   inclusive, so the data now means what it reads.
 - **`excessPenalty` is gone.** Overflow opens more large satchels instead of
   describing one impossibly tall one.
-- **Australia Post has limits** this code does not enforce: 105 cm max length
-  and 0.25 m³ max volume for a regular parcel. A very large order will be quoted
-  a parcel Australia Post would reject. Worth adding a guard before we sell
-  anything that big.
+- **Volumes are no longer merged.** An earlier version of this code combined
+  every satchel and carton into one notional parcel by totalling volume. It
+  described something that does not exist and undercharged, since it paid one
+  base postage for what ships as several parcels.
+- **Shipping is one line to the customer.** However many parcels an order needs,
+  Stripe shows a single "Standard shipping" figure — the sum. The split only
+  matters to whoever packs it.
+- **Weight is distributed, not looked up, inside a bundle.** A bundle's own
+  `weight` is divided across the units it expands to. So a parcel's declared
+  weight is proportional rather than measured per item; the order total is always
+  exact, an individual parcel may be a gram or two out from reality.

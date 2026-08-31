@@ -1,8 +1,12 @@
 import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 import type { CartItems } from '@/features/shop/cart/types/cart'
 import type { Product } from '@/types/shop'
-import { calculateAuspostShippingCents } from './auspost.server'
-import { expandToPackingUnits, planParcel } from './packaging.server'
+import { calculateShipmentShippingCents } from './auspost.server'
+import {
+    expandToPackingUnits,
+    planShipment,
+    type Parcel,
+} from './packaging.server'
 import { applyShippingSurcharge } from './shippingCost.server'
 import {
     calculateDiscountCents,
@@ -30,9 +34,10 @@ export type CheckoutTotals = {
      */
     shipment: {
         weightGrams: number
-        parcel: { length: number; width: number; height: number }
         packagingCents: number
         packagingDescription: string
+        /** One entry per physical parcel - an order can ship as several. */
+        parcels: Parcel[]
     } | null
 }
 
@@ -132,20 +137,13 @@ export async function calculateCheckoutTotals(
             throw new Error('Postcode is required for domestic shipping')
         }
 
-        // Weight is a plain tally of what is in the cart. Bundles are not
-        // expanded for it - their own weight already covers their contents.
-        const weightGrams = entries.reduce(
-            (sum, entry) => sum + entry.weight * entry.quantity,
-            0,
-        )
-
         const catalogById = new Map(
             (await getAllProducts()).map((product) => [
                 product.item_id,
                 product,
             ]),
         )
-        const plan = planParcel(
+        const plan = planShipment(
             expandToPackingUnits(
                 entries.map((entry) => ({
                     product: entry.product,
@@ -156,20 +154,18 @@ export async function calculateCheckoutTotals(
         )
 
         shippingCents = applyShippingSurcharge(
-            await calculateAuspostShippingCents({
-                country,
-                postcode,
-                totalWeightGrams: weightGrams,
-                parcel: plan.parcel,
-            }),
+            await calculateShipmentShippingCents(
+                { country, postcode },
+                plan.parcels,
+            ),
             plan.packagingCents,
         )
 
         shipment = {
-            weightGrams,
-            parcel: plan.parcel,
+            weightGrams: plan.weightGrams,
             packagingCents: plan.packagingCents,
             packagingDescription: plan.description,
+            parcels: plan.parcels,
         }
     }
 

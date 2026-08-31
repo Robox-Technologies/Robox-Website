@@ -7,10 +7,7 @@ import { renderBanner } from '@/utils/server/renderBanner.server'
 
 import { isValidStatus } from 'src/types/guards/shop'
 import { readPriceDetails } from './readPrice.server'
-import {
-    readCombo,
-    readPackaging,
-} from './readPackaging.server'
+import { readCombo, readPackaging } from './readPackaging.server'
 
 /**
  * Short enough that a price or availability change in the Stripe dashboard shows
@@ -48,6 +45,7 @@ async function fetchAllProducts(): Promise<Product[]> {
                     `Invalid status for product ${product.name}: ${status}`,
                 )
             }
+            const combo = readCombo(product.metadata, product.name)
             const weight = product.metadata.weight
             if (weight === undefined) {
                 throw new Error(`Missing weight for product ${product.name}`)
@@ -66,8 +64,10 @@ async function fetchAllProducts(): Promise<Product[]> {
                 banner: await renderBanner(product.metadata.banner),
                 ...priceDetails,
                 weight: Number(weight),
-                packaging: readPackaging(product.metadata, product.name),
-                combo: readCombo(product.metadata, product.name),
+                packaging: readPackaging(product.metadata, product.name, {
+                    isBundle: combo !== null,
+                }),
+                combo,
             }
         }),
     )
