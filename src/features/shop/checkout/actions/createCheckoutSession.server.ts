@@ -9,6 +9,7 @@ import {
 } from '@/utils/server/checkoutSession.server'
 import {
     calculateCheckoutTotals,
+    describeCartForHumans,
     normalizeCartMetadata,
     resolveCartEntries,
 } from '../utils/checkoutPricing.server'
@@ -92,6 +93,13 @@ export const createCheckoutSession = defineAction({
                 },
             }
 
+        // Resolved once and shared by both metadata blocks: two calls would be
+        // two catalog reads for the same answer.
+        const [productsMetadata, productSummary] = await Promise.all([
+            normalizeCartMetadata(products),
+            describeCartForHumans(products),
+        ])
+
         const session = await stripeAPI.checkout.sessions.create({
             ui_mode: 'elements',
             mode: 'payment',
@@ -118,7 +126,10 @@ export const createCheckoutSession = defineAction({
             return_url: `${context.url.origin}/shop/checkout/status?session_id={CHECKOUT_SESSION_ID}`,
             metadata: {
                 [CHECKOUT_OWNER_KEY]: owner,
-                products: await normalizeCartMetadata(products),
+                products: productsMetadata,
+                // The same cart in words, because an id tells you nothing when
+                // you are looking at a payment in the dashboard.
+                productSummary,
             },
             payment_intent_data: {
                 // The address the customer gave on the first step, so the
@@ -130,7 +141,8 @@ export const createCheckoutSession = defineAction({
                 // which is why a changed cart means a new session.
                 metadata: {
                     [CHECKOUT_OWNER_KEY]: owner,
-                    products: await normalizeCartMetadata(products),
+                    products: productsMetadata,
+                    productSummary,
                     subtotalCents: totals.subtotalCents.toString(),
                     shippingCents: totals.shippingCents.toString(),
                 },

@@ -6,7 +6,7 @@ import { createCachedLoader } from '@/utils/server/cache.server'
 import { renderBanner } from '@/utils/server/renderBanner.server'
 
 import { isValidStatus } from 'src/types/guards/shop'
-import { readPriceDetails } from './readPrice.server'
+import { readPackaging, readPriceDetails } from './readPrice.server'
 
 /**
  * Short enough that a price or availability change in the Stripe dashboard shows
@@ -63,6 +63,7 @@ async function fetchAllProducts(): Promise<Product[]> {
                 ...priceDetails,
                 weight: Number(weight),
                 unitVolume: Number(product.metadata.unitVolume ?? 0),
+                packaging: readPackaging(product.metadata, product.name),
             }
         }),
     )

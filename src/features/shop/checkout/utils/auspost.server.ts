@@ -1,4 +1,5 @@
 import { createCachedLoader } from '@/utils/server/cache.server'
+import type { Packaging } from '@/types/shop'
 
 const AUSPOST_BASE_URL = 'https://digitalapi.auspost.com.au'
 const DOMESTIC_COUNTRY_CODE = 'AU'
@@ -9,29 +10,8 @@ const INTERNATIONAL_STANDARD_SERVICE = 'INT_PARCEL_STD_OWN_PACKAGING'
 type ShippingRequest = {
     country: string
     postcode: string
-    totalUnitVolume: number
+    parcel: Packaging
     totalWeightGrams: number
-}
-
-type Packaging = {
-    length: number
-    width: number
-    height: number
-}
-
-function resolvePackaging(totalUnitVolume: number): Packaging {
-    const baseLength = 24
-    const baseWidth = 16
-    const baseHeight = 8
-
-    // Increase height progressively as unit volume grows.
-    const heightGrowth = Math.max(0, Math.ceil(totalUnitVolume / 10) - 1) * 3
-
-    return {
-        length: baseLength,
-        width: baseWidth,
-        height: baseHeight + heightGrowth,
-    }
 }
 
 function toCountryCode(country: string): string {
@@ -78,7 +58,7 @@ async function readAuspostError(response: Response): Promise<string | null> {
 async function fetchAuspostShippingCents({
     country,
     postcode,
-    totalUnitVolume,
+    parcel,
     totalWeightGrams,
 }: ShippingRequest): Promise<number> {
     const authKey = process.env.AUSPOST_KEY
@@ -101,12 +81,11 @@ async function fetchAuspostShippingCents({
             throw new Error('Postcode is required for domestic shipping')
         }
 
-        const packaging = resolvePackaging(totalUnitVolume)
         params.set('from_postcode', originPostcode)
         params.set('to_postcode', postcode.trim())
-        params.set('length', packaging.length.toString())
-        params.set('width', packaging.width.toString())
-        params.set('height', packaging.height.toString())
+        params.set('length', parcel.length.toString())
+        params.set('width', parcel.width.toString())
+        params.set('height', parcel.height.toString())
         params.set('weight', weightKg.toString())
         params.set('service_code', DOMESTIC_STANDARD_SERVICE)
     } else {
@@ -165,7 +144,9 @@ const loadShippingCents = createCachedLoader(fetchAuspostShippingCents, {
             toCountryCode(request.country),
             request.postcode.trim(),
             request.totalWeightGrams,
-            request.totalUnitVolume,
+            request.parcel.length,
+            request.parcel.width,
+            request.parcel.height,
         ].join('|'),
 })
 

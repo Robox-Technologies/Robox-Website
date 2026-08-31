@@ -32,5 +32,21 @@ export type Product = {
     status: ProductStatus
     weight: number
     unitVolume: number
+    /**
+     * The parcel this product ships in, in centimetres, from the Stripe
+     * metadata keys `packagedLength` / `packagedWidth` / `packagedHeight`.
+     *
+     * Australia Post prices on dimensions as well as weight, so these belong
+     * beside `weight` on the product rather than as a constant in the shipping
+     * code - a 10-pack does not ship in the same box as a single kit.
+     */
+    packaging: Packaging
+}
+
+/** Parcel dimensions in centimetres. */
+export type Packaging = {
+    length: number
+    width: number
+    height: number
 }
 export type ProductStatus = 'available' | 'not-available' | 'preorder'

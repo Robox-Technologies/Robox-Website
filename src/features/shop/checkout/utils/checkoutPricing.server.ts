@@ -1,5 +1,7 @@
 import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 import type { CartItems } from '@/features/shop/cart/types/cart'
+import type { Packaging } from '@/types/shop'
+import { DEFAULT_PACKAGING } from '@/utils/server/stripe/readPrice.server'
 import { calculateAuspostShippingCents } from './auspost.server'
 import { applyShippingSurcharge } from './shippingCost.server'
 import {
@@ -26,6 +28,7 @@ export type CheckoutTotals = {
 
 export type ResolvedEntry = {
     itemId: string
+    packaging: Packaging
     /** Stripe Price id, so a Checkout Session can name the price rather than an amount. */
     priceId: string
     quantity: number
@@ -88,6 +91,7 @@ async function resolveEntries(cart: CartLike): Promise<ResolvedEntry[]> {
             unitPriceCents: product.price,
             weight: product.weight,
             unitVolume: product.unitVolume,
+            packaging: product.packaging,
         }
     })
 }
@@ -122,17 +126,12 @@ export async function calculateCheckoutTotals(
             (sum, entry) => sum + entry.weight * entry.quantity,
             0,
         )
-        const totalUnitVolume = entries.reduce(
-            (sum, entry) => sum + entry.unitVolume * entry.quantity,
-            0,
-        )
-
         shippingCents = applyShippingSurcharge(
             await calculateAuspostShippingCents({
                 country,
                 postcode,
                 totalWeightGrams,
-                totalUnitVolume,
+                parcel: resolveParcel(entries),
             }),
         )
     }
@@ -179,6 +178,29 @@ export async function calculateCheckoutTotals(
 }
 
 /**
+ * One parcel big enough to hold the whole order.
+ *
+ * Each product carries its own box, so a single kit is quoted on a single kit's
+ * dimensions rather than on a constant. For a mixed order the boxes are stacked:
+ * the footprint is the largest of them and the heights add up. That over-states
+ * an order whose items could sit side by side, which is the direction the error
+ * should fall - Australia Post prices on dimensions, and a parcel quoted too
+ * small costs us the difference.
+ */
+export function resolveParcel(entries: ResolvedEntry[]): Packaging {
+    if (entries.length === 0) return DEFAULT_PACKAGING
+
+    return entries.reduce<Packaging>(
+        (parcel, entry) => ({
+            length: Math.max(parcel.length, entry.packaging.length),
+            width: Math.max(parcel.width, entry.packaging.width),
+            height: parcel.height + entry.packaging.height * entry.quantity,
+        }),
+        { length: 0, width: 0, height: 0 },
+    )
+}
+
+/**
  * The cart, validated against the live catalog. Exported so the Checkout
  * Session can be built from the same resolution the totals use - an amount and
  * a line item disagreeing about what is in the cart is the one failure this
@@ -195,4 +217,31 @@ export async function normalizeCartMetadata(cart: CartLike): Promise<string> {
         products[entry.itemId] = entry.quantity
     }
     return JSON.stringify(products)
+}
+
+/** Stripe truncates metadata values past 500 characters. */
+const METADATA_VALUE_LIMIT = 500
+
+/**
+ * The same cart written for a person rather than for code - "Ro/Box x 2,
+ * Ro/Box 10-Pack x 1".
+ *
+ * `products` holds ids because that is what the receipt builder resolves
+ * against the catalog, but an id tells you nothing when you are looking at a
+ * payment in the Stripe dashboard. This is the line that does.
+ */
+export async function describeCartForHumans(cart: CartLike): Promise<string> {
+    const entries = await resolveEntries(cart)
+    const products = await getAllProducts()
+    const byId = new Map(products.map((product) => [product.item_id, product]))
+
+    const parts = entries.map((entry) => {
+        const name = byId.get(entry.itemId)?.name ?? entry.itemId
+        return `${name} x ${entry.quantity}`
+    })
+
+    const summary = parts.join(', ')
+    return summary.length > METADATA_VALUE_LIMIT
+        ? `${summary.slice(0, METADATA_VALUE_LIMIT - 1)}\u2026`
+        : summary
 }
