@@ -63,7 +63,7 @@ export default function CheckoutVoucher({
                         type="button"
                         onClick={() => void remove()}
                         disabled={busy}
-                        className="underline"
+                        className="underline cursor-pointer"
                     >
                         Remove
                     </button>
