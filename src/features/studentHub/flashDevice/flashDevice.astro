@@ -49,7 +49,12 @@ import FlashComplete from './components/flashComplete.astro';
     </div>
 </div>
 <script>
-    import { STAGES, type Stage } from "./stage";
+    import { STAGES, isStage, type Stage } from "./stage";
+
+    // Query param, not sessionStorage: it rides on the actual history entry,
+    // so it's what makes the browser's Back/Forward buttons step through the
+    // wizard, and it survives a plain reload the same way any URL does.
+    const STAGE_PARAM = "step";
 
     // Astro only includes this script once no matter how many instances
     // render, so wire up every instance found rather than assuming there's a
@@ -76,6 +81,17 @@ import FlashComplete from './components/flashComplete.astro';
             return;
         }
 
+        function stageFromURL(): Stage {
+            const value = new URLSearchParams(window.location.search).get(STAGE_PARAM);
+            return isStage(value) ? value : STAGES[0];
+        }
+
+        function urlForStage(stage: Stage): string {
+            const url = new URL(window.location.href);
+            url.searchParams.set(STAGE_PARAM, stage);
+            return url.toString();
+        }
+
         function showStage(stage: Stage) {
             stages.forEach((stageEl) => {
                 stageEl.style.display = stageEl.dataset.stage === stage ? "flex" : "none";
@@ -91,7 +107,12 @@ import FlashComplete from './components/flashComplete.astro';
         // anything about how any individual stage works.
         root.addEventListener("flashdevice:advance", (event) => {
             errorBanner.style.display = "none";
-            showStage((event as CustomEvent<{ stage: Stage }>).detail.stage);
+            const stage = (event as CustomEvent<{ stage: Stage }>).detail.stage;
+            showStage(stage);
+            // A fresh history entry per stage — including the manual "Go
+            // Back" out of "flash" — so Back genuinely retraces the wizard
+            // instead of leaving the page.
+            history.pushState({ flashStage: stage }, "", urlForStage(stage));
         });
 
         root.addEventListener("flashdevice:error", (event) => {
@@ -105,6 +126,16 @@ import FlashComplete from './components/flashComplete.astro';
             errorBanner.style.display = "none";
         });
 
-        showStage(STAGES[0]);
+        // Restores the stage from the URL on a fresh load (a reload, or a
+        // shared/bookmarked link) and re-tags the *current* history entry
+        // rather than pushing a new one — otherwise the very first Back
+        // press would just reload this same stage.
+        const initialStage = stageFromURL();
+        history.replaceState({ flashStage: initialStage }, "", urlForStage(initialStage));
+        showStage(initialStage);
+
+        window.addEventListener("popstate", (event) => {
+            showStage(isStage(event.state?.flashStage) ? event.state.flashStage : STAGES[0]);
+        });
     });
 </script>

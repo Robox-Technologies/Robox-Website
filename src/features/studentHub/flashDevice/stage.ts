@@ -2,6 +2,11 @@ export type Stage = 'bootloader' | 'flash' | 'done'
 
 export const STAGES: Stage[] = ['bootloader', 'flash', 'done']
 
+/** Narrows an arbitrary value (a URL param, a `history.state` field) to a real `Stage`. */
+export function isStage(value: unknown): value is Stage {
+    return typeof value === 'string' && (STAGES as string[]).includes(value)
+}
+
 export const STAGE_LABELS: Record<Stage, string> = {
     bootloader: 'Bootloader',
     flash: 'Flash',

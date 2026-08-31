@@ -1,6 +1,6 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFolderOpen, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faFolderOpen, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/button';
 import FlashProgress from './flashProgress.astro';
 ---
@@ -15,6 +15,10 @@ import FlashProgress from './flashProgress.astro';
         Select RPI-RP2 Drive
     </Button>
     <FlashProgress />
+    <Button id="flash-back-to-bootloader" className="bg-gray-500 self-start">
+        <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+        Not Seeing the Drive? Go Back
+    </Button>
 </div>
 <script>
     import {
@@ -72,10 +76,35 @@ import FlashProgress from './flashProgress.astro';
     // single one.
     document.querySelectorAll<HTMLDivElement>(".selectDrive").forEach((root) => {
         const button = root.querySelector<HTMLButtonElement>("#flash-select-drive");
-        if (!button) throw new Error("Select drive elements not found");
+        const backButton = root.querySelector<HTMLButtonElement>("#flash-back-to-bootloader");
+        if (!button || !backButton) throw new Error("Select drive elements not found");
+
+        // The "Go Back" escape hatch is disabled mid-write too: leaving this
+        // stage doesn't cancel the in-flight write, so re-enabling it while
+        // busy would let a student bail out and immediately retrigger a
+        // second write against the same drive.
+        function setFlowBusy(busy: boolean) {
+            setButtonBusy(button!, busy);
+            backButton!.disabled = busy;
+        }
+
+        // The progress bar replaces the buttons rather than sitting next to
+        // a disabled one — there's nothing left to click once the write has
+        // actually started.
+        function enterWriting() {
+            button!.classList.add("hidden");
+            backButton!.classList.add("hidden");
+            showFlashProgress(root);
+        }
+
+        function exitWriting() {
+            hideFlashProgress(root);
+            button!.classList.remove("hidden");
+            backButton!.classList.remove("hidden");
+        }
 
         async function flash() {
-            setButtonBusy(button!, true);
+            setFlowBusy(true);
             dispatchFlashClearError(root);
 
             let directory: FileSystemDirectoryHandle;
@@ -83,12 +112,12 @@ import FlashProgress from './flashProgress.astro';
                 directory = await showDirectoryPicker();
             } catch {
                 // The student cancelled the picker — not a failure worth surfacing.
-                setButtonBusy(button!, false);
+                setFlowBusy(false);
                 return;
             }
 
             if (!(await isRoboxDrive(directory))) {
-                setButtonBusy(button!, false);
+                setFlowBusy(false);
                 dispatchFlashError(
                     root,
                     "Wrong Drive Selected",
@@ -99,7 +128,7 @@ import FlashProgress from './flashProgress.astro';
 
             // Reset before the download so a retry after a previous failure
             // doesn't briefly show the last attempt's leftover percentage.
-            showFlashProgress(root);
+            enterWriting();
 
             let firmware: ArrayBuffer;
             try {
@@ -107,8 +136,8 @@ import FlashProgress from './flashProgress.astro';
                 if (!response.ok) throw new Error("Bad response");
                 firmware = await response.arrayBuffer();
             } catch {
-                setButtonBusy(button!, false);
-                hideFlashProgress(root);
+                setFlowBusy(false);
+                exitWriting();
                 dispatchFlashError(
                     root,
                     "Could Not Download Firmware",
@@ -126,15 +155,17 @@ import FlashProgress from './flashProgress.astro';
                 // Confirmed against real hardware: this is what a
                 // *successful* flash looks like, even though these read
                 // like rejections rather than the drive having vanished.
+                console.log(error)
                 if (error instanceof DOMException && EXPECTED_RESTART_ERRORS.includes(error.name)) {
                     setFlashProgress(root, 100);
-                    setButtonBusy(button!, false);
+                    setFlowBusy(false);
+                    exitWriting();
                     dispatchFlashAdvance(root, "done");
                     return;
                 }
 
-                setButtonBusy(button!, false);
-                hideFlashProgress(root);
+                setFlowBusy(false);
+                exitWriting();
                 dispatchFlashError(
                     root,
                     "Failed to Write Firmware",
@@ -144,10 +175,16 @@ import FlashProgress from './flashProgress.astro';
             }
 
             setFlashProgress(root, 100);
-            setButtonBusy(button!, false);
+            setFlowBusy(false);
+            exitWriting();
             dispatchFlashAdvance(root, "done");
         }
 
         button.addEventListener("click", () => void flash());
+
+        backButton.addEventListener("click", () => {
+            dispatchFlashClearError(root);
+            dispatchFlashAdvance(root, "bootloader");
+        });
     });
 </script>
