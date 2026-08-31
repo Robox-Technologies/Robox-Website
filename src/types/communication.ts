@@ -51,10 +51,18 @@ export type PicoMessageType =
     | 'connect'
     | 'calibrated'
     | 'uploaded'
+    | 'color'
 
 export interface PicoMessage {
     type: PicoMessageType
     message: unknown
+}
+
+/** A single reading from the board's colour sensor, sent periodically while in colour mode. */
+export interface ColorReading {
+    r: number
+    g: number
+    b: number
 }
 
 export interface PicoState {
@@ -74,4 +82,5 @@ export interface PicoEventMap {
     uploaded: unknown
     error: { message: string }
     firmware: { status: FirmwareStatus; version: string }
+    color: ColorReading
 }

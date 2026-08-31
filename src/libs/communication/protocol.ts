@@ -23,6 +23,7 @@ export const COMMANDS = {
     FIRMWARE_CHECK: 'firmware_check',
     START_PROGRAM: 'start_program',
     CALIBRATE_COLOR: 'calibrate_color',
+    COLOR_MODE: 'color_mode',
     RESTART: 'reset_device',
     BOOTLOADER: 'boot_loader',
     DISCONNECT: 'disconnect_device',
@@ -42,6 +43,7 @@ export const MESSAGE_TYPES: readonly PicoMessageType[] = [
     'connect',
     'calibrated',
     'uploaded',
+    'color',
 ]
 
 /**

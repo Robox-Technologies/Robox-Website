@@ -4,6 +4,7 @@ import type {
     CommunicationMethod,
     PicoState,
     PicoMessage,
+    ColorReading,
 } from 'src/types/communication'
 
 import { ConnectionStatus, FirmwareStatus } from 'src/types/communication'
@@ -317,6 +318,10 @@ export class Pico {
             this.emit('downloaded', {})
         } else if (type === 'calibrated') {
             this.emit('calibrated', { message })
+        } else if (type === 'color') {
+            // A structured reading, not a string - use the raw payload
+            // rather than the `message` coercion above.
+            this.emit('color', payload.message as ColorReading)
         } else if (type === 'uploaded') {
             this.emit('uploaded', payload.message)
         } else if (type === 'error') {
@@ -429,6 +434,17 @@ export class Pico {
 
     colorCalibrate(): void {
         void this.communication?.write(COMMANDS.CALIBRATE_COLOR)
+    }
+
+    /**
+     * Puts the board into colour mode, where it streams periodic `color`
+     * readings instead of running a program. There is no dedicated stop
+     * command - any other command frame (including a fresh `colorMode()`
+     * call, `runCode()`, `restart()`, ...) implicitly exits it on the board,
+     * so nothing here needs to explicitly cancel a previous call.
+     */
+    colorMode(): void {
+        void this.communication?.write(COMMANDS.COLOR_MODE)
     }
 
     /**
