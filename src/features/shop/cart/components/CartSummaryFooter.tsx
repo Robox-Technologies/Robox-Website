@@ -11,7 +11,7 @@ export default function CartSummaryFooter() {
                     Pricing. The storefront can't show the converted figure
                     because that rate is only fixed once a session exists. */}
                 <p className="mb-0 text-sm text-gray-600">
-                    Prices in AUD — pay in your local currency at checkout!
+                    Prices in AUD - pay in your local currency at checkout!
                 </p>
                 <p className="mb-0 text-sm text-gray-600">
                     Bulk order? Please email us at{' '}
