@@ -19,6 +19,10 @@ const PRODUCT_CACHE_TTL_MS = 60_000
 
 async function fetchAllProducts(): Promise<Product[]> {
     const stripeProducts = await stripeAPI.products.list({
+        // Unfiltered, this returns archived products too, so archiving a
+        // product in the dashboard would leave it on the shop. Availability
+        // still runs through `metadata.status`; this is the harder off switch.
+        active: true,
         // Stripe pages at 10 by default, so without this the catalog would
         // silently stop at the tenth product. 100 is the API's ceiling; past
         // that this needs `autoPagingToArray`.

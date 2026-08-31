@@ -6,6 +6,29 @@ import PackThumbnail from '@/images/shop/products/robox-10-pack/thumbnail.jpg'
 
 
 import Button from '@/components/button';
+import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
+
+const products = await getAllProducts()
+
+/**
+ * Which kits the homepage leads with stays curated here - the order, the green
+ * border, the "Value Pack" flag - while the name, availability and price come
+ * from the catalog below, so this section can't drift from the shop.
+ */
+function featured(internalName: string) {
+    const product = products.find(
+        (candidate) => candidate.internalName === internalName,
+    )
+    if (!product) {
+        throw new Error(
+            `The homepage features "${internalName}", which is not in the Stripe catalog`,
+        )
+    }
+    return product
+}
+
+const single = featured('robox')
+const tenPack = featured('robox-10-pack')
 ---
 <Article>
     <section>
@@ -18,18 +41,11 @@ import Button from '@/components/button';
             </p>
         </div>
         <div class="flex justify-center gap-16 mt-8 flex-wrap">
-            <ProductCard
-                image={SingleThumbnail}
-                price="35"
-                title="Ro/Box"
-                href="/shop/product/robox"
-            />
+            <ProductCard image={SingleThumbnail} product={single} />
             <ProductCard
                 className='border-8 border-green'
                 image={PackThumbnail}
-                price="330"
-                title="Ro/Box 10-Pack"
-                href="/shop/product/robox-10-pack"
+                product={tenPack}
             >
                 <h2 slot="absolute" class="absolute text-white px-4 py-2 text-xl font-bold bg-green rounded-bl -right-[4px] -top-[4px]">Value Pack</h2>
                 
