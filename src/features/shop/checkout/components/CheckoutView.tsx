@@ -3,23 +3,25 @@ import type { Product } from '@/types/shop'
 import { useCartTotals } from '@/features/shop/hooks/useCartTotals'
 import { checkoutStep } from '../state/checkoutStore'
 import CheckoutAddressSection from './address/CheckoutAddressSection'
-import CheckoutPaymentSection from './payment/CheckoutPaymentSection'
+import CheckoutRow from './CheckoutRow'
+import CheckoutPaymentStep from './payment/CheckoutPaymentStep'
 import CheckoutStatePanel from './payment/CheckoutStatePanel'
+import CheckoutSummaryCard from './summary/CheckoutSummaryCard'
 
 /** Stripe's floor for a charge; below it there is nothing to collect. */
 const MINIMUM_CHARGE_CENTS = 50
 
 /**
- * Owns which step of the checkout is showing. One island rather than two so
- * there is a single hydration boundary and a single loading fallback - two
- * `client:only` sections each rendering conditionally would resize the row as
- * they came in.
+ * The whole checkout, as one island.
  *
- * The empty-cart check sits here rather than on the payment step: it applies to
- * both, and asking someone to type an address before telling them there is
- * nothing to buy is the wrong order.
+ * It owns both columns rather than the page doing so, because the payment step
+ * wraps them in a single `CheckoutElementsProvider` - the summary's totals come
+ * from the Checkout Session, and React context cannot cross an island boundary.
+ *
+ * The empty-cart check sits here because it applies to both steps, and asking
+ * for an address before mentioning there is nothing to buy is the wrong order.
  */
-export default function CheckoutSteps({ products }: { products: Product[] }) {
+export default function CheckoutView({ products }: { products: Product[] }) {
     const step = useStore(checkoutStep)
     const subtotalCents = useCartTotals(products)
 
@@ -34,9 +36,14 @@ export default function CheckoutSteps({ products }: { products: Product[] }) {
         )
     }
 
-    return step === 'address' ? (
-        <CheckoutAddressSection products={products} />
-    ) : (
-        <CheckoutPaymentSection products={products} />
+    if (step === 'payment') {
+        return <CheckoutPaymentStep />
+    }
+
+    return (
+        <CheckoutRow>
+            <CheckoutAddressSection products={products} />
+            <CheckoutSummaryCard products={products} />
+        </CheckoutRow>
     )
 }

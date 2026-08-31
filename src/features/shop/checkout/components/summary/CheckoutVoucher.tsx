@@ -1,24 +1,75 @@
-import { useStore } from '@nanostores/react'
 import { useState } from 'react'
-import { voucherCode, type DiscountStatus } from '../../state/shippingStore'
+import type {
+    StripeCheckoutApplyPromotionCodeResult,
+    StripeCheckoutRemovePromotionCodeResult,
+} from '@stripe/stripe-js'
 
 /**
- * Apply commits the code to the store; the quote and the payment intent both
- * key off it, so the server re-prices and reports back whether it took. The
- * discount itself is never computed here.
+ * Voucher entry, handed to Stripe.
+ *
+ * Nothing here works out what a code is worth. Apply hands the code to the
+ * Checkout Session and Stripe re-prices the order; the summary above then shows
+ * whatever came back. The previous version resolved coupons and computed the
+ * discount by hand, which meant the figure on screen and the figure charged
+ * were two separate calculations that could disagree.
  */
 export default function CheckoutVoucher({
-    status,
-    disabled,
+    applyPromotionCode,
+    removePromotionCode,
+    appliedCode,
 }: {
-    status: DiscountStatus
-    disabled?: boolean
+    applyPromotionCode: (
+        code: string,
+    ) => Promise<StripeCheckoutApplyPromotionCodeResult>
+    removePromotionCode: () => Promise<StripeCheckoutRemovePromotionCodeResult>
+    appliedCode: string | null
 }) {
-    const applied = useStore(voucherCode)
-    const [draft, setDraft] = useState(applied)
+    const [draft, setDraft] = useState('')
+    const [busy, setBusy] = useState(false)
+    const [message, setMessage] = useState<string | null>(null)
 
-    const apply = () => {
-        voucherCode.set(draft.trim())
+    const apply = async () => {
+        const code = draft.trim()
+        if (!code || busy) return
+
+        setBusy(true)
+        setMessage(null)
+        const result = await applyPromotionCode(code)
+        if (result.type === 'error') {
+            setMessage(result.error.message)
+        } else {
+            setDraft('')
+        }
+        setBusy(false)
+    }
+
+    const remove = async () => {
+        if (busy) return
+        setBusy(true)
+        setMessage(null)
+        await removePromotionCode()
+        setBusy(false)
+    }
+
+    if (appliedCode) {
+        return (
+            <div className="mt-auto flex flex-col gap-2">
+                <span className="text-md font-medium text-black">
+                    Voucher Code
+                </span>
+                <p className="mb-0 flex items-center justify-between gap-3 text-sm">
+                    <span className="text-green">{appliedCode} applied</span>
+                    <button
+                        type="button"
+                        onClick={() => void remove()}
+                        disabled={busy}
+                        className="underline"
+                    >
+                        Remove
+                    </button>
+                </p>
+            </div>
+        )
     }
 
     return (
@@ -38,7 +89,7 @@ export default function CheckoutVoucher({
                     onKeyDown={(event) => {
                         if (event.key === 'Enter') {
                             event.preventDefault()
-                            apply()
+                            void apply()
                         }
                     }}
                     placeholder="Enter Voucher"
@@ -46,27 +97,16 @@ export default function CheckoutVoucher({
                 />
                 <button
                     type="button"
-                    onClick={apply}
-                    disabled={disabled}
-                    className="button-interactive rounded-lg bg-red px-5 py-3 text-base font-semibold text-white"
+                    onClick={() => void apply()}
+                    disabled={busy || !draft.trim()}
+                    className="button-interactive rounded-lg bg-red px-5 py-3 text-base font-semibold text-white disabled:bg-tone3"
                 >
                     Apply
                 </button>
             </div>
-            {status === 'success' && (
-                <p className="mb-0 text-sm text-green" role="status">
-                    Discount successfully applied!
-                </p>
-            )}
-            {status === 'stale' && (
-                <p className="mb-0 text-sm text-gray-600" role="status">
-                    That code is valid but doesn't apply to anything in your
-                    cart.
-                </p>
-            )}
-            {status === 'error' && (
+            {message && (
                 <p className="mb-0 text-sm text-red" role="status">
-                    Could not apply discount. Check the code and try again.
+                    {message}
                 </p>
             )}
         </div>

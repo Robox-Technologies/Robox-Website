@@ -3,10 +3,8 @@ import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 import StandardLayout from '@/layouts/StandardLayout.astro'
 import Article from '@/components/article/Article'
 import {
-    CheckoutPaymentLoadingState,
-    CheckoutSteps,
-    CheckoutSummaryCard,
-    CheckoutSummaryLoadingState,
+    CheckoutView,
+    CheckoutViewLoadingState,
 } from '@/features/shop/checkout'
 
 const products = await getAllProducts()
@@ -22,16 +20,12 @@ const products = await getAllProducts()
         <h1 class="mb-8">Checkout</h1>
 
         <!--
-            `#main-content`: payment beside the summary, collapsing to
-            column-reverse below 900px so the summary leads on narrow screens.
+            One island for the whole `#main-content` row: on the payment step
+            both columns live inside a single CheckoutElementsProvider, since
+            the summary reads its totals from the Checkout Session.
         -->
-        <div class="flex flex-col-reverse gap-[50px] min-[900px]:flex-row min-[900px]:items-start">
-            <CheckoutSteps products={products} client:only="react">
-                <CheckoutPaymentLoadingState slot="fallback" />
-            </CheckoutSteps>
-            <CheckoutSummaryCard products={products} client:only="react">
-                <CheckoutSummaryLoadingState slot="fallback" />
-            </CheckoutSummaryCard>
-        </div>
+        <CheckoutView products={products} client:only="react">
+            <CheckoutViewLoadingState slot="fallback" />
+        </CheckoutView>
     </Article>
 </StandardLayout>

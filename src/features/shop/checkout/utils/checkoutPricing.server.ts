@@ -24,8 +24,10 @@ export type CheckoutTotals = {
     totalCents: number
 }
 
-type ResolvedEntry = {
+export type ResolvedEntry = {
     itemId: string
+    /** Stripe Price id, so a Checkout Session can name the price rather than an amount. */
+    priceId: string
     quantity: number
     unitPriceCents: number
     weight: number
@@ -81,6 +83,7 @@ async function resolveEntries(cart: CartLike): Promise<ResolvedEntry[]> {
 
         return {
             itemId: product.item_id,
+            priceId: product.priceId,
             quantity,
             unitPriceCents: product.price,
             weight: product.weight,
@@ -173,6 +176,16 @@ export async function calculateCheckoutTotals(
         discountStatus,
         totalCents,
     }
+}
+
+/**
+ * The cart, validated against the live catalog. Exported so the Checkout
+ * Session can be built from the same resolution the totals use - an amount and
+ * a line item disagreeing about what is in the cart is the one failure this
+ * whole module exists to prevent.
+ */
+export function resolveCartEntries(cart: CartLike): Promise<ResolvedEntry[]> {
+    return resolveEntries(cart)
 }
 
 export async function normalizeCartMetadata(cart: CartLike): Promise<string> {

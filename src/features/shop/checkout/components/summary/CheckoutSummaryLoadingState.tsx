@@ -1,24 +1,22 @@
 import SummaryCard from '@/components/shop/summary/SummaryCard'
+import { SUMMARY_CARD_CLASS } from './summaryCardClass'
 
 function SkeletonLine({ className = 'h-4 w-24' }: { className?: string }) {
     return (
-        <div className={`animate-pulse rounded-full bg-black/10 ${className}`} />
+        <div
+            className={`animate-pulse rounded-full bg-black/10 ${className}`}
+        />
     )
 }
 
 /**
- * The `client:only` fallback for `CheckoutSummaryCard`. It has to mirror that
- * card's wrapper classes and inner structure — same card width, same row
- * spacing, same voucher block — or the summary shifts and resizes the moment
- * hydration swaps one for the other.
+ * Stands in for the summary while the island hydrates or a session is being
+ * created. Mirrors the real card's wrapper and row spacing, or the summary
+ * resizes the moment one replaces the other.
  */
 export default function CheckoutSummaryLoadingState() {
     return (
-        <SummaryCard
-            title="Order Summary"
-            className="w-full min-[900px]:w-96 min-[900px]:shrink-0"
-            emptyMessage="Add products to build your checkout summary."
-        >
+        <SummaryCard title="Order Summary" className={SUMMARY_CARD_CLASS}>
             <div className="flex flex-1 flex-col gap-4">
                 <div className="flex items-center justify-between text-base text-gray-700">
                     <span>Subtotal</span>
@@ -27,25 +25,6 @@ export default function CheckoutSummaryLoadingState() {
                 <div className="flex items-center justify-between text-base text-gray-700">
                     <span>Shipping</span>
                     <SkeletonLine className="h-4 w-40" />
-                </div>
-
-                {/* Matches CheckoutVoucher's layout, inert. */}
-                <div className="mt-auto flex flex-col gap-3">
-                    <span className="text-md font-medium text-black">
-                        Voucher Code
-                    </span>
-                    <div className="flex gap-3">
-                        <div className="min-w-0 flex-1 rounded-lg border border-black/10 bg-white px-4 py-3 text-base text-gray-400 outline-none">
-                            Enter Voucher
-                        </div>
-                        <button
-                            type="button"
-                            className="button-interactive rounded-lg bg-red px-5 py-3 text-base font-semibold text-white"
-                            disabled
-                        >
-                            Apply
-                        </button>
-                    </div>
                 </div>
 
                 <div className="mt-auto">
