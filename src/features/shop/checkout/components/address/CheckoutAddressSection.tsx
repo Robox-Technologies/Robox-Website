@@ -117,6 +117,7 @@ export default function CheckoutAddressSection({
                         <p className="mb-0">
                             Shipping to this address from{' '}
                             <strong>{formatPrice(quote.shipping, true)}</strong>
+                            {' '} - continue to payment to select shipping option
                         </p>
                         {quote.options.length > 1 && (
                             <ul className="mb-0 mt-1 list-none pl-0 text-sm text-gray-600">
