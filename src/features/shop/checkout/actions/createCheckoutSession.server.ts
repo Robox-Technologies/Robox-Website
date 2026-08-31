@@ -15,16 +15,6 @@ import {
 } from '../utils/checkoutPricing.server'
 import { shipmentToMetadata } from '../utils/packaging.server'
 
-/**
- * How long Australia Post says a domestic parcel takes. Shown against the
- * shipping rate in Stripe's own UI, so it is worth stating rather than leaving
- * the customer to guess.
- */
-const DELIVERY_ESTIMATE = {
-    minimum: { unit: 'business_day' as const, value: 2 },
-    maximum: { unit: 'business_day' as const, value: 8 },
-}
-
 const shippingDetailsSchema = z.object({
     name: z.string().trim().min(1).max(200),
     address: z.object({
@@ -110,19 +100,30 @@ export const createCheckoutSession = defineAction({
                 price: entry.priceId,
                 quantity: entry.quantity,
             })),
-            shipping_options: [
-                {
-                    shipping_rate_data: {
-                        display_name: 'Standard shipping',
-                        type: 'fixed_amount',
-                        fixed_amount: {
-                            amount: totals.shippingCents,
-                            currency: 'aud',
-                        },
-                        delivery_estimate: DELIVERY_ESTIMATE,
+            // One per service Australia Post will carry, cheapest first so
+            // Stripe pre-selects it. The customer switches with
+            // `updateShippingOption` and Stripe re-totals the session.
+            shipping_options: totals.shippingOptions.map((option) => ({
+                shipping_rate_data: {
+                    display_name: option.label,
+                    type: 'fixed_amount' as const,
+                    fixed_amount: {
+                        amount: option.amountCents,
+                        currency: 'aud',
                     },
+                    delivery_estimate: {
+                        minimum: {
+                            unit: 'business_day' as const,
+                            value: option.estimateDays.minimum,
+                        },
+                        maximum: {
+                            unit: 'business_day' as const,
+                            value: option.estimateDays.maximum,
+                        },
+                    },
+                    metadata: { serviceId: option.id },
                 },
-            ],
+            })),
             allow_promotion_codes: true,
             return_url: `${context.url.origin}/shop/checkout/status?session_id={CHECKOUT_SESSION_ID}`,
             metadata: {

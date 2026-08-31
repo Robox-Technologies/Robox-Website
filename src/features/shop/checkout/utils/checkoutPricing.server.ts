@@ -1,7 +1,12 @@
 import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 import type { CartItems } from '@/features/shop/cart/types/cart'
 import type { Product } from '@/types/shop'
-import { calculateShipmentShippingCents } from './auspost.server'
+import {
+    estimateFor,
+    quoteShipmentServices,
+    type DeliveryEstimateDays,
+    type ShippingServiceId,
+} from './auspost.server'
 import {
     expandToPackingUnits,
     planShipment,
@@ -22,9 +27,24 @@ export type ShippingInfo = {
     postcode: string
 }
 
+/** One postage choice, priced for this cart and destination. */
+export type ShippingOption = {
+    id: ShippingServiceId
+    label: string
+    amountCents: number
+    estimateDays: DeliveryEstimateDays
+}
+
 export type CheckoutTotals = {
     subtotalCents: number
+    /**
+     * The cheapest option's postage. The customer picks a service on the
+     * payment step, against the Checkout Session - before that there is nothing
+     * to have chosen, so totals quote the cheapest and the summary says "from".
+     */
     shippingCents: number
+    /** Every service Australia Post will carry, cheapest first. */
+    shippingOptions: ShippingOption[]
     discountCents: number
     discountStatus: DiscountStatus
     totalCents: number
@@ -117,6 +137,7 @@ export async function calculateCheckoutTotals(
     )
 
     let shippingCents = 0
+    let shippingOptions: ShippingOption[] = []
     let shipment: Shipment | null = null
     if (shippingInfo) {
         const country = shippingInfo.country.trim().toUpperCase()
@@ -147,14 +168,25 @@ export async function calculateCheckoutTotals(
             ),
         )
 
-        shippingCents = applyShippingSurcharge(
-            await calculateShipmentShippingCents(
-                { country, postcode },
-                plan.parcels,
-            ),
-            plan.packagingCents,
+        const quotes = await quoteShipmentServices(
+            { country, postcode },
+            plan.parcels,
         )
 
+        shippingOptions = quotes.map((quote) => ({
+            id: quote.service.id,
+            label: quote.service.label,
+            // Packaging is added per option: the box costs the same however
+            // fast it travels, and the rounding has to land on the figure the
+            // customer is actually charged.
+            amountCents: applyShippingSurcharge(
+                quote.auspostCents,
+                plan.packagingCents,
+            ),
+            estimateDays: estimateFor(quote.service, country),
+        }))
+
+        shippingCents = shippingOptions[0]!.amountCents
         shipment = plan
     }
 
@@ -193,6 +225,7 @@ export async function calculateCheckoutTotals(
     return {
         subtotalCents,
         shippingCents,
+        shippingOptions,
         discountCents,
         discountStatus,
         shipment,

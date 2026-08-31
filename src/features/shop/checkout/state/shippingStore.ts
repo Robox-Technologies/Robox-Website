@@ -8,9 +8,18 @@ export type ShippingAddress = {
 
 export type DiscountStatus = 'unset' | 'success' | 'stale' | 'error'
 
+export type ShippingQuoteOption = {
+    id: string
+    label: string
+    amountCents: number
+    estimateDays: { minimum: number; maximum: number }
+}
+
 export type ShippingQuote = {
     subtotal: number
+    /** The cheapest option; the choice itself is made on the payment step. */
     shipping: number
+    options: ShippingQuoteOption[]
     discount: number
     discountStatus: DiscountStatus
     total: number

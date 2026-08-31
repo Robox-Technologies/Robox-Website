@@ -34,6 +34,9 @@ export const getShippingQuote = defineAction({
         return {
             subtotal: totals.subtotalCents,
             shipping: totals.shippingCents,
+            // Every service, so the address step can say what the cheapest is
+            // and that faster ones exist, before asking for a card.
+            options: totals.shippingOptions,
             discount: totals.discountCents,
             discountStatus: totals.discountStatus,
             total: totals.totalCents,

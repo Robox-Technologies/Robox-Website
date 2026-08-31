@@ -113,10 +113,26 @@ export default function CheckoutAddressSection({
                         Calculating postage...
                     </p>
                 ) : quote && shippingInfo ? (
-                    <p className="mb-0 text-base text-gray-700">
-                        Standard shipping to this address:{' '}
-                        <strong>{formatPrice(quote.shipping, true)}</strong>
-                    </p>
+                    <div className="text-base text-gray-700">
+                        <p className="mb-0">
+                            Shipping to this address from{' '}
+                            <strong>{formatPrice(quote.shipping, true)}</strong>
+                        </p>
+                        {quote.options.length > 1 && (
+                            <ul className="mb-0 mt-1 list-none pl-0 text-sm text-gray-600">
+                                {quote.options.map((option) => (
+                                    <li key={option.id}>
+                                        {option.label} —{' '}
+                                        {formatPrice(option.amountCents, true)}
+                                        {', '}
+                                        {option.estimateDays.minimum}–
+                                        {option.estimateDays.maximum} business
+                                        days
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                 ) : (
                     <p className="mb-0 text-base text-gray-600">
                         Enter your delivery address to see postage.

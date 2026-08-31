@@ -5,14 +5,95 @@ import type { Parcel } from './packaging.server'
 const AUSPOST_BASE_URL = 'https://digitalapi.auspost.com.au'
 const DOMESTIC_COUNTRY_CODE = 'AU'
 
-const DOMESTIC_STANDARD_SERVICE = 'AUS_PARCEL_REGULAR'
-const INTERNATIONAL_STANDARD_SERVICE = 'INT_PARCEL_STD_OWN_PACKAGING'
+export type ShippingServiceId = 'standard' | 'express'
+
+export type DeliveryEstimateDays = { minimum: number; maximum: number }
+
+export type ShippingService = {
+    id: ShippingServiceId
+    /** Shown to the customer when they choose. */
+    label: string
+    /** Australia Post's own name for it, for the parcel notes on the payment. */
+    auspostName: string
+    code: { domestic: string; international: string }
+    /** Business days, which differ enough by scope to be worth stating. */
+    estimate: {
+        domestic: DeliveryEstimateDays
+        international: DeliveryEstimateDays
+    }
+}
+
+/**
+ * What the customer can choose between.
+ *
+ * Only Australia Post's *own packaging* rates appear here. Their service list
+ * also returns satchel and size-banded variants which are often cheaper, but
+ * those require buying Australia Post's own satchels - this shop packs into its
+ * own (see `packaging.server.ts`), so quoting a satchel rate would charge for
+ * postage we don't actually buy.
+ *
+ * Economy Air (`INT_PARCEL_AIR_OWN_PACKAGING`) and Courier
+ * (`INT_PARCEL_COR_OWN_PACKAGING`) exist internationally and would slot in
+ * here; two tiers is enough to be useful without turning delivery into a
+ * research task. Stripe caps a session at five.
+ */
+export const SHIPPING_SERVICES: readonly ShippingService[] = [
+    {
+        id: 'standard',
+        label: 'Standard shipping',
+        auspostName: 'Parcel Post',
+        code: {
+            domestic: 'AUS_PARCEL_REGULAR',
+            international: 'INT_PARCEL_STD_OWN_PACKAGING',
+        },
+        estimate: {
+            domestic: { minimum: 2, maximum: 8 },
+            international: { minimum: 6, maximum: 27 },
+        },
+    },
+    {
+        id: 'express',
+        label: 'Express shipping',
+        auspostName: 'Express Post',
+        code: {
+            domestic: 'AUS_PARCEL_EXPRESS',
+            international: 'INT_PARCEL_EXP_OWN_PACKAGING',
+        },
+        estimate: {
+            domestic: { minimum: 1, maximum: 4 },
+            international: { minimum: 3, maximum: 9 },
+        },
+    },
+]
+
+export function isDomestic(country: string): boolean {
+    return toCountryCode(country) === DOMESTIC_COUNTRY_CODE
+}
+
+export function serviceCodeFor(
+    service: ShippingService,
+    country: string,
+): string {
+    return isDomestic(country)
+        ? service.code.domestic
+        : service.code.international
+}
+
+export function estimateFor(
+    service: ShippingService,
+    country: string,
+): DeliveryEstimateDays {
+    return isDomestic(country)
+        ? service.estimate.domestic
+        : service.estimate.international
+}
 
 type ShippingRequest = {
     country: string
     postcode: string
     parcel: Packaging
     totalWeightGrams: number
+    serviceCode: string
 }
 
 function toCountryCode(country: string): string {
@@ -61,6 +142,7 @@ async function fetchAuspostShippingCents({
     postcode,
     parcel,
     totalWeightGrams,
+    serviceCode,
 }: ShippingRequest): Promise<number> {
     const authKey = process.env.AUSPOST_KEY
     if (!authKey) {
@@ -68,11 +150,11 @@ async function fetchAuspostShippingCents({
     }
 
     const normalizedCountry = toCountryCode(country)
-    const isDomestic = normalizedCountry === DOMESTIC_COUNTRY_CODE
+    const domestic = isDomestic(normalizedCountry)
     const weightKg = Math.max(totalWeightGrams, 0) / 1000
 
     const params = new URLSearchParams()
-    if (isDomestic) {
+    if (domestic) {
         const originPostcode = process.env.AUSPOST_ORIGIN_POSTCODE
         if (!originPostcode) {
             throw new Error('AUSPOST_ORIGIN_POSTCODE is not configured')
@@ -88,14 +170,14 @@ async function fetchAuspostShippingCents({
         params.set('width', parcel.width.toString())
         params.set('height', parcel.height.toString())
         params.set('weight', weightKg.toString())
-        params.set('service_code', DOMESTIC_STANDARD_SERVICE)
+        params.set('service_code', serviceCode)
     } else {
         params.set('country_code', normalizedCountry)
         params.set('weight', weightKg.toString())
-        params.set('service_code', INTERNATIONAL_STANDARD_SERVICE)
+        params.set('service_code', serviceCode)
     }
 
-    const endpoint = isDomestic
+    const endpoint = domestic
         ? '/postage/parcel/domestic/calculate'
         : '/postage/parcel/international/calculate'
 
@@ -148,6 +230,7 @@ const loadShippingCents = createCachedLoader(fetchAuspostShippingCents, {
             request.parcel.length,
             request.parcel.width,
             request.parcel.height,
+            request.serviceCode,
         ].join('|'),
 })
 
@@ -158,7 +241,7 @@ export function calculateAuspostShippingCents(
 }
 
 /**
- * Quotes every parcel in a shipment and adds them up.
+ * Quotes every parcel in a shipment for one service and adds them up.
  *
  * Identical parcels are quoted once and multiplied. Australia Post is metered,
  * and an order of ten identical boxes would otherwise be ten requests for one
@@ -168,6 +251,7 @@ export function calculateAuspostShippingCents(
 export async function calculateShipmentShippingCents(
     destination: { country: string; postcode: string },
     parcels: Parcel[],
+    service: ShippingService,
 ): Promise<number> {
     const groups = new Map<string, { parcel: Parcel; count: number }>()
 
@@ -182,6 +266,8 @@ export async function calculateShipmentShippingCents(
         groups.set(key, { parcel, count: 1 })
     }
 
+    const serviceCode = serviceCodeFor(service, destination.country)
+
     const quotes = await Promise.all(
         [...groups.values()].map(async ({ parcel, count }) => {
             const cents = await calculateAuspostShippingCents({
@@ -189,10 +275,62 @@ export async function calculateShipmentShippingCents(
                 postcode: destination.postcode,
                 totalWeightGrams: parcel.weightGrams,
                 parcel: parcel.dimensions,
+                serviceCode,
             })
             return cents * count
         }),
     )
 
     return quotes.reduce((sum, cents) => sum + cents, 0)
+}
+
+export type ServiceQuote = {
+    service: ShippingService
+    auspostCents: number
+}
+
+/**
+ * Quotes the shipment for every service, keeping the ones Australia Post will
+ * actually carry.
+ *
+ * A service can be unavailable for a given destination or parcel, and that is
+ * an ordinary answer rather than a failure - the customer simply isn't offered
+ * it. But a bad address makes *every* service fail, and that the customer does
+ * need to hear, so if nothing survives the first error is rethrown with Australia
+ * Post's own wording intact.
+ */
+export async function quoteShipmentServices(
+    destination: { country: string; postcode: string },
+    parcels: Parcel[],
+): Promise<ServiceQuote[]> {
+    const results = await Promise.all(
+        SHIPPING_SERVICES.map(async (service) => {
+            try {
+                const auspostCents = await calculateShipmentShippingCents(
+                    destination,
+                    parcels,
+                    service,
+                )
+                return { service, auspostCents }
+            } catch (error) {
+                return { service, error: error as Error }
+            }
+        }),
+    )
+
+    const quotes = results.filter(
+        (result): result is ServiceQuote => 'auspostCents' in result,
+    )
+
+    if (quotes.length === 0) {
+        const firstError = results.find(
+            (result): result is { service: ShippingService; error: Error } =>
+                'error' in result,
+        )
+        throw firstError?.error ?? new Error('No shipping services available')
+    }
+
+    // Cheapest first: Stripe pre-selects the first option it is given, and that
+    // should be the one nobody has to think about.
+    return quotes.sort((a, b) => a.auspostCents - b.auspostCents)
 }
