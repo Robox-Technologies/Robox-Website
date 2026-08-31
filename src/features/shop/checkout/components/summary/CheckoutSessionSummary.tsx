@@ -49,8 +49,14 @@ export default function CheckoutSessionSummary() {
                     label="Subtotal"
                     value={money(total.subtotal)}
                 />
+                {/* Named rather than a bare "Shipping": the customer chose a
+                    speed a step ago and seeing it here confirms the choice
+                    stuck. Falls back when no rate is attached. */}
                 <CheckoutSummaryRow
-                    label="Shipping"
+                    label={
+                        checkout.shipping?.shippingOption?.displayName ??
+                        'Shipping'
+                    }
                     value={money(total.shippingRate)}
                 />
 

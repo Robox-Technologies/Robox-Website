@@ -21,11 +21,12 @@ export default function CheckoutSummaryCard({
 
     // Follows the delivery speed chosen beside it, so the summary and the
     // headline above the radios can't show different postage.
+    const selectedOption = quote?.options.find(
+        (option) => option.id === selectedService,
+    )
+
     const selectedShippingCents =
-        quote?.options.find((option) => option.id === selectedService)
-            ?.amountCents ??
-        quote?.shipping ??
-        null
+        selectedOption?.amountCents ?? quote?.shipping ?? null
 
     return (
         <SummaryCard
@@ -43,6 +44,7 @@ export default function CheckoutSummaryCard({
                     shippingLoading={loading}
                     shippingError={error}
                     totalCents={subtotalCents + (selectedShippingCents ?? 0)}
+                    shippingLabel={shippingInfo ? selectedOption?.label : null}
                 />
             ) : null}
         </SummaryCard>
