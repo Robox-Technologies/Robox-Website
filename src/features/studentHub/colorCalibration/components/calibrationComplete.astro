@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/button';
 ---
-<div class="calibrationComplete flex flex-col items-start gap-4">
+<div class="calibrationComplete flex flex-col items-start gap-6">
     <div class="flex items-center gap-3">
         <FontAwesomeIcon icon={faCircleCheck} className="text-2xl text-green" />
         <h2 class="text-xl font-bold text-black">Ro/Box calibrated!</h2>
@@ -11,12 +11,23 @@ import Button from '@/components/button';
     <p class="text-gray-800">
         The calibration settings have been saved to your Ro/Box.
     </p>
+
+    <div class="calibrationPreview flex flex-col items-center gap-3 self-center rounded-2xl border-2 border-black bg-white p-4 box-shadow">
+        <div class="calibrationPreviewSwatch h-32 w-32 rounded-xl border-2 border-black bg-gray-200 transition-colors duration-300 ease-out"></div>
+        <div class="flex flex-col items-center gap-0.5">
+            <p class="text-sm text-gray-800">This is what your Ro/Box sees: <span class="calibrationPreviewName font-bold text-black capitalize">Waiting for a reading…</span></p>
+            <p class="calibrationPreviewRgb font-mono text-xs text-gray-500"></p>
+        </div>
+    </div>
+
     <div class="flex gap-4">
         <Button id="calibration-back" className="bg-green">Back to Editor</Button>
         <Button id="calibrate-again" className="bg-gray-500">Calibrate Again</Button>
     </div>
 </div>
 <script>
+    import { pico } from "@/libs/communication/communicate";
+    import type { ColorReading } from "src/types/communication";
     import { dispatchCalibrationAdvance } from "../stage";
 
     // Astro only includes this script once no matter how many instances
@@ -25,7 +36,30 @@ import Button from '@/components/button';
     document.querySelectorAll<HTMLDivElement>(".calibrationComplete").forEach((root) => {
         const backButton = root.querySelector<HTMLButtonElement>("#calibration-back");
         const again = root.querySelector<HTMLButtonElement>("#calibrate-again");
-        if (!backButton || !again) throw new Error("Calibration complete elements not found");
+        const swatch = root.querySelector<HTMLDivElement>(".calibrationPreviewSwatch");
+        const nameLabel = root.querySelector<HTMLSpanElement>(".calibrationPreviewName");
+        const rgbLabel = root.querySelector<HTMLParagraphElement>(".calibrationPreviewRgb");
+        if (!backButton || !again || !swatch || !nameLabel || !rgbLabel) throw new Error("Calibration complete elements not found");
+
+        // createStageFlow measures this stage's height for the reveal
+        // animation before any reading has arrived, while the name is still
+        // the short placeholder. If a later reading's name is long enough to
+        // wrap onto a second line, that growth lands after the stages
+        // wrapper's height is already pinned to the shorter placeholder's
+        // size - clipped by its `overflow-hidden` until the transition timer
+        // eventually clears it. Clearing it immediately here instead avoids
+        // that clipped window entirely.
+        const stagesWrapper = root.closest<HTMLElement>("[data-stage-flow-root]")?.querySelector<HTMLElement>(".stageFlowStages");
+
+        // The Calibrate stage puts the board into colour mode the moment
+        // calibration succeeds, so by the time this stage is visible it's
+        // already streaming readings - this just paints them.
+        pico.on("color", (reading: ColorReading) => {
+            swatch!.style.backgroundColor = `rgb(${reading.r}, ${reading.g}, ${reading.b})`;
+            nameLabel!.textContent = reading.name;
+            rgbLabel!.textContent = `rgb(${reading.r}, ${reading.g}, ${reading.b})`;
+            if (stagesWrapper) stagesWrapper.style.height = "";
+        });
 
         // This page is always reached by navigating away from somewhere in
         // the hub, so going back returns there directly rather than

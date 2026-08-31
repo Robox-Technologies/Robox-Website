@@ -76,7 +76,14 @@ import Button from '@/components/button';
 
         pico.on("calibrated", () => {
             if (!waitingForResult) return;
-            finish(() => dispatchCalibrationAdvance(root, "done"));
+            finish(() => {
+                // Colour mode is what drives the live preview on the Done
+                // stage - entering it here, right on a successful
+                // calibration, rather than from that stage itself, means it
+                // only ever starts as a direct consequence of calibrating.
+                pico.colorMode();
+                dispatchCalibrationAdvance(root, "done");
+            });
         });
 
         pico.on("error", (data: PicoEventMap["error"]) => {

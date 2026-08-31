@@ -63,6 +63,8 @@ export interface ColorReading {
     r: number
     g: number
     b: number
+    /** The board's own closest-named-colour guess for this reading (e.g. "red"). */
+    name: string
 }
 
 export interface PicoState {
