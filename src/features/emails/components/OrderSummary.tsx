@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { Heading, Section, Text } from 'jsx-email';
+import * as React from 'react'
+import { Heading, Section, Text } from 'jsx-email'
 
 import {
     alignCenter,
@@ -14,31 +14,37 @@ import {
     purchaseTotalStyle,
     rowSeparateStyle,
     smallCellStyle,
-    summaryStyle
-} from '../styles';
+    summaryStyle,
+} from '../styles'
 
 export interface OrderItem {
     /** Item / product name */
-    name: string;
-    quantity: number;
+    name: string
+    quantity: number
     /** Pre-formatted subtotal string, e.g. "AU$49.00" */
-    subtotal: string;
+    subtotal: string
 }
 
 export interface OrderSummaryProps {
-    orderId: string;
+    orderId: string
     /** Pre-formatted date string, e.g. "23 June 2026" */
-    date: string;
-    items: OrderItem[];
+    date: string
+    items: OrderItem[]
     /** Pre-formatted shipping cost string, e.g. "AU$9.95" */
-    shipping: string;
+    shipping: string
+    /**
+     * Australia Post service the order ships by, e.g. "Express shipping". Used
+     * as the row label so the customer can see what they paid for; falls back
+     * to a plain "Shipping" when the order has no rate attached.
+     */
+    shippingMethod?: string
     /**
      * Pre-formatted discount amount, e.g. "AU$10.00", or undefined when no
      * discount applies. Rendered parenthesised, as in the original.
      */
-    discount?: string;
+    discount?: string
     /** Pre-formatted grand total string, e.g. "AU$58.95" */
-    total: string;
+    total: string
 }
 
 /**
@@ -57,30 +63,34 @@ const Cell = ({
     align,
     style,
     textStyle,
-    colSpan
+    colSpan,
 }: {
-    children?: React.ReactNode;
-    align?: 'left' | 'center' | 'right';
-    style?: React.CSSProperties;
-    textStyle?: React.CSSProperties;
-    colSpan?: number;
+    children?: React.ReactNode
+    align?: 'left' | 'center' | 'right'
+    style?: React.CSSProperties
+    textStyle?: React.CSSProperties
+    colSpan?: number
 }) => (
     <td align={align} colSpan={colSpan} style={{ ...cellStyle, ...style }}>
         <Text style={{ ...cellTextStyle, ...textStyle }}>{children}</Text>
     </td>
-);
+)
 
 export const OrderSummary = ({
     orderId,
     date,
     items,
     shipping,
+    shippingMethod,
     discount,
-    total
+    total,
 }: OrderSummaryProps) => {
     // The original always draws a rule directly above the total: on the
     // discount row when there is one, otherwise on the shipping row.
-    const shippingRowStyle = { ...feeRowStyle, ...(discount ? {} : rowSeparateStyle) };
+    const shippingRowStyle = {
+        ...feeRowStyle,
+        ...(discount ? {} : rowSeparateStyle),
+    }
 
     return (
         <Section style={summaryStyle}>
@@ -104,10 +114,16 @@ export const OrderSummary = ({
                         <th align="left" style={rowSeparateStyle}>
                             <Text style={cellTextStyle}>Item</Text>
                         </th>
-                        <th align="center" style={{ ...rowSeparateStyle, ...alignCenter }}>
+                        <th
+                            align="center"
+                            style={{ ...rowSeparateStyle, ...alignCenter }}
+                        >
                             <Text style={cellTextStyle}>Quantity</Text>
                         </th>
-                        <th align="right" style={{ ...rowSeparateStyle, ...alignRight }}>
+                        <th
+                            align="right"
+                            style={{ ...rowSeparateStyle, ...alignRight }}
+                        >
                             <Text style={cellTextStyle}>Subtotal</Text>
                         </th>
                     </tr>
@@ -115,24 +131,40 @@ export const OrderSummary = ({
                     {items.map((item, index) => (
                         <tr key={`${item.name}-${index}`}>
                             <Cell>{item.name}</Cell>
-                            <Cell align="center" style={{ ...smallCellStyle, ...alignCenter }}>
+                            <Cell
+                                align="center"
+                                style={{ ...smallCellStyle, ...alignCenter }}
+                            >
                                 {item.quantity}
                             </Cell>
-                            <Cell align="right" style={{ ...smallCellStyle, ...alignRight }}>
+                            <Cell
+                                align="right"
+                                style={{ ...smallCellStyle, ...alignRight }}
+                            >
                                 {item.subtotal}
                             </Cell>
                         </tr>
                     ))}
 
                     <tr>
-                        <Cell style={shippingRowStyle}>Shipping</Cell>
+                        <Cell style={shippingRowStyle}>
+                            {shippingMethod ?? 'Shipping'}
+                        </Cell>
                         <Cell
                             align="center"
-                            style={{ ...smallCellStyle, ...alignCenter, ...shippingRowStyle }}
+                            style={{
+                                ...smallCellStyle,
+                                ...alignCenter,
+                                ...shippingRowStyle,
+                            }}
                         />
                         <Cell
                             align="right"
-                            style={{ ...smallCellStyle, ...alignRight, ...shippingRowStyle }}
+                            style={{
+                                ...smallCellStyle,
+                                ...alignRight,
+                                ...shippingRowStyle,
+                            }}
                         >
                             {shipping}
                         </Cell>
@@ -150,15 +182,25 @@ export const OrderSummary = ({
                             </td>
                             <td
                                 align="center"
-                                style={{ ...smallCellStyle, ...alignCenter, ...rowSeparateStyle }}
+                                style={{
+                                    ...smallCellStyle,
+                                    ...alignCenter,
+                                    ...rowSeparateStyle,
+                                }}
                             >
                                 <Text style={discountTextStyle} />
                             </td>
                             <td
                                 align="right"
-                                style={{ ...smallCellStyle, ...alignRight, ...rowSeparateStyle }}
+                                style={{
+                                    ...smallCellStyle,
+                                    ...alignRight,
+                                    ...rowSeparateStyle,
+                                }}
                             >
-                                <Text style={discountTextStyle}>({discount})</Text>
+                                <Text style={discountTextStyle}>
+                                    ({discount})
+                                </Text>
                             </td>
                         </tr>
                     )}
@@ -167,10 +209,19 @@ export const OrderSummary = ({
                         <td style={{ ...cellStyle, verticalAlign: 'middle' }}>
                             <Text style={purchaseTotalLabelStyle}>Total</Text>
                         </td>
-                        <td style={{ ...smallCellStyle, verticalAlign: 'middle' }} />
+                        <td
+                            style={{
+                                ...smallCellStyle,
+                                verticalAlign: 'middle',
+                            }}
+                        />
                         <td
                             align="right"
-                            style={{ ...smallCellStyle, ...alignRight, verticalAlign: 'middle' }}
+                            style={{
+                                ...smallCellStyle,
+                                ...alignRight,
+                                verticalAlign: 'middle',
+                            }}
                         >
                             <Text style={purchaseTotalStyle}>{total}</Text>
                         </td>
@@ -178,7 +229,7 @@ export const OrderSummary = ({
                 </tbody>
             </table>
         </Section>
-    );
-};
+    )
+}
 
-export default OrderSummary;
+export default OrderSummary

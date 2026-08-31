@@ -23,6 +23,8 @@ export interface OrderEmailTextData {
     items: OrderItem[];
     /** Pre-formatted shipping cost string, e.g. "AU$9.95" */
     shipping: string;
+    /** Service the order ships by, e.g. "Express shipping". */
+    shippingMethod?: string;
     /** Pre-formatted discount amount, or undefined when none applies. */
     discount?: string;
     /** Pre-formatted grand total string. */
@@ -61,7 +63,7 @@ Date: ${data.date}
 
 ${items}
 ===================
-Shipping: ${data.shipping}${discount}
+${data.shippingMethod ?? 'Shipping'}: ${data.shipping}${discount}
 ===================
 Total: ${data.total}`;
 }

@@ -3,40 +3,50 @@ import type { APIRoute } from 'astro'
 import { Stripe } from 'stripe'
 import { stripeAPI } from '@/utils/server/stripe/index.server'
 import { sendOrderEmail } from '@/features/emails/utils/sendOrderEmail.server'
-import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
-import type { Product } from '@/types/shop'
-
-/**
- * The address on the order carries the recipient, but the email does not.
- *
- * `checkout.confirm()` takes no `receipt_email` — the customer's address is
- * collected by the Contact Details Element and lands on the Checkout Session,
- * not on the PaymentIntent. So when the intent has no email of its own, find
- * the session that created it and read it from there.
- */
-async function resolveReceiptEmail(
-    paymentIntent: Stripe.PaymentIntent,
-): Promise<Stripe.PaymentIntent> {
-    if (paymentIntent.receipt_email) return paymentIntent
-
-    const sessions = await stripeAPI.checkout.sessions.list({
-        payment_intent: paymentIntent.id,
-        limit: 1,
-    })
-    const email = sessions.data[0]?.customer_details?.email
-
-    if (!email) return paymentIntent
-
-    // Returned as a copy rather than mutating Stripe's object, so the only
-    // thing downstream sees changed is the field we filled in.
-    return { ...paymentIntent, receipt_email: email }
-}
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
 
-export const POST = (async ({ request }) => {
-    console.log('[stripe-webhook] received POST /api/shop/webhook')
+/**
+ * The session, with everything the order emails read.
+ *
+ * Always re-fetched rather than taken from the event payload: the payload is
+ * rendered at the endpoint's configured API version and carries no expansions,
+ * so `line_items` — which is where the item names and charged amounts now come
+ * from — would be missing.
+ */
+function loadSession(id: string): Promise<Stripe.Checkout.Session> {
+    return stripeAPI.checkout.sessions.retrieve(id, {
+        expand: [
+            'line_items',
+            'payment_intent',
+            'payment_intent.payment_method',
+        ],
+    })
+}
 
+/**
+ * A failed card payment never completes its session, so there is no
+ * `checkout.session.*` event for it — the failure notice still has to hang off
+ * `payment_intent.payment_failed`. The session exists regardless, so find it and
+ * build the email from the same shape the success path uses.
+ */
+async function findSessionForIntent(
+    paymentIntentId: string,
+): Promise<Stripe.Checkout.Session | null> {
+    // Only the id is taken from the list, because the expansions the emails
+    // need are a level too deep for a list call - Stripe caps expansion at four
+    // levels, and `data.line_items.data.price.product` is five. Re-reading the
+    // session through `loadSession` gets the same shape the success path uses.
+    const sessions = await stripeAPI.checkout.sessions.list({
+        payment_intent: paymentIntentId,
+        limit: 1,
+    })
+
+    const id = sessions.data[0]?.id
+    return id ? await loadSession(id) : null
+}
+
+export const POST = (async ({ request }) => {
     if (!endpointSecret) {
         console.error(
             '[stripe-webhook] STRIPE_WEBHOOK_SECRET is not configured',
@@ -67,37 +77,65 @@ export const POST = (async ({ request }) => {
             status: 400,
         })
     }
-    let paymentIntent: Stripe.PaymentIntent | null = null
-    let succeeded = false
 
-    switch (event.type) {
-        case 'payment_intent.succeeded':
-            succeeded = true
-        case 'payment_intent.payment_failed':
-            paymentIntent = event.data.object as Stripe.PaymentIntent
-            break
-    }
+    console.log(`[stripe-webhook] ${event.type}`)
 
-    if (paymentIntent) {
-        try {
-            // Deliberately after signature verification: this reaches out to
-            // Stripe, and reading it up front meant an unsigned POST to this
-            // public path could spend our API budget on its way to the 400.
-            const allProducts = await getAllProducts()
+    // Everything below reaches out to Stripe, and this path is public — so it
+    // only runs once the signature above has been verified.
+    try {
+        switch (event.type) {
+            // The customer finished checkout. For an immediate method the money
+            // is already there; for a delayed one this is the order being
+            // placed, and `async_payment_*` closes it out later.
+            case 'checkout.session.completed':
+            case 'checkout.session.async_payment_succeeded': {
+                const session = await loadSession(event.data.object.id)
+                if (session.payment_status === 'unpaid') {
+                    // A delayed method still clearing. Saying "thank you, it's
+                    // paid" now would be wrong; the async event follows.
+                    console.log(
+                        '[stripe-webhook] session unpaid, awaiting async result',
+                    )
+                    break
+                }
+                await sendOrderEmail(session, true)
+                break
+            }
 
-            const verifiedProducts: Record<string, Product> =
-                Object.fromEntries(
-                    allProducts.map((product) => [product.item_id, product]),
+            case 'checkout.session.async_payment_failed': {
+                await sendOrderEmail(
+                    await loadSession(event.data.object.id),
+                    false,
                 )
+                break
+            }
 
-            await sendOrderEmail(
-                await resolveReceiptEmail(paymentIntent),
-                verifiedProducts,
-                succeeded,
-            )
-        } catch (error) {
-            console.error('[stripe-webhook] error processing email:', error)
+            case 'payment_intent.payment_failed': {
+                const session = await findSessionForIntent(event.data.object.id)
+                if (!session) {
+                    // Not one of ours, or an intent created outside checkout.
+                    console.warn(
+                        '[stripe-webhook] no session for failed intent',
+                        event.data.object.id,
+                    )
+                    break
+                }
+                await sendOrderEmail(session, false)
+                break
+            }
+
+            // An abandoned cart, 24 hours on. Nothing was charged and nothing
+            // was promised, so there is nothing to tell the customer.
+            case 'checkout.session.expired':
+                break
         }
+    } catch (error) {
+        console.error('[stripe-webhook] error processing email:', error)
+        // Answer with a failure so Stripe retries. An order email that didn't
+        // send is worth another attempt - a Resend outage is transient, and the
+        // alternative is a customer who paid and heard nothing. Stripe backs
+        // off and eventually gives up, so a permanently failing send can't loop.
+        return new Response('Error processing webhook', { status: 500 })
     }
 
     return new Response(null, { status: 200 })

@@ -31,12 +31,15 @@ export default function CheckoutSummaryBody({
     shippingLoading,
     shippingError,
     totalCents,
+    shippingLabel,
 }: {
     subtotalCents: number
     shippingCents: number | null
     shippingLoading: boolean
     shippingError: string | null
     totalCents: number
+    /** The chosen service, e.g. "Express shipping", once one is priced. */
+    shippingLabel?: string | null
 }) {
     return (
         <div className="flex flex-1 flex-col gap-4">
@@ -45,7 +48,7 @@ export default function CheckoutSummaryBody({
                 value={formatPrice(subtotalCents, true)}
             />
             <CheckoutSummaryRow
-                label="Shipping"
+                label={shippingLabel ?? 'Shipping'}
                 value={describeShipping({
                     shippingCents,
                     shippingLoading,

@@ -6,7 +6,7 @@ import { titleCase } from '@/utils/titleCase'
 import iso3311a2 from 'iso-3166-1-alpha-2'
 
 export interface ResolvedBilling {
-    /** Customer name, or null if neither source has one. */
+    /** Customer name, or null if no source has one. */
     name: string | null
     /** Newline-separated delivery address. */
     address: string
@@ -35,37 +35,61 @@ function formatAddress(address: Stripe.Address | null | undefined): string {
     return lines.join('\n')
 }
 
+async function resolvePaymentMethod(
+    intent: Stripe.PaymentIntent | null,
+): Promise<Stripe.PaymentMethod | undefined> {
+    const source =
+        intent?.payment_method ?? intent?.last_payment_error?.payment_method
+
+    if (typeof source === 'string') {
+        return stripeAPI.paymentMethods.retrieve(source)
+    }
+    return source ?? undefined
+}
+
 /**
  * Pulls the customer name, delivery address and payment-method details off a
- * PaymentIntent for the receipt email.
+ * Checkout Session for the order emails.
  *
- * Name and address prefer `paymentIntent.shipping`, then fall back to the
- * payment method's `billing_details`. Checkout collects a single address via
- * <AddressElement mode="billing">, which Stripe attaches to the payment method
- * rather than to the intent, and `confirmPayment` is not passed a `shipping`
- * object - so in practice the fallback is the path that fires. The `shipping`
- * branch is kept first so this keeps working if the intent starts carrying one.
+ * The delivery address comes from the PaymentIntent's `shipping`, which the
+ * checkout sets from the address collected on its first step. That is the
+ * authoritative copy: the session itself never collects an address, because
+ * doing so would let a wallet supply one and bypass the postage quote.
+ *
+ * The payment-method summary needs the intent too, so both are read from the
+ * one expanded session where possible and fetched only if they weren't.
  */
 export async function resolveBilling(
-    paymentIntent: Stripe.PaymentIntent,
+    session: Stripe.Checkout.Session,
 ): Promise<ResolvedBilling> {
-    const stripePaymentData =
-        paymentIntent.payment_method ?? paymentIntent.last_payment_error?.payment_method
-
-    let paymentMethod: Stripe.PaymentMethod | undefined
-
-    if (typeof stripePaymentData === 'string') {
-        paymentMethod = await stripeAPI.paymentMethods.retrieve(stripePaymentData)
-    } else if (stripePaymentData) {
-        paymentMethod = stripePaymentData
+    let intent: Stripe.PaymentIntent | null = null
+    if (typeof session.payment_intent === 'string') {
+        intent = await stripeAPI.paymentIntents.retrieve(
+            session.payment_intent,
+            { expand: ['payment_method'] },
+        )
+    } else {
+        intent = session.payment_intent ?? null
     }
 
+    const paymentMethod = await resolvePaymentMethod(intent)
     const billingDetails = paymentMethod?.billing_details
 
-    const name = paymentIntent.shipping?.name || billingDetails?.name || null
-    const address = formatAddress(paymentIntent.shipping?.address ?? billingDetails?.address)
+    const collectedShipping = session.collected_information?.shipping_details
 
-    // Payment method summary
+    const name =
+        intent?.shipping?.name ||
+        collectedShipping?.name ||
+        session.customer_details?.name ||
+        billingDetails?.name ||
+        null
+
+    const address = formatAddress(
+        intent?.shipping?.address ??
+            collectedShipping?.address ??
+            billingDetails?.address,
+    )
+
     const billingLines: string[] = []
 
     if (paymentMethod) {
@@ -73,7 +97,9 @@ export async function resolveBilling(
 
         if (paymentType.name) billingLines.push(titleCase(paymentType.name))
         if (paymentType.userID) billingLines.push(paymentType.userID)
-        if (paymentType.last4) billingLines.push(`Ending in ••••${paymentType.last4}`)
+        if (paymentType.last4) {
+            billingLines.push(`Ending in ••••${paymentType.last4}`)
+        }
         if (paymentType.exp_month && paymentType.exp_year) {
             billingLines.push(
                 `Expires on ${paymentType.exp_month}/${paymentType.exp_year % 1000}`,

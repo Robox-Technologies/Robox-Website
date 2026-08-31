@@ -1,6 +1,10 @@
 import { useCheckoutElements } from '@stripe/react-stripe-js/checkout'
+import { useStore } from '@nanostores/react'
 import SummaryCard from '@/components/shop/summary/SummaryCard'
 import { formatMoney } from '@/utils/formatPrice'
+import { SHIPPING_LINE_ITEM_NAME } from '../../utils/shippingLineItem'
+import { shippingServiceId } from '../../state/checkoutStore'
+import { shippingQuote } from '../../state/shippingStore'
 import CheckoutSummaryRow from './CheckoutSummaryRow'
 import CheckoutVoucher from './CheckoutVoucher'
 import { SUMMARY_CARD_CLASS } from './summaryCardClass'
@@ -23,6 +27,8 @@ import { SUMMARY_CARD_CLASS } from './summaryCardClass'
  */
 export default function CheckoutSessionSummary() {
     const checkoutState = useCheckoutElements()
+    const selectedService = useStore(shippingServiceId)
+    const quote = useStore(shippingQuote)
 
     if (checkoutState.type !== 'success') {
         return (
@@ -36,6 +42,29 @@ export default function CheckoutSessionSummary() {
 
     const { checkout } = checkoutState
     const { total } = checkout
+
+    // Postage is a line item rather than a shipping rate (see
+    // `createCheckoutSession`), so `total.shippingRate` is always zero and the
+    // figure has to come off the line. The client session exposes no product
+    // metadata, so this matches on the name Stripe renders for our shipping
+    // product.
+    const postageLine = checkout.lineItems.find(
+        (line) => line.name === SHIPPING_LINE_ITEM_NAME,
+    )
+    const productLines = checkout.lineItems.filter(
+        (line) => line.name !== SHIPPING_LINE_ITEM_NAME,
+    )
+    const productSubtotalMinor = productLines.reduce(
+        (sum, line) => sum + line.subtotal.minorUnitsAmount,
+        0,
+    )
+
+    // The line item carries only an amount, so the service name comes from the
+    // option chosen a step earlier. Cosmetic - the amount beside it is the
+    // session's, which is what will be charged.
+    const shippingLabel =
+        quote?.options.find((option) => option.id === selectedService)?.label ??
+        SHIPPING_LINE_ITEM_NAME
     const discountCents = total.discount.minorUnitsAmount
     const money = (amount: { minorUnitsAmount: number }) =>
         formatMoney(amount.minorUnitsAmount, checkout.currency, {
@@ -45,13 +74,33 @@ export default function CheckoutSessionSummary() {
     return (
         <SummaryCard title="Order Summary" className={SUMMARY_CARD_CLASS}>
             <div className="flex flex-1 flex-col gap-4">
+                {/* The session's own subtotal now includes postage, since
+                    postage is a line item - so the products are totalled
+                    separately to keep the two rows meaning what they say. */}
                 <CheckoutSummaryRow
                     label="Subtotal"
-                    value={money(total.subtotal)}
+                    value={formatMoney(
+                        productSubtotalMinor,
+                        checkout.currency,
+                        {
+                            forceCents: true,
+                        },
+                    )}
                 />
+                {/* Named rather than a bare "Shipping": the customer chose a
+                    speed a step ago and seeing it here confirms the choice
+                    stuck. Falls back when no rate is attached. */}
                 <CheckoutSummaryRow
-                    label="Shipping"
-                    value={money(total.shippingRate)}
+                    label={shippingLabel}
+                    // `subtotal`, not `total`: Stripe allocates a discount
+                    // across every line including postage, and showing the
+                    // post-discount figure here while the Discount row also
+                    // counts it left the rows not adding up to the total.
+                    value={formatMoney(
+                        postageLine?.subtotal.minorUnitsAmount ?? 0,
+                        checkout.currency,
+                        { forceCents: true },
+                    )}
                 />
 
                 {discountCents > 0 && (

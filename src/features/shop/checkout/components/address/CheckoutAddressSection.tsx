@@ -3,11 +3,16 @@ import type { StripeAddressElementChangeEvent } from '@stripe/stripe-js'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { GOOGLE_MAPS_API_KEY } from 'astro:env/client'
+import { useStore } from '@nanostores/react'
 import type { Product } from '@/types/shop'
 import { formatPrice } from '@/utils/formatPrice'
 import { stripePromise } from '../../utils/stripe.client'
 import { createCheckoutAppearance } from '../../utils/appearance'
-import { checkoutStep, shippingDetails } from '../../state/checkoutStore'
+import {
+    checkoutStep,
+    shippingDetails,
+    shippingServiceId,
+} from '../../state/checkoutStore'
 import { useShipping } from '../../hooks/useShipping'
 
 /**
@@ -41,6 +46,12 @@ export default function CheckoutAddressSection({
     products: Product[]
 }) {
     const { quote, shippingInfo, loading, error } = useShipping(products)
+    const selectedService = useStore(shippingServiceId)
+    const selectedShippingCents =
+        quote?.options.find((option) => option.id === selectedService)
+            ?.amountCents ??
+        quote?.shipping ??
+        0
 
     const handleChange = (event: StripeAddressElementChangeEvent) => {
         // Stripe's own `complete` rather than a hand-rolled check: it knows
@@ -113,10 +124,63 @@ export default function CheckoutAddressSection({
                         Calculating postage...
                     </p>
                 ) : quote && shippingInfo ? (
-                    <p className="mb-0 text-base text-gray-700">
-                        Standard shipping to this address:{' '}
-                        <strong>{formatPrice(quote.shipping, true)}</strong>
-                    </p>
+                    <div className="text-base text-gray-700">
+                        <p className="mb-0">
+                            Shipping to this address:{' '}
+                            <strong>
+                                {formatPrice(selectedShippingCents, true)}
+                            </strong>
+                        </p>
+                        {quote.options.length > 1 && (
+                            <fieldset className="mt-3 flex flex-col gap-2">
+                                <legend className="text-md mb-1 font-medium text-black">
+                                    Delivery speed
+                                </legend>
+                                {quote.options.map((option) => (
+                                    <label
+                                        key={option.id}
+                                        className="flex cursor-pointer items-start gap-2 text-base"
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="shippingService"
+                                            value={option.id}
+                                            checked={
+                                                option.id === selectedService
+                                            }
+                                            onChange={() => {
+                                                shippingServiceId.set(option.id)
+                                            }}
+                                            className="mt-1.5 h-4 w-4 shrink-0"
+                                        />
+                                        <span className="flex min-w-0 flex-1 justify-between gap-3">
+                                            <span className="min-w-0">
+                                                {option.label}
+                                                <span className="block text-sm text-gray-600">
+                                                    {
+                                                        option.estimateDays
+                                                            .minimum
+                                                    }
+                                                    –
+                                                    {
+                                                        option.estimateDays
+                                                            .maximum
+                                                    }{' '}
+                                                    business days
+                                                </span>
+                                            </span>
+                                            <span className="shrink-0">
+                                                {formatPrice(
+                                                    option.amountCents,
+                                                    true,
+                                                )}
+                                            </span>
+                                        </span>
+                                    </label>
+                                ))}
+                            </fieldset>
+                        )}
+                    </div>
                 ) : (
                     <p className="mb-0 text-base text-gray-600">
                         Enter your delivery address to see postage.

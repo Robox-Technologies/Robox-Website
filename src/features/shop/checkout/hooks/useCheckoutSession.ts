@@ -2,7 +2,7 @@ import { actions } from 'astro:actions'
 import { useStore } from '@nanostores/react'
 import { useEffect, useRef, useState } from 'react'
 import { cartItems } from '@/state/cartStore'
-import { shippingDetails } from '../state/checkoutStore'
+import { shippingDetails, shippingServiceId } from '../state/checkoutStore'
 
 /**
  * Identifies the order a session was created for. A change here means the
@@ -11,6 +11,7 @@ import { shippingDetails } from '../state/checkoutStore'
 function buildSessionKey(
     cart: Record<string, { quantity: number } | number>,
     details: ReturnType<typeof shippingDetails.get>,
+    serviceId: string,
 ) {
     const cartKey = Object.entries(cart)
         .map(([productKey, value]) => {
@@ -24,7 +25,7 @@ function buildSessionKey(
         ? `${details.address.country}:${details.address.postal_code}`
         : 'no-address'
 
-    return `${cartKey}|${addressKey}`
+    return `${cartKey}|${addressKey}|${serviceId}`
 }
 
 /**
@@ -39,6 +40,7 @@ function buildSessionKey(
 export function useCheckoutSession() {
     const cart = useStore(cartItems)
     const details = useStore(shippingDetails)
+    const serviceId = useStore(shippingServiceId)
     const [clientSecret, setClientSecret] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
     const requestedKeyRef = useRef<string | null>(null)
@@ -46,7 +48,7 @@ export function useCheckoutSession() {
     useEffect(() => {
         if (!details) return
 
-        const sessionKey = buildSessionKey(cart, details)
+        const sessionKey = buildSessionKey(cart, details, serviceId)
         if (requestedKeyRef.current === sessionKey) return
         requestedKeyRef.current = sessionKey
 
@@ -57,6 +59,7 @@ export function useCheckoutSession() {
             const result = await actions.createCheckoutSession({
                 products: cart,
                 shippingDetails: details,
+                shippingServiceId: serviceId,
             })
 
             if (cancelled) return
@@ -74,7 +77,7 @@ export function useCheckoutSession() {
         return () => {
             cancelled = true
         }
-    }, [cart, details])
+    }, [cart, details, serviceId])
 
     return { clientSecret, error }
 }

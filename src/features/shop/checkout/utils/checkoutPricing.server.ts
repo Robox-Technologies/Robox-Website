@@ -1,18 +1,18 @@
 import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 import type { CartItems } from '@/features/shop/cart/types/cart'
 import type { Product } from '@/types/shop'
-import { calculateShipmentShippingCents } from './auspost.server'
+import {
+    estimateFor,
+    quoteShipmentServices,
+    type DeliveryEstimateDays,
+    type ShippingServiceId,
+} from './auspost.server'
 import {
     expandToPackingUnits,
     planShipment,
     type Shipment,
 } from './packaging.server'
 import { applyShippingSurcharge } from './shippingCost.server'
-import {
-    calculateDiscountCents,
-    resolveDiscount,
-    type DiscountStatus,
-} from './discount.server'
 
 const MIN_CHARGE_CENTS = 50
 const DOMESTIC_COUNTRY_CODE = 'AU'
@@ -22,11 +22,24 @@ export type ShippingInfo = {
     postcode: string
 }
 
+/** One postage choice, priced for this cart and destination. */
+export type ShippingOption = {
+    id: ShippingServiceId
+    label: string
+    amountCents: number
+    estimateDays: DeliveryEstimateDays
+}
+
 export type CheckoutTotals = {
     subtotalCents: number
+    /**
+     * The cheapest option's postage. The customer picks a service on the
+     * payment step, against the Checkout Session - before that there is nothing
+     * to have chosen, so totals quote the cheapest and the summary says "from".
+     */
     shippingCents: number
-    discountCents: number
-    discountStatus: DiscountStatus
+    /** Every service Australia Post will carry, cheapest first. */
+    shippingOptions: ShippingOption[]
     totalCents: number
     /**
      * What is physically being sent. Recorded on the payment so an Australia
@@ -48,20 +61,23 @@ export type ResolvedEntry = {
 
 type CartLike = Record<string, number> | CartItems
 
+/**
+ * A cart quantity, whatever shape the client sent it in - the store holds
+ * `{ quantity }` but older payloads sent a bare number. Anything non-finite
+ * becomes 0 and is dropped, so a hand-crafted request can't smuggle in a NaN.
+ */
+function readQuantity(value: number | { quantity: number }): number {
+    const quantity = typeof value === 'number' ? value : value.quantity
+    return Number.isFinite(quantity) ? Math.floor(quantity) : 0
+}
+
 function sanitizeCart(
     cart: CartLike,
 ): Array<{ productKey: string; quantity: number }> {
     return Object.entries(cart)
         .map(([productKey, value]) => ({
             productKey,
-            quantity:
-                typeof value === 'number'
-                    ? Number.isFinite(value)
-                        ? Math.floor(value)
-                        : 0
-                    : Number.isFinite(value.quantity)
-                      ? Math.floor(value.quantity)
-                      : 0,
+            quantity: readQuantity(value),
         }))
         .filter((entry) => entry.quantity > 0)
 }
@@ -107,7 +123,6 @@ async function resolveEntries(cart: CartLike): Promise<ResolvedEntry[]> {
 export async function calculateCheckoutTotals(
     cart: CartLike,
     shippingInfo?: ShippingInfo | null,
-    voucher?: string | null,
 ): Promise<CheckoutTotals> {
     const entries = await resolveEntries(cart)
 
@@ -117,6 +132,7 @@ export async function calculateCheckoutTotals(
     )
 
     let shippingCents = 0
+    let shippingOptions: ShippingOption[] = []
     let shipment: Shipment | null = null
     if (shippingInfo) {
         const country = shippingInfo.country.trim().toUpperCase()
@@ -147,44 +163,32 @@ export async function calculateCheckoutTotals(
             ),
         )
 
-        shippingCents = applyShippingSurcharge(
-            await calculateShipmentShippingCents(
-                { country, postcode },
-                plan.parcels,
-            ),
-            plan.packagingCents,
+        const quotes = await quoteShipmentServices(
+            { country, postcode },
+            plan.parcels,
         )
 
+        shippingOptions = quotes.map((quote) => ({
+            id: quote.service.id,
+            label: quote.service.label,
+            // Packaging is added per option: the box costs the same however
+            // fast it travels, and the rounding has to land on the figure the
+            // customer is actually charged.
+            amountCents: applyShippingSurcharge(
+                quote.auspostCents,
+                plan.packagingCents,
+            ),
+            estimateDays: estimateFor(quote.service, country),
+        }))
+
+        shippingCents = shippingOptions[0]!.amountCents
         shipment = plan
     }
 
-    const preDiscountTotalCents = subtotalCents + shippingCents
-
-    // The discount comes off the post-shipping total, and is always resolved
-    // here rather than trusted from the client — this is the amount charged.
-    let discountCents = 0
-    let discountStatus: DiscountStatus = 'unset'
-
-    if (voucher?.trim()) {
-        const discount = await resolveDiscount(voucher)
-
-        if (!discount) {
-            discountStatus = 'error'
-        } else {
-            discountCents = calculateDiscountCents({
-                discount,
-                lines: entries.map((entry) => ({
-                    itemId: entry.itemId,
-                    lineTotalCents: entry.unitPriceCents * entry.quantity,
-                })),
-                preDiscountTotalCents,
-            })
-            // Valid code that happens to take nothing off this cart.
-            discountStatus = discountCents === 0 ? 'stale' : 'success'
-        }
-    }
-
-    const totalCents = preDiscountTotalCents - discountCents
+    // Discounts are Stripe's now: a promotion code is applied against the
+    // Checkout Session and it re-prices the order. Nothing is computed here, so
+    // there is no second arithmetic to disagree with what is charged.
+    const totalCents = subtotalCents + shippingCents
 
     if (totalCents < MIN_CHARGE_CENTS) {
         throw new Error('Validated total is below minimum charge amount')
@@ -193,8 +197,7 @@ export async function calculateCheckoutTotals(
     return {
         subtotalCents,
         shippingCents,
-        discountCents,
-        discountStatus,
+        shippingOptions,
         shipment,
         totalCents,
     }

@@ -16,6 +16,7 @@ export interface PaymentFailedEmailProps {
     orderId: string;
     items: OrderItem[];
     shipping: string;
+    shippingMethod?: string;
     discount?: string;
     total: string;
     billing: string;
@@ -31,6 +32,7 @@ export const PaymentFailedEmail = ({
     orderId,
     items,
     shipping,
+    shippingMethod,
     discount,
     total,
     billing
@@ -57,6 +59,7 @@ export const PaymentFailedEmail = ({
                 date={date}
                 items={items}
                 shipping={shipping}
+                shippingMethod={shippingMethod}
                 discount={discount}
                 total={total}
             />
@@ -107,6 +110,7 @@ export const previewProps: PaymentFailedEmailProps = {
         { name: 'Sensor Pack', quantity: 2, subtotal: 'AU$58.00' }
     ],
     shipping: 'AU$9.95',
+    shippingMethod: 'Express shipping',
     discount: 'AU$10.00',
     total: 'AU$186.95',
     billing: 'Visa\nEnding in ••••4242\nExpires on 4/29'

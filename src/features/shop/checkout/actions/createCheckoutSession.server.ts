@@ -2,6 +2,7 @@ import { defineAction } from 'astro:actions'
 import { z } from 'astro/zod'
 import type { Stripe } from 'stripe'
 import { stripeAPI } from '@/utils/server/stripe/index.server'
+import { resolveShippingProductId } from '@/utils/server/stripe/shippingProduct.server'
 import { enforceRateLimit } from '@/utils/server/rateLimit.server'
 import {
     CHECKOUT_OWNER_KEY,
@@ -14,16 +15,6 @@ import {
     resolveCartEntries,
 } from '../utils/checkoutPricing.server'
 import { shipmentToMetadata } from '../utils/packaging.server'
-
-/**
- * How long Australia Post says a domestic parcel takes. Shown against the
- * shipping rate in Stripe's own UI, so it is worth stating rather than leaving
- * the customer to guess.
- */
-const DELIVERY_ESTIMATE = {
-    minimum: { unit: 'business_day' as const, value: 2 },
-    maximum: { unit: 'business_day' as const, value: 8 },
-}
 
 const shippingDetailsSchema = z.object({
     name: z.string().trim().min(1).max(200),
@@ -40,12 +31,20 @@ const shippingDetailsSchema = z.object({
 /**
  * Creates the Checkout Session the payment step runs on.
  *
- * The delivery address is already known, so the exact Australia Post rate goes
- * in as the session's one `shipping_option` and the session deliberately sets
- * no `shipping_address_collection`. That combination is what keeps Apple Pay
- * and Google Pay usable: Stripe turns those wallets off when the server owns
- * the shipping details, and a wallet that collects its own address would
- * bypass the quote entirely.
+ * The delivery address and the postage are both settled before this runs, and
+ * neither is anything the session collects: there is no
+ * `shipping_address_collection` and no `shipping_options`. Postage is an
+ * ordinary line item instead.
+ *
+ * That shape is deliberate. A session carrying shipping options is a shipping
+ * order as far as the wallets are concerned, and both Apple Pay and Link
+ * respond by offering a delivery address of their own - Link defaults to the
+ * customer's saved address, which is generally not the one they just typed. An
+ * order could then ship somewhere the postage was never quoted for. With a
+ * fixed total and no shipping fields, the wallets have nothing to ask about.
+ *
+ * The address still reaches the order through `payment_intent_data.shipping`,
+ * which the server sets and the customer cannot touch.
  *
  * There is no update counterpart. `payment_intent_data` cannot be changed after
  * creation, and it carries the figures the receipt email reads - so a cart that
@@ -61,8 +60,9 @@ export const createCheckoutSession = defineAction({
             }),
         ),
         shippingDetails: shippingDetailsSchema,
+        shippingServiceId: z.string().trim().max(32),
     }),
-    async handler({ products, shippingDetails }, context) {
+    async handler({ products, shippingDetails, shippingServiceId }, context) {
         // Ahead of the Stripe and AusPost reads below, so a flood costs us
         // nothing upstream.
         enforceRateLimit(context, { name: 'createCheckoutSession', max: 15 })
@@ -96,31 +96,48 @@ export const createCheckoutSession = defineAction({
 
         // Resolved once and shared by both metadata blocks: two calls would be
         // two catalog reads for the same answer.
-        const [productsMetadata, productSummary] = await Promise.all([
-            normalizeCartMetadata(products),
-            describeCartForHumans(products),
-        ])
+        const [productsMetadata, productSummary, shippingProductId] =
+            await Promise.all([
+                normalizeCartMetadata(products),
+                describeCartForHumans(products),
+                resolveShippingProductId(),
+            ])
+
+        // The client chooses *which* service; the price comes from our own
+        // quote, never from the request. An unrecognised id falls back to the
+        // cheapest rather than failing the checkout.
+        const chosen =
+            totals.shippingOptions.find(
+                (option) => option.id === shippingServiceId,
+            ) ?? totals.shippingOptions[0]
+
+        if (!chosen) {
+            throw new Error('No shipping service available for this address')
+        }
 
         const session = await stripeAPI.checkout.sessions.create({
             ui_mode: 'elements',
             mode: 'payment',
             // Reference the Price rather than restate an amount, so the charge
             // is whatever Stripe holds for the product.
-            line_items: entries.map((entry) => ({
-                price: entry.priceId,
-                quantity: entry.quantity,
-            })),
-            shipping_options: [
+            line_items: [
+                ...entries.map((entry) => ({
+                    price: entry.priceId,
+                    quantity: entry.quantity,
+                })),
+                // Postage as a line item, not a `shipping_option`. Any session
+                // carrying shipping options makes the wallets collect a
+                // delivery address of their own - Apple Pay and Link both do -
+                // which would let an order ship somewhere the postage was never
+                // quoted for. As a line item the session is an ordinary
+                // fixed-total order and the wallets have nothing to ask about.
                 {
-                    shipping_rate_data: {
-                        display_name: 'Standard shipping',
-                        type: 'fixed_amount',
-                        fixed_amount: {
-                            amount: totals.shippingCents,
-                            currency: 'aud',
-                        },
-                        delivery_estimate: DELIVERY_ESTIMATE,
+                    price_data: {
+                        currency: 'aud',
+                        product: shippingProductId,
+                        unit_amount: chosen.amountCents,
                     },
+                    quantity: 1,
                 },
             ],
             allow_promotion_codes: true,
@@ -145,7 +162,8 @@ export const createCheckoutSession = defineAction({
                     products: productsMetadata,
                     productSummary,
                     subtotalCents: totals.subtotalCents.toString(),
-                    shippingCents: totals.shippingCents.toString(),
+                    shippingCents: chosen.amountCents.toString(),
+                    shippingService: chosen.label,
                     // What is physically being sent, so an Australia Post
                     // consignment can be raised straight off the payment
                     // rather than re-deriving the parcel from the cart.
