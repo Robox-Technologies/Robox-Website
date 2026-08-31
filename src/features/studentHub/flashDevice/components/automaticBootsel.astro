@@ -1,0 +1,128 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBolt, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/button';
+---
+<div class="automaticBootsel flex flex-col gap-3">
+    <p class="automaticBootselNoMethod text-sm text-gray-800 hidden">
+        Your browser doesn't support connecting over USB, so do this step
+        manually below.
+    </p>
+
+    <Button id="flash-connect" className="bg-blue self-start">
+        <FontAwesomeIcon icon={faBolt} className="flashDeviceIcon mr-2" />
+        <FontAwesomeIcon icon={faSpinner} className="flashDeviceSpinner mr-2 hidden! fa-spin" />
+        Reboot via USB
+    </Button>
+</div>
+<script>
+    import { pico } from "@/libs/communication/communicate";
+    import type { PicoState } from "src/types/communication";
+    import { ConnectionStatus } from "src/types/communication";
+    import { dispatchFlashAdvance, dispatchFlashClearError, dispatchFlashError, setButtonBusy, type Stage } from "../stage";
+
+    // Astro only includes this script once no matter how many instances
+    // render, so wire up every instance found rather than assuming there's a
+    // single one.
+    document.querySelectorAll<HTMLDivElement>(".automaticBootsel").forEach((root) => {
+        const noMethodNotice = root.querySelector<HTMLParagraphElement>(".automaticBootselNoMethod");
+        const connectButton = root.querySelector<HTMLButtonElement>("#flash-connect");
+        if (!noMethodNotice || !connectButton) {
+            throw new Error("Automatic bootsel elements not found");
+        }
+
+        // This flow reports its own inline errors below, so the global toast
+        // host popping up "Ro/Box Connected" / "Ro/Box Error" over it would
+        // just be noise.
+        pico.setToastsEnabled(false);
+
+        // The button just reflects pico's live connection status, same as
+        // everywhere else it's used (e.g. the editor's connect button).
+        let hasTriggeredReboot = false;
+
+        function updateUI(state: PicoState) {
+            const hasMethod = state.communicationMethod !== null;
+            const connecting = state.connectionStatus === ConnectionStatus.CONNECTING;
+            const connected = state.connectionStatus === ConnectionStatus.CONNECTED;
+            if (connected && !hasTriggeredReboot) {
+                hasTriggeredReboot = true;
+                pico.bootloaderMode();
+
+                // Rebooting into BOOTSEL makes the Ro/Box vanish from the bus
+                // and re-enumerate as a mass-storage drive, so there's no
+                // connected transport left to confirm it over — advance
+                // optimistically and let the drive check in the next step
+                // catch a failed reboot.
+                setTimeout(() => dispatchFlashAdvance(root, "flash"), 1500);
+            }
+
+            noMethodNotice!.classList.toggle("hidden", hasMethod);
+            connectButton!.classList.toggle("hidden", !hasMethod);
+
+            // Once the reboot has been triggered, stay busy right through to
+            // the "flash" stage — the Ro/Box disconnects itself moments
+            // later as it vanishes from the bus, and reacting to that would
+            // otherwise flash the button back to idle mid-sequence.
+            setButtonBusy(connectButton!, connecting || hasTriggeredReboot);
+        }
+
+        // Registered before anything below can change pico's state, so the
+        // listener itself is what picks up the resulting update — no need to
+        // separately re-render after calling setCommunicationMethod.
+        pico.on("stateChange", updateUI);
+        updateUI(pico.getState());
+
+        // Rebooting into BOOTSEL turns the Ro/Box into a USB mass-storage
+        // drive — that only happens over a wired connection, so flashing
+        // (unlike the editor) only ever talks to the Ro/Box over USB.
+        const supportsUsb = "serial" in navigator;
+
+        /**
+         * "Flash Another Device" brings this stage back without a page
+         * reload, so a fresh connection has to be armed each time - without
+         * it, pico would still report the previous board as CONNECTED and
+         * hasTriggeredReboot would still be true, leaving the button stuck
+         * busy forever and never picking up the next device.
+         */
+        async function armForBootloaderStage() {
+            hasTriggeredReboot = false;
+
+            // setCommunicationMethod tears down any existing transport
+            // before building a fresh one - on every call after the first,
+            // that teardown is genuinely asynchronous. Awaiting it here
+            // matters: firing setAutoConnect(false) without waiting would
+            // land on the transport being torn down, not the new one
+            // replacing it, leaving the new one on its default (enabled).
+            if (supportsUsb) await pico.setCommunicationMethod("USB");
+
+            // Silently reattaching to a previously authorised port the
+            // instant this stage becomes active would reboot whatever
+            // Ro/Box that port belongs to into bootloader mode without the
+            // student clicking anything - only an explicit click on the
+            // button below (pico.request()) may connect here.
+            pico.setAutoConnect(false);
+        }
+
+        void armForBootloaderStage();
+
+        const flashDeviceRoot = root.closest<HTMLDivElement>(".flashDevice");
+        if (!flashDeviceRoot) throw new Error("Automatic bootsel must be nested inside .flashDevice");
+        flashDeviceRoot.addEventListener("flashdevice:stage-changed", (event) => {
+            if ((event as CustomEvent<{ stage: Stage }>).detail.stage === "bootloader") void armForBootloaderStage();
+        });
+
+        pico.on("error", (data) => {
+            dispatchFlashError(
+                root,
+                "Couldn't Connect Automatically",
+                `${data.message} You can try again above, or follow the manual steps below.`,
+            );
+        });
+
+        connectButton.addEventListener("click", () => {
+            dispatchFlashClearError(root);
+            hasTriggeredReboot = false;
+            pico.request();
+        });
+    });
+</script>

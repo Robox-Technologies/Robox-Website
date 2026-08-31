@@ -1,0 +1,34 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/button';
+---
+<div class="flashComplete flex flex-col items-start gap-4">
+    <div class="flex items-center gap-3">
+        <FontAwesomeIcon icon={faCircleCheck} className="text-2xl text-green" />
+        <h2 class="text-xl font-bold text-black">Ro/Box successfully flashed!</h2>
+    </div>
+    <p class="text-gray-800">
+        Disconnect and reconnect your Ro/Box, then head back to the editor
+        to start coding.
+    </p>
+    <div class="flex gap-4">
+        <Button href="/hub/editor" className="bg-green">Go to Editor</Button>
+        <Button id="flash-again" className="bg-gray-500">Flash Another Device</Button>
+    </div>
+</div>
+<script>
+    import { dispatchFlashAdvance } from "../stage";
+
+    // Astro only includes this script once no matter how many instances
+    // render, so wire up every instance found rather than assuming there's a
+    // single one.
+    document.querySelectorAll<HTMLDivElement>(".flashComplete").forEach((root) => {
+        const again = root.querySelector<HTMLButtonElement>("#flash-again");
+        if (!again) throw new Error("Flash complete elements not found");
+
+        again.addEventListener("click", () => {
+            dispatchFlashAdvance(root, "bootloader");
+        });
+    });
+</script>

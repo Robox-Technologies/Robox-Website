@@ -1,0 +1,153 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFolderOpen, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/button';
+import FlashProgress from './flashProgress.astro';
+---
+<div class="selectDrive flex flex-col gap-4">
+    <p class="text-gray-800">
+        Your Ro/Box should now show up as a drive named <span class="font-mono">RPI-RP2</span>.
+        Select it below to flash the latest firmware.
+    </p>
+    <Button id="flash-select-drive" className="bg-blue self-start">
+        <FontAwesomeIcon icon={faFolderOpen} className="flashDeviceIcon mr-2" />
+        <FontAwesomeIcon icon={faSpinner} className="flashDeviceSpinner mr-2 hidden! fa-spin" />
+        Select RPI-RP2 Drive
+    </Button>
+    <FlashProgress />
+</div>
+<script>
+    import {
+        dispatchFlashAdvance,
+        dispatchFlashClearError,
+        dispatchFlashError,
+        hideFlashProgress,
+        setButtonBusy,
+        setFlashProgress,
+        showFlashProgress,
+    } from "../stage";
+
+    const FIRMWARE_URL = "/latest.uf2";
+
+    /**
+     * The File System Access API gives no write-progress event, so this
+     * writes the firmware in slices instead of one `write()` call — each
+     * chunk is a real, awaited transfer to the drive, so the percentage
+     * reflects actual bytes sent rather than a simulated timer.
+     */
+    const WRITE_CHUNK_SIZE = 64 * 1024;
+
+    async function writeWithProgress(
+        writable: FileSystemWritableFileStream,
+        data: ArrayBuffer,
+        onProgress: (percent: number) => void,
+    ): Promise<void> {
+        const total = data.byteLength;
+        for (let offset = 0; offset < total; offset += WRITE_CHUNK_SIZE) {
+            const end = Math.min(offset + WRITE_CHUNK_SIZE, total);
+            await writable.write(data.slice(offset, end));
+            onProgress((end / total) * 100);
+        }
+    }
+
+    /**
+     * DOMException names seen from a successful flash: the Ro/Box reboots
+     * itself the instant the UF2 finishes writing, and the exact moment the
+     * drive vanishes out from under the write determines which one comes
+     * back (an abort from Chrome's post-write scan, or the file/directory
+     * simply no longer being found) - not which of them fired.
+     */
+    const EXPECTED_RESTART_ERRORS = ["AbortError", "NotFoundError"];
+
+    async function isRoboxDrive(directory: FileSystemDirectoryHandle): Promise<boolean> {
+        for await (const [name] of directory.entries()) {
+            // Always present on a Pico's RPI-RP2 mass storage drive.
+            if (name === "INFO_UF2.TXT") return true;
+        }
+        return false;
+    }
+
+    // Astro only includes this script once no matter how many instances
+    // render, so wire up every instance found rather than assuming there's a
+    // single one.
+    document.querySelectorAll<HTMLDivElement>(".selectDrive").forEach((root) => {
+        const button = root.querySelector<HTMLButtonElement>("#flash-select-drive");
+        if (!button) throw new Error("Select drive elements not found");
+
+        async function flash() {
+            setButtonBusy(button!, true);
+            dispatchFlashClearError(root);
+
+            let directory: FileSystemDirectoryHandle;
+            try {
+                directory = await showDirectoryPicker();
+            } catch {
+                // The student cancelled the picker — not a failure worth surfacing.
+                setButtonBusy(button!, false);
+                return;
+            }
+
+            if (!(await isRoboxDrive(directory))) {
+                setButtonBusy(button!, false);
+                dispatchFlashError(
+                    root,
+                    "Wrong Drive Selected",
+                    'That doesn\'t look like your Ro/Box\'s drive. Select the folder named "RPI-RP2" and try again.',
+                );
+                return;
+            }
+
+            // Reset before the download so a retry after a previous failure
+            // doesn't briefly show the last attempt's leftover percentage.
+            showFlashProgress(root);
+
+            let firmware: ArrayBuffer;
+            try {
+                const response = await fetch(FIRMWARE_URL);
+                if (!response.ok) throw new Error("Bad response");
+                firmware = await response.arrayBuffer();
+            } catch {
+                setButtonBusy(button!, false);
+                hideFlashProgress(root);
+                dispatchFlashError(
+                    root,
+                    "Could Not Download Firmware",
+                    "We couldn't fetch the latest firmware from our servers. Please try again, or report this if it keeps happening.",
+                );
+                return;
+            }
+
+            try {
+                const fileHandle = await directory.getFileHandle("robox.uf2", { create: true });
+                const writable = await fileHandle.createWritable();
+                await writeWithProgress(writable, firmware, (percent) => setFlashProgress(root, percent));
+                await writable.close();
+            } catch (error) {
+                // Confirmed against real hardware: this is what a
+                // *successful* flash looks like, even though these read
+                // like rejections rather than the drive having vanished.
+                if (error instanceof DOMException && EXPECTED_RESTART_ERRORS.includes(error.name)) {
+                    setFlashProgress(root, 100);
+                    setButtonBusy(button!, false);
+                    dispatchFlashAdvance(root, "done");
+                    return;
+                }
+
+                setButtonBusy(button!, false);
+                hideFlashProgress(root);
+                dispatchFlashError(
+                    root,
+                    "Failed to Write Firmware",
+                    "We couldn't write the firmware file to your Ro/Box. Please try again.",
+                );
+                return;
+            }
+
+            setFlashProgress(root, 100);
+            setButtonBusy(button!, false);
+            dispatchFlashAdvance(root, "done");
+        }
+
+        button.addEventListener("click", () => void flash());
+    });
+</script>

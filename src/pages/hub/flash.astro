@@ -1,0 +1,21 @@
+---
+import StandardLayout from '@/layouts/StandardLayout.astro';
+import Article from '@/components/article/Article';
+import FlashDevice from '@/features/studentHub/flashDevice/flashDevice.astro';
+---
+<StandardLayout
+    title="Flash Your Ro/Box"
+    description="Reflash your Ro/Box with the latest firmware, right from your browser — no software to install."
+    header="workshop"
+>
+    <Article className="mx-auto max-w-2xl">
+        <h1 class="text-5xl font-bold mb-8">
+            Flash Your Ro/Box
+        </h1>
+        <p class="mb-8 text-lg text-tone3">
+            If your Ro/Box isn't responding, or you just want the latest
+            firmware, you can reflash it below — no software to install.
+        </p>
+        <FlashDevice />
+    </Article>
+</StandardLayout>

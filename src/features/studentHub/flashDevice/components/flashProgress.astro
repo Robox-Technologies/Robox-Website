@@ -1,0 +1,17 @@
+---
+---
+<div
+    class="flashProgress hidden flex flex-col gap-1.5"
+    role="progressbar"
+    aria-valuemin="0"
+    aria-valuemax="100"
+    aria-valuenow="0"
+    aria-label="Firmware upload progress"
+>
+    <div class="flashProgressTrack h-3 w-full overflow-hidden rounded-full bg-gray-300">
+        <div class="flashProgressFill h-full w-0 rounded-full bg-blue transition-[width] duration-150 ease-out"></div>
+    </div>
+    <p class="flashProgressLabel text-sm font-semibold text-gray-800">
+        Writing firmware… <span class="flashProgressPercent">0</span>%
+    </p>
+</div>

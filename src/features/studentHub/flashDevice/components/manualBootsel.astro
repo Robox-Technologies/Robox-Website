@@ -1,0 +1,34 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/button';
+---
+<div class="manualBootsel border-t border-gray-300 pt-4">
+    <p class="font-semibold text-black">If that doesn't work, do it manually:</p>
+    <ol class="mt-2 list-decimal space-y-1 pl-5 text-gray-800">
+        <li>Disconnect your Ro/Box from this computer.</li>
+        <li>Hold down the BOOTSEL button on your Ro/Box.</li>
+        <li>While still holding BOOTSEL, reconnect it over USB.</li>
+        <li>Release the BOOTSEL button.</li>
+    </ol>
+    <Button id="flash-continue-manual" className="bg-gray-500 mt-4">
+        <FontAwesomeIcon icon={faCircleCheck} className="mr-2" />
+        I've Done This Manually
+    </Button>
+</div>
+<script>
+    import { dispatchFlashAdvance, dispatchFlashClearError } from "../stage";
+
+    // Astro only includes this script once no matter how many instances
+    // render, so wire up every instance found rather than assuming there's a
+    // single one.
+    document.querySelectorAll<HTMLDivElement>(".manualBootsel").forEach((root) => {
+        const continueButton = root.querySelector<HTMLButtonElement>("#flash-continue-manual");
+        if (!continueButton) throw new Error("Manual bootsel elements not found");
+
+        continueButton.addEventListener("click", () => {
+            dispatchFlashClearError(root);
+            dispatchFlashAdvance(root, "flash");
+        });
+    });
+</script>

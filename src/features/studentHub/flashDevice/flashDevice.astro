@@ -1,0 +1,110 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import FlashStepper from './components/flashStepper.astro';
+import AutomaticBootsel from './components/automaticBootsel.astro';
+import ManualBootsel from './components/manualBootsel.astro';
+import SelectDrive from './components/selectDrive.astro';
+import FlashComplete from './components/flashComplete.astro';
+---
+<div class="flashDevice flex flex-col gap-6">
+    <FlashStepper />
+
+    <div class="flashDeviceUnsupported flex items-start gap-3 rounded-xl border-2 border-red bg-red/15 p-4" style="display: none;">
+        <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5 text-xl text-black" />
+        <div>
+            <p class="font-bold text-black">Browser Not Supported</p>
+            <p class="mt-1 text-sm text-black">
+                Flashing your Ro/Box needs the File System Access API, which
+                is only available in Chrome or Edge on a desktop computer.
+            </p>
+        </div>
+    </div>
+
+    <div class="flashDeviceError flex items-start gap-3 rounded-xl border-2 border-red bg-red/15 p-4" style="display: none;">
+        <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5 text-xl text-black" />
+        <div>
+            <p class="flashDeviceErrorTitle font-bold text-black"></p>
+            <p class="flashDeviceErrorMessage mt-1 text-sm text-black"></p>
+        </div>
+    </div>
+
+    <div class="flashDeviceStage flex flex-col gap-4 rounded-3xl bg-white box-shadow p-6" data-stage="bootloader">
+        <h2 class="text-xl font-bold text-black">Step 1: Reboot into firmware update mode</h2>
+        <p class="text-gray-800">
+            Connect your Ro/Box over USB and we'll ask it to reboot itself
+            into firmware update mode.
+        </p>
+        <AutomaticBootsel />
+        <ManualBootsel />
+    </div>
+
+    <div class="flashDeviceStage flex flex-col gap-4 rounded-3xl bg-white box-shadow p-6" data-stage="flash" style="display: none;">
+        <h2 class="text-xl font-bold text-black">Step 2: Select your Ro/Box's drive</h2>
+        <SelectDrive />
+    </div>
+
+    <div class="flashDeviceStage flex flex-col items-start gap-4 rounded-3xl bg-white box-shadow p-6" data-stage="done" style="display: none;">
+        <FlashComplete />
+    </div>
+</div>
+<script>
+    import { STAGES, type Stage } from "./stage";
+
+    // Astro only includes this script once no matter how many instances
+    // render, so wire up every instance found rather than assuming there's a
+    // single one.
+    document.querySelectorAll<HTMLDivElement>(".flashDevice").forEach((root) => {
+        const unsupportedBanner = root.querySelector<HTMLDivElement>(".flashDeviceUnsupported");
+        const errorBanner = root.querySelector<HTMLDivElement>(".flashDeviceError");
+        const errorTitle = root.querySelector<HTMLParagraphElement>(".flashDeviceErrorTitle");
+        const errorMessage = root.querySelector<HTMLParagraphElement>(".flashDeviceErrorMessage");
+        const stepper = root.querySelector<HTMLOListElement>(".flashStepper");
+        const stages = root.querySelectorAll<HTMLDivElement>(".flashDeviceStage");
+
+        if (!unsupportedBanner || !errorBanner || !errorTitle || !errorMessage || !stepper) {
+            throw new Error("Flash device elements not found");
+        }
+
+        // Only the firmware write inside SelectDrive needs the File System
+        // Access API; the bootloader step degrades to manual instructions
+        // without USB/Bluetooth, so it doesn't gate the whole page.
+        if (!("showDirectoryPicker" in window)) {
+            unsupportedBanner.style.display = "flex";
+            stepper.style.display = "none";
+            stages.forEach((stage) => { stage.style.display = "none"; });
+            return;
+        }
+
+        function showStage(stage: Stage) {
+            stages.forEach((stageEl) => {
+                stageEl.style.display = stageEl.dataset.stage === stage ? "flex" : "none";
+            });
+            // Dispatched on this same root (not bubbled) so descendants like
+            // FlashStepper can react without this orchestrator knowing
+            // anything about their internals.
+            root.dispatchEvent(new CustomEvent("flashdevice:stage-changed", { detail: { stage } }));
+        }
+
+        // Stage components report progress by bubbling these events up from
+        // their own root, so this orchestrator can react without knowing
+        // anything about how any individual stage works.
+        root.addEventListener("flashdevice:advance", (event) => {
+            errorBanner.style.display = "none";
+            showStage((event as CustomEvent<{ stage: Stage }>).detail.stage);
+        });
+
+        root.addEventListener("flashdevice:error", (event) => {
+            const { title, message } = (event as CustomEvent<{ title: string; message: string }>).detail;
+            errorTitle.textContent = title;
+            errorMessage.textContent = message;
+            errorBanner.style.display = "flex";
+        });
+
+        root.addEventListener("flashdevice:clear-error", () => {
+            errorBanner.style.display = "none";
+        });
+
+        showStage(STAGES[0]);
+    });
+</script>

@@ -1,0 +1,72 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { STAGES, STAGE_LABELS } from '../stage';
+---
+<ol class="flashStepper flex items-center gap-2">
+    {STAGES.map((stage, index) => (
+        <li class="flex flex-1 items-center gap-2">
+            <div class="flashStepCircle flex size-8 shrink-0 items-center justify-center rounded-full bg-gray-300 font-bold text-white">
+                <span class="flashStepNumber">{index + 1}</span>
+                <FontAwesomeIcon icon={faCircleCheck} className="flashStepCheck hidden!" />
+            </div>
+            <span class="flashStepLabel text-sm font-semibold text-gray-400">{STAGE_LABELS[stage]}</span>
+            {index < STAGES.length - 1 && (
+                <div class="flashStepConnector h-0.5 flex-1 bg-gray-300"></div>
+            )}
+        </li>
+    ))}
+</ol>
+<script>
+    import { STAGES, type Stage } from "../stage";
+
+    // Astro only includes this script once no matter how many steppers
+    // render, so wire up every instance found rather than assuming there's a
+    // single one.
+    document.querySelectorAll<HTMLOListElement>(".flashStepper").forEach((stepper) => {
+        const steps = stepper.querySelectorAll<HTMLLIElement>(":scope > li");
+        // The orchestrator dispatches on its own root rather than bubbling,
+        // since it needs to reach a descendant instead of an ancestor.
+        const root = stepper.closest(".flashDevice");
+        if (!root) throw new Error("Flash stepper must be nested inside .flashDevice");
+
+        function highlight(stage: Stage) {
+            const activeIndex = STAGES.indexOf(stage);
+            steps.forEach((step, index) => {
+                const circle = step.querySelector<HTMLDivElement>(".flashStepCircle");
+                const number = step.querySelector<HTMLSpanElement>(".flashStepNumber");
+                const check = step.querySelector<HTMLElement>(".flashStepCheck");
+                const label = step.querySelector<HTMLSpanElement>(".flashStepLabel");
+                const connector = step.querySelector<HTMLDivElement>(".flashStepConnector");
+                if (!circle || !number || !check || !label) return;
+
+                circle.classList.remove("bg-gray-300", "bg-blue", "bg-green");
+                circle.classList.add(
+                    index < activeIndex ? "bg-green" : index === activeIndex ? "bg-blue" : "bg-gray-300",
+                );
+                label.classList.toggle("text-black", index <= activeIndex);
+                label.classList.toggle("text-gray-400", index > activeIndex);
+                // `hidden!`, not `hidden`: FontAwesome's own stylesheet sets
+                // `.svg-inline--fa { display: inline-block }` at the same
+                // specificity as Tailwind's `.hidden`, and it loads after
+                // Tailwind in global.css, so a plain `hidden` toggle on the
+                // checkmark icon never actually hides it.
+                number.classList.toggle("hidden", index < activeIndex);
+                check.classList.toggle("hidden!", index >= activeIndex);
+                // Same story for colour: `span` is forced dark by a global
+                // base-layer rule, so only an `!important` utility actually
+                // wins. White reads on the active step's blue fill; the
+                // upcoming steps' pale gray fill needs the darker gray back.
+                number.classList.toggle("text-white!", index === activeIndex);
+                number.classList.toggle("text-gray-400!", index !== activeIndex);
+                connector?.classList.toggle("bg-green", index < activeIndex);
+            });
+        }
+
+        root.addEventListener("flashdevice:stage-changed", (event) => {
+            highlight((event as CustomEvent<{ stage: Stage }>).detail.stage);
+        });
+
+        highlight(STAGES[0]);
+    });
+</script>
