@@ -1,6 +1,6 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlug, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faPlug, faSpinner, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/button';
 import CommunicationMethodToggle from '@/components/communicationMethodToggle.astro';
 
@@ -17,6 +17,10 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             Connect to Ro/Box
         </Button>
     </div>
+    <Button id="calibration-connect-back" className="bg-gray-500 self-start">
+        <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+        Back
+    </Button>
 </div>
 <script>
     import { pico } from "@/libs/communication/communicate";
@@ -29,7 +33,8 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     // single one.
     document.querySelectorAll<HTMLDivElement>(".calibrationConnect").forEach((root) => {
         const connectButton = root.querySelector<HTMLButtonElement>("#calibration-connect");
-        if (!connectButton) throw new Error("Calibration connect elements not found");
+        const backButton = root.querySelector<HTMLButtonElement>("#calibration-connect-back");
+        if (!connectButton || !backButton) throw new Error("Calibration connect elements not found");
 
         if (root.dataset.iosBuild === "true") {
             void pico.setCommunicationMethod("iOSBluetooth");
@@ -43,7 +48,23 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         // back (a dropped connection) still advances on the next reconnect.
         let hasAdvanced = false;
 
+        // Silently reattaching to a previously authorised USB port the
+        // instant this stage becomes active would start calibrating
+        // whatever Ro/Box that port belongs to without the student clicking
+        // anything - only an explicit click on the button below may connect
+        // here. `setCommunicationMethod` (called by the toggle above, or by
+        // the iOS branch) builds a fresh USBCommunication that defaults
+        // auto-connect back on, and it does so *after* emitting this very
+        // stateChange - queuing this for the next microtask, rather than
+        // calling it inline, is what lets it land on that new transport
+        // instead of the one just torn down.
+        function disableUsbAutoConnect(state: PicoState) {
+            if (state.communicationMethod !== "USB") return;
+            queueMicrotask(() => pico.setAutoConnect(false));
+        }
+
         function updateUI(state: PicoState) {
+            disableUsbAutoConnect(state);
             const connecting = state.connectionStatus === ConnectionStatus.CONNECTING;
             const connected = state.connectionStatus === ConnectionStatus.CONNECTED;
             if (connected) {
@@ -59,6 +80,8 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             // directly) - until one is actually set there's nothing to
             // connect to yet.
             if (!connecting) connectButton!.disabled = !state.communicationMethod;
+            // Leaving mid-attempt would abandon a connect in progress.
+            backButton!.disabled = connecting;
         }
 
         pico.on("stateChange", updateUI);
@@ -71,6 +94,13 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         connectButton.addEventListener("click", () => {
             dispatchCalibrationClearError(root);
             pico.request();
+        });
+
+        // This is the first stage, so "back" leaves the calibration flow
+        // entirely rather than returning to an earlier one.
+        backButton.addEventListener("click", () => {
+            if (window.history.length > 1) window.history.back();
+            else window.location.assign("../");
         });
     });
 </script>

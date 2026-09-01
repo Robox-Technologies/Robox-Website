@@ -1,0 +1,115 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faPlugCircleXmark, faArrowRotateLeft, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/button';
+import { COLOR_PALETTE, CALIBRATION_ORDER } from '@/data/colorPalette';
+
+const colorsByName = new Map(COLOR_PALETTE.map((color) => [color.name, color]));
+const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
+---
+<div class="calibrationPalette flex w-full flex-col gap-6">
+    <p class="text-gray-800">
+        Hold a real swatch of each colour under the sensor, then click it to calibrate - calibrate
+        <span class="font-bold text-black">white</span> and <span class="font-bold text-black">black</span> first,
+        since every other colour is read through the brightness scale those two set. Skip any you like - an
+        uncalibrated colour just keeps a built-in default, and the little reset icon undoes one independently of
+        the rest at any time.
+    </p>
+
+    <div class="flex w-full justify-center">
+        <div class="calibrationPreview flex flex-col items-center gap-3 rounded-2xl border-2 border-black bg-white p-4 shadow-[3px_3px_0_var(--color-drop-shadow)]">
+            <div class="calibrationPreviewSwatch h-32 w-32 rounded-xl border-2 border-black bg-gray-200 transition-colors duration-300 ease-out"></div>
+            <div class="flex flex-col items-center gap-0.5">
+                <p class="text-sm text-gray-800">This is what your Ro/Box sees: <span class="calibrationPreviewName font-bold text-black capitalize">Waiting for a reading…</span></p>
+                <p class="calibrationPreviewRgb font-mono text-xs text-gray-500"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="calibrationSwatchGrid grid grid-cols-4 gap-4">
+        {orderedColors.map((color) => (
+            <div class="calibrationSwatch relative flex flex-col items-center" data-color={color.name}>
+                <button
+                    type="button"
+                    class="calibrationSwatchCalibrate button-interactive box-shadow flex flex-col items-center gap-2 rounded-xl border-2 border-black bg-white p-3"
+                    title={`Calibrate ${color.name}`}
+                >
+                    <span class="block h-10 w-10 rounded-full border-2 border-black" style={`background-color: ${color.hex}`}></span>
+                    <span class="text-xs font-semibold text-black capitalize">{color.name}</span>
+                </button>
+                <button
+                    type="button"
+                    class="calibrationSwatchReset button-interactive absolute -top-2 -left-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-black bg-white text-gray-500 shadow-[1px_1px_0_var(--color-drop-shadow)]"
+                    title={`Reset ${color.name} to default`}
+                >
+                    <FontAwesomeIcon icon={faArrowRotateLeft} className="text-xs" />
+                </button>
+                <span class="calibrationSwatchCheck absolute -top-2 -right-2 flex h-6 w-6 hidden! items-center justify-center rounded-full border-2 border-black bg-white text-green shadow-[1px_1px_0_var(--color-drop-shadow)]">
+                    <FontAwesomeIcon icon={faCircleCheck} />
+                </span>
+                <span class="calibrationSwatchSpinner absolute -top-2 -right-2 flex h-6 w-6 hidden! items-center justify-center rounded-full border-2 border-black bg-white text-blue shadow-[1px_1px_0_var(--color-drop-shadow)]">
+                    <FontAwesomeIcon icon={faSpinner} className="fa-spin" />
+                </span>
+            </div>
+        ))}
+    </div>
+
+    <div class="flex flex-wrap gap-4">
+        <Button id="calibration-back" className="bg-green">Back to Editor</Button>
+    </div>
+    <Button id="calibration-disconnected" className="bg-gray-500 self-start hidden">
+        <FontAwesomeIcon icon={faPlugCircleXmark} className="mr-2" />
+        Ro/Box Not Connected — Back to Connect
+    </Button>
+</div>
+<script>
+    import type { PaletteColorName } from "@/data/colorPalette";
+    import { wireColorCalibration, type SwatchButton } from "../calibrationStep";
+
+    // Astro only includes this script once no matter how many instances
+    // render, so wire up every instance found rather than assuming there's a
+    // single one.
+    document.querySelectorAll<HTMLDivElement>(".calibrationPalette").forEach((root) => {
+        const swatchGrid = root.querySelector<HTMLDivElement>(".calibrationSwatchGrid");
+        const backButton = root.querySelector<HTMLButtonElement>("#calibration-back");
+        const disconnectedButton = root.querySelector<HTMLButtonElement>("#calibration-disconnected");
+        const previewSwatch = root.querySelector<HTMLDivElement>(".calibrationPreviewSwatch");
+        const previewName = root.querySelector<HTMLSpanElement>(".calibrationPreviewName");
+        const previewRgb = root.querySelector<HTMLParagraphElement>(".calibrationPreviewRgb");
+        if (!swatchGrid || !backButton || !disconnectedButton || !previewSwatch || !previewName || !previewRgb) {
+            throw new Error("Calibrate palette stage elements not found");
+        }
+
+        const swatches: SwatchButton[] = Array.from(
+            swatchGrid.querySelectorAll<HTMLDivElement>(".calibrationSwatch"),
+        ).map((swatch) => {
+            const calibrateButton = swatch.querySelector<HTMLButtonElement>(".calibrationSwatchCalibrate");
+            const resetButton = swatch.querySelector<HTMLButtonElement>(".calibrationSwatchReset");
+            const check = swatch.querySelector<HTMLElement>(".calibrationSwatchCheck");
+            const spinner = swatch.querySelector<HTMLElement>(".calibrationSwatchSpinner");
+            const name = swatch.dataset.color as PaletteColorName | undefined;
+            if (!calibrateButton || !resetButton || !check || !spinner || !name) {
+                throw new Error("Calibrate palette swatch elements not found");
+            }
+            return { name, calibrateButton, resetButton, check, spinner };
+        });
+
+        wireColorCalibration({
+            root,
+            disconnectedButton,
+            swatchGrid,
+            swatches,
+            previewSwatch,
+            previewName,
+            previewRgb,
+        });
+
+        // This page is always reached by navigating away from somewhere in
+        // the hub, so going back returns there directly rather than
+        // guessing a destination.
+        backButton.addEventListener("click", () => {
+            if (window.history.length > 1) window.history.back();
+            else window.location.assign("../");
+        });
+    });
+</script>

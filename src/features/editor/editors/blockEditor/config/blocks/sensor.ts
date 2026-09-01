@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { COLOR_PALETTE } from '@/data/colorPalette'
 const sensors = [
     {
         type: 'ultrasonic_distance',
@@ -25,17 +26,8 @@ const sensors = [
             {
                 type: 'field_colour',
                 name: 'colour',
-                colour: '#ff0000',
-                colourOptions: [
-                    '#ff0000', // red
-                    '#ffa500', // orange
-                    '#ffff00', // yellow
-                    '#008000', // green
-                    '#0000ff', // blue
-                    '#800080', // purple
-                    '#000000', // black
-                    '#ffffff', // white
-                ],
+                colour: COLOR_PALETTE[0].hex,
+                colourOptions: COLOR_PALETTE.map((color) => color.hex),
             },
         ],
         output: 'Boolean',

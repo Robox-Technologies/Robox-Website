@@ -1,15 +1,9 @@
 import { pythonGenerator, Order } from 'blockly/python'
+import { COLOR_PALETTE } from '@/data/colorPalette'
 
-const hexToName: Record<string, string> = {
-    '#ff0000': 'red',
-    '#ffa500': 'orange',
-    '#ffff00': 'yellow',
-    '#008000': 'green',
-    '#0000ff': 'blue',
-    '#800080': 'purple',
-    '#000000': 'black',
-    '#ffffff': 'white',
-}
+const hexToName: Record<string, string> = Object.fromEntries(
+    COLOR_PALETTE.map((color) => [color.hex, color.name]),
+)
 pythonGenerator.forBlock['ultrasonic_distance'] = function () {
     const code = 'ultrasonic.distance()'
 

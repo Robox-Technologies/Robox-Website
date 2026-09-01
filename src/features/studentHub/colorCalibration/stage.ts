@@ -1,9 +1,9 @@
 import { setButtonBusy } from '@/components/busyButton'
 import { dispatchStageAdvance, dispatchStageClearError, dispatchStageError } from '@/components/stageFlow'
 
-export type Stage = 'connect' | 'calibrate' | 'done'
+export type Stage = 'connect' | 'calibrate'
 
-export const STAGES: Stage[] = ['connect', 'calibrate', 'done']
+export const STAGES: Stage[] = ['connect', 'calibrate']
 
 /** Narrows an arbitrary value (a URL param, a `history.state` field) to a real `Stage`. */
 export function isStage(value: unknown): value is Stage {
@@ -13,7 +13,6 @@ export function isStage(value: unknown): value is Stage {
 export const STAGE_LABELS: Record<Stage, string> = {
     connect: 'Connect',
     calibrate: 'Calibrate',
-    done: 'Done',
 }
 
 const NAMESPACE = 'colorcalibration'

@@ -14,12 +14,15 @@ import { USBCommunication } from './usb'
 import { BluetoothCommunication } from './webBle'
 import { IOSBluetoothCommunication } from './iosBle'
 import {
+    CALIBRATE_COLOR_COMMANDS,
     COMMANDS,
     MINIMUM_FIRMWARE_VERSION,
+    RESET_COLOR_COMMANDS,
     SUPPORTED_PROTOCOL_VERSION,
     meetsMinimumVersion,
     parseFirmwareReply,
 } from './protocol'
+import type { PaletteColorName } from '@/data/colorPalette'
 import { uploadProgram } from './uploader'
 import { BaseTransport, errorMessage } from './transportBase'
 import type { BleDevice } from '@capacitor-community/bluetooth-le'
@@ -75,6 +78,19 @@ export class Pico {
      * runs, so that would reject every ordinary manual connect too.
      */
     private connectAttempt: Promise<void> | null = null
+
+    /**
+     * Whether a `colorCalibrate()`/`colorResetColor()` reply is still
+     * outstanding. The board answers a refused one (bad command name, no
+     * sensor attached) with the same generic `error` type a crashed user
+     * program gets, and this is what lets `handleMessage` tell the two
+     * apart - without it, every rejected calibration click would restart an
+     * otherwise healthy board. Not used for `colorMode()`: unlike those two,
+     * it has no dedicated success reply to clear this on, so tracking it
+     * the same way would leave this stuck true and silently swallow a real
+     * crash later.
+     */
+    private colorCommandPending: boolean = false
 
     constructor() {
         this.communication = null
@@ -165,6 +181,7 @@ export class Pico {
         this.firmwareConfirmed = false
         this.protocolVersion = 1
         this.uploadVerified = false
+        this.colorCommandPending = false
         this.updateState({
             communicationMethod: method,
             connectionStatus: ConnectionStatus.DISCONNECTED,
@@ -247,6 +264,7 @@ export class Pico {
 
             this.responded = false
             this.firmwareConfirmed = false
+            this.colorCommandPending = false
             this.clearFirmwareCheck()
 
             await this.communication.disconnect()
@@ -317,6 +335,7 @@ export class Pico {
             // command could be sent before the upload had landed.
             this.emit('downloaded', {})
         } else if (type === 'calibrated') {
+            this.colorCommandPending = false
             this.emit('calibrated', { message })
         } else if (type === 'color') {
             // A structured reading, not a string - use the raw payload
@@ -330,6 +349,17 @@ export class Pico {
             // blaming its firmware version.
             if (this.firmwareCheckPending()) {
                 this.failFirmwareCheck(message)
+                return
+            }
+
+            // Same story for a refused calibration/reset command (bad name,
+            // no sensor attached): that's the request's answer, not a
+            // crashed program, so it must not restart a board that never
+            // stopped working - doing so would also kill whatever
+            // colour-mode stream was already running.
+            if (this.colorCommandPending) {
+                this.colorCommandPending = false
+                this.emit('error', { message })
                 return
             }
 
@@ -432,8 +462,23 @@ export class Pico {
         })
     }
 
-    colorCalibrate(): void {
-        void this.communication?.write(COMMANDS.CALIBRATE_COLOR)
+    /**
+     * Calibrates one of the 8 colours against a real swatch held under the
+     * sensor. Every colour is independent - this can be called for as many
+     * or as few of the 8 as the user wants, in any order, and again later
+     * to redo just one - though white and black should go first, since
+     * they set the brightness scale every other colour's reading passes
+     * through.
+     */
+    colorCalibrate(name: PaletteColorName): void {
+        this.colorCommandPending = true
+        void this.communication?.write(CALIBRATE_COLOR_COMMANDS[name])
+    }
+
+    /** Clears one colour's calibration back to its default, independently of every other colour. */
+    colorResetColor(name: PaletteColorName): void {
+        this.colorCommandPending = true
+        void this.communication?.write(RESET_COLOR_COMMANDS[name])
     }
 
     /**

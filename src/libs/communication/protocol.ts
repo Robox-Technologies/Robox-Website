@@ -1,4 +1,5 @@
 import type { PicoMessageType } from 'src/types/communication'
+import type { PaletteColorName } from '@/data/colorPalette'
 
 /**
  * The single source of truth for the Ro/Box wire protocol.
@@ -22,12 +23,45 @@ import type { PicoMessageType } from 'src/types/communication'
 export const COMMANDS = {
     FIRMWARE_CHECK: 'firmware_check',
     START_PROGRAM: 'start_program',
-    CALIBRATE_COLOR: 'calibrate_color',
     COLOR_MODE: 'color_mode',
     RESTART: 'reset_device',
     BOOTLOADER: 'boot_loader',
     DISCONNECT: 'disconnect_device',
 } as const
+
+/**
+ * One argument-less COMMAND per calibratable colour. The protocol's
+ * whitelist model has no parameterised payload, so the colour name is baked
+ * into the command string itself instead of being sent alongside it.
+ *
+ * White/black are special on the board - they set the sensor's
+ * brightness-extreme scale that every other colour's reading passes
+ * through - but the reply shape is uniform across all 8, so nothing on this
+ * side needs to know that; it only matters for the *order* the UI
+ * recommends calibrating in, see `CALIBRATION_ORDER`.
+ */
+export const CALIBRATE_COLOR_COMMANDS: Record<PaletteColorName, string> = {
+    red: 'calibrate_color_red',
+    orange: 'calibrate_color_orange',
+    yellow: 'calibrate_color_yellow',
+    green: 'calibrate_color_green',
+    blue: 'calibrate_color_blue',
+    purple: 'calibrate_color_purple',
+    black: 'calibrate_color_black',
+    white: 'calibrate_color_white',
+}
+
+/** Sibling to `CALIBRATE_COLOR_COMMANDS` - clears one colour's calibration back to its default, independently of every other colour. */
+export const RESET_COLOR_COMMANDS: Record<PaletteColorName, string> = {
+    red: 'reset_color_red',
+    orange: 'reset_color_orange',
+    yellow: 'reset_color_yellow',
+    green: 'reset_color_green',
+    blue: 'reset_color_blue',
+    purple: 'reset_color_purple',
+    black: 'reset_color_black',
+    white: 'reset_color_white',
+}
 
 /**
  * Message types the board can send. Anything else is discarded as noise.

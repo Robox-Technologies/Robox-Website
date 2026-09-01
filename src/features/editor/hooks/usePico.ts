@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { pico } from '@/libs/communication/communicate'
+import type { PaletteColorName } from '@/data/colorPalette'
 import type { PicoState, CommunicationMethod } from 'src/types/communication'
 import { ConnectionStatus, FirmwareStatus } from 'src/types/communication'
 import { getGeneratedCode } from '@/features/editor/state/codeProvider'
@@ -37,8 +38,12 @@ export function usePico() {
         pico.restart()
     }, [])
 
-    const colorCalibrate = useCallback(() => {
-        pico.colorCalibrate()
+    const colorCalibrate = useCallback((name: PaletteColorName) => {
+        pico.colorCalibrate(name)
+    }, [])
+
+    const colorResetColor = useCallback((name: PaletteColorName) => {
+        pico.colorResetColor(name)
     }, [])
 
     const sendCode = useCallback(async () => {
@@ -75,6 +80,7 @@ export function usePico() {
         disconnect,
         restart,
         colorCalibrate,
+        colorResetColor,
         sendCode,
         runCode,
         bootloaderMode,

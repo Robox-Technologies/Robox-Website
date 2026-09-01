@@ -2,8 +2,7 @@
 import StageStepper from '@/components/stageStepper.astro';
 import StageErrorBanner from '@/components/stageErrorBanner.astro';
 import Connect from './components/connect.astro';
-import Calibrate from './components/calibrate.astro';
-import CalibrationComplete from './components/calibrationComplete.astro';
+import CalibratePalette from './components/calibratePalette.astro';
 import { STAGES, STAGE_LABELS } from './stage';
 ---
 <div class="colorCalibration flex flex-col gap-6" data-stage-flow-root>
@@ -15,11 +14,8 @@ import { STAGES, STAGE_LABELS } from './stage';
             <Connect />
         </div>
         <div class="stageFlowStage hidden flex flex-col gap-4 p-6" data-stage="calibrate">
-            <h2 class="text-xl font-bold text-black">Step 2: Calibrate the colour sensor</h2>
-            <Calibrate />
-        </div>
-        <div class="stageFlowStage hidden flex flex-col items-start gap-4 p-6" data-stage="done">
-            <CalibrationComplete />
+            <h2 class="text-xl font-bold text-black">Step 2: Calibrate the colours</h2>
+            <CalibratePalette />
         </div>
     </div>
 </div>

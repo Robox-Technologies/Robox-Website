@@ -199,6 +199,7 @@ export abstract class BaseTransport implements Communication {
      * noise: counted rather than guessed at.
      */
     protected ingest(chunk: string): void {
+        // console.log(chunk)
         if (this.destroyed) return
         if (!chunk) return
 
