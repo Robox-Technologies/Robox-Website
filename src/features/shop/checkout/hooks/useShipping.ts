@@ -4,17 +4,12 @@ import { useEffect, useState } from 'react'
 import { cartItems } from '@/state/cartStore'
 import type { Product } from '@/types/shop'
 
-import {
-    shippingAddress,
-    shippingQuote,
-    voucherCode,
-} from '../state/shippingStore'
+import { shippingAddress, shippingQuote } from '../state/shippingStore'
 
 export function useShipping(products?: Product[]) {
     const currentCart = useStore(cartItems)
     const address = useStore(shippingAddress)
     const quote = useStore(shippingQuote)
-    const voucher = useStore(voucherCode)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -30,9 +25,7 @@ export function useShipping(products?: Product[]) {
 
         const hasAddress = Boolean(country && postcode)
 
-        // A voucher re-prices the order on its own, so quote for it even before
-        // an address exists — the original applied discounts the same way.
-        if (!hasAddress && !voucher) {
+        if (!hasAddress) {
             shippingQuote.set(null)
             setLoading(false)
             setError(null)
@@ -50,7 +43,6 @@ export function useShipping(products?: Product[]) {
                 shippingInfo: hasAddress
                     ? { country: country!, postcode: postcode! }
                     : null,
-                voucher,
             })
 
             if (cancelled) {
@@ -71,12 +63,11 @@ export function useShipping(products?: Product[]) {
         return () => {
             cancelled = true
         }
-    }, [address?.country, address?.postcode, currentCart, products, voucher])
+    }, [address?.country, address?.postcode, currentCart, products])
 
     return {
         quote,
         shippingInfo: address,
-        setShippingInfo: shippingAddress.set,
         loading,
         error,
     }

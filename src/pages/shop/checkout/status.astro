@@ -160,14 +160,11 @@ const socials = [
 </style>
 
 <script>
-    import { loadStripe } from '@stripe/stripe-js'
+    import { actions } from 'astro:actions'
     import { clearCart } from '@/state/cartActions'
-    // See `env.schema` in astro.config.ts — not a `PUBLIC_` variable, so it
-    // reaches the client through `astro:env`, not `import.meta.env`.
-    import { STRIPE_PUBLISHABLE_KEY } from 'astro:env/client'
 
     const POLL_INTERVAL_MS = 1000
-    /** Stop re-polling a stuck 'processing' intent after a minute. */
+    /** Stop re-polling a still-processing order after a minute. */
     const MAX_POLLS = 60
 
     const panels = {
@@ -203,61 +200,46 @@ const socials = [
         return new Promise((resolve) => setTimeout(resolve, ms))
     }
 
-    const publishableKey = STRIPE_PUBLISHABLE_KEY
-    const clientSecret = new URL(window.location.href).searchParams.get(
-        'payment_intent_client_secret',
-    )
+    // Stripe substitutes the id into the `return_url` it was given when the
+    // Checkout Session was created.
+    const sessionId = new URL(window.location.href).searchParams.get('session_id')
 
-    if (!publishableKey) {
-        showFailure('STRIPE_PUBLISHABLE_KEY is not configured')
-    } else if (!clientSecret) {
-        showFailure('no payment intent client secret in the URL')
+    if (!sessionId) {
+        showFailure('no checkout session id in the URL')
     } else {
         void (async () => {
-            try {
-                const stripe = await loadStripe(publishableKey)
-                if (!stripe) {
-                    showFailure('Stripe could not be initialised')
+            // The status is read on the server: the session id is not a secret,
+            // but the secret key needed to resolve it is, and the customer's
+            // email only comes back if their checkout cookie owns this order.
+            for (let attempt = 0; attempt < MAX_POLLS; attempt++) {
+                const result = await actions.getCheckoutStatus({ sessionId })
+
+                if (result.error) {
+                    showFailure(result.error.message)
                     return
                 }
 
-                // Stripe can still be settling the payment when it redirects
-                // here, so keep asking until it resolves either way.
-                for (let attempt = 0; attempt < MAX_POLLS; attempt++) {
-                    const { paymentIntent, error } =
-                        await stripe.retrievePaymentIntent(clientSecret)
+                const { outcome, email } = result.data
 
-                    if (error) {
-                        showFailure(error.message ?? 'unknown Stripe error')
-                        return
-                    }
-
-                    if (
-                        paymentIntent &&
-                        paymentIntent.status !== 'processing'
-                    ) {
-                        if (paymentIntent.status === 'succeeded') {
-                            showSuccess(paymentIntent.receipt_email)
-                        } else {
-                            showFailure(`intent status ${paymentIntent.status}`)
-                        }
-                        return
-                    }
-
-                    await sleep(POLL_INTERVAL_MS)
+                if (outcome === 'succeeded') {
+                    showSuccess(email)
+                    return
                 }
 
-                // Still processing after the cap: the payment isn't lost, it's
-                // slow, so say so rather than claiming failure.
-                const body = document.querySelector(
-                    '#status-loading .status-body',
-                )
-                if (body) {
-                    body.textContent =
-                        'This is taking longer than usual. No worries - our payment is still being processed and we\'ll email you as soon as it completes!'
+                if (outcome === 'failed' || outcome === 'expired') {
+                    showFailure(`checkout ${outcome}`)
+                    return
                 }
-            } catch (error) {
-                showFailure(String(error))
+
+                await sleep(POLL_INTERVAL_MS)
+            }
+
+            // Still settling after the cap: the payment isn't lost, it's slow,
+            // so say so rather than claiming failure.
+            const body = document.querySelector('#status-loading .status-body')
+            if (body) {
+                body.textContent =
+                    'This is taking longer than usual. No worries - your payment is still being processed and we\'ll email you as soon as it completes!'
             }
         })()
     }

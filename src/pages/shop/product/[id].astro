@@ -117,8 +117,17 @@ const metaDescription = toDescription(
                 <h1 class="text-[49px] leading-[1.25] font-extrabold">
                     {product.name}
                 </h1>
-                <p class="text-[49px] leading-[1.25] font-normal mb-8">
+                <p class="text-[49px] leading-[1.25] font-normal mb-1">
                     {priceText}
+                </p>
+                <!--
+                    The catalog is priced in AUD; Stripe converts at checkout
+                    via Adaptive Pricing, at a rate only it knows. Saying so
+                    here is why the storefront doesn't try to show a converted
+                    figure it couldn't guarantee.
+                -->
+                <p class="text-base text-gray-600 mb-8">
+                    Prices in AUD - pay in your local currency at checkout!
                 </p>
                 <p class="text-lg leading-[1.5] my-[18px]">
                     {product.description}

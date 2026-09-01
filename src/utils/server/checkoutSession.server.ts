@@ -1,16 +1,14 @@
 import { createHash, randomUUID } from 'node:crypto'
 import { ActionError, type ActionAPIContext } from 'astro:actions'
-import type { Stripe } from 'stripe'
 
 /**
- * Ties a PaymentIntent to the browser that created it.
+ * Ties a Checkout Session to the browser that created it.
  *
- * `updatePaymentIntent` takes an intent id from the client and rewrites that
- * intent's amount and line items. The id is not a secret — Stripe puts
- * `payment_intent=pi_...` in the return URL, so it lands in browser history,
- * access logs and any `Referer` sent to a third party — so without an ownership
- * check, anyone holding another customer's id could rewrite that customer's order
- * while it was still awaiting payment.
+ * Server endpoints take a session id from the client and read or rewrite that
+ * order. The id is not a secret — Stripe puts `session_id=cs_...` in the return
+ * URL, so it lands in browser history, access logs and any `Referer` sent to a
+ * third party — so without an ownership check, anyone holding another
+ * customer's id could read or alter that customer's order.
  *
  * The owner is a random token in an httpOnly cookie. What goes into the intent's
  * metadata is only its SHA-256, so the recorded value can't be replayed as the
@@ -23,7 +21,7 @@ const COOKIE_NAME = 'robox_checkout'
 /** Long enough to outlast a slow checkout, short enough not to linger. */
 const COOKIE_MAX_AGE_SECONDS = 60 * 60 * 12
 
-/** PaymentIntent metadata key holding the owner fingerprint. */
+/** Metadata key holding the owner fingerprint. */
 export const CHECKOUT_OWNER_KEY = 'checkoutOwner'
 
 function fingerprint(token: string): string {
@@ -64,22 +62,24 @@ export function readCheckoutOwner(context: ActionAPIContext): string | null {
 }
 
 /**
- * Fails closed: an intent carrying no owner — one created before this check
- * existed — counts as not ours to touch. `usePaymentID` answers a rejection by
- * abandoning the intent and creating a fresh one, so this costs a round trip
+ * Fails closed: an order carrying no owner — one created before this check
+ * existed — counts as not ours to touch. The client answers a rejection by
+ * abandoning the session and creating a fresh one, so this costs a round trip
  * rather than a sale.
+ *
+ * Takes anything with metadata rather than a specific Stripe type, so the same
+ * check covers the Checkout Session and the PaymentIntent behind it.
  */
 export function assertCheckoutOwner(
-    intent: Stripe.PaymentIntent,
+    subject: { metadata?: Record<string, string> | null },
     owner: string | null,
 ): asserts owner is string {
-    const recorded = intent.metadata?.[CHECKOUT_OWNER_KEY]
+    const recorded = subject.metadata?.[CHECKOUT_OWNER_KEY]
 
     if (!owner || !recorded || recorded !== owner) {
         throw new ActionError({
             code: 'FORBIDDEN',
-            message:
-                'This payment intent belongs to a different checkout session.',
+            message: 'This order belongs to a different checkout session.',
         })
     }
 }

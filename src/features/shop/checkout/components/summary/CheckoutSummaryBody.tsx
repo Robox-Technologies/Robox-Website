@@ -1,69 +1,66 @@
 import CheckoutSummaryRow from './CheckoutSummaryRow'
-import CheckoutVoucher from './CheckoutVoucher'
-import type { SummaryLine } from '@/components/shop/summary/SummaryLineList'
 import { formatPrice } from '@/utils/formatPrice'
-import type { DiscountStatus } from '../../state/shippingStore'
 
-function getLine(lines: SummaryLine[], id: string) {
-    return lines.find((line) => line.id === id)
-}
-
-export default function CheckoutSummaryBody({
-    lines,
+/**
+ * The summary before a Checkout Session exists - a preview of what the order
+ * will cost, from our own quote.
+ *
+ * There is no voucher field here on purpose: a code is applied against the
+ * session, which only exists on the payment step. Showing one earlier would
+ * mean computing a discount ourselves, and that is exactly the disagreement
+ * with Stripe's arithmetic this migration removes.
+ */
+function describeShipping({
     shippingCents,
     shippingLoading,
     shippingError,
-    discountCents,
-    discountStatus,
 }: {
-    lines: SummaryLine[]
     shippingCents: number | null
     shippingLoading: boolean
     shippingError: string | null
-    discountCents: number
-    discountStatus: DiscountStatus
+}): string {
+    if (shippingError) return shippingError
+    if (shippingLoading) return 'Calculating...'
+    if (shippingCents === null) return 'Calculated at checkout'
+    return formatPrice(shippingCents, true)
+}
+
+export default function CheckoutSummaryBody({
+    subtotalCents,
+    shippingCents,
+    shippingLoading,
+    shippingError,
+    totalCents,
+    shippingLabel,
+}: {
+    subtotalCents: number
+    shippingCents: number | null
+    shippingLoading: boolean
+    shippingError: string | null
+    totalCents: number
+    /** The chosen service, e.g. "Express shipping", once one is priced. */
+    shippingLabel?: string | null
 }) {
-    const subtotalLine = getLine(lines, 'subtotal')
-    const totalLine = getLine(lines, 'total')
-
-    if (!subtotalLine || !totalLine) return null
-
     return (
         <div className="flex flex-1 flex-col gap-4">
             <CheckoutSummaryRow
                 label="Subtotal"
-                value={formatPrice(subtotalLine.amountCents, true)}
+                value={formatPrice(subtotalCents, true)}
             />
             <CheckoutSummaryRow
-                label="Shipping"
-                value={
-                    shippingError
-                        ? shippingError
-                        : shippingLoading
-                            ? 'Calculating...'
-                            : shippingCents !== null
-                                ? formatPrice(shippingCents, true)
-                                : 'Calculated at checkout'
-                }
-            />
-
-            {discountCents > 0 && (
-                <CheckoutSummaryRow
-                    label="Discount"
-                    value={`-${formatPrice(discountCents, true)}`}
-                />
-            )}
-
-            <CheckoutVoucher
-                status={discountStatus}
-                disabled={shippingLoading}
+                label={shippingLabel ?? 'Shipping'}
+                value={describeShipping({
+                    shippingCents,
+                    shippingLoading,
+                    shippingError,
+                })}
             />
 
             <div className="mt-auto">
                 <hr className="mb-4 border-t border-gray-200" />
                 <CheckoutSummaryRow
                     label="Total"
-                    value={formatPrice(totalLine.amountCents, true)}
+                    value={formatPrice(totalCents, true)}
                     emphasized
                 />
             </div>

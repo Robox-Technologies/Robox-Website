@@ -3,8 +3,12 @@ import { useCartEntries } from '@/features/shop/hooks/useCartEntries'
 import { useCartTotals } from '@/features/shop/hooks/useCartTotals'
 import type { Product } from '@/types/shop'
 import CheckoutSummaryBody from './CheckoutSummaryBody'
+import { SUMMARY_CARD_CLASS } from './summaryCardClass'
+import { useStore } from '@nanostores/react'
+import { shippingServiceId } from '../../state/checkoutStore'
 import { useShipping } from '../../hooks/useShipping'
 
+/** The summary on the address step, before there is a session to read. */
 export default function CheckoutSummaryCard({
     products,
 }: {
@@ -12,40 +16,35 @@ export default function CheckoutSummaryCard({
 }) {
     const { entries } = useCartEntries(products)
     const subtotalCents = useCartTotals(products)
+    const selectedService = useStore(shippingServiceId)
     const { quote, loading, error, shippingInfo } = useShipping(products)
-    const summaryLines = [
-        {
-            id: 'subtotal',
-            label: 'Subtotal',
-            amountCents: subtotalCents,
-        },
-        {
-            id: 'total',
-            label: 'Total',
-            amountCents: quote?.total ?? subtotalCents,
-            highlighted: true,
-        },
-    ]
+
+    // Follows the delivery speed chosen beside it, so the summary and the
+    // headline above the radios can't show different postage.
+    const selectedOption = quote?.options.find(
+        (option) => option.id === selectedService,
+    )
+
+    const selectedShippingCents =
+        selectedOption?.amountCents ?? quote?.shipping ?? null
 
     return (
         <SummaryCard
             title="Order Summary"
-            className="w-full min-[900px]:w-96 min-[900px]:shrink-0"
+            className={SUMMARY_CARD_CLASS}
             emptyMessage="Add products to build your checkout summary."
         >
             {entries.length > 0 ? (
                 <CheckoutSummaryBody
-                    lines={summaryLines}
-                    /* A voucher can be priced without an address, and that
-                       quote carries shipping: 0 — which isn't a real quote, so
-                       keep saying "calculated at checkout" until we have one. */
-                    shippingCents={
-                        shippingInfo ? (quote?.shipping ?? null) : null
-                    }
+                    subtotalCents={subtotalCents}
+                    /* A quote without an address carries shipping: 0, which
+                       isn't a real quote - keep saying "calculated at
+                       checkout" until there is one. */
+                    shippingCents={shippingInfo ? selectedShippingCents : null}
                     shippingLoading={loading}
                     shippingError={error}
-                    discountCents={quote?.discount ?? 0}
-                    discountStatus={quote?.discountStatus ?? 'unset'}
+                    totalCents={subtotalCents + (selectedShippingCents ?? 0)}
+                    shippingLabel={shippingInfo ? selectedOption?.label : null}
                 />
             ) : null}
         </SummaryCard>

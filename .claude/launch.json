@@ -4,8 +4,20 @@
     {
       "name": "astro-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3000
+    },
+    {
+      "name": "email-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "email:preview"
+      ],
+      "port": 55420
     }
   ]
 }

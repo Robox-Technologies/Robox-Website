@@ -66,7 +66,7 @@ npm run dev
 Then, with the [Stripe CLI](https://docs.stripe.com/stripe-cli) installed, run 
 
 ```bash
-stripe listen --forward-to localhost:3000/api/store/webhook
+stripe listen --forward-to localhost:3000/api/shop/webhook
 ```
 
 ---
