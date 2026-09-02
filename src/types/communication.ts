@@ -71,11 +71,21 @@ export interface ColorReading {
 /**
  * The board's answer to a `get_calibration_<name>` command. `name` echoes
  * back which calibration this is, so one generic message type can grow to
- * cover colour calibrations later without a new type per kind.
+ * cover colour calibrations later without a new type per kind - which is
+ * also why `value`'s shape isn't fixed here; each calibration kind narrows
+ * it after checking `name` (see `MotorCalibration` for "motors").
  */
 export interface CalibrationReading {
     name: string
-    value: number
+    value: unknown
+}
+
+/** `value`'s shape for `{ name: "motors" }` - see `GET_CALIBRATION_COMMANDS`. */
+export interface MotorCalibration {
+    bias: number
+    /** `reverse[0]` is the left motor, `reverse[1]` is the right motor. */
+    reverse: [boolean, boolean]
+    swap: boolean
 }
 
 export interface PicoState {

@@ -2,6 +2,7 @@
 import { faSliders, faXmark, faMicrochip } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import motorImage from "./images/Motor.png"
+import MotorToggle from "./motorToggle.astro"
 ---
 
 <button
@@ -85,6 +86,12 @@ import motorImage from "./images/Motor.png"
             <span class="text-sm font-semibold">Right</span>
         </div>
         <p id="motor-calibrate-readout" class="text-lg font-bold">Balanced</p>
+
+        <div class="w-full flex flex-col gap-3 pt-3 border-t border-gray-200">
+            <MotorToggle id="motor-calibrate-reverse-left" label="Reverse left motor" />
+            <MotorToggle id="motor-calibrate-reverse-right" label="Reverse right motor" />
+            <MotorToggle id="motor-calibrate-swap" label="Swap left/right motors" />
+        </div>
     </div>
 
     <div class="border-t border-gray-300 gap-4 px-6 py-4 flex">
@@ -124,7 +131,7 @@ import motorImage from "./images/Motor.png"
 <script>
     import { pico } from "@/libs/communication/communicate"
     import { ConnectionStatus } from "src/types/communication"
-    import type { PicoState } from "src/types/communication"
+    import type { PicoState, MotorCalibration } from "src/types/communication"
 
     const button = document.getElementById(
         "motor-calibrate-button",
@@ -144,6 +151,13 @@ import motorImage from "./images/Motor.png"
     ) as HTMLButtonElement | null
     const leftLine = document.getElementById("motor-calibrate-line-left")
     const rightLine = document.getElementById("motor-calibrate-line-right")
+    const reverseLeftToggle = document.getElementById(
+        "motor-calibrate-reverse-left",
+    )
+    const reverseRightToggle = document.getElementById(
+        "motor-calibrate-reverse-right",
+    )
+    const swapToggle = document.getElementById("motor-calibrate-swap")
 
     if (
         !button ||
@@ -153,7 +167,10 @@ import motorImage from "./images/Motor.png"
         !readout ||
         !resetButton ||
         !leftLine ||
-        !rightLine
+        !rightLine ||
+        !reverseLeftToggle ||
+        !reverseRightToggle ||
+        !swapToggle
     ) {
         throw new Error("Motor calibration dialog elements not found")
     }
@@ -251,6 +268,13 @@ import motorImage from "./images/Motor.png"
         updateDiagram(bias)
     }
 
+    const isToggled = (toggle: HTMLElement) =>
+        toggle.getAttribute("aria-checked") === "true"
+
+    const setToggle = (toggle: HTMLElement, checked: boolean) => {
+        toggle.setAttribute("aria-checked", String(checked))
+    }
+
     // Tracks whether the current connection has already had its motor trim
     // fetched, so a `stateChange` firing for unrelated reasons (firmware
     // status, isRestarting, ...) while still connected doesn't re-request
@@ -282,12 +306,17 @@ import motorImage from "./images/Motor.png"
     updateDiagram(Number(slider.value))
 
     // The board's answer to getCalibration("motors") above - display only,
-    // same as setBias itself: this must never turn around and call
-    // pico.motorCalibrate(), or a mere read would overwrite whatever's
-    // actually persisted on the board with what it just told us.
+    // same as setBias/setToggle themselves: this must never turn around and
+    // call pico.motorCalibrate()/motorReverse()/motorSwap(), or a mere read
+    // would overwrite whatever's actually persisted on the board with what
+    // it just told us.
     pico.on("calibration", (data) => {
         if (data.name !== "motors") return
-        setBias(data.value)
+        const value = data.value as MotorCalibration
+        setBias(value.bias)
+        setToggle(reverseLeftToggle, value.reverse[0])
+        setToggle(reverseRightToggle, value.reverse[1])
+        setToggle(swapToggle, value.swap)
     })
 
     button.addEventListener("click", () => {
@@ -326,8 +355,35 @@ import motorImage from "./images/Motor.png"
         pico.motorCalibrate(Number(slider.value))
     })
 
+    reverseLeftToggle.addEventListener("click", () => {
+        const reversed = !isToggled(reverseLeftToggle)
+        setToggle(reverseLeftToggle, reversed)
+        pico.motorReverse(0, reversed)
+    })
+
+    reverseRightToggle.addEventListener("click", () => {
+        const reversed = !isToggled(reverseRightToggle)
+        setToggle(reverseRightToggle, reversed)
+        pico.motorReverse(1, reversed)
+    })
+
+    swapToggle.addEventListener("click", () => {
+        const swapped = !isToggled(swapToggle)
+        setToggle(swapToggle, swapped)
+        pico.motorSwap(swapped)
+    })
+
     resetButton.addEventListener("click", () => {
         setBias(0)
         pico.motorCalibrate(0)
+
+        setToggle(reverseLeftToggle, false)
+        pico.motorReverse(0, false)
+
+        setToggle(reverseRightToggle, false)
+        pico.motorReverse(1, false)
+
+        setToggle(swapToggle, false)
+        pico.motorSwap(false)
     })
 </script>

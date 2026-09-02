@@ -65,6 +65,21 @@ export function calibrateMotorsCommand(bias: number): string {
 }
 
 /**
+ * Builds the `reverse_motor_<index>_<0|1>` command that sets one motor's
+ * spin direction. An absolute set, not a toggle - sending the same command
+ * twice is a no-op, which matters because a lost ACK can otherwise cause a
+ * legitimate resend to look like a double-flip.
+ */
+export function reverseMotorCommand(index: 0 | 1, reversed: boolean): string {
+    return `reverse_motor_${index}_${reversed ? 1 : 0}`
+}
+
+/** Sibling to `reverseMotorCommand` - same absolute-set reasoning, swaps which physical motor answers to "left" and "right". */
+export function swapMotorsCommand(swapped: boolean): string {
+    return `swap_motors_${swapped ? 1 : 0}`
+}
+
+/**
  * One argument-less COMMAND per gettable calibration value, replying with
  * the generic `calibration` message type - `{ name, value }` - rather than
  * one message type per calibration kind. `motors` is the only one today;

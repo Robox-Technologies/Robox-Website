@@ -24,6 +24,8 @@ import {
     calibrateMotorsCommand,
     meetsMinimumVersion,
     parseFirmwareReply,
+    reverseMotorCommand,
+    swapMotorsCommand,
     type CalibrationName,
 } from './protocol'
 import type { PaletteColorName } from '@/data/colorPalette'
@@ -85,14 +87,15 @@ export class Pico {
 
     /**
      * Whether a `colorCalibrate()`/`colorResetColor()`/`motorCalibrate()`/
-     * `getCalibration()` reply is still outstanding. The board answers a
-     * refused one (bad command name, no sensor attached, out-of-range bias)
-     * with the same generic `error` type a crashed user program gets, and
-     * this is what lets `handleMessage` tell the two apart - without it,
-     * every rejected calibration click would restart an otherwise healthy
-     * board. Not used for `colorMode()`: unlike those, it has no dedicated
-     * success reply to clear this on, so tracking it the same way would
-     * leave this stuck true and silently swallow a real crash later.
+     * `motorReverse()`/`motorSwap()`/`getCalibration()` reply is still
+     * outstanding. The board answers a refused one (bad command name, no
+     * sensor attached, out-of-range bias) with the same generic `error`
+     * type a crashed user program gets, and this is what lets
+     * `handleMessage` tell the two apart - without it, every rejected
+     * calibration click would restart an otherwise healthy board. Not used
+     * for `colorMode()`: unlike those, it has no dedicated success reply to
+     * clear this on, so tracking it the same way would leave this stuck
+     * true and silently swallow a real crash later.
      */
     private calibrationCommandPending: boolean = false
 
@@ -499,6 +502,21 @@ export class Pico {
     motorCalibrate(bias: number): void {
         this.calibrationCommandPending = true
         void this.communication?.write(calibrateMotorsCommand(bias))
+    }
+
+    /**
+     * Sets one motor's spin direction. An absolute set, not a toggle - call
+     * it with the direction you want, not "flip whatever it currently is".
+     */
+    motorReverse(index: 0 | 1, reversed: boolean): void {
+        this.calibrationCommandPending = true
+        void this.communication?.write(reverseMotorCommand(index, reversed))
+    }
+
+    /** Swaps which physical motor answers to "left" and "right". Also an absolute set. */
+    motorSwap(swapped: boolean): void {
+        this.calibrationCommandPending = true
+        void this.communication?.write(swapMotorsCommand(swapped))
     }
 
     /**
