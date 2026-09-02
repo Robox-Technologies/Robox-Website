@@ -225,9 +225,14 @@ describe('a refused firmware check', () => {
         transport.reply('firmware', '2.0.0+proto2')
         transport.reply('error', 'ZeroDivisionError: divide by zero')
 
-        expect(transport.commands()).toContain(COMMANDS.RESTART)
         expect(pico.getState().connectionStatus).toBe(
             ConnectionStatus.RESTARTING,
         )
+        // restart() fires the write without awaiting it, and every write now
+        // goes through BaseTransport's send queue - a microtask hop that
+        // wasn't there before - so this can't be asserted synchronously.
+        await vi.waitFor(() => {
+            expect(transport.commands()).toContain(COMMANDS.RESTART)
+        })
     })
 })

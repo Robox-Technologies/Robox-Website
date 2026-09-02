@@ -123,21 +123,52 @@ export abstract class BaseTransport implements Communication {
         return start
     }
 
-    /** Send a control command by name, inside a COMMAND frame. */
-    async write(command: string | string[]): Promise<void> {
-        const queue = Array.isArray(command) ? command : [command]
+    /**
+     * Every `sendRaw()` call - from `write()`, `writeFrames()`, and
+     * `release()` - is chained onto this single promise, so two calls
+     * issued back to back (e.g. four calibration commands fired from one
+     * click handler) can never overlap on the wire. Web Bluetooth enforces
+     * this itself and throws "GATT operation already in progress" the
+     * moment a second `writeValue()` starts before the first resolves; USB
+     * and iOS BLE don't complain, but interleaved frames would silently
+     * corrupt the byte stream just the same.
+     *
+     * Chained with a `.then(ok, ok)` rather than the raw result, so a
+     * failed call clears the way for the next one instead of leaving every
+     * later call permanently stuck behind a rejected promise.
+     */
+    private sendQueue: Promise<void> = Promise.resolve()
 
-        try {
-            for (const name of queue) {
-                if (this.destroyed) break
-                await this.sendRaw(
-                    encodeFrame(this.takeSequence(1), Kind.COMMAND, name),
+    private enqueueSend<T>(task: () => Promise<T>): Promise<T> {
+        const run = this.sendQueue.then(task)
+        this.sendQueue = run.then(
+            () => undefined,
+            () => undefined,
+        )
+        return run
+    }
+
+    /** Send a control command by name, inside a COMMAND frame. */
+    write(command: string | string[]): Promise<void> {
+        return this.enqueueSend(async () => {
+            const queue = Array.isArray(command) ? command : [command]
+
+            try {
+                for (const name of queue) {
+                    if (this.destroyed) break
+                    await this.sendRaw(
+                        encodeFrame(this.takeSequence(1), Kind.COMMAND, name),
+                    )
+                }
+            } catch (error) {
+                this.reportError(
+                    errorMessage(error, 'Could not write to Ro/Box!'),
                 )
+                throw new Error('Could not write to Ro/Box!', {
+                    cause: error,
+                })
             }
-        } catch (error) {
-            this.reportError(errorMessage(error, 'Could not write to Ro/Box!'))
-            throw new Error('Could not write to Ro/Box!', { cause: error })
-        }
+        })
     }
 
     /**
@@ -148,28 +179,32 @@ export abstract class BaseTransport implements Communication {
      * reason this fails, and reporting it would put a write error in front of
      * the user on every unexpected disconnect.
      */
-    async release(): Promise<void> {
-        if (this.destroyed) return
+    release(): Promise<void> {
+        if (this.destroyed) return Promise.resolve()
 
-        try {
-            await this.sendRaw(
-                encodeFrame(
-                    this.takeSequence(1),
-                    Kind.COMMAND,
-                    COMMANDS.DISCONNECT,
-                ),
-            )
-        } catch {
-            // The link is already gone, so there is nothing to hand back.
-        }
+        return this.enqueueSend(async () => {
+            try {
+                await this.sendRaw(
+                    encodeFrame(
+                        this.takeSequence(1),
+                        Kind.COMMAND,
+                        COMMANDS.DISCONNECT,
+                    ),
+                )
+            } catch {
+                // The link is already gone, so there is nothing to hand back.
+            }
+        })
     }
 
     /** Send pre-encoded frames, in order. */
-    async writeFrames(frames: Uint8Array[]): Promise<void> {
-        for (const frame of frames) {
-            if (this.destroyed) return
-            await this.sendRaw(frame)
-        }
+    writeFrames(frames: Uint8Array[]): Promise<void> {
+        return this.enqueueSend(async () => {
+            for (const frame of frames) {
+                if (this.destroyed) return
+                await this.sendRaw(frame)
+            }
+        })
     }
 
     setFlowListener(listener: ((frame: Frame) => void) | null): void {
