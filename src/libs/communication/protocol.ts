@@ -64,6 +64,20 @@ export function calibrateMotorsCommand(bias: number): string {
     return `calibrate_motors_${Math.round(clamped * 100) / 100}`
 }
 
+/**
+ * One argument-less COMMAND per gettable calibration value, replying with
+ * the generic `calibration` message type - `{ name, value }` - rather than
+ * one message type per calibration kind. `motors` is the only one today;
+ * colour calibrations are expected to grow this table later, all answered
+ * the same way, which is why the website's handler branches on
+ * `message.name` instead of on the message type.
+ */
+export const GET_CALIBRATION_COMMANDS = {
+    motors: 'get_calibration_motors',
+} as const
+
+export type CalibrationName = keyof typeof GET_CALIBRATION_COMMANDS
+
 /** Sibling to `CALIBRATE_COLOR_COMMANDS` - clears one colour's calibration back to its default, independently of every other colour. */
 export const RESET_COLOR_COMMANDS: Record<PaletteColorName, string> = {
     red: 'reset_color_red',
@@ -89,6 +103,7 @@ export const MESSAGE_TYPES: readonly PicoMessageType[] = [
     'firmware',
     'connect',
     'calibrated',
+    'calibration',
     'uploaded',
     'color',
 ]

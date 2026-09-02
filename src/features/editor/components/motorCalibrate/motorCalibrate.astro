@@ -251,13 +251,44 @@ import motorImage from "./images/Motor.png"
         updateDiagram(bias)
     }
 
+    // Tracks whether the current connection has already had its motor trim
+    // fetched, so a `stateChange` firing for unrelated reasons (firmware
+    // status, isRestarting, ...) while still connected doesn't re-request
+    // it. Reset on every disconnect so the next connection fetches fresh.
+    let calibrationFetched = false
+
     const updateAvailability = (state: PicoState) => {
-        button.disabled = state.connectionStatus !== ConnectionStatus.CONNECTED
+        const connected = state.connectionStatus === ConnectionStatus.CONNECTED
+        button.disabled = !connected
+
+        if (!connected) {
+            calibrationFetched = false
+            return
+        }
+
+        // Fetched as soon as the board connects, in the background, rather
+        // than when the dialog opens - fetching on open meant the slider
+        // sat wherever it last was and then visibly jumped once the reply
+        // arrived. Fetching here means it's already in place by the time
+        // anyone opens the dialog.
+        if (!calibrationFetched) {
+            calibrationFetched = true
+            pico.getCalibration("motors")
+        }
     }
 
     updateAvailability(pico.getState())
     pico.on("stateChange", updateAvailability)
     updateDiagram(Number(slider.value))
+
+    // The board's answer to getCalibration("motors") above - display only,
+    // same as setBias itself: this must never turn around and call
+    // pico.motorCalibrate(), or a mere read would overwrite whatever's
+    // actually persisted on the board with what it just told us.
+    pico.on("calibration", (data) => {
+        if (data.name !== "motors") return
+        setBias(data.value)
+    })
 
     button.addEventListener("click", () => {
         // Reuses projectSettings.astro's own toggle handler so the dropdown

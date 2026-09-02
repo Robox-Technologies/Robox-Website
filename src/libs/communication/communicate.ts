@@ -5,6 +5,7 @@ import type {
     PicoState,
     PicoMessage,
     ColorReading,
+    CalibrationReading,
 } from 'src/types/communication'
 
 import { ConnectionStatus, FirmwareStatus } from 'src/types/communication'
@@ -16,12 +17,14 @@ import { IOSBluetoothCommunication } from './iosBle'
 import {
     CALIBRATE_COLOR_COMMANDS,
     COMMANDS,
+    GET_CALIBRATION_COMMANDS,
     MINIMUM_FIRMWARE_VERSION,
     RESET_COLOR_COMMANDS,
     SUPPORTED_PROTOCOL_VERSION,
     calibrateMotorsCommand,
     meetsMinimumVersion,
     parseFirmwareReply,
+    type CalibrationName,
 } from './protocol'
 import type { PaletteColorName } from '@/data/colorPalette'
 import { uploadProgram } from './uploader'
@@ -81,15 +84,15 @@ export class Pico {
     private connectAttempt: Promise<void> | null = null
 
     /**
-     * Whether a `colorCalibrate()`/`colorResetColor()`/`motorCalibrate()`
-     * reply is still outstanding. The board answers a refused one (bad
-     * command name, no sensor attached, out-of-range bias) with the same
-     * generic `error` type a crashed user program gets, and this is what
-     * lets `handleMessage` tell the two apart - without it, every rejected
-     * calibration click would restart an otherwise healthy board. Not used
-     * for `colorMode()`: unlike those, it has no dedicated success reply to
-     * clear this on, so tracking it the same way would leave this stuck
-     * true and silently swallow a real crash later.
+     * Whether a `colorCalibrate()`/`colorResetColor()`/`motorCalibrate()`/
+     * `getCalibration()` reply is still outstanding. The board answers a
+     * refused one (bad command name, no sensor attached, out-of-range bias)
+     * with the same generic `error` type a crashed user program gets, and
+     * this is what lets `handleMessage` tell the two apart - without it,
+     * every rejected calibration click would restart an otherwise healthy
+     * board. Not used for `colorMode()`: unlike those, it has no dedicated
+     * success reply to clear this on, so tracking it the same way would
+     * leave this stuck true and silently swallow a real crash later.
      */
     private calibrationCommandPending: boolean = false
 
@@ -338,6 +341,11 @@ export class Pico {
         } else if (type === 'calibrated') {
             this.calibrationCommandPending = false
             this.emit('calibrated', { message })
+        } else if (type === 'calibration') {
+            // A structured { name, value } reply, not a string - use the
+            // raw payload rather than the `message` coercion above.
+            this.calibrationCommandPending = false
+            this.emit('calibration', payload.message as CalibrationReading)
         } else if (type === 'color') {
             // A structured reading, not a string - use the raw payload
             // rather than the `message` coercion above.
@@ -491,6 +499,17 @@ export class Pico {
     motorCalibrate(bias: number): void {
         this.calibrationCommandPending = true
         void this.communication?.write(calibrateMotorsCommand(bias))
+    }
+
+    /**
+     * Reads back a calibration value already persisted on the board,
+     * without changing it. The reply arrives as a `calibration` event -
+     * `{ name, value }` - rather than a return value, since it comes back
+     * over the same async link as everything else.
+     */
+    getCalibration(name: CalibrationName): void {
+        this.calibrationCommandPending = true
+        void this.communication?.write(GET_CALIBRATION_COMMANDS[name])
     }
 
     /**

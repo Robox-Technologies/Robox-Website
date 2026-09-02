@@ -50,6 +50,7 @@ export type PicoMessageType =
     | 'firmware'
     | 'connect'
     | 'calibrated'
+    | 'calibration'
     | 'uploaded'
     | 'color'
 
@@ -67,6 +68,16 @@ export interface ColorReading {
     name: string
 }
 
+/**
+ * The board's answer to a `get_calibration_<name>` command. `name` echoes
+ * back which calibration this is, so one generic message type can grow to
+ * cover colour calibrations later without a new type per kind.
+ */
+export interface CalibrationReading {
+    name: string
+    value: number
+}
+
 export interface PicoState {
     connectionStatus: ConnectionStatus
     firmwareStatus: FirmwareStatus
@@ -79,6 +90,7 @@ export interface PicoEventMap {
     stateChange: PicoState
     console: { message: string }
     calibrated: { message: string }
+    calibration: CalibrationReading
     downloaded: object
     /** The board's verdict on a framed upload: line count and CRC. */
     uploaded: unknown
