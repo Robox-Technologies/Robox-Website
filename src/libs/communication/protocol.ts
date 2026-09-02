@@ -51,6 +51,19 @@ export const CALIBRATE_COLOR_COMMANDS: Record<PaletteColorName, string> = {
     white: 'calibrate_color_white',
 }
 
+/**
+ * Builds the `calibrate_motors_<bias>` command that trims the left/right
+ * motor balance. Unlike the colour commands, the payload here is a
+ * continuous value rather than one of a fixed set of names, so it's built
+ * rather than looked up - clamped to the board's -1..1 range and rounded to
+ * keep the wire string readable (`calibrate_motors_0.3`, not
+ * `calibrate_motors_0.30000000000000004`).
+ */
+export function calibrateMotorsCommand(bias: number): string {
+    const clamped = Math.max(-1, Math.min(1, bias))
+    return `calibrate_motors_${Math.round(clamped * 100) / 100}`
+}
+
 /** Sibling to `CALIBRATE_COLOR_COMMANDS` - clears one colour's calibration back to its default, independently of every other colour. */
 export const RESET_COLOR_COMMANDS: Record<PaletteColorName, string> = {
     red: 'reset_color_red',

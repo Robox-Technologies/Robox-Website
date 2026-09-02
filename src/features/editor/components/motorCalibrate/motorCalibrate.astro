@@ -1,0 +1,302 @@
+---
+import { faSliders, faXmark, faMicrochip } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import motorImage from "./images/Motor.png"
+---
+
+<button
+    type="button"
+    id="motor-calibrate-button"
+    class="button-interactive text-black! text-md p-2 text-left flex items-center gap-2 w-full disabled:opacity-50"
+    disabled
+>
+    <FontAwesomeIcon icon={faSliders} />
+    Calibrate Motors
+</button>
+
+<dialog
+    id="motor-calibrate-dialog"
+    class="modal fixed open:flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[calc(100%-2rem)] max-w-lg rounded-lg shadow-lg bg-white open:zoom-in-95 open:duration-200 p-0!"
+>
+    <button
+        type="button"
+        id="motor-calibrate-dialog-close"
+        class="button-interactive absolute top-3.5 right-4 rounded-md flex items-center justify-center py-1 px-1.5"
+    >
+        <FontAwesomeIcon icon={faXmark} className="size-4 text-red-500" />
+        <span class="sr-only">Close</span>
+    </button>
+
+    <div class="border-b border-gray-300 flex items-center text-xl flex-col font-semibold px-6 py-3 pr-12 text-black">
+        <div class="flex items-center text-xl font-bold">
+            <FontAwesomeIcon
+                icon={faSliders}
+                className="text-green mr-2 mb-0.5"
+            />
+            <h2>Calibrate Motors</h2>
+        </div>
+    </div>
+
+    <div class="relative gap-4 flex-auto overflow-auto flex flex-col items-center px-6 py-4">
+        <div
+            class="w-full flex items-center justify-center gap-2"
+            aria-hidden="true"
+        >
+            <img src={motorImage.src} alt="" class="w-20 shrink-0" />
+            <div
+                id="motor-calibrate-line-left"
+                class="motor-calibrate-line h-2 flex-1 rounded-full"
+            >
+            </div>
+            <div
+                class="flex items-center justify-center size-9 rounded-full bg-black text-white shrink-0"
+            >
+                <FontAwesomeIcon icon={faMicrochip} />
+            </div>
+            <div
+                id="motor-calibrate-line-right"
+                class="motor-calibrate-line h-2 flex-1 rounded-full"
+            >
+            </div>
+            <img
+                src={motorImage.src}
+                alt=""
+                class="w-20 shrink-0 motor-calibrate-mirror"
+            />
+        </div>
+        <p class="text-sm text-gray-600 text-center">
+            Drag the slider towards whichever motor is running slower - the
+            line feeding it pulses faster to show the boost it's getting.
+            This takes effect the next time your program starts; it won't
+            change a program that's already running.
+        </p>
+        <div class="w-full flex items-center gap-3">
+            <span class="text-sm font-semibold">Left</span>
+            <input
+                type="range"
+                id="motor-calibrate-slider"
+                min="-1"
+                max="1"
+                step="0.01"
+                value="0"
+                class="flex-1"
+                aria-label="Motor balance"
+            />
+            <span class="text-sm font-semibold">Right</span>
+        </div>
+        <p id="motor-calibrate-readout" class="text-lg font-bold">Balanced</p>
+    </div>
+
+    <div class="border-t border-gray-300 gap-4 px-6 py-4 flex">
+        <button
+            type="button"
+            id="motor-calibrate-reset"
+            class="button-interactive text-white rounded-xl px-4 py-2 bg-gray-500 ml-auto"
+        >
+            Reset
+        </button>
+    </div>
+</dialog>
+
+<style>
+    .motor-calibrate-mirror {
+        transform: scaleX(-1);
+    }
+
+    .motor-calibrate-line {
+        --intensity: 0.4;
+        background-image: repeating-linear-gradient(
+            90deg,
+            var(--color-green) 0 10px,
+            transparent 10px 20px
+        );
+        background-size: 20px 100%;
+        opacity: var(--intensity);
+        /* Only opacity is a CSS transition - position is driven frame by
+           frame from JS below, precisely so its speed can change smoothly
+           mid-flight. Restarting a CSS `animation-duration` on every slider
+           `input` event resyncs the animation's clock and makes it visibly
+           jump, which is what this replaced. */
+        transition: opacity 200ms ease-out;
+    }
+</style>
+
+<script>
+    import { pico } from "@/libs/communication/communicate"
+    import { ConnectionStatus } from "src/types/communication"
+    import type { PicoState } from "src/types/communication"
+
+    const button = document.getElementById(
+        "motor-calibrate-button",
+    ) as HTMLButtonElement | null
+    const dialog = document.getElementById(
+        "motor-calibrate-dialog",
+    ) as HTMLDialogElement | null
+    const closeButton = document.getElementById(
+        "motor-calibrate-dialog-close",
+    ) as HTMLButtonElement | null
+    const slider = document.getElementById(
+        "motor-calibrate-slider",
+    ) as HTMLInputElement | null
+    const readout = document.getElementById("motor-calibrate-readout")
+    const resetButton = document.getElementById(
+        "motor-calibrate-reset",
+    ) as HTMLButtonElement | null
+    const leftLine = document.getElementById("motor-calibrate-line-left")
+    const rightLine = document.getElementById("motor-calibrate-line-right")
+
+    if (
+        !button ||
+        !dialog ||
+        !closeButton ||
+        !slider ||
+        !readout ||
+        !resetButton ||
+        !leftLine ||
+        !rightLine
+    ) {
+        throw new Error("Motor calibration dialog elements not found")
+    }
+
+    // This dialog is authored as a menu item inside the settings dropdown
+    // (itself a <dialog>), but a <dialog> that's a descendant of another
+    // <dialog> goes dark the instant its ancestor closes - the UA
+    // stylesheet's `dialog:not([open]) { display: none }` hides the whole
+    // subtree, and showModal()'s top-layer promotion doesn't override that.
+    // Moving it to be a direct child of <body> keeps it independent of the
+    // dropdown's open/closed state, same reason the React Dialog component
+    // portals into document.body.
+    document.body.appendChild(dialog)
+
+    const describeBias = (bias: number) => {
+        if (bias === 0) return "Balanced"
+        const percent = Math.round(Math.abs(bias) * 100)
+        return `${percent}% ${bias < 0 ? "Left" : "Right"}`
+    }
+
+    /**
+     * The favoured side's connecting line flows faster and brighter, the
+     * other side settles back to a slow idle - so the "electricity" reads
+     * as flowing more strongly toward whichever motor is being boosted.
+     *
+     * Speed is driven by hand in `tick` below, in pixels/second, rather than
+     * a CSS `animation-duration` - changing that mid-animation resyncs the
+     * animation's internal clock and makes it visibly stutter, which is
+     * exactly what happens while dragging the slider continuously fires
+     * `updateDiagram`.
+     */
+    const MIN_SPEED_PX_S = 15
+    const MAX_SPEED_PX_S = 60
+    const MIN_INTENSITY = 0.3
+    const MAX_INTENSITY = 1
+
+    let leftFavor = 0
+    let rightFavor = 0
+
+    const favorToSpeed = (favor: number) =>
+        MIN_SPEED_PX_S + favor * (MAX_SPEED_PX_S - MIN_SPEED_PX_S)
+
+    const applyFavor = (line: HTMLElement, favor: number) => {
+        const intensity = MIN_INTENSITY + favor * (MAX_INTENSITY - MIN_INTENSITY)
+        line.style.setProperty("--intensity", String(intensity))
+    }
+
+    const updateDiagram = (bias: number) => {
+        leftFavor = bias < 0 ? -bias : 0
+        rightFavor = bias > 0 ? bias : 0
+        applyFavor(leftLine, leftFavor)
+        applyFavor(rightLine, rightFavor)
+    }
+
+    const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+    ).matches
+
+    let leftOffsetPx = 0
+    let rightOffsetPx = 0
+    let lastFrameTime: number | null = null
+    let animationFrame: number | null = null
+
+    const tick = (time: number) => {
+        if (lastFrameTime === null) lastFrameTime = time
+        const deltaSeconds = (time - lastFrameTime) / 1000
+        lastFrameTime = time
+
+        // Left flows out towards the left motor (negative), right flows
+        // out towards the right motor (positive).
+        leftOffsetPx -= favorToSpeed(leftFavor) * deltaSeconds
+        rightOffsetPx += favorToSpeed(rightFavor) * deltaSeconds
+
+        leftLine.style.backgroundPosition = `${leftOffsetPx}px 0`
+        rightLine.style.backgroundPosition = `${rightOffsetPx}px 0`
+
+        animationFrame = requestAnimationFrame(tick)
+    }
+
+    const startFlowAnimation = () => {
+        if (prefersReducedMotion || animationFrame !== null) return
+        lastFrameTime = null
+        animationFrame = requestAnimationFrame(tick)
+    }
+
+    const stopFlowAnimation = () => {
+        if (animationFrame === null) return
+        cancelAnimationFrame(animationFrame)
+        animationFrame = null
+    }
+
+    const setBias = (bias: number) => {
+        slider.value = String(bias)
+        readout.textContent = describeBias(bias)
+        updateDiagram(bias)
+    }
+
+    const updateAvailability = (state: PicoState) => {
+        button.disabled = state.connectionStatus !== ConnectionStatus.CONNECTED
+    }
+
+    updateAvailability(pico.getState())
+    pico.on("stateChange", updateAvailability)
+    updateDiagram(Number(slider.value))
+
+    button.addEventListener("click", () => {
+        // Reuses projectSettings.astro's own toggle handler so the dropdown
+        // closes with its usual gear-rotation animation, rather than
+        // leaving it open behind this dialog's backdrop.
+        document.getElementById("project-settings-button")?.click()
+        dialog.showModal()
+        startFlowAnimation()
+    })
+
+    // Fires on every close path (close(), Escape/cancel, backdrop click
+    // below) - one place to stop ticking rather than repeating it at each
+    // call site.
+    dialog.addEventListener("close", stopFlowAnimation)
+
+    closeButton.addEventListener("click", () => dialog.close())
+
+    // Native <dialog> already closes on Escape via the built-in "cancel"
+    // event - only a backdrop click needs wiring up here.
+    dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close()
+    })
+
+    slider.addEventListener("input", () => {
+        const bias = Number(slider.value)
+        readout.textContent = describeBias(bias)
+        updateDiagram(bias)
+    })
+
+    // "change" (fires on release), not "input" (fires continuously while
+    // dragging): the board only ever needs the final value, and firmware
+    // doesn't live-apply this anyway - it's picked up by the next
+    // `Motors()` a user program creates.
+    slider.addEventListener("change", () => {
+        pico.motorCalibrate(Number(slider.value))
+    })
+
+    resetButton.addEventListener("click", () => {
+        setBias(0)
+        pico.motorCalibrate(0)
+    })
+</script>

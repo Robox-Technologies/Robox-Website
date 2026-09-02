@@ -19,6 +19,7 @@ import {
     MINIMUM_FIRMWARE_VERSION,
     RESET_COLOR_COMMANDS,
     SUPPORTED_PROTOCOL_VERSION,
+    calibrateMotorsCommand,
     meetsMinimumVersion,
     parseFirmwareReply,
 } from './protocol'
@@ -80,17 +81,17 @@ export class Pico {
     private connectAttempt: Promise<void> | null = null
 
     /**
-     * Whether a `colorCalibrate()`/`colorResetColor()` reply is still
-     * outstanding. The board answers a refused one (bad command name, no
-     * sensor attached) with the same generic `error` type a crashed user
-     * program gets, and this is what lets `handleMessage` tell the two
-     * apart - without it, every rejected calibration click would restart an
-     * otherwise healthy board. Not used for `colorMode()`: unlike those two,
-     * it has no dedicated success reply to clear this on, so tracking it
-     * the same way would leave this stuck true and silently swallow a real
-     * crash later.
+     * Whether a `colorCalibrate()`/`colorResetColor()`/`motorCalibrate()`
+     * reply is still outstanding. The board answers a refused one (bad
+     * command name, no sensor attached, out-of-range bias) with the same
+     * generic `error` type a crashed user program gets, and this is what
+     * lets `handleMessage` tell the two apart - without it, every rejected
+     * calibration click would restart an otherwise healthy board. Not used
+     * for `colorMode()`: unlike those, it has no dedicated success reply to
+     * clear this on, so tracking it the same way would leave this stuck
+     * true and silently swallow a real crash later.
      */
-    private colorCommandPending: boolean = false
+    private calibrationCommandPending: boolean = false
 
     constructor() {
         this.communication = null
@@ -181,7 +182,7 @@ export class Pico {
         this.firmwareConfirmed = false
         this.protocolVersion = 1
         this.uploadVerified = false
-        this.colorCommandPending = false
+        this.calibrationCommandPending = false
         this.updateState({
             communicationMethod: method,
             connectionStatus: ConnectionStatus.DISCONNECTED,
@@ -264,7 +265,7 @@ export class Pico {
 
             this.responded = false
             this.firmwareConfirmed = false
-            this.colorCommandPending = false
+            this.calibrationCommandPending = false
             this.clearFirmwareCheck()
 
             await this.communication.disconnect()
@@ -335,7 +336,7 @@ export class Pico {
             // command could be sent before the upload had landed.
             this.emit('downloaded', {})
         } else if (type === 'calibrated') {
-            this.colorCommandPending = false
+            this.calibrationCommandPending = false
             this.emit('calibrated', { message })
         } else if (type === 'color') {
             // A structured reading, not a string - use the raw payload
@@ -357,8 +358,8 @@ export class Pico {
             // crashed program, so it must not restart a board that never
             // stopped working - doing so would also kill whatever
             // colour-mode stream was already running.
-            if (this.colorCommandPending) {
-                this.colorCommandPending = false
+            if (this.calibrationCommandPending) {
+                this.calibrationCommandPending = false
                 this.emit('error', { message })
                 return
             }
@@ -471,14 +472,25 @@ export class Pico {
      * through.
      */
     colorCalibrate(name: PaletteColorName): void {
-        this.colorCommandPending = true
+        this.calibrationCommandPending = true
         void this.communication?.write(CALIBRATE_COLOR_COMMANDS[name])
     }
 
     /** Clears one colour's calibration back to its default, independently of every other colour. */
     colorResetColor(name: PaletteColorName): void {
-        this.colorCommandPending = true
+        this.calibrationCommandPending = true
         void this.communication?.write(RESET_COLOR_COMMANDS[name])
+    }
+
+    /**
+     * Trims the left/right motor balance, from -1 (full left) to 1 (full
+     * right). Persisted board-side in config.json and only picked up by the
+     * next `Motors()` a user program creates - it does not affect a program
+     * that's already running.
+     */
+    motorCalibrate(bias: number): void {
+        this.calibrationCommandPending = true
+        void this.communication?.write(calibrateMotorsCommand(bias))
     }
 
     /**

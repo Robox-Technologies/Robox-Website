@@ -2,6 +2,7 @@
 import { faEyeDropper, faScrewdriver, faDownload } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
+import MotorCalibrate from "../motorCalibrate/motorCalibrate.astro"
 ---
 
 <div class="project-settings relative">
@@ -26,6 +27,7 @@ import Button from "@/components/button"
                 <FontAwesomeIcon icon={faEyeDropper}/>
                 Calibrate Colour
             </Button>
+            <MotorCalibrate />
             <button
                 type="button"
                 class="button-interactive text-black! text-md p-2 text-left flex items-center gap-2"
