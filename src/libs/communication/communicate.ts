@@ -33,11 +33,7 @@ type PicoEventListener<K extends keyof PicoEventMap> = (
 
 type PicoEventHandler = (data: unknown) => void
 
-/**
- * The board's own send throttle plus the chunked write latency mean a reply can
- * take well over half a second to arrive, so this has to be generous or a
- * healthy board gets reported as unresponsive.
- */
+/** Generous: the board's send throttle plus chunked writes can push a reply past half a second. */
 const FIRMWARE_CHECK_TIMEOUT_MS = 2500
 
 const revertStateMapping: Partial<Record<ConnectionStatus, ConnectionStatus>> =
@@ -59,36 +55,19 @@ export class Pico {
     /** Protocol the board speaks. 1 is the unframed legacy path. */
     private protocolVersion: number = 1
 
-    /**
-     * Whether the program currently on the board arrived intact.
-     *
-     * Cleared the moment a new upload starts, so a failed upload cannot leave
-     * a stale pass behind and let `runCode` fire on a truncated program.
-     */
+    /** Whether the program on the board arrived intact. Cleared when a new upload starts. */
     private uploadVerified: boolean = false
 
     /**
-     * A duplicate 'connect' arriving mid-attempt - the board's own USB
-     * re-enumeration during boot, or an auto-reconnect racing the manual
-     * `request()` flow - joins the attempt already running instead of
-     * starting a second one over the same port.
-     *
-     * This can't be a `connectionStatus !== DISCONNECTED` check like
-     * `disconnect()` uses: `request()` sets CONNECTING before this ever
-     * runs, so that would reject every ordinary manual connect too.
+     * Lets a duplicate 'connect' join the attempt already running. A
+     * `connectionStatus` check won't do: `request()` sets CONNECTING first.
      */
     private connectAttempt: Promise<void> | null = null
 
     /**
-     * Whether a `colorCalibrate()`/`colorResetColor()` reply is still
-     * outstanding. The board answers a refused one (bad command name, no
-     * sensor attached) with the same generic `error` type a crashed user
-     * program gets, and this is what lets `handleMessage` tell the two
-     * apart - without it, every rejected calibration click would restart an
-     * otherwise healthy board. Not used for `colorMode()`: unlike those two,
-     * it has no dedicated success reply to clear this on, so tracking it
-     * the same way would leave this stuck true and silently swallow a real
-     * crash later.
+     * Whether a `colorCalibrate()`/`colorResetColor()` reply is outstanding, so
+     * `handleMessage` can tell a refusal from a crashed program. Not used for
+     * `colorMode()`, which has no success reply to clear it on.
      */
     private colorCommandPending: boolean = false
 
@@ -113,8 +92,7 @@ export class Pico {
         return this.state.connectionStatus === ConnectionStatus.CONNECTED
     }
 
-    // Callers that surface their own inline connection feedback (e.g. the
-    // flash device flow) don't want the global toast host talking over it.
+    // Off for callers with their own inline connection feedback (e.g. flash device).
     setToastsEnabled(enabled: boolean): void {
         this.toastsEnabled = enabled
     }
@@ -171,8 +149,7 @@ export class Pico {
 
     async setCommunicationMethod(method: CommunicationMethod): Promise<void> {
         if (this.communication) {
-            // Before the transport goes away: an interface can only be
-            // released over itself.
+            // Before the transport goes away: an interface can only be released over itself.
             await this.releaseBoard()
             await this.communication.destroy()
         }
@@ -241,12 +218,7 @@ export class Pico {
         }
     }
 
-    /**
-     * The board's own USB re-enumeration during boot, or a flaky BLE link, can
-     * report the same disconnect several times over. The DISCONNECTING/
-     * DISCONNECTED guard makes every extra report a no-op instead of racing
-     * a second teardown against the first.
-     */
+    /** Guarded, because USB re-enumeration and flaky BLE report the same disconnect repeatedly. */
     async disconnect(): Promise<void> {
         if (!this.communication) return
 
@@ -278,14 +250,7 @@ export class Pico {
         }
     }
 
-    /**
-     * A message that genuinely came from the board.
-     *
-     * Host-side failures must not come through here: an `error` arriving from
-     * the board restarts it, which is right for a crashed user program and very
-     * wrong for a cancelled device picker. Transports call `emit('error')`
-     * directly for their own failures.
-     */
+    /** A message from the board. Host-side failures go through `emit('error')` instead. */
     handleMessage(payload: PicoMessage): void {
         const { type } = payload
         const message = String(payload.message)
@@ -305,9 +270,7 @@ export class Pico {
                 meetsMinimumVersion(version, MINIMUM_FIRMWARE_VERSION)
 
             if (!usable) {
-                // No fallback by design. The unframed path is what corrupted
-                // programs, so an old board is refused rather than quietly
-                // handed a protocol that cannot detect its own failures.
+                // No fallback: the unframed path can't detect its own failures.
                 this.updateState({
                     firmwareStatus: FirmwareStatus.OUT_OF_DATE,
                     connectionStatus: ConnectionStatus.DISCONNECTED,
@@ -330,33 +293,24 @@ export class Pico {
         } else if (type === 'console') {
             this.emit('console', { message })
         } else if (type === 'download') {
-            // The board confirming it finished writing program.py. Previously
-            // parsed and then dropped on the floor, which is why the run
-            // command could be sent before the upload had landed.
+            // The board confirming it finished writing program.py.
             this.emit('downloaded', {})
         } else if (type === 'calibrated') {
             this.colorCommandPending = false
             this.emit('calibrated', { message })
         } else if (type === 'color') {
-            // A structured reading, not a string - use the raw payload
-            // rather than the `message` coercion above.
+            // A structured reading, so use the raw payload rather than the `message` coercion.
             this.emit('color', payload.message as ColorReading)
         } else if (type === 'uploaded') {
             this.emit('uploaded', payload.message)
         } else if (type === 'error') {
-            // A refusal while the check is outstanding is the check's answer.
-            // Falling through would restart a healthy board, then time out
-            // blaming its firmware version.
+            // A refusal while the check is outstanding is the check's answer, not a crash.
             if (this.firmwareCheckPending()) {
                 this.failFirmwareCheck(message)
                 return
             }
 
-            // Same story for a refused calibration/reset command (bad name,
-            // no sensor attached): that's the request's answer, not a
-            // crashed program, so it must not restart a board that never
-            // stopped working - doing so would also kill whatever
-            // colour-mode stream was already running.
+            // Likewise a refused calibration/reset: the request's answer, not a crash.
             if (this.colorCommandPending) {
                 this.colorCommandPending = false
                 this.emit('error', { message })
@@ -385,10 +339,7 @@ export class Pico {
         this.firmwareCheckTimeout = null
     }
 
-    /**
-     * The board refused the firmware check. Report its own words plus a remedy,
-     * and leave the status UNKNOWN: the firmware itself is not the problem.
-     */
+    /** The board refused the firmware check, so leave the status UNKNOWN. */
     private failFirmwareCheck(reason: string): void {
         this.clearFirmwareCheck()
         this.updateState({
@@ -405,15 +356,12 @@ export class Pico {
         this.write(COMMANDS.FIRMWARE_CHECK)
 
         this.firmwareCheckTimeout = setTimeout(() => {
-            // Dropped first, so an error arriving later is treated as a board
-            // error rather than as this check's answer.
+            // Dropped first, so a later error reads as a board error, not this check's answer.
             this.firmwareCheckTimeout = null
             if (this.firmwareConfirmed) return
 
             if (this.responded) {
-                // Something came back, but not a firmware reply. Pre-2.0.0
-                // boards do not understand a COMMAND frame at all, so this is
-                // the shape an out-of-date board takes.
+                // Not a firmware reply: pre-2.0.0 boards don't understand COMMAND frames.
                 const message = `This Ro/Box did not report a usable firmware version. ${MINIMUM_FIRMWARE_VERSION} or newer is required, so please update it.`
                 this.updateState({
                     connectionStatus: ConnectionStatus.DISCONNECTED,
@@ -462,42 +410,24 @@ export class Pico {
         })
     }
 
-    /**
-     * Calibrates one of the 8 colours against a real swatch held under the
-     * sensor. Every colour is independent - this can be called for as many
-     * or as few of the 8 as the user wants, in any order, and again later
-     * to redo just one - though white and black should go first, since
-     * they set the brightness scale every other colour's reading passes
-     * through.
-     */
+    /** Calibrates one colour against a swatch. Independent per colour, but do white/black first. */
     colorCalibrate(name: PaletteColorName): void {
         this.colorCommandPending = true
         void this.communication?.write(CALIBRATE_COLOR_COMMANDS[name])
     }
 
-    /** Clears one colour's calibration back to its default, independently of every other colour. */
+    /** Clears one colour's calibration back to its default. */
     colorResetColor(name: PaletteColorName): void {
         this.colorCommandPending = true
         void this.communication?.write(RESET_COLOR_COMMANDS[name])
     }
 
-    /**
-     * Puts the board into colour mode, where it streams periodic `color`
-     * readings instead of running a program. There is no dedicated stop
-     * command - any other command frame (including a fresh `colorMode()`
-     * call, `runCode()`, `restart()`, ...) implicitly exits it on the board,
-     * so nothing here needs to explicitly cancel a previous call.
-     */
+    /** Streams periodic `color` readings. Any other command frame implicitly exits the mode. */
     colorMode(): void {
         void this.communication?.write(COMMANDS.COLOR_MODE)
     }
 
-    /**
-     * Send a program and wait for the board to confirm it arrived intact.
-     *
-     * Rejects on a failed verification, so an awaiting caller cannot go on to
-     * run a truncated program.
-     */
+    /** Send a program and wait for the board to confirm it arrived intact. */
     async sendCode(code: string): Promise<void> {
         if (!(this.communication instanceof BaseTransport)) {
             throw new Error('No communication method set')

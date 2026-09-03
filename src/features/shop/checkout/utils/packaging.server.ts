@@ -1,12 +1,6 @@
 import type { BagCapacity, Packaging, Product } from '@/types/shop'
 
-/**
- * The satchels the shop stocks, smallest first.
- *
- * Shop-wide rather than per product: every bagged item goes into one of these
- * three, so a product only has to say how many of it fit in each. Dimensions in
- * centimetres, cost in cents, both carried over from the old `fees.json`.
- */
+/** The satchels the shop stocks, smallest first. Dimensions in cm, cost in cents. */
 export const BAG_SIZES = [
     {
         size: 'small' as const,
@@ -31,9 +25,7 @@ type BagSize = (typeof BAG_SIZES)[number]
 const LARGEST_BAG = BAG_SIZES[BAG_SIZES.length - 1]!
 
 /**
- * Australia Post's limits for a single domestic parcel. An order past any of
- * them is split across more parcels rather than refused.
- *
+ * Australia Post's limits for a single domestic parcel.
  * @see https://auspost.com.au/business/shipping/shipping-guidelines/size-weight-guidelines
  */
 export const PARCEL_LIMITS = {
@@ -46,7 +38,7 @@ export const PARCEL_LIMITS = {
     minBoxSideCm: 5,
 }
 
-/** A bundle containing itself would otherwise recurse until the stack gives out. */
+/** Guards against a bundle that contains itself. */
 const MAX_COMBO_DEPTH = 5
 
 /** A product and how many of it are being packed, after bundles are expanded. */
@@ -60,12 +52,12 @@ export type PackingUnit = {
 /** One physical thing that gets a postage label. */
 export type Parcel = {
     kind: 'satchel' | 'box'
-    /** What to reach for: "large satchel" or "box". What goes in it is `contents`. */
+    /** What to reach for, e.g. "large satchel". */
     label: string
     dimensions: Packaging
     weightGrams: number
     packagingCents: number
-    /** What goes inside, so the parcel can be picked without re-deriving it. */
+    /** What goes inside. */
     contents: Array<{ name: string; quantity: number }>
 }
 
@@ -83,17 +75,8 @@ export type CartProductLine = {
 }
 
 /**
- * Expands bundles into the products they are actually made of.
- *
- * A bundle is a billing concept; the warehouse packs its contents. The ten-pack
- * is ten kits in one satchel, so it has to be measured as ten kits rather than
- * as one opaque item.
- *
- * The bundle's own `weight` is split across the units it expands to, in
- * proportion to how many there are. That keeps the order's total weight exactly
- * what the cart says it is - a bundle's weight already covers its contents, so
- * reading the constituents' own weights instead would both double-count and
- * depend on figures nobody maintains for products only ever sold in a bundle.
+ * Expands bundles into the products they're packed as. The bundle's own weight is
+ * split across the units it expands to, so the order total stays what the cart says.
  */
 export function expandToPackingUnits(
     lines: CartProductLine[],
@@ -183,12 +166,7 @@ function baggedItems(units: PackingUnit[]): BaggedItem[] {
     return items
 }
 
-/**
- * How much of one satchel of the given size an item takes up.
- *
- * A product that fits ten to a large satchel takes a tenth of it, so several
- * products can share one. `null` capacity means it doesn't fit that size at all.
- */
+/** Fraction of one satchel an item takes up, or null if it doesn't fit that size. */
 function share(item: BaggedItem, size: keyof BagCapacity): number {
     const capacity = item.capacity[size]
     return capacity === null ? Infinity : 1 / capacity
@@ -219,11 +197,8 @@ function toSatchel(bag: BagSize, items: BaggedItem[]): Parcel {
 }
 
 /**
- * Packs the bagged part of an order into satchels.
- *
- * Everything in one satchel if it fits - the smallest size that holds it all.
- * Otherwise large satchels are filled one at a time, closing each when the next
- * item would overflow it either by bulk or by Australia Post's weight limit.
+ * Packs the bagged part of an order into satchels: the smallest single size that
+ * holds it all, else large satchels filled one at a time.
  */
 function packSatchels(units: PackingUnit[]): Parcel[] {
     const items = baggedItems(units)
@@ -241,8 +216,7 @@ function packSatchels(units: PackingUnit[]): Parcel[] {
         }
     }
 
-    // Heaviest and bulkiest first, so a part-full satchel is filled with the
-    // small items rather than leaving a big one stranded on its own.
+    // Heaviest and bulkiest first, so part-full satchels get topped up with small items.
     const ordered = [...items].sort(
         (a, b) =>
             share(b, LARGEST_BAG.size) - share(a, LARGEST_BAG.size) ||
@@ -313,12 +287,7 @@ function packBoxes(units: PackingUnit[]): Parcel[] {
     return parcels
 }
 
-/**
- * Australia Post rejects a parcel past any of its limits, so a parcel that
- * can't be split down further - a single carton, or one item too heavy for one
- * satchel - is a data problem and says so rather than being quoted and refused
- * at the counter.
- */
+/** Throws on a parcel that exceeds Australia Post's limits and can't be split further. */
 function assertShippable(parcel: Parcel): void {
     const { length, width, height } = parcel.dimensions
     const sides = [length, width, height]
@@ -355,15 +324,7 @@ function assertShippable(parcel: Parcel): void {
     }
 }
 
-/**
- * Turns an order into the parcels it actually ships as.
- *
- * Each satchel and each carton is its own parcel, quoted separately and summed.
- * An earlier version merged them into one notional parcel by totalling volume,
- * which both described something that doesn't exist - you can't put a carton
- * inside a flat satchel - and undercharged, since two physical parcels are two
- * postages.
- */
+/** Turns an order into the parcels it ships as; each satchel and carton is quoted separately. */
 export function planShipment(units: PackingUnit[]): Shipment {
     const parcels = [...packSatchels(units), ...packBoxes(units)]
 
@@ -405,17 +366,10 @@ function pluralise(label: string): string {
     return label.endsWith('x') ? `${label}es` : `${label}s`
 }
 
-/**
- * Stripe caps a metadata value at 500 characters and an object at 50 keys, so
- * the per-parcel lines stop here. Well past any real order - it exists so a
- * freak cart can't push out the keys that matter.
- */
+/** Stripe caps metadata at 50 keys, so per-parcel lines stop here. */
 const MAX_LISTED_PARCELS = 20
 
-/**
- * Between the four fields of a `parcelN` line. Shared by the writer and the
- * reader below so the format is stated once.
- */
+/** Separator between the four fields of a `parcelN` line. */
 const PARCEL_FIELD_SEPARATOR = ' | '
 
 function formatParcelLine(parcel: Parcel): string {
@@ -432,12 +386,7 @@ function formatParcelLine(parcel: Parcel): string {
     ].join(PARCEL_FIELD_SEPARATOR)
 }
 
-/**
- * The shipment flattened into metadata's string-only values.
- *
- * One key per parcel, because this is what someone reads to pack the order: each
- * line says what to reach for, what goes in it, and what to declare.
- */
+/** The shipment flattened into metadata's string-only values, one key per parcel. */
 export function shipmentToMetadata(shipment: Shipment): Record<string, string> {
     const metadata: Record<string, string> = {
         weightGrams: shipment.weightGrams.toString(),
@@ -471,20 +420,11 @@ export type ShipmentSummary = {
     parcels: ParcelSummary[]
     /** Total shipment weight, or null when the metadata didn't carry one. */
     weightGrams: number | null
-    /**
-     * Parcels the order has beyond the ones metadata could hold
-     * (`MAX_LISTED_PARCELS`), so a packing list can say some are missing rather
-     * than quietly showing fewer parcels than were packed.
-     */
+    /** Parcels beyond `MAX_LISTED_PARCELS`, so a packing list can say some are missing. */
     unlistedParcels: number
 }
 
-/**
- * Reads a `parcelN` line back into its fields.
- *
- * Anchored on the first and last two fields rather than on position, so a
- * product name containing the separator loses nothing - it stays in `contents`.
- */
+/** Reads a `parcelN` line back, anchored on the outer fields so a name may contain the separator. */
 function parseParcelLine(line: string): ParcelSummary | null {
     const parts = line.split(PARCEL_FIELD_SEPARATOR)
     if (parts.length < 4) return null
@@ -498,16 +438,8 @@ function parseParcelLine(line: string): ParcelSummary | null {
 }
 
 /**
- * The inverse of `shipmentToMetadata`, for anything downstream of the payment
- * that needs the parcels back - the internal order email packs from this.
- *
- * The metadata is the only surviving record of how the order was packed: the
- * shipment is planned when the Checkout Session is created and never stored
- * anywhere else. Re-planning it from the cart would risk a different answer
- * than the one the customer's postage was quoted on.
- *
- * Returns null for a payment that carries no shipment at all - an order placed
- * before this metadata existed, which has to be packed by hand either way.
+ * Inverse of `shipmentToMetadata`. The metadata is the only record of how an order
+ * was packed. Null when the payment carries no shipment at all.
  */
 export function parseShipmentMetadata(
     metadata: Record<string, string> | null | undefined,

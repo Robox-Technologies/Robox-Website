@@ -1,17 +1,8 @@
 import type * as React from 'react';
 
 /**
- * Shared styles for the transactional emails.
- *
- * Transcribed 1:1 from the original site's `src/templates/email/email.css`,
- * which was applied by running the assembled document through `juice` to
- * inline every rule. jsx-email has no equivalent step for hand-written CSS, so
- * the same declarations live here as style objects and are spread onto the
- * components directly.
- *
- * Anything that *cannot* be inlined - the dark-mode media query, and the
- * @font-face set - stays as raw CSS in `globalCss` / `fontFaceCss` below and is
- * emitted inside a <style> tag by EmailLayout.
+ * Shared styles for the transactional emails, as inline style objects.
+ * What can't be inlined (dark mode, @font-face) lives in `globalCss` / `fontFaceCss`.
  */
 
 export const colors = {
@@ -25,7 +16,7 @@ export const colors = {
     muted: '#717171',
     /** Discount line in light mode. */
     discount: '#4AA21E',
-    /** Discount line in dark mode - lighter, for contrast. */
+    /** Discount line in dark mode. */
     discountDark: '#91CC31',
     buttonText: '#F8F8F8'
 } as const;
@@ -50,32 +41,21 @@ export const containerStyle: React.CSSProperties = {
     maxWidth: '700px',
     padding: '32px',
     textAlign: 'left',
-    // The original centred via `<td align="center">`, which does not actually
-    // centre a block-level div. Kept explicit here so wide viewports centre.
+    // Explicit, because `<td align="center">` does not centre a block-level div.
     margin: '0 auto'
 };
 
-/**
- * `td { word-break: break-word }`. Applied per-cell rather than via a
- * stylesheet so it survives clients that strip <style> - long addresses and
- * product names would otherwise overflow on narrow screens.
- */
+/** `td { word-break: break-word }`, per-cell so it survives clients that strip <style>. */
 export const cellStyle: React.CSSProperties = {
     wordBreak: 'break-word'
 };
 
-/**
- * The rule above the social icons. Its colour tracks the icons: `colors.muted`
- * to match the light icon art, swapped to `colors.textDark` by the `social-hr`
- * rule in `globalCss` to match the dark art. Recolour the icons and both need
- * updating together.
- */
+/** The rule above the social icons. Recolouring the icons means updating `social-hr` too. */
 export const hrStyle: React.CSSProperties = {
     backgroundColor: colors.muted,
     height: '2px',
     border: 'none',
-    // jsx-email's <Hr> ships a default `border-top: 1px solid #eaeaea` that
-    // would otherwise draw a stray line under the 2px bar.
+    // Cancels jsx-email <Hr>'s default border-top, which draws a stray line under the bar.
     borderTop: 'none'
 };
 
@@ -97,13 +77,13 @@ const headingSizes = {
     h3: '14px'
 } as const;
 
-/** `h1, h2, h3` - colour, Nunito, bold, left-aligned, at the original sizes. */
+/** `h1, h2, h3`. */
 export const heading = (as: keyof typeof headingSizes): React.CSSProperties => ({
     ...headingBase,
     fontSize: headingSizes[as]
 });
 
-/** `p` - colour, 14px Nunito Sans, 150% line height. */
+/** `p`. */
 export const textStyle: React.CSSProperties = {
     color: colors.text,
     fontSize: '14px',
@@ -111,11 +91,7 @@ export const textStyle: React.CSSProperties = {
     lineHeight: '150%'
 };
 
-/**
- * `a` - matches `p` for size/family/line-height. The original left link colour
- * to the client default; jsx-email's default (#067df7) is kept because it stays
- * legible in both colour schemes, where the UA default #0000EE does not.
- */
+/** `a`. Keeps jsx-email's #067df7, which stays legible in both colour schemes. */
 export const linkStyle: React.CSSProperties = {
     fontSize: '14px',
     fontFamily: fonts.body,
@@ -153,14 +129,7 @@ export const alignCenter: React.CSSProperties = { textAlign: 'center' };
 
 /* Buttons ------------------------------ */
 
-/**
- * `.button` in email.css, as props for jsx-email's <Button>.
- *
- * `align` is set explicitly because <Button> defaults to 'left'. The font has
- * to come through `style`: <Button> sets no font-family, so the anchor would
- * otherwise fall back to the client default (a serif face), where the original
- * picked up Nunito Sans from the `p, a` rule.
- */
+/** `.button`, as props for jsx-email's <Button>. Font must come through `style`. */
 export const buttonStyle = {
     align: 'center',
     backgroundColor: colors.accent,
@@ -209,10 +178,7 @@ export const feeRowStyle: React.CSSProperties = {
     borderTop: `1px solid ${colors.accent}`
 };
 
-/**
- * `.discount-row > p`. The `discount-row` class must stay on the wrapping cell
- * so the dark-mode override in `globalCss` can reach this text.
- */
+/** `.discount-row > p`. The class must stay on the cell for the dark-mode override to reach it. */
 export const discountTextStyle: React.CSSProperties = {
     ...cellTextStyle,
     fontStyle: 'italic',
@@ -246,13 +212,7 @@ export const footerStyle: React.CSSProperties = { marginTop: '32px' };
 
 /* Internal notices ------------------------------ */
 
-/**
- * The sandbox banner at the top of an internal order email.
- *
- * A solid coral fill rather than a tint, so it survives the dark-mode override
- * in `globalCss` untouched: that rule repaints every <p> in `colors.textDark`,
- * which is the same near-white this already uses on the coral.
- */
+/** The sandbox banner on an internal order email. Solid coral so dark mode leaves it alone. */
 export const testBannerStyle: React.CSSProperties = {
     backgroundColor: colors.accent,
     borderRadius: '8px',
@@ -270,17 +230,8 @@ export const testBannerTextStyle: React.CSSProperties = {
 /* Non-inlinable CSS ------------------------------ */
 
 /**
- * The `@media (prefers-color-scheme: dark)` block from email.css, plus the
- * `td { word-break }` rule as a belt-and-braces fallback.
- *
- * These declarations are `!important` because an important rule in a
- * stylesheet outranks the non-important inline styles above - that is exactly
- * how the original flipped its colours after juice had inlined everything.
- *
- * Note the descendant selector `.discount-row p` where the original used the
- * child combinator `.discount-row > p`. jsx-email HTML-escapes <style> contents,
- * so a `>` ships as `&gt;` and silently invalidates the whole selector. The two
- * are equivalent here - the <p> is always a direct child of the cell.
+ * Dark-mode block plus a `td { word-break }` fallback. `!important` so it outranks
+ * the inline styles above. No `>` combinators: jsx-email escapes <style> contents.
  */
 export const globalCss = `
 td { word-break: break-word; }

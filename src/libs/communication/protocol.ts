@@ -1,25 +1,9 @@
 import type { PicoMessageType } from 'src/types/communication'
 import type { PaletteColorName } from '@/data/colorPalette'
 
-/**
- * The single source of truth for the Ro/Box wire protocol.
- *
- * The firmware has its own copy in `src/main.py` and `src/protocol.py`
- * (Robox-pythonLibs). The two must not drift, so anything added here needs a
- * matching branch there and vice versa.
- */
+/** The Ro/Box wire protocol. Must stay in step with `src/main.py` / `src/protocol.py` in Robox-pythonLibs. */
 
-/**
- * Commands the board acts on, carried by name inside a COMMAND frame.
- *
- * The old protocol sent these as bare lines and the firmware compared every
- * received line against the table, so user code that happened to match was
- * executed instead of stored. A more obscure sentinel would not have fixed
- * that: any in-band marker is a string somebody can type into the editor.
- * These names are safe because a frame's kind, not its payload, decides
- * whether it is a command, and program text only ever becomes DATA or
- * CONTINUE frames.
- */
+/** Commands the board acts on, carried by name inside a COMMAND frame. */
 export const COMMANDS = {
     FIRMWARE_CHECK: 'firmware_check',
     START_PROGRAM: 'start_program',
@@ -29,17 +13,7 @@ export const COMMANDS = {
     DISCONNECT: 'disconnect_device',
 } as const
 
-/**
- * One argument-less COMMAND per calibratable colour. The protocol's
- * whitelist model has no parameterised payload, so the colour name is baked
- * into the command string itself instead of being sent alongside it.
- *
- * White/black are special on the board - they set the sensor's
- * brightness-extreme scale that every other colour's reading passes
- * through - but the reply shape is uniform across all 8, so nothing on this
- * side needs to know that; it only matters for the *order* the UI
- * recommends calibrating in, see `CALIBRATION_ORDER`.
- */
+/** One argument-less COMMAND per calibratable colour; the protocol has no parameterised payload. */
 export const CALIBRATE_COLOR_COMMANDS: Record<PaletteColorName, string> = {
     red: 'calibrate_color_red',
     orange: 'calibrate_color_orange',
@@ -51,7 +25,7 @@ export const CALIBRATE_COLOR_COMMANDS: Record<PaletteColorName, string> = {
     white: 'calibrate_color_white',
 }
 
-/** Sibling to `CALIBRATE_COLOR_COMMANDS` - clears one colour's calibration back to its default, independently of every other colour. */
+/** Sibling to `CALIBRATE_COLOR_COMMANDS`, clearing one colour back to its default. */
 export const RESET_COLOR_COMMANDS: Record<PaletteColorName, string> = {
     red: 'reset_color_red',
     orange: 'reset_color_orange',
@@ -63,12 +37,7 @@ export const RESET_COLOR_COMMANDS: Record<PaletteColorName, string> = {
     white: 'reset_color_white',
 }
 
-/**
- * Message types the board can send. Anything else is discarded as noise.
- *
- * Typed against `PicoMessageType` so adding a type in one place and forgetting
- * the other is a compile error rather than messages silently vanishing.
- */
+/** Message types the board can send. Anything else is discarded as noise. */
 export const MESSAGE_TYPES: readonly PicoMessageType[] = [
     'console',
     'download',
@@ -80,13 +49,7 @@ export const MESSAGE_TYPES: readonly PicoMessageType[] = [
     'color',
 ]
 
-/**
- * Minimum firmware this build can talk to at all.
- *
- * 2.0.0 removed the unframed protocol. There is deliberately no fallback: an
- * older board cannot be uploaded to, and the user is told to update rather
- * than being quietly handed a path that corrupts programs.
- */
+/** Minimum firmware this build can talk to. 2.0.0 removed the unframed protocol; no fallback. */
 export const MINIMUM_FIRMWARE_VERSION = '2.0.0'
 
 /** Framed protocol version this build speaks. */
@@ -128,5 +91,4 @@ export function meetsMinimumVersion(version: string, minimum: string): boolean {
 export const UART_SERVICE = 0xffe0
 export const UART_CHARACTERISTIC = 0xffe1
 
-// Chunk size and pacing live in frames.ts, next to the AdaptivePacer that
-// decides them.
+// Chunk size and pacing live in frames.ts, next to the AdaptivePacer.
