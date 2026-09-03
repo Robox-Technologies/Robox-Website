@@ -59,6 +59,8 @@ Conventions that the linter or a reviewer will hold you to:
 - Comments are rare and short. One or two lines, no narrative, no history, no
   rationale essays. Add one only for a genuine gotcha, invariant or unit; default
   to none. Don't restate the signature or add `@param`/`@returns` for obvious types.
+- In `.astro` templates use `{/* ... */}`, never `<!-- ... -->`: HTML comments are
+  emitted verbatim into the built pages.
 - Client-visible env vars need the `PUBLIC_` prefix; the Stripe publishable key
   is declared in `astro.config.ts` `env.schema` and imported from
   `astro:env/client`, not `import.meta.env`.

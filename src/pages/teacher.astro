@@ -17,14 +17,14 @@ const lessonPlans = await getCMSContentFor('Teacher Resources');
     <PageHero gradient='positive' className='bg-black' leftWidth='66%' lineWidth='20px' overlap='10vw'>
         <div slot="left" class="bg-primary h-full">
             <div class="h-full w-full flex justify-start items-end p-8">
-                <!-- Above the hero photo, below the header's z-50 so the mobile menu wins. -->
+                {/* Above the hero photo, below the header's z-50 so the mobile menu wins. */}
                 <h1 class="relative z-10 text-5xl font-bold" >
                     Teacher Resources
                 </h1>
 
             </div>
-            <!-- The panel is ~71vw on desktop and full-width on mobile, so let the browser
-                 pick. 85vw is the panel plus the ~1.2x object-cover paints over it. -->
+            {/* The panel is ~71vw on desktop and full-width on mobile, so let the browser
+                 pick. 85vw is the panel plus the ~1.2x object-cover paints over it. */}
             <Image
                 src={Hero}
                 alt=""

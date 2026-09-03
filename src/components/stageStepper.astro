@@ -19,7 +19,7 @@ const { namespace, stages, stageLabels } = Astro.props
                     <span class="stageStepNumber absolute inset-0 flex scale-100 items-center justify-center opacity-100 transition-[opacity,scale] duration-200 ease-out">
                         {index + 1}
                     </span>
-                    <!-- Wrapping span so the colour can be forced past the global base-layer `span` rule. -->
+                    {/* Wrapping span so the colour can be forced past the global base-layer `span` rule. */}
                     <span class="stageStepCheck absolute inset-0 flex scale-75 items-center justify-center text-white! opacity-0 transition-[opacity,scale] duration-200 ease-out">
                         <FontAwesomeIcon icon={faCircleCheck} />
                     </span>

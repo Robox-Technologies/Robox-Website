@@ -50,13 +50,13 @@ const ogImageUrl = new URL(OG_IMAGE.path, Astro.site)
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<!-- PNG fallback for browsers that don't take an SVG favicon; they pick the
-     best `icon` they understand, so this only gets used where it's needed. -->
+{/* PNG fallback for browsers that don't take an SVG favicon; they pick the
+     best `icon` they understand, so this only gets used where it's needed. */}
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
-<!-- iOS home screen. Kept at the conventional root filename, which is also
-     where Safari looks when a page declares no icon at all. -->
+{/* iOS home screen. Kept at the conventional root filename, which is also
+     where Safari looks when a page declares no icon at all. */}
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-<!-- Android home screen; the 192 and 512 icons are declared in here. -->
+{/* Android home screen; the 192 and 512 icons are declared in here. */}
 <link rel="manifest" href="/site.webmanifest" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />

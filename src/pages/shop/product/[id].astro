@@ -81,7 +81,7 @@ const metaDescription = toDescription(
 )
 ---
 <StandardLayout title={product.name} description={metaDescription}>
-    <!-- The original's --articleMargin: 64px, halved below 1000px. -->
+    {/* The original's --articleMargin: 64px, halved below 1000px. */}
     <Article className="p-16 max-[1000px]:p-8">
         <p class="my-4 text-base">
             <a href="/shop" class="underline opacity-80 hover:opacity-100">Shop all</a>
@@ -89,7 +89,7 @@ const metaDescription = toDescription(
         </p>
         <div class="w-full flex flex-row max-[1250px]:flex-col gap-8">
             <Carousel images={images} client:load/>
-            <!-- Name and price both heading-sized (49px), the copy below at 18px. -->
+            {/* Name and price both heading-sized (49px), the copy below at 18px. */}
             <div class="flex-1 flex flex-col">
                 {
                     /* Products can carry a promo line (the 10-Pack's "Save 5%"),
@@ -107,7 +107,7 @@ const metaDescription = toDescription(
                 <p class="text-[49px] leading-[1.25] font-normal mb-1">
                     {priceText}
                 </p>
-                <!-- Priced in AUD; Adaptive Pricing converts at checkout, at a rate only Stripe knows. -->
+                {/* Priced in AUD; Adaptive Pricing converts at checkout, at a rate only Stripe knows. */}
                 <p class="text-base text-gray-600 mb-8">
                     Prices in AUD - pay in your local currency at checkout!
                 </p>
