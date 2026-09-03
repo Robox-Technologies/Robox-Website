@@ -7,19 +7,9 @@ import { sendOrderEmail } from '@/features/emails/utils/sendOrderEmail.server'
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET
 
 /**
- * The session, with everything the order emails read.
- *
- * Always re-fetched rather than taken from the event payload: the payload is
- * rendered at the endpoint's configured API version and carries no expansions,
- * so `line_items` — which is where the item names and charged amounts now come
- * from — would be missing.
- *
- * `line_items.data.price.product` is expanded too, because the emails tell the
- * postage line apart from the things the customer ordered by the marker
- * metadata on its product. Without it Stripe returns the product as a bare id,
- * postage reads as an item called "Shipping", and the shipping row shows
- * nothing charged. Four levels, which is Stripe's cap — the list call in
- * `findSessionForIntent` can't ask for the same thing, hence the note there.
+ * The session, with everything the order emails read. Re-fetched rather than taken from
+ * the event payload, which carries no expansions; `line_items.data.price.product` is
+ * four levels deep, which is Stripe's cap.
  */
 function loadSession(id: string): Promise<Stripe.Checkout.Session> {
     return stripeAPI.checkout.sessions.retrieve(id, {
@@ -32,19 +22,12 @@ function loadSession(id: string): Promise<Stripe.Checkout.Session> {
     })
 }
 
-/**
- * A failed card payment never completes its session, so there is no
- * `checkout.session.*` event for it — the failure notice still has to hang off
- * `payment_intent.payment_failed`. The session exists regardless, so find it and
- * build the email from the same shape the success path uses.
- */
+/** A failed payment fires no `checkout.session.*` event, so find the session from the intent. */
 async function findSessionForIntent(
     paymentIntentId: string,
 ): Promise<Stripe.Checkout.Session | null> {
-    // Only the id is taken from the list, because the expansions the emails
-    // need are a level too deep for a list call - Stripe caps expansion at four
-    // levels, and `data.line_items.data.price.product` is five. Re-reading the
-    // session through `loadSession` gets the same shape the success path uses.
+    // Only the id: `data.line_items.data.price.product` is five levels, past Stripe's cap,
+    // so `loadSession` re-reads it.
     const sessions = await stripeAPI.checkout.sessions.list({
         payment_intent: paymentIntentId,
         limit: 1,

@@ -17,9 +17,8 @@ export const STAGE_LABELS: Record<Stage, string> = {
 
 const NAMESPACE = 'colorcalibration'
 
-// Stage components report progress upward by dispatching these on their own
-// root (bubbles: true), so the colorCalibration orchestrator — an ancestor in
-// the DOM — can react without knowing anything about the component internally.
+// Dispatched on the component's own root and bubbled, so the orchestrator can react
+// without knowing anything about the component.
 export function dispatchCalibrationAdvance(target: EventTarget, stage: Stage): void {
     dispatchStageAdvance(target, NAMESPACE, stage)
 }

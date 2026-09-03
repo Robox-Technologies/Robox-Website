@@ -19,9 +19,7 @@ import Button from '@/components/button';
 <script>
     import { dispatchFlashAdvance, dispatchFlashClearError } from "../stage";
 
-    // Astro only includes this script once no matter how many instances
-    // render, so wire up every instance found rather than assuming there's a
-    // single one.
+    // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".manualBootsel").forEach((root) => {
         const continueButton = root.querySelector<HTMLButtonElement>("#flash-continue-manual");
         if (!continueButton) throw new Error("Manual bootsel elements not found");

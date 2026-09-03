@@ -1,11 +1,7 @@
 ---
 /**
- * Shared shell for the legal pages (/privacy, /tos), whose bodies come straight
- * from markdown. The type scale mirrors the original site's `_common.scss`
- * heading/body mixins, since markdown content can't carry Tailwind classes.
- *
- * `RoboxSectionize` wraps each `##` block in `<section class="articleSection">`,
- * so the rules below reach into those.
+ * Shell for the legal pages, whose bodies are markdown and so can't carry Tailwind
+ * classes. `RoboxSectionize` wraps each `##` block in `<section class="articleSection">`.
  */
 import StandardLayout from '@/layouts/StandardLayout.astro'
 

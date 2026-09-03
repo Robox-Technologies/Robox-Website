@@ -20,9 +20,7 @@ import Button from '@/components/button';
 <script>
     import { dispatchFlashAdvance } from "../stage";
 
-    // Astro only includes this script once no matter how many instances
-    // render, so wire up every instance found rather than assuming there's a
-    // single one.
+    // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".flashComplete").forEach((root) => {
         const again = root.querySelector<HTMLButtonElement>("#flash-again");
         if (!again) throw new Error("Flash complete elements not found");

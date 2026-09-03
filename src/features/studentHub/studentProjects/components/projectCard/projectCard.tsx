@@ -50,12 +50,9 @@ export function ProjectCard({
         openProject.set(null)
     }
 
-    // The browser sets `:active` on every ancestor of the pressed node, so
-    // pressing the ⋮ button, its menu or the rename row would sink the whole
-    // card underneath a control that already gives its own press feedback.
-    // Those presses are marked here so `.card-no-press` can suppress the sink;
-    // CSS can't tell on its own without `:has()` (Safari 15.4, above the iOS 15
-    // floor). Recomputed on every press, so it never needs clearing.
+    // `:active` applies to every ancestor, so a press on the ⋮ button or rename row
+    // would sink the whole card. Marked here so `.card-no-press` can suppress it;
+    // CSS can't do it alone without `:has()`, which is above the iOS 15 floor.
     const handlePointerDown = (e: React.PointerEvent) => {
         setPressOnControl(
             e.target instanceof Element &&
@@ -67,9 +64,8 @@ export function ProjectCard({
         <Card
             href={editorHref(id)}
             onPointerDown={handlePointerDown}
-            // Guard in the capture phase: children (e.g. the rename input) call
-            // stopPropagation, which would otherwise prevent a bubble-phase
-            // onClick here from cancelling navigation while editing.
+            // Capture phase, because children call stopPropagation and a bubble-phase
+            // handler here would never cancel navigation while editing.
             onClickCapture={(e) => {
                 if (isEditing) e.preventDefault()
             }}
@@ -82,9 +78,7 @@ export function ProjectCard({
                     // Decorative: the project name sits directly below it,
                     // and `thumbnail` is empty until the project is first saved.
                     alt=""
-                    // The card rounds to 24px *outside* its 4px border, so the
-                    // thumbnail sitting inside that border has to stop 4px
-                    // short of it or its corners bulge past the highlight.
+                    // 4px short of the card's 24px radius, which is measured outside its border.
                     className="w-full rounded-t-[calc(1.5rem-4px)] object-cover bg-tone3 aspect-video"
                 />
             }

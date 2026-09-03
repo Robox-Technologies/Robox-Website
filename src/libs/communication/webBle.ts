@@ -84,10 +84,8 @@ export class BluetoothCommunication extends BleTransport {
     }
 
     private handleDisconnected(): void {
-        // No name check: the listener is bound to our own device, and
-        // `requestDevice` already filtered on the UART service. Matching on a
-        // 'RoBox' prefix silently missed boards named anything else, leaving the
-        // app sitting in CONNECTED with nothing on the other end.
+        // No name check: the listener is bound to our device and `requestDevice` already
+        // filtered on the UART service.
         void this.parent.disconnect()
     }
 

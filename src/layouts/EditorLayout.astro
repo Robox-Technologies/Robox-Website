@@ -34,10 +34,8 @@ const { title, description, noindex } = Astro.props as Props;
 
         <slot />
         <ToastHost client:only="react" />
-        <!-- Ships with Analytics rather than with the footer (which this layout
-             doesn't have): consent defaults to denied, so without a way to
-             answer here, anyone landing straight on the editor would never be
-             measured and never be asked. -->
+        <!-- Ships with Analytics, not the footer this layout doesn't have — consent
+             defaults to denied, so there has to be a way to answer here. -->
         {!isIOSBuild && <CookieConsent />}
     </body>
 </html>

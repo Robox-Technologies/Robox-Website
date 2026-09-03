@@ -8,12 +8,7 @@ import {
     dispatchCalibrationError,
 } from './stage'
 
-/**
- * Calibration involves an actual sensor read on the board, not just an
- * echoed command, so this is more generous than the firmware check's
- * timeout - long enough for a healthy board to genuinely finish before
- * being reported as unresponsive.
- */
+/** More generous than the firmware check: calibration is a real sensor read, not an echo. */
 const CALIBRATION_TIMEOUT_MS = 6000
 
 export interface SwatchButton {
@@ -34,12 +29,7 @@ export interface ColorCalibrationOptions {
     previewRgb: HTMLElement
 }
 
-/**
- * Wires up the single calibrate stage: every one of the 8 colours has its
- * own calibrate/reset pair sitting next to the live colour-mode preview.
- * Every colour is independent - there's no forced order or wizard to step
- * through, and any colour can be (re)calibrated or reset on its own.
- */
+/** Wires up the calibrate stage: a calibrate/reset pair per colour, each independent. */
 export function wireColorCalibration(options: ColorCalibrationOptions): void {
     const { root, disconnectedButton, swatchGrid, swatches, previewSwatch, previewName, previewRgb } = options
 
@@ -49,9 +39,7 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
     let activeAction: 'calibrate' | 'reset' | null = null
     let timeoutHandle: ReturnType<typeof setTimeout> | null = null
 
-    // Colour mode is entered exactly once per connection, right as it
-    // becomes available, rather than needing its own explicit step -
-    // there's no other reason to be on this stage.
+    // Colour mode is entered once per connection, as soon as it's available.
     let colorModeStarted = false
 
     function clearTimer() {
@@ -80,23 +68,14 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         activeSwatch = null
         activeAction = null
         setInteractive(true)
-        // The calibrate/reset command just in flight is a COMMAND frame like
-        // any other, and the board implicitly exits colour mode the instant
-        // it receives one - there's no dedicated stop, any other command
-        // does it. So the live preview needs a fresh colorMode() call to
-        // resume streaming once this request's cycle is done, whether it
-        // succeeded or was refused. Skipped when we're not even connected
-        // any more (the disconnect branch below): there's nothing to send it
-        // to, and reconnecting re-enters it on its own.
+        // Any COMMAND frame implicitly exits colour mode on the board, so the live
+        // preview needs a fresh colorMode() once the request settles either way.
         if (pico.isConnected()) pico.colorMode()
         after()
     }
 
-    // Reachable either by URL (a reload or a bookmark landing straight on
-    // this stage) or by the Ro/Box dropping out mid-stage, not just by
-    // arriving here normally from a successful Connect stage - so this
-    // checks the connection itself rather than trusting it was already
-    // verified upstream.
+    // Reachable by URL or after a mid-stage disconnect, so check the connection here
+    // rather than trusting the Connect stage ran.
     function updateConnectionUI(state: PicoState) {
         const connected = state.connectionStatus === ConnectionStatus.CONNECTED
         if (!connected && waitingForResult) {
@@ -125,9 +104,8 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         previewRgb.textContent = `rgb(${reading.r}, ${reading.g}, ${reading.b})`
     })
 
-    // The reply names which colour/action just succeeded (e.g. "red" vs.
-    // "red_reset"), but with only one request ever in flight, `activeSwatch`
-    // and `activeAction` already know that - nothing here needs to parse it.
+    // With one request in flight, `activeSwatch`/`activeAction` already say which
+    // colour the reply is for, so its payload doesn't need parsing.
     pico.on('calibrated', () => {
         if (!waitingForResult) return
         const swatch = activeSwatch
@@ -150,9 +128,7 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         send: () => void,
         failureMessage: string,
     ) {
-        // One request in flight at a time - a click on another swatch
-        // mid-request can't start a second one racing the first's
-        // timeout/reply against it.
+        // One request in flight, so a click on another swatch can't race the first.
         if (waitingForResult) return
 
         dispatchCalibrationClearError(root)
