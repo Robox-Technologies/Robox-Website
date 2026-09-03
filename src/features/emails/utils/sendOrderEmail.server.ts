@@ -38,10 +38,7 @@ async function buildCustomerEmail(
     orderData: EmailOrderData,
     success: boolean,
 ): Promise<OutgoingEmail> {
-    // Both templates take the same order details; only the receipt also shows
-    // the delivery address, since a failed payment isn't going anywhere. Shared
-    // rather than restated so a new field cannot reach one template and not the
-    // other.
+    // Shared so a new field can't reach one template and not the other.
     const shared = {
         name: orderData.name,
         date: orderData.date,
@@ -61,12 +58,8 @@ async function buildCustomerEmail(
     return {
         kind: success ? 'receipt' : 'payment failed',
         to: orderData.to,
-        // The order id is in the subject to keep each message in its own Gmail
-        // thread. Gmail threads on subject + participants, and collapses
-        // whatever a later message repeats from an earlier one in the thread
-        // behind a "..." expander - with a fixed subject, every receipt after
-        // the customer's first arrived with its masthead, totals table and
-        // footer folded away.
+        // The order id keeps each receipt in its own Gmail thread; Gmail threads on
+        // subject and folds away whatever a later message repeats.
         subject: success ? `Your Ro/Box Receipt` : `Ro/Box Payment Failed`,
         replyTo: ORDER_MAILBOX,
         html: await render(element),
@@ -78,12 +71,7 @@ async function buildCustomerEmail(
     }
 }
 
-/**
- * The fulfilment copy that lands in our own inbox: who ordered, where it goes,
- * how to pack it and what is in it.
- *
- * Only for a paid order - a failed payment has nothing to pack.
- */
+/** The fulfilment copy for our own inbox. Paid orders only. */
 async function buildInternalEmail(
     orderData: EmailOrderData,
 ): Promise<OutgoingEmail> {
@@ -114,13 +102,7 @@ async function buildInternalEmail(
     }
 }
 
-/**
- * Resend reports API failures in the resolved value rather than by throwing, so
- * an invalid key, a suspended domain or a rejected recipient all came back
- * looking like a successful send. A receipt that silently didn't arrive is
- * worse than a loud failure - the caller logs this, and Stripe will retry the
- * webhook.
- */
+/** Resend reports API failures in the resolved value rather than throwing, so check for them. */
 async function send(email: OutgoingEmail): Promise<string | undefined> {
     const { data, error } = await resend.emails.send({
         from: FROM,
@@ -154,11 +136,8 @@ export async function sendOrderEmail(
         emails.push(await buildInternalEmail(orderData))
     }
 
-    // Sent independently rather than one after the other, so a rejection of the
-    // internal copy cannot cost the customer their receipt. Both are still
-    // reported as a failure, because an order nobody is told to pack is as bad
-    // as one the customer never heard about - Stripe retries the webhook, at
-    // the cost of re-sending whichever of the two did get through.
+    // Independent, so a rejected internal copy can't cost the customer their receipt.
+    // Either failing still fails the webhook, which Stripe retries.
     const results = await Promise.allSettled(emails.map(send))
 
     const failures = results.filter((result) => result.status === 'rejected')

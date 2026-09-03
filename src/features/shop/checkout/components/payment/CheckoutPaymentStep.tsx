@@ -9,12 +9,7 @@ import CheckoutPaymentLoadingState from './CheckoutPaymentLoadingState'
 import CheckoutStatePanel from './CheckoutStatePanel'
 import { StripePaymentForm } from './StripePaymentForm'
 
-/**
- * Step two: the Checkout Session, and everything that reads from it.
- *
- * Both columns sit inside one provider because the summary's figures come from
- * the session rather than from local arithmetic.
- */
+/** Step two: the Checkout Session. Both columns share one provider, since the summary reads from it. */
 export default function CheckoutPaymentStep() {
     const { clientSecret, error } = useCheckoutSession()
 
@@ -50,10 +45,7 @@ export default function CheckoutPaymentStep() {
             stripe={stripePromise}
             options={{
                 clientSecret,
-                // Declares that this page displays whatever currency the
-                // session comes back in and renders the currency selector, which
-                // is Stripe's condition for converting at all. Whether it
-                // actually converts is the dashboard's call.
+                // Stripe's condition for converting at all; whether it does is the dashboard's call.
                 adaptivePricing: { allowed: true },
                 elementsOptions: {
                     appearance: createCheckoutAppearance(),

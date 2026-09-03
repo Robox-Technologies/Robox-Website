@@ -24,18 +24,8 @@ export type ShippingService = {
 }
 
 /**
- * What the customer can choose between.
- *
- * Only Australia Post's *own packaging* rates appear here. Their service list
- * also returns satchel and size-banded variants which are often cheaper, but
- * those require buying Australia Post's own satchels - this shop packs into its
- * own (see `packaging.server.ts`), so quoting a satchel rate would charge for
- * postage we don't actually buy.
- *
- * Economy Air (`INT_PARCEL_AIR_OWN_PACKAGING`) and Courier
- * (`INT_PARCEL_COR_OWN_PACKAGING`) exist internationally and would slot in
- * here; two tiers is enough to be useful without turning delivery into a
- * research task. Stripe caps a session at five.
+ * What the customer can choose between. Own-packaging rates only — the satchel variants
+ * require buying Australia Post's satchels, and this shop packs into its own.
  */
 export const SHIPPING_SERVICES: readonly ShippingService[] = [
     {
@@ -192,10 +182,7 @@ async function fetchAuspostShippingCents({
     )
 
     if (!response.ok) {
-        // AusPost answers 404 (not 400) for rejected inputs — e.g. an
-        // incomplete postcode gets `{"error":{"errorMessage":"Please enter a
-        // valid To postcode."}}`. Pass their wording through; a bare status
-        // reads like an outage.
+        // AusPost answers 404, not 400, for rejected inputs, so pass their wording through.
         throw new Error(
             (await readAuspostError(response)) ??
                 `AusPost request failed with status ${response.status}`,
@@ -207,14 +194,8 @@ async function fetchAuspostShippingCents({
 }
 
 /**
- * Quotes are cached per destination and parcel. AusPost is metered and quoting is
- * reachable unauthenticated through `getShippingQuote`, so an uncached call meant
- * one billable request per HTTP request; postage prices move on the order of
- * months, so serving a repeat destination from memory costs nothing real.
- *
- * Keyed on the same values the request is built from — a change to any of them is
- * a different quote. Failures aren't cached (see `createCachedLoader`), which
- * keeps AusPost's own validation wording flowing through to the customer.
+ * Quotes cached per destination and parcel, since AusPost is metered and reachable
+ * unauthenticated through `getShippingQuote`. Failures aren't cached.
  */
 const QUOTE_CACHE_TTL_MS = 10 * 60_000
 const QUOTE_CACHE_MAX_ENTRIES = 500
@@ -240,14 +221,7 @@ export function calculateAuspostShippingCents(
     return loadShippingCents(request)
 }
 
-/**
- * Quotes every parcel in a shipment for one service and adds them up.
- *
- * Identical parcels are quoted once and multiplied. Australia Post is metered,
- * and an order of ten identical boxes would otherwise be ten requests for one
- * answer - the per-request cache would collapse them eventually, but only after
- * they had all been issued in parallel and all missed.
- */
+/** Quotes every parcel in a shipment for one service. Identical parcels are quoted once. */
 export async function calculateShipmentShippingCents(
     destination: { country: string; postcode: string },
     parcels: Parcel[],
@@ -290,14 +264,8 @@ export type ServiceQuote = {
 }
 
 /**
- * Quotes the shipment for every service, keeping the ones Australia Post will
- * actually carry.
- *
- * A service can be unavailable for a given destination or parcel, and that is
- * an ordinary answer rather than a failure - the customer simply isn't offered
- * it. But a bad address makes *every* service fail, and that the customer does
- * need to hear, so if nothing survives the first error is rethrown with Australia
- * Post's own wording intact.
+ * Quotes every service, keeping the ones Australia Post will carry. An unavailable
+ * service is dropped; if nothing survives the first error is rethrown.
  */
 export async function quoteShipmentServices(
     destination: { country: string; postcode: string },

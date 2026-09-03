@@ -1,14 +1,8 @@
 import type { Appearance } from '@stripe/stripe-js'
 
 /**
- * The look every Elements group in the checkout shares - the address step and
- * the payment step mount separate groups, and a difference between them would
- * read as two different forms rather than two steps of one.
- *
- * A factory rather than a shared constant. Handing the *same* appearance object
- * to two Elements groups left the second group's elements mounted at 2px high,
- * never firing `ready`, so the payment form sat invisible behind its spinner
- * forever. Each group gets its own object.
+ * The look every Elements group in the checkout shares. A factory, not a constant:
+ * two groups handed the same appearance object leaves the second mounted at 2px high.
  */
 export function createCheckoutAppearance(): Appearance {
     return {
@@ -22,9 +16,7 @@ export function createCheckoutAppearance(): Appearance {
             fontSizeBase: '16px',
         },
         rules: {
-            // Only card is offered, so Stripe still wraps it in an accordion
-            // item — strip the card chrome so it sits flat on the page like the
-            // elements above it.
+            // Strips the accordion chrome Stripe wraps the single card option in.
             '.AccordionItem': {
                 border: 'none',
                 backgroundColor: 'transparent',

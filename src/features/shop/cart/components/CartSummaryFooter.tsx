@@ -7,9 +7,7 @@ export default function CartSummaryFooter() {
                 <p className="mb-0 text-sm text-gray-600">
                     Shipping calculated at checkout.
                 </p>
-                {/* Prices are AUD; Stripe converts at checkout via Adaptive
-                    Pricing. The storefront can't show the converted figure
-                    because that rate is only fixed once a session exists. */}
+                {/* Prices are AUD; Adaptive Pricing converts at checkout, once a session exists. */}
                 <p className="mb-0 text-sm text-gray-600">
                     Prices in AUD - pay in your local currency at checkout!
                 </p>

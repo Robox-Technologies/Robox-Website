@@ -2,13 +2,8 @@ import CheckoutSummaryRow from './CheckoutSummaryRow'
 import { formatPrice } from '@/utils/formatPrice'
 
 /**
- * The summary before a Checkout Session exists - a preview of what the order
- * will cost, from our own quote.
- *
- * There is no voucher field here on purpose: a code is applied against the
- * session, which only exists on the payment step. Showing one earlier would
- * mean computing a discount ourselves, and that is exactly the disagreement
- * with Stripe's arithmetic this migration removes.
+ * The summary before a Checkout Session exists, from our own quote. No voucher field:
+ * a code is applied against the session, which only exists on the payment step.
  */
 function describeShipping({
     shippingCents,

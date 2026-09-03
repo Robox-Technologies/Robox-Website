@@ -10,11 +10,7 @@ import { getAllProducts } from '@/utils/server/stripe/getAllProducts.server'
 
 const products = await getAllProducts()
 
-/**
- * Which kits the homepage leads with stays curated here - the order, the green
- * border, the "Value Pack" flag - while the name, availability and price come
- * from the catalog below, so this section can't drift from the shop.
- */
+/** Curated presentation here; name, availability and price come from the catalog. */
 function featured(internalName: string) {
     const product = products.find(
         (candidate) => candidate.internalName === internalName,

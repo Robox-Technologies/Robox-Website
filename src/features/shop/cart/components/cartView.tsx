@@ -50,9 +50,7 @@ export default function CartView({
     }
 
     return (
-        // `#main-content`: a row that stacks below 900px, with the item list
-        // growing and the summary a fixed column beside it. The list itself
-        // carries no card chrome in the original — each row provides its own.
+        // A row that stacks below 900px: the item list grows, the summary is fixed beside it.
         <div className="flex flex-col gap-[50px] min-[1200px]:flex-row min-[1200px]:items-start">
             <div className="flex w-full flex-1 flex-col gap-16">
                 <CartItemsSection

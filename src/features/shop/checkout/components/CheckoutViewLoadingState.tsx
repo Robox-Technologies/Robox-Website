@@ -2,11 +2,7 @@ import CheckoutRow from './CheckoutRow'
 import CheckoutPaymentLoadingState from './payment/CheckoutPaymentLoadingState'
 import CheckoutSummaryLoadingState from './summary/CheckoutSummaryLoadingState'
 
-/**
- * The `client:only` fallback for the whole checkout. It has to hold the row
- * open at the same shape the hydrated view uses, or the page reflows as the
- * island arrives.
- */
+/** The `client:only` fallback. Holds the row at the hydrated shape so the page doesn't reflow. */
 export default function CheckoutViewLoadingState() {
     return (
         <CheckoutRow>

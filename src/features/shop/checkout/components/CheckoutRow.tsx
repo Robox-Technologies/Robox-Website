@@ -1,13 +1,8 @@
 import type { ReactNode } from 'react'
 
 /**
- * The checkout's two-column shell: the active step beside the order summary,
- * collapsing to `column-reverse` below 900px so the summary leads on narrow
- * screens.
- *
- * Lives in React rather than in the page because the payment step has to wrap
- * both columns in one `CheckoutElementsProvider` - the summary reads its totals
- * from the session, and React context does not cross an island boundary.
+ * The checkout's two-column shell, `column-reverse` below 900px. In React because both
+ * columns need one `CheckoutElementsProvider`, and context can't cross an island boundary.
  */
 export default function CheckoutRow({ children }: { children: ReactNode }) {
     return (

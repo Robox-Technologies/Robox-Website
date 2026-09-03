@@ -13,20 +13,9 @@ import CheckoutVoucher from './CheckoutVoucher'
 import { SUMMARY_CARD_CLASS } from './summaryCardClass'
 
 /**
- * The order summary once a Checkout Session exists.
- *
- * Every figure is read straight off the session rather than recomputed here.
- * Stripe owns the arithmetic from this point - discounts especially, where a
- * locally computed number would disagree with what is actually charged.
- *
- * The amounts are re-rendered from `minorUnitsAmount` through our own
- * formatter rather than using the session's preformatted `amount` strings.
- * Stripe writes AUD as "A$", and the rest of the site and the receipt emails
- * have always written "AU$" - taking Stripe's string made the total change
- * appearance between the address step and this one. `formatMoney` is driven by
- * `checkout.currency`, so this still follows the session into any presentment
- * currency. (The session also exposes `minorUnitsAmountDivisor` if the two ever
- * need cross-checking.)
+ * The order summary once a Checkout Session exists. Every figure comes off the session,
+ * but re-rendered from `minorUnitsAmount` through `formatMoney` — Stripe writes AUD as
+ * "A$" where the rest of the site writes "AU$".
  */
 export default function CheckoutSessionSummary() {
     const checkoutState = useCheckoutElements()
@@ -46,11 +35,8 @@ export default function CheckoutSessionSummary() {
     const { checkout } = checkoutState
     const { total } = checkout
 
-    // Postage is a line item rather than a shipping rate (see
-    // `createCheckoutSession`), so `total.shippingRate` is always zero and the
-    // figure has to come off the line. The client session exposes no product
-    // metadata, so unlike the server this can only match on the name - which
-    // `resolveShippingProductId` keeps pinned for exactly this reason.
+    // Postage is a line item, so `total.shippingRate` is always zero. The client session
+    // exposes no product metadata, so this can only match on the name.
     const postageLine = checkout.lineItems.find((line) =>
         isShippingLineName(line.name),
     )
@@ -62,20 +48,15 @@ export default function CheckoutSessionSummary() {
         0,
     )
 
-    // Every session this component sees was built with a postage line, so a
-    // miss means the name drifted. It fails quietly - postage folds into the
-    // subtotal and shipping reads as free, and the rows still add up to the
-    // total - so it has to announce itself rather than wait to be noticed on a
-    // receipt.
+    // A miss means the name drifted. It fails quietly — postage folds into the subtotal
+    // and shipping reads as free — so say so loudly.
     if (!postageLine && checkout.lineItems.length > 0) {
         console.error(
             `[checkout-summary] no line named "${SHIPPING_LINE_ITEM_NAME}" in this session; postage is being counted as part of the subtotal`,
         )
     }
 
-    // The line item carries only an amount, so the service name comes from the
-    // option chosen a step earlier. Cosmetic - the amount beside it is the
-    // session's, which is what will be charged.
+    // The line item carries only an amount, so the name comes from the option chosen earlier.
     const shippingLabel =
         quote?.options.find((option) => option.id === selectedService)?.label ??
         SHIPPING_LINE_ITEM_NAME
@@ -88,9 +69,7 @@ export default function CheckoutSessionSummary() {
     return (
         <SummaryCard title="Order Summary" className={SUMMARY_CARD_CLASS}>
             <div className="flex flex-1 flex-col gap-4">
-                {/* The session's own subtotal now includes postage, since
-                    postage is a line item - so the products are totalled
-                    separately to keep the two rows meaning what they say. */}
+                {/* The session's subtotal includes postage, so total the products separately. */}
                 <CheckoutSummaryRow
                     label="Subtotal"
                     value={formatMoney(
@@ -101,15 +80,11 @@ export default function CheckoutSessionSummary() {
                         },
                     )}
                 />
-                {/* Named rather than a bare "Shipping": the customer chose a
-                    speed a step ago and seeing it here confirms the choice
-                    stuck. Falls back when no rate is attached. */}
+                {/* Named rather than a bare "Shipping", so the customer sees their choice stuck. */}
                 <CheckoutSummaryRow
                     label={shippingLabel}
-                    // `subtotal`, not `total`: Stripe allocates a discount
-                    // across every line including postage, and showing the
-                    // post-discount figure here while the Discount row also
-                    // counts it left the rows not adding up to the total.
+                    // `subtotal`: Stripe allocates a discount across lines, which the
+                    // Discount row already counts.
                     value={formatMoney(
                         postageLine?.subtotal.minorUnitsAmount ?? 0,
                         checkout.currency,

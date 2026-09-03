@@ -16,30 +16,15 @@ import {
 import { useShipping } from '../../hooks/useShipping'
 
 /**
- * Google powers the address suggestions, but only with a key.
- *
- * Stripe supplies its own Google Maps key for free when the Address Element
- * sits in the same Elements group as a Payment Element. This checkout collects
- * the address a step earlier than the card, so that no longer applies and the
- * key has to be ours. Without one, `automatic` leaves the fields working
- * exactly as they do now, just without suggestions - a missing key is a
- * degraded form, not a broken one.
- *
- * Autocomplete covers AU and 25 other countries; Stripe falls back to plain
- * fields elsewhere on its own.
+ * Address suggestions need our own Google Maps key, since Stripe only supplies one when
+ * the Address Element shares an Elements group with a Payment Element. Missing key just
+ * means no suggestions.
  */
 const ADDRESS_AUTOCOMPLETE = GOOGLE_MAPS_API_KEY
     ? ({ mode: 'google_maps_api', apiKey: GOOGLE_MAPS_API_KEY } as const)
     : ({ mode: 'automatic' } as const)
 
-/**
- * Step one: the delivery address, and the postage it implies.
- *
- * The address is collected here rather than beside the payment fields because
- * the Checkout Session on the next step is created with the finished shipping
- * rate already baked in - see `checkoutStore.ts` for why that ordering is what
- * keeps the one-click wallets available.
- */
+/** Step one: the delivery address and the postage it implies. See `checkoutStore.ts` for the ordering. */
 export default function CheckoutAddressSection({
     products,
 }: {
@@ -54,10 +39,8 @@ export default function CheckoutAddressSection({
         0
 
     const handleChange = (event: StripeAddressElementChangeEvent) => {
-        // Stripe's own `complete` rather than a hand-rolled check: it knows
-        // which fields each country actually requires, and Australia Post
-        // rejects a half-typed postcode with a 404, so quoting eagerly would
-        // mean a burst of errors on the way to a valid address.
+        // Stripe's `complete` knows each country's required fields; quoting eagerly
+        // would 404 against Australia Post on every half-typed postcode.
         if (!event.complete) {
             shippingDetails.set(null)
             return
@@ -95,10 +78,7 @@ export default function CheckoutAddressSection({
                 <AddressElement
                     options={{
                         mode: 'shipping',
-                        // Stripe guesses the country from the browser, which
-                        // offered "United Kingdom" to an Australian shop. Most
-                        // orders are domestic, and the customer can still
-                        // change it - Australia Post quotes internationally.
+                        // Stripe otherwise guesses the country from the browser.
                         defaultValues: { address: { country: 'AU' } },
                         autocomplete: ADDRESS_AUTOCOMPLETE,
                     }}

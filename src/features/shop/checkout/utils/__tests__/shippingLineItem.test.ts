@@ -1,8 +1,4 @@
-/**
- * Getting this wrong is silent and reads as a real order - postage billed as an
- * item called "Shipping" and the shipping row itself charging nothing - so the
- * cases are pinned here rather than found in a customer's inbox.
- */
+/** Misidentifying the postage line fails silently, so the cases are pinned here. */
 
 import { describe, expect, it } from 'vitest'
 import type { Stripe } from 'stripe'
@@ -86,11 +82,7 @@ describe('isShippingLine', () => {
     })
 })
 
-/**
- * The browser's only handle on the postage line, because the client-side
- * session carries no product to read metadata off. Safe only for as long as
- * `resolveShippingProductId` keeps the product's name pinned to this.
- */
+/** The browser's only handle on the postage line, since the client session carries no product. */
 describe('isShippingLineName', () => {
     it('matches the name the shipping product is held at', () => {
         expect(isShippingLineName(SHIPPING_LINE_ITEM_NAME)).toBe(true)

@@ -22,12 +22,7 @@ export type ShippingQuote = {
     currency: 'aud'
 }
 
-/**
- * The two fields a postage quote actually keys on, derived from the address the
- * customer confirmed on the first step. Computed rather than written directly:
- * there is one place an address enters the checkout now, and letting the payment
- * step also set this is how the two could disagree.
- */
+/** The two fields a postage quote keys on. Computed, so an address only enters the checkout once. */
 export const shippingAddress = computed(
     shippingDetails,
     (details): ShippingAddress | null => {

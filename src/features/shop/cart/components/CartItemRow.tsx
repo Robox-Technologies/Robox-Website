@@ -4,12 +4,7 @@ import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import { formatPrice } from '@/utils/formatPrice'
 import type { Product } from '@/types/shop'
 
-/**
- * Mirrors the original's `.cart-item`: a 100px-tall row of thumbnail, then a
- * name / line-total / unit-price stack, with the delete button and the quantity
- * stepper pinned to the right edge. The card background is this site's own
- * addition — the original separated rows with a rule instead.
- */
+/** A cart row: thumbnail, name/line-total/unit-price stack, then the bin and stepper. */
 export default function CartItemRow({
     item,
     quantity,
@@ -33,9 +28,7 @@ export default function CartItemRow({
                     className="h-full aspect-video shrink-0 rounded-[5px] object-cover max-[600px]:h-auto max-[600px]:w-full"
                 />
                 <div className="flex min-w-0 flex-1 flex-row items-start justify-between gap-4">
-                    {/* `min-w-0` on both columns: without it each one holds its
-                        min-content width and the stepper and bin overhang the
-                        card on a phone. */}
+                    {/* `min-w-0` on both columns, or the stepper and bin overhang the card on a phone. */}
                     <div className="flex h-full min-w-0 flex-col items-start justify-between">
                         <p className="mb-0! text-lg">{item.name}</p>
                         <p className="mb-0! text-3xl font-bold">

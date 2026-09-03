@@ -12,14 +12,8 @@ import CheckoutSummaryCard from './summary/CheckoutSummaryCard'
 const MINIMUM_CHARGE_CENTS = 50
 
 /**
- * The whole checkout, as one island.
- *
- * It owns both columns rather than the page doing so, because the payment step
- * wraps them in a single `CheckoutElementsProvider` - the summary's totals come
- * from the Checkout Session, and React context cannot cross an island boundary.
- *
- * The empty-cart check sits here because it applies to both steps, and asking
- * for an address before mentioning there is nothing to buy is the wrong order.
+ * The whole checkout as one island. It owns both columns because the payment step
+ * wraps them in a single `CheckoutElementsProvider`.
  */
 export default function CheckoutView({ products }: { products: Product[] }) {
     const step = useStore(checkoutStep)

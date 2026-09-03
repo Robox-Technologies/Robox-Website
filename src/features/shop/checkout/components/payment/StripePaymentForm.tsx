@@ -16,11 +16,7 @@ import { useState } from 'react'
 import { checkoutStep, shippingDetails } from '../../state/checkoutStore'
 import CheckoutPaymentLoadingState from './CheckoutPaymentLoadingState'
 
-/**
- * Every key is spelled out because Stripe's type requires all of them present,
- * even though each value is itself optional - so this can't be narrowed to just
- * the one setting we care about.
- */
+/** Every key spelled out because Stripe's type requires all of them present. */
 const EXPRESS_CHECKOUT_OPTIONS: StripeCheckoutExpressCheckoutElementOptions = {
     // Matches the 50px pill the card path submits with.
     buttonHeight: 50,
@@ -37,9 +33,8 @@ export function StripePaymentForm({ error }: { error?: string | null }) {
     const [submitting, setSubmitting] = useState(false)
     const [message, setMessage] = useState<string | null>(null)
     const [termsAccepted, setTermsAccepted] = useState(false)
-    // Undefined until Stripe reports; null once it reports none. Wallet
-    // availability depends on the device, so the block is only given space
-    // once we know something will fill it.
+    // Undefined until Stripe reports, null once it reports none — the block only takes
+    // space once we know something will fill it.
     const [walletsAvailable, setWalletsAvailable] = useState(false)
 
     if (checkoutState.type === 'loading') {
@@ -84,10 +79,8 @@ export function StripePaymentForm({ error }: { error?: string | null }) {
         setSubmitting(true)
         setMessage(null)
 
-        // One confirm for every payment method, and the return URL is already
-        // on the session - so unlike `confirmPayment` there is nothing to pass
-        // here. Stripe redirects to it, or resolves in place for methods that
-        // need no redirect.
+        // The return URL is already on the session, so unlike `confirmPayment` there's
+        // nothing to pass here.
         const result = await checkout.confirm()
 
         if (result.type === 'error') {
@@ -134,10 +127,7 @@ export function StripePaymentForm({ error }: { error?: string | null }) {
                         </button>
                     </p>
                 )}
-                {/* Above the wallets, per Stripe's guidance: the selected
-                    currency changes which wallets can be offered, so the
-                    customer should see it first. Renders nothing when the
-                    session has no alternative currencies. */}
+                {/* Above the wallets: the selected currency changes which are offered. */}
                 <CurrencySelectorElement />
 
                 <div className="flex items-start gap-2">
@@ -165,13 +155,9 @@ export function StripePaymentForm({ error }: { error?: string | null }) {
                     </label>
                 </div>
 
-                {/* The wallets are mounted only once the terms are accepted.
-                    The Checkout-Sessions Express Checkout Element has no
-                    pre-sheet `onClick` hook, so the alternative was letting a
-                    customer authorise with Face ID and only then telling them
-                    we couldn't accept it. Mounting late rather than hiding a
-                    mounted element on purpose: Stripe's elements do not
-                    initialise reliably inside a hidden container. */}
+                {/* Mounted only once the terms are accepted — the Express Checkout Element
+                    has no pre-sheet `onClick` hook, and Stripe's elements don't initialise
+                    reliably inside a hidden container. */}
                 {termsAccepted ? (
                     <>
                         <ExpressCheckoutElement

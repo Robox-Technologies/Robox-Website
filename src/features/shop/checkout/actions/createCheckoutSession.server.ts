@@ -29,27 +29,10 @@ const shippingDetailsSchema = z.object({
 })
 
 /**
- * Creates the Checkout Session the payment step runs on.
- *
- * The delivery address and the postage are both settled before this runs, and
- * neither is anything the session collects: there is no
- * `shipping_address_collection` and no `shipping_options`. Postage is an
- * ordinary line item instead.
- *
- * That shape is deliberate. A session carrying shipping options is a shipping
- * order as far as the wallets are concerned, and both Apple Pay and Link
- * respond by offering a delivery address of their own - Link defaults to the
- * customer's saved address, which is generally not the one they just typed. An
- * order could then ship somewhere the postage was never quoted for. With a
- * fixed total and no shipping fields, the wallets have nothing to ask about.
- *
- * The address still reaches the order through `payment_intent_data.shipping`,
- * which the server sets and the customer cannot touch.
- *
- * There is no update counterpart. `payment_intent_data` cannot be changed after
- * creation, and it carries the figures the receipt email reads - so a cart that
- * changes underneath gets a fresh session rather than an edited one whose
- * PaymentIntent metadata no longer matches what is charged.
+ * Creates the Checkout Session the payment step runs on. No
+ * `shipping_address_collection` or `shipping_options` — those make the wallets offer
+ * an address of their own — so postage is a line item and the address rides in on
+ * `payment_intent_data.shipping`. A changed cart gets a fresh session, not an edit.
  */
 export const createCheckoutSession = defineAction({
     input: z.object({
@@ -103,9 +86,7 @@ export const createCheckoutSession = defineAction({
                 resolveShippingProductId(),
             ])
 
-        // The client chooses *which* service; the price comes from our own
-        // quote, never from the request. An unrecognised id falls back to the
-        // cheapest rather than failing the checkout.
+        // The client picks the service; the price comes from our quote, never the request.
         const chosen =
             totals.shippingOptions.find(
                 (option) => option.id === shippingServiceId,
@@ -125,12 +106,8 @@ export const createCheckoutSession = defineAction({
                     price: entry.priceId,
                     quantity: entry.quantity,
                 })),
-                // Postage as a line item, not a `shipping_option`. Any session
-                // carrying shipping options makes the wallets collect a
-                // delivery address of their own - Apple Pay and Link both do -
-                // which would let an order ship somewhere the postage was never
-                // quoted for. As a line item the session is an ordinary
-                // fixed-total order and the wallets have nothing to ask about.
+                // A line item, not a `shipping_option`: shipping options make Apple Pay
+                // and Link collect a delivery address of their own.
                 {
                     price_data: {
                         currency: 'aud',
@@ -150,13 +127,9 @@ export const createCheckoutSession = defineAction({
                 productSummary,
             },
             payment_intent_data: {
-                // The address the customer gave on the first step, so the
-                // receipt reads it off the intent rather than off whatever the
-                // payment method happened to carry.
+                // The address from step one, so the receipt doesn't read the payment method's.
                 shipping,
-                // Mirrored onto the intent because the order emails are driven
-                // from `payment_intent.succeeded`. Not updatable afterwards,
-                // which is why a changed cart means a new session.
+                // On the intent because the emails run off `payment_intent.succeeded`.
                 metadata: {
                     [CHECKOUT_OWNER_KEY]: owner,
                     products: productsMetadata,
@@ -164,9 +137,7 @@ export const createCheckoutSession = defineAction({
                     subtotalCents: totals.subtotalCents.toString(),
                     shippingCents: chosen.amountCents.toString(),
                     shippingService: chosen.label,
-                    // What is physically being sent, so an Australia Post
-                    // consignment can be raised straight off the payment
-                    // rather than re-deriving the parcel from the cart.
+                    // What's physically being sent, so a consignment can be raised off the payment.
                     ...(totals.shipment
                         ? shipmentToMetadata(totals.shipment)
                         : {}),

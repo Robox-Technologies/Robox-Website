@@ -27,9 +27,7 @@ export default function Step({ stepNumber, title, description, image }: StepProp
                     <p className=" text-white text-lg">{description}</p>
                 </div>
             </div>
-            {/* Decorative: the title and description above already say what
-                this step is. Its desktop counterpart in boxToBot.astro is
-                hidden from assistive tech for the same reason. */}
+            {/* Decorative — the title and description above already say what this step is. */}
             <img
                 src={image}
                 alt=""
