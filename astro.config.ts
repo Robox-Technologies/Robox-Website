@@ -11,6 +11,7 @@ import node from '@astrojs/node';
 import { promises as fs } from 'fs'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
+import { unified } from '@astrojs/markdown-remark'
 import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
 import { isNoindex, PRODUCTION_ORIGIN } from './src/data/seo'
 
@@ -112,7 +113,7 @@ export default defineConfig({
         },
     },
     markdown: {
-        remarkPlugins: [RoboxSectionize],
+        processor: unified({ remarkPlugins: [RoboxSectionize] }),
     },
 })
 function transformIOSBuild(): AstroIntegration {
