@@ -2,11 +2,7 @@
 import StandardLayout from '@/layouts/StandardLayout.astro'
 import Button from '@/components/button'
 
-/**
- * The 404 page body. Lives in a component so that routes which decide at
- * request time that there's nothing to serve — /api/redirect/<unknown slug> —
- * can render the same page as the static 404.
- */
+/** The 404 page body, so routes that 404 at request time can render the same page. */
 ---
 
 <StandardLayout

@@ -1,30 +1,9 @@
 import { emailAsset } from './assets';
 
 /**
- * Self-hosted Nunito (headings) and Nunito Sans (body) webfaces.
- *
- * Transcribed verbatim from the original site's
- * `src/templates/email/nunitoFont.css`, including every unicode-range subset
- * and the variable `font-weight: 200 1000` range.
- *
- * This replaces jsx-email's <Font> component, which emits a blanket
- * `* { font-family: ... }` rule - with two fonts the second declaration wins
- * everywhere and the headings lose Nunito. Scoping font-family per element
- * (see styles.ts) is the only way to keep the original's two-font split.
- *
- * The woff2 files are served from our own domain rather than
- * fonts.gstatic.com, for two reasons: Resend's deliverability report flags
- * remote assets that don't align with the sending domain, and a gstatic `src`
- * makes every recipient's mail client announce the open to Google. The files
- * live in this repo at `public/email/fonts/` and resolve through the same
- * EMAIL_ASSET_BASE as the images - see assets.ts, including the note about the
- * currently deployed site's path. A 404 here is not fatal: every font-family in
- * styles.ts ends in `sans-serif`, so a face that fails to load degrades to the
- * same system sans that Gmail and Outlook already fall back to.
- *
- * All five subsets per family are kept, not just latin: `unicode-range` means a
- * client only fetches the subset it actually needs, and customer names in a
- * receipt do carry Vietnamese and Cyrillic characters.
+ * Self-hosted Nunito (headings) and Nunito Sans (body). Served from our own domain,
+ * not gstatic, so Resend doesn't flag them and Google doesn't see the opens; the files
+ * are in `public/email/fonts/` and resolve through EMAIL_ASSET_BASE.
  */
 
 /** `src` value for one subset, resolved against the email asset base. */

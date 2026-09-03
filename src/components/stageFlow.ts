@@ -1,12 +1,7 @@
 /**
- * Generic building blocks for a small multi-step page: child components
- * report progress upward by dispatching namespaced custom events on their
- * own root (bubbles: true), so the orchestrator - an ancestor in the DOM -
- * can react without knowing anything about the component internally.
- *
- * Shared by every page built this way (UF2 flashing, colour calibration, ...)
- * so they all get the same height-animated stage switching, error banner,
- * and URL-backed stage persistence for free.
+ * Building blocks for a multi-step page. Child components dispatch namespaced
+ * bubbling events on their own root; an ancestor orchestrates stage switching,
+ * the error banner and URL-backed stage persistence.
  */
 
 export function dispatchStageAdvance<S extends string>(

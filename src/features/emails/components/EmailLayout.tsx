@@ -5,17 +5,8 @@ import { fontFaceCss } from '../fonts';
 import { bodyStyle, cellStyle, containerStyle, globalCss } from '../styles';
 
 /**
- * Shared <Html>/<Head>/<Body> wrapper used by every Ro/Box transactional email.
- *
- * Replicates, from the original templates:
- *  - metadata.html  -> viewport / x-apple-disable-message-reformatting / charset /
- *                      color-scheme meta tags
- *  - email.css      -> base body styles, the centred 700px container, dark-mode
- *                      colour overrides, color-scheme support
- *  - nunitoFont.css -> "Nunito" (headings) and "Nunito Sans" (body) webfonts
- *
- * Both the font block and the container are hand-rolled rather than using
- * jsx-email's <Font> and <Container>; see the comments on each below.
+ * Shared <Html>/<Head>/<Body> wrapper for every transactional email. The font block
+ * and the container are hand-rolled rather than jsx-email's; see the notes below.
  */
 
 export interface EmailLayoutProps {
@@ -32,46 +23,20 @@ export const EmailLayout = ({ previewText, title, children }: EmailLayoutProps) 
             <Head>
                 <title>{title}</title>
 
-                {/*
-                  Emits the color-scheme / supported-color-schemes metas plus the
-                  `:root { color-scheme: light dark }` rule, matching email.css.
-                  This is what actually opts the email in to dark mode.
-                */}
+                {/* Opts the email in to dark mode: the color-scheme metas plus `:root { color-scheme }`. */}
                 <ColorScheme mode="light dark" />
 
-                {/*
-                  Hand-rolled in place of two <Font> components. <Font> emits a
-                  blanket `* { font-family: ... }`, so with two fonts the second
-                  wins everywhere and headings lose Nunito. Here the faces are
-                  declared once and font-family is applied per element from
-                  styles.ts, preserving the original's heading/body split.
-
-                  No MSO conditional is needed for the Outlook fallback: every
-                  font-family is written as a stack ending in `sans-serif`, and
-                  Outlook's Word engine ignores @font-face and falls through to
-                  it. (The original tried to ship an MSO <style> via
-                  metadata.html, but that partial never actually injected.)
-                */}
-                {/*
-                  Both stylesheets are injected via dangerouslySetInnerHTML
-                  rather than as children. jsx-email HTML-escapes text children
-                  even inside <style>, which turns `'Nunito'` into
-                  `&#x27;Nunito&#x27;` and `>` into `&gt;` - silently breaking
-                  every @font-face rule and any child-combinator selector.
-                */}
+                {/* Hand-rolled: <Font> emits a blanket `* { font-family }`, so two of them
+                    would cost the headings their Nunito. */}
+                {/* dangerouslySetInnerHTML because jsx-email HTML-escapes text children
+                    even inside <style>, breaking @font-face and `>` selectors. */}
                 <style type="text/css" dangerouslySetInnerHTML={{ __html: fontFaceCss }} />
 
                 <style type="text/css" dangerouslySetInnerHTML={{ __html: globalCss }} />
             </Head>
             <Preview>{previewText}</Preview>
             <Body style={bodyStyle}>
-                {/*
-                  Hand-rolled in place of <Container>, which wraps its contents
-                  in a hardcoded `max-width: 600px` div and would clamp the
-                  original's 700px. This mirrors the original's structure
-                  exactly: a full-width table whose single centred cell holds
-                  the .email-container div.
-                */}
+                {/* Hand-rolled: <Container> hardcodes `max-width: 600px` and would clamp this to under 700px. */}
                 <table
                     align="center"
                     width="100%"

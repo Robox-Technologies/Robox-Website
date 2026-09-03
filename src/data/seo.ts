@@ -1,26 +1,11 @@
-/**
- * Shared SEO copy and indexing rules.
- *
- * Every page passes its own `description` to the layout; `DEFAULT_DESCRIPTION`
- * is the fallback for the ones that can't have a fixed one (CMS articles with
- * nothing written in the CMS, say), and it's the line the site has always used
- * to describe itself in social previews.
- */
+/** Shared SEO copy and indexing rules. */
 export const DEFAULT_DESCRIPTION =
     'Ro/Box is an ultra-affordable robotics kit that makes STEM education accessible to any student, anywhere.'
 
-/**
- * Facebook and the Open Graph validators only show around 125 characters of a
- * description before truncating, so that's the ceiling every page writes to
- * (Google is more generous at ~160, but the shorter line reads fine in both).
- */
+/** Open Graph validators truncate past ~125 characters, so that's the ceiling. */
 export const DESCRIPTION_LIMIT = 125
 
-/**
- * Trims a longer body of copy (a Stripe product description, a CMS blurb) down
- * to something a search result or a link preview can show without cutting
- * mid-word.
- */
+/** Trims longer copy to preview length without cutting mid-word. */
 export function toDescription(
     text: string,
     limit = DESCRIPTION_LIMIT,
@@ -35,12 +20,8 @@ export function toDescription(
 }
 
 /**
- * Routes that shouldn't turn up in search: they're steps in a flow, an app
- * shell, or an error page, and none of them mean anything on their own.
- *
- * One list drives both halves of that promise. Meta.astro turns these into
- * `<meta name="robots" content="noindex">` and the sitemap integration in
- * astro.config.ts leaves them out, so the tags and the sitemap can't disagree.
+ * Routes kept out of search. Drives both the `noindex` tag in Meta.astro and the
+ * sitemap filter in astro.config.ts, so the two can't disagree.
  */
 export const NOINDEX_PATHS = [
     '/404',
@@ -56,19 +37,10 @@ export function isNoindex(pathname: string): boolean {
     return NOINDEX_PATHS.includes(path)
 }
 
-/**
- * The live site. Everything absolute (canonical, `og:image`, the sitemap) is
- * built off whatever `site` the build was given, so a dev deploy advertises
- * itself rather than pointing previews at production. This constant is only for
- * telling the two apart.
- */
+/** The live site, only for telling production and dev apart. Absolute URLs come from `site`. */
 export const PRODUCTION_ORIGIN = 'https://robox.com.au'
 
-/**
- * Whether this build is the real site. Anything else — dev.robox.com.au, a local
- * preview — is kept out of search entirely, so a staging copy can't compete with
- * production for the same content.
- */
+/** Whether this build is the real site. Anything else is kept out of search entirely. */
 export function isProductionOrigin(site: URL | undefined): boolean {
     return site?.origin === PRODUCTION_ORIGIN
 }

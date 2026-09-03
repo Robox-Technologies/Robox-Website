@@ -19,17 +19,7 @@ const { namespace, stages, stageLabels } = Astro.props
                     <span class="stageStepNumber absolute inset-0 flex scale-100 items-center justify-center opacity-100 transition-[opacity,scale] duration-200 ease-out">
                         {index + 1}
                     </span>
-                    <!--
-                        A separate wrapping span, not the bare icon: the icon
-                        itself never has `display` toggled (it's an
-                        opacity/scale crossfade with .stageStepNumber, not a
-                        show/hide), so it doesn't need the `!important` the
-                        old `hidden!` toggle needed to beat FontAwesome's own
-                        `display: inline-block` rule — but its *text colour*
-                        still does, for the same reason `.stageStepNumber`
-                        does: this span is still forced dark by the global
-                        base-layer `span` rule.
-                    -->
+                    <!-- Wrapping span so the colour can be forced past the global base-layer `span` rule. -->
                     <span class="stageStepCheck absolute inset-0 flex scale-75 items-center justify-center text-white! opacity-0 transition-[opacity,scale] duration-200 ease-out">
                         <FontAwesomeIcon icon={faCircleCheck} />
                     </span>
@@ -37,10 +27,7 @@ const { namespace, stages, stageLabels } = Astro.props
                 <span class="stageStepLabel text-sm font-semibold text-gray-400 transition-colors duration-300">{stageLabels[stage]}</span>
             </li>
             {index < stages.length - 1 && (
-                // The line itself stays a flat gray track; a separate fill
-                // layer scales in from the left on completion, like the
-                // firmware progress bar's fill, instead of the color just
-                // flipping instantly.
+                // A separate fill layer scales in from the left, rather than the track flipping colour.
                 <li class="stageStepConnector relative h-0.5 flex-1 overflow-hidden bg-gray-300" aria-hidden="true">
                     <div class="stageStepConnectorFill absolute inset-0 origin-left scale-x-0 bg-green transition-transform duration-500 ease-out"></div>
                 </li>
@@ -49,9 +36,7 @@ const { namespace, stages, stageLabels } = Astro.props
     ))}
 </ol>
 <script>
-    // Astro only includes this script once no matter how many steppers
-    // render, so wire up every instance found rather than assuming there's a
-    // single one.
+    // Astro includes this script once however many steppers render, so wire up every instance.
     document.querySelectorAll<HTMLOListElement>(".stageStepper").forEach((stepper) => {
         const namespace = stepper.dataset.namespace
         if (!namespace) throw new Error("Stage stepper missing its namespace");
@@ -89,9 +74,7 @@ const { namespace, stages, stageLabels } = Astro.props
                 const completed = index < activeIndex;
                 setIconVisible(check, completed);
                 setIconVisible(number, !completed);
-                // Same story as the check icon's colour above: `span` is
-                // forced dark by a global base-layer rule, so only an
-                // `!important` utility actually wins.
+                // `!important`, because the global base-layer `span` rule forces this dark.
                 number.classList.toggle("text-white!", index === activeIndex);
                 number.classList.toggle("text-gray-400!", index !== activeIndex);
             });

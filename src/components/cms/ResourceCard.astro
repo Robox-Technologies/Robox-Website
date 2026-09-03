@@ -1,18 +1,8 @@
 ---
 /**
- * Card for a CMS content item, following the original's `assembly-card`:
- * thumbnail on top, preview title, then the call-to-action with a chevron and
- * an underline that grows on hover.
- *
- * The whole card is the link, not just the call-to-action: a 250px card is a far
- * easier target than a 90px hyperlink, especially on touch. The CTA stays as the
- * affordance and its underline grows whenever the card is hovered, so it can't
- * be a nested <a> — it's a <span> the card drives.
- *
- * Deliberately plain markup rather than the React `Card` island: its slots are
- * conditional here (items may have no thumbnail and no link), and Astro drops
- * slot content wrapped in an expression when the host is a framework
- * component. The class names mirror `card.tsx` so the two look identical.
+ * Card for a CMS content item. The whole card is the link, so the CTA is a <span>.
+ * Plain markup rather than the React `Card`: Astro drops conditional slot content
+ * when the host is a framework component. Classes mirror `card.tsx`.
  */
 import { faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import type { CMSItem } from '@/utils/server/cms.server'

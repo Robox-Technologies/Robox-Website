@@ -1,15 +1,8 @@
 ---
 /**
- * Decorative "goober" shape — a background blob, optionally with googly eyes
- * layered on top. Purely decorative (aria-hidden) and non-interactive.
- *
- * Positioning is left to the caller via `class` (on the shape wrapper) and
- * `eyesClass` (on the eyes overlay), mirroring the original site's per-placement
- * offsets. Width is set by the caller; height follows the SVG's aspect ratio.
- *
- * The eyes overlay carries the `eyes` class, which the pointer tracking in
- * src/utils/eyes.ts hooks onto — so `eyesClass` must position with insets only,
- * as that script owns the element's `transform`.
+ * Decorative background blob, optionally with googly eyes. Positioned by the caller
+ * via `class` and `eyesClass` — and `eyesClass` must use insets only, since
+ * src/utils/eyes.ts owns the overlay's `transform`.
  */
 import eyesImg from '@/images/goobers/eyes.svg'
 

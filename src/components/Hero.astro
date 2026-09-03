@@ -1,15 +1,7 @@
 ---
 /**
- * Full-bleed page hero.
- *
- * Hand-rolled `<picture>` rather than `<Picture>` from astro:assets: that
- * component takes a single `src` and emits one `<source>` per *format*, with no
- * `media` attribute, so it can't art-direct. The hero needs two different
- * crops — landscape above `lg`, portrait below — and gating them with `media`
- * is what keeps a phone from downloading both. (The previous version used two
- * `<img>`s and hid one with `lg:hidden`; `display: none` doesn't stop a fetch.)
- *
- * Everything else is `<Picture>`'s job and is delegated to `getImage`.
+ * Full-bleed page hero. Hand-rolled `<picture>` because `<Picture>` can't art-direct,
+ * and this needs a landscape crop above `lg` and a portrait one below.
  */
 import { getImage } from 'astro:assets'
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons'
@@ -35,14 +27,7 @@ const {
     class: className,
 } = Astro.props
 
-/**
- * The hero is `object-cover` in a `100vw × (100vh - header)` box, so its
- * rendered width is `max(100vw, boxHeight × imageAspect)`. A phone's box is far
- * taller than the portrait crop's 0.79 aspect, so cover scales to fit *height*
- * and the image overflows the viewport width by ~1.5×. `sizes` can't read `vh`,
- * hence the hard-coded bump. Desktop boxes are wider than the landscape crop's
- * 1.53 aspect, so there the width-bound `100vw` is already right.
- */
+/** Portrait covers by height and overflows the viewport ~1.5×; `sizes` can't read `vh`. */
 interface Crop {
     src: ImageMetadata
     widths: number[]
@@ -91,11 +76,7 @@ const sources = await Promise.all(
         }),
 )
 
-/**
- * Only reached by browsers with neither AVIF nor WebP (Safari ≤13), so one
- * fixed size is enough — no srcset ladder, and no portrait variant either:
- * those browsers get the landscape crop, which still covers correctly.
- */
+/** Fallback for browsers with neither AVIF nor WebP (Safari ≤13): one fixed landscape size. */
 const fallback = await getImage({
     src: hero,
     width: Math.min(1600, hero.width),

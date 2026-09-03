@@ -1,37 +1,13 @@
 #!/usr/bin/env node
 /**
- * One-off repair for broken upload references in the Payload CMS.
+ * One-off repair for CMS upload refs orphaned when `media`/`files` were re-inserted
+ * with fresh ObjectIds. Rematches old ids to documents by the timestamp an ObjectId
+ * encodes, breaking ties on filename and reporting anything still ambiguous.
  *
- * WHAT BROKE
- * The `media` and `files` documents were re-inserted at some point (prod on
- * 2026-07-20, the local copy on 2026-07-26) without preserving their `_id`.
- * Their `createdAt` values were kept, but every document got a fresh ObjectId —
- * so every `content.thumbnail` and `content.File` reference now points at an id
- * that no longer exists. `GET /api/media/<old-id>` returns 404, and the site
- * renders cards with no thumbnail and no download link.
+ *   node scripts/repair-cms-upload-refs.mjs            # dry run
+ *   node scripts/repair-cms-upload-refs.mjs --apply
  *
- * The live site still shows thumbnails only because it is a static build made
- * before the re-insert. The next deploy would lose them.
- *
- * HOW IT REPAIRS
- * A Mongo ObjectId encodes its creation time in its first four bytes. The old
- * ids therefore still carry the second at which the upload was originally
- * created — and the re-inserted documents kept that same value in `createdAt`.
- * Matching one to the other recovers the mapping exactly.
- *
- * Where several uploads share a second the timestamp alone can't decide, so the
- * candidate whose filename names the item ("Lesson 4" -> "... Lesson 4-1.pdf")
- * wins. Anything still ambiguous is reported and left alone rather than
- * guessed — pairing those by insertion order gives confidently wrong answers
- * like Lesson 1 pointing at Lesson 3's PDF.
- *
- * USAGE
- *   node scripts/repair-cms-upload-refs.mjs                 # dry run (default)
- *   node scripts/repair-cms-upload-refs.mjs --apply         # write the changes
- *
- *   CMS_URL          defaults to http://localhost:3333
- *   PAYLOAD_EMAIL    Payload user, required for --apply
- *   PAYLOAD_PASSWORD
+ * CMS_URL (default http://localhost:3333), PAYLOAD_EMAIL and PAYLOAD_PASSWORD for --apply.
  */
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:3333'

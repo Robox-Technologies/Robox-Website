@@ -86,11 +86,7 @@ function transform(tree: Root): void {
     tree.children = newChildren
 }
 
-/**
- * Tags the section's image so the stylesheet can size it. Markdown gives us a
- * raw `<img>`, while MDX gives us an `<Image>` JSX element whose `class`
- * attribute is forwarded to the rendered `<img>`.
- */
+/** Tags the section's image so the stylesheet can size it, for both Markdown and MDX. */
 function markAsMedia(node: RootContent): void {
     if (node.type === 'html' && typeof node.value === 'string') {
         node.value = node.value.replace('<img', '<img class="media"')

@@ -49,10 +49,7 @@ export default function MainButton() {
     } = usePico()
     const { className, children } = statusStyling[connectionStatus]
     const stateClickHandlers: Partial<Record<ConnectionStatus, () => void>> = {
-        // The communication method toggle sets this before the button is
-        // ever clickable; no method means the browser supports neither USB
-        // nor Bluetooth, so leave the button disabled instead of connecting
-        // into a dead end.
+        // No method means the browser supports neither USB nor Bluetooth.
         ...(communicationMethod
             ? { [ConnectionStatus.DISCONNECTED]: () => connect() }
             : {}),
@@ -60,9 +57,7 @@ export default function MainButton() {
             try {
                 await sendCode()
             } catch {
-                // sendCode rejects when the board could not confirm the
-                // program arrived intact, and has already reported why. Not
-                // running it is the whole point, so stop here.
+                // sendCode rejects on a failed verification and has already reported why.
                 return
             }
             //TODO: Make this not run every time

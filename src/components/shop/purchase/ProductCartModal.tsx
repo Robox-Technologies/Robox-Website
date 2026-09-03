@@ -41,11 +41,7 @@ export default function ProductCartModal({
                 />
                 <h2 className="mb-0! text-2xl! font-bold">Added to Cart</h2>
             </DialogHeader>
-            {/*
-              * The image is a thumbnail rather than half the dialog: at half
-              * width it squeezed the text column down to a few characters per
-              * line on a phone.
-              */}
+            {/* A thumbnail, not half the dialog — at half width the text column collapses on a phone. */}
             <DialogBody className="flex flex-row items-center gap-4 p-4">
                 <img
                     src={image.src}

@@ -1,16 +1,7 @@
 ---
 /**
- * The cookie consent bar, ported from the original site's `gaConsent` partial.
- * Same copy, same placement (a pill floating at the bottom of the page, centred
- * above 640px), and the same ids so the styling reads the same way.
- *
- * Starts with the `hidden` attribute and only comes out when there's nothing in
- * `localStorage`, so a returning visitor never sees it flash. Analytics.astro is
- * what actually acts on the answer.
- *
- * The `{' '}` before the Privacy Policy link is load-bearing: Astro collapses the
- * newline between text and a following element, which ran the sentence straight
- * into the link.
+ * The cookie consent bar. Starts `hidden` and only appears when `localStorage` is
+ * empty; Analytics.astro acts on the answer. The `{' '}` before the link is load-bearing.
  */
 ---
 
@@ -130,11 +121,7 @@
 
     const popup = document.getElementById('gaConsentPopup')
 
-    /**
-     * Read off `window` at call time rather than up here: gtag.js loads async, so
-     * `window.gtag` may still be the queueing stub (or missing, if the request
-     * was blocked) when this module runs.
-     */
+    /** Read off `window` at call time: gtag.js loads async and may still be a stub. */
     function gtag(...args: unknown[]) {
         ;(window as unknown as { gtag?: Gtag }).gtag?.(...args)
     }

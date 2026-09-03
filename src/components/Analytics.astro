@@ -1,24 +1,11 @@
 ---
 /**
- * Google Analytics (gtag.js), gated behind Google Consent Mode.
- *
- * Ported from the original site's `metadata.html`, with two behaviours the
- * original got wrong (see the comments in the snippet): it never declared a
- * consent *default*, and it never re-applied a stored choice on later visits, so
- * a visitor who pressed Decline was measured anyway from their second page view
- * onward. Both are fixed here.
- *
- * The paired UI lives in CookieConsent.astro; this component only sets up the
- * tag and replays whatever the visitor already decided.
+ * Google Analytics (gtag.js) behind Google Consent Mode. Sets the consent default
+ * and replays a stored choice; the UI that captures it is CookieConsent.astro.
  */
 const GA_MEASUREMENT_ID = 'G-YMVJK0M2GG'
 
-/**
- * `set:html` with a template literal rather than a plain `<script>` body: the
- * contents of a script tag are raw text, not an expression context, so `{...}`
- * interpolation doesn't apply there. Same reason the site injects dynamic CSS
- * this way.
- */
+/** `set:html`, because a script tag's contents are raw text and `{...}` doesn't interpolate. */
 const bootstrap = `
 window.dataLayer = window.dataLayer || [];
 function gtag() { dataLayer.push(arguments); }

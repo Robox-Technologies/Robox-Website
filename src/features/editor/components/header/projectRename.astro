@@ -2,12 +2,8 @@
 ---
 
 <div class="project-rename flex items-center justify-center">
-    <!--
-        Deliberately not a form element: WebKit (iPad WKWebView) does implicit
-        submission on a single-input form without dispatching a `submit` event,
-        so preventDefault() can't stop it and the webview navigates away from
-        ?project=... leaving a blank editor.
-    -->
+    <!-- Not a <form>: WebKit implicitly submits a single-input form without a `submit`
+         event, so preventDefault() can't stop it navigating away from ?project=... -->
     <div class="flex gap-4 bg-white rounded-lg box-shadow">
         <label class="sr-only" for="project-name-input">Project name</label>
         <input
@@ -75,9 +71,7 @@
     input.addEventListener('keydown', (event) => {
         if (event.key !== 'Enter') return
 
-        // Belt and braces alongside dropping the <form>: never let Return
-        // bubble up as a navigation/submission gesture, just commit and dismiss
-        // the (iPad) keyboard.
+        // Return commits and dismisses the keyboard; it never bubbles as a submit gesture.
         event.preventDefault()
         flushSave()
         input.blur()

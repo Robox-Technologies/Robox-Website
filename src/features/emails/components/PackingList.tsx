@@ -132,12 +132,7 @@ export const PackingList = ({ packing }: PackingListProps) => {
                 </tbody>
             </table>
 
-            {/*
-              Stripe caps how many parcel lines the order's metadata can hold,
-              so a freak order can have more parcels than are listed above. Said
-              out loud rather than silently short, which would read as a
-              complete packing list.
-            */}
+            {/* Stripe's metadata cap means a huge order can have more parcels than are listed. */}
             {packing.unlistedParcels > 0 && (
                 <Text style={cellTextStyle}>
                     + {packing.unlistedParcels} further parcel

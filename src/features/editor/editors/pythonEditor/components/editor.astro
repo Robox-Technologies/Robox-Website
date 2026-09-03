@@ -52,23 +52,15 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
     const projectId = getProjectIdFromURL()
     const project = projectId ? await getProject(projectId) : null
 
-    // Both editor bodies render on every load (editorBody.astro picks which
-    // one is visible once it knows the project's type) — skip creating the
-    // Monaco instance entirely when this isn't a python project, mirroring
-    // the equivalent `project.type !== 'block'` guard in loadBlockly.
+    // Both editor bodies render, so skip building Monaco unless this is a python project.
     if (!project || project.type === 'python') {
-        // Colours pulled from the `--color-*` tokens in src/styles/global.css
-        // so the editor reads as the same brand palette as the rest of the
-        // site (and the Blockly editor's roboxTheme.ts) rather than Monaco's
-        // generic `vs` defaults.
+        // Colours from the `--color-*` tokens in global.css, not Monaco's `vs` defaults.
         editor.defineTheme('roboxPython', {
             base: 'vs',
             inherit: true,
             rules: [
                 { token: 'comment', foreground: '717171', fontStyle: 'italic' },
-                // Darker, higher-contrast tints of --color-green/--color-yellow —
-                // the raw brand hexes are too light to read as body text on a
-                // light background.
+                // Darker tints of --color-green/--color-yellow; the brand hexes are too light here.
                 { token: 'string', foreground: '4f7619' },
                 { token: 'string.escape', foreground: 'ff6166' },
                 { token: 'number', foreground: '916d08', fontStyle: 'bold' },
@@ -102,10 +94,8 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
             fontSize: 14,
         })
 
-        // The robot's firmware expects the roboxlib/machine setup the block
-        // editor's generated code also depends on (see buildPreamble) — the
-        // user only ever sees/edits their own code, but this is prepended
-        // whenever it's sent to the board.
+        // Prepended on send, never shown: the firmware expects the same roboxlib setup
+        // the block editor generates (see buildPreamble).
         const preambleCode = buildPreamble(project)
         registerCodeProvider(() => preambleCode + '\n' + codeEditor.getValue())
 

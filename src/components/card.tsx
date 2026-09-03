@@ -8,12 +8,7 @@ interface CardProps {
     description?: React.ReactNode
     absolute?: React.ReactNode
     children?: React.ReactNode
-    /**
-     * When set the card element *is* the link, rather than being wrapped in one.
-     * That makes the whole surface a single click target — kinder on touch than
-     * a small CTA hyperlink — and gives the CTA inside it one hover scope to key
-     * off, so hovering anywhere on the card lights the CTA up.
-     */
+    /** When set the card element *is* the link, so the whole surface is one target and hover scope. */
     href?: string
     target?: string
     rel?: string

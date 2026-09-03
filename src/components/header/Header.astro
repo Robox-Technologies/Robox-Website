@@ -39,11 +39,7 @@ const linksInsetTight = headerEndPadding * 2
             class="flex min-w-0 flex-row items-center gap-6"
             style={`padding-left: ${headerEndPadding}px`}
         >
-            {/*
-             * `min-w-0` here and on the logo let the wordmark scale itself down
-             * instead of pushing the icons off the right of a narrow phone: both
-             * logos carry a viewBox, so a narrower box just draws them smaller.
-             */}
+            {/* `min-w-0` lets the wordmark shrink instead of pushing the icons off a narrow phone. */}
             <a href="/" class="flex min-w-0 items-center p-4">
                 {isWorkshop ? (
                     <WorkshopLogo className="h-8 w-auto max-w-full" />

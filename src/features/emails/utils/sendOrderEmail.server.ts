@@ -18,13 +18,7 @@ import {
 
 const resend = new Resend(process.env.RESEND_KEY || 're_...')
 
-/**
- * The mailbox a human reads - deliberately not the `from` address, which has to
- * stay on the Resend-verified sending domain. A customer hitting reply reaches
- * someone here rather than the sending subdomain.
- *
- * It is also where the internal copy of each order lands.
- */
+/** The mailbox a human reads. Not the `from` address, which stays on the Resend-verified domain. */
 const ORDER_MAILBOX = 'hello@robox.com.au'
 
 const FROM = 'Ro/Box <hello@store.robox.com.au>'
