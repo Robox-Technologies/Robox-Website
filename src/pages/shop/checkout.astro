@@ -19,11 +19,7 @@ const products = await getAllProducts()
         </a>
         <h1 class="mb-8">Checkout</h1>
 
-        <!--
-            One island for the whole `#main-content` row: on the payment step
-            both columns live inside a single CheckoutElementsProvider, since
-            the summary reads its totals from the Checkout Session.
-        -->
+        <!-- One island for the whole row: both columns share a CheckoutElementsProvider. -->
         <CheckoutView products={products} client:only="react">
             <CheckoutViewLoadingState slot="fallback" />
         </CheckoutView>

@@ -1,12 +1,7 @@
 /**
- * Scheme allowlist for URLs that come from a content author rather than from
- * this codebase — CMS richtext (`lexicalToHtml.ts`) and the Stripe-authored
- * product banner (`renderBanner.server.ts`). Both end up inside `set:html`, so
- * an unfiltered `javascript:` href is a script sink.
- *
- * An allowlist rather than a `javascript:` denylist: that way a scheme nobody
- * thought about (`data:`, `vbscript:`, whatever a browser adds next) is rejected
- * by default instead of needing to be predicted here.
+ * Scheme allowlist for author-supplied URLs (CMS richtext, the Stripe product banner),
+ * both of which end up inside `set:html`. An allowlist, so unforeseen schemes are
+ * rejected by default.
  */
 export function safeUrl(url: string | null | undefined): string | null {
     if (!url) return null

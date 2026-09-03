@@ -30,20 +30,18 @@ export function dispatchStageClearError(target: EventTarget, namespace: string):
 }
 
 export interface StageFlowOptions<S extends string> {
-    /** The flow's own container - stage components dispatch on this, and it's what `stageStepper.astro` looks for via `[data-stage-flow-root]`. */
+    /** The flow's container, marked `[data-stage-flow-root]`; stage components dispatch on it. */
     root: HTMLElement
-    /** Event prefix (e.g. `"flashdevice"`) - keeps this flow's events from colliding with another one elsewhere on the page. */
+    /** Event prefix, e.g. `"flashdevice"`, so two flows on a page don't collide. */
     namespace: string
     stages: readonly S[]
     isStage: (value: unknown) => value is S
-    /** Query param that persists the active stage across reload and responds to back/forward. Omit to skip URL syncing. */
+    /** Query param the active stage syncs to. Omit to skip URL syncing. */
     stageParam?: string
 }
 
 /**
- * Wires up `.stageFlowStages` / `.stageFlowStage[data-stage]` / `.stageFlowError`
- * (with `.stageFlowErrorTitle` / `.stageFlowErrorMessage`) found inside `root`:
- * height-animated show/hide between stage panels, and the
+ * Wires the `.stageFlow*` elements inside `root` to the
  * `${namespace}:advance` / `:error` / `:clear-error` event contract.
  */
 export function createStageFlow<S extends string>(options: StageFlowOptions<S>): void {

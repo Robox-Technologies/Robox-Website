@@ -1,13 +1,6 @@
 /**
- * Minimal Lexical -> HTML renderer for Payload richtext.
- *
- * The original used `convertLexicalToHTML` from `@payloadcms/richtext-lexical`.
- * That package isn't a dependency here and pulls in the whole Payload richtext
- * stack for what is, in practice, a small set of nodes — this covers every node
- * type the CMS content actually uses (surveyed across the live collection):
- * paragraph, heading, list/listitem, link, autolink, upload, horizontalrule,
- * linebreak and formatted text. Unknown nodes render their children rather than
- * disappearing, so new content degrades to plain prose instead of vanishing.
+ * Minimal Lexical -> HTML renderer for Payload richtext, covering the node types the CMS
+ * actually uses. Unknown nodes render their children rather than vanishing.
  */
 
 // Blocks `javascript:` and friends; CMS content is trusted-ish, not trusted.

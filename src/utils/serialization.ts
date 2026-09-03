@@ -8,13 +8,8 @@ import { getDB, persist, PROJECTS_TABLE } from '@/utils/db'
 const ExtensionKeys = Object.keys(extensions) as ExtensionKey[]
 
 /**
- * Fills in fields a stored project predates or is missing.
- *
- * Projects saved before `type`/`code` existed have neither, and an absent
- * `type` is not `'block'` — which is enough to make the block editor treat a
- * perfectly good project as someone else's and refuse to load its blocks. So
- * every read normalises rather than trusting the stored shape, and the first
- * subsequent `editProject` writes the filled-in project back.
+ * Fills in fields a stored project predates. An absent `type` isn't `'block'`, which is
+ * enough for the block editor to refuse a perfectly good project, so every read normalises.
  */
 function normalizeProject(stored: Record<string, unknown>): UserProject {
     const type: ProjectType =
@@ -102,9 +97,7 @@ export async function getProjects(): Promise<Record<string, UserProject>> {
         ),
     )
 }
-// `type` defaults to 'block' since that's the only editor the UI can create
-// or open today — a python editor can pass 'python' once it exists, with no
-// further backend changes needed.
+// 'block' is the only type the UI can create today.
 export async function createProject(
     type: ProjectType = 'block',
 ): Promise<string> {
@@ -118,11 +111,8 @@ export async function createProject(
     return id
 }
 /**
- * Adopts a project parsed out of a `.robox` file, as the original's
- * `importProject` did. The payload is untrusted, so fields are copied across
- * one at a time onto a fresh empty project rather than spread — that keeps
- * unknown keys (and `__proto__`) out, and fills in anything the file omits.
- * Returns the new project's id, or null if the payload isn't a project.
+ * Adopts a project parsed out of a `.robox` file. Fields are copied one at a time onto a
+ * fresh project rather than spread, since the payload is untrusted. Null if it isn't one.
  */
 export async function importProject(payload: unknown): Promise<string | null> {
     if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {

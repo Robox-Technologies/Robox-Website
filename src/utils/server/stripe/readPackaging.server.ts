@@ -2,15 +2,8 @@ import type { Stripe } from 'stripe'
 import type { BagCapacity, Packaging, ProductPackaging } from '@/types/shop'
 
 /**
- * What a product's packaging metadata looks like, and what happens when it is
- * absent.
- *
- * The V1 kits ship in padded satchels and predate these keys, so a product
- * without `packagingType` is read as a bagged product with the capacities the
- * old `fees.json` brackets encoded (1 per small, 3 per medium, 10 per large).
- * That keeps the current catalog quoting correctly instead of failing the build,
- * but it is a compatibility shim - set the keys explicitly on every product.
- *
+ * A product's packaging metadata. A product without `packagingType` falls back to the
+ * old `fees.json` bag brackets — a shim for the V1 kits, not something to rely on.
  * @see docs/packaging.md
  */
 const LEGACY_BAG_CAPACITY: BagCapacity = { small: 1, medium: 3, large: 10 }
@@ -28,11 +21,7 @@ function parseInteger(
     return parsed
 }
 
-/**
- * `boxDimensions` is a single `LxWxH` string in centimetres - "24x16x8" - so a
- * box is one field to read and edit in the dashboard rather than three that can
- * disagree.
- */
+/** `boxDimensions` is one `LxWxH` string in centimetres, e.g. "24x16x8". */
 function parseBoxDimensions(
     value: string | undefined,
     productName: string,
@@ -60,10 +49,7 @@ function parseBoxDimensions(
     return { length: length!, width: width!, height: height! }
 }
 
-/**
- * A capacity of 0 means "does not fit this size", which is recorded as null so
- * the packing code never divides by it.
- */
+/** A capacity of 0 means it doesn't fit, recorded as null so nothing divides by it. */
 function parseCapacity(
     value: string | undefined,
     { key, productName }: { key: string; productName: string },
@@ -82,11 +68,7 @@ function parseCapacity(
 export function readPackaging(
     metadata: Stripe.Metadata,
     productName: string,
-    /**
-     * A bundle is expanded into its contents before anything is packed, so its
-     * own packaging is never consulted - and warning about it being absent would
-     * be noise pointing at the wrong product.
-     */
+    /** A bundle is expanded before packing, so its own packaging is never consulted. */
     { isBundle = false }: { isBundle?: boolean } = {},
 ): ProductPackaging {
     const declared = metadata.packagingType?.trim().toLowerCase()
@@ -114,9 +96,7 @@ export function readPackaging(
         metadata.bagCapacityLarge !== undefined
 
     if (!hasCapacities) {
-        // Loud rather than silent for anything that actually gets packed: a
-        // product falling back is being quoted on a guess. See
-        // docs/packaging.md for the keys to set.
+        // A product on the fallback is being quoted on a guess. See docs/packaging.md.
         if (!isBundle) {
             console.warn(
                 `[packaging] ${productName} has no bagCapacity metadata; assuming ${LEGACY_BAG_CAPACITY.small}/${LEGACY_BAG_CAPACITY.medium}/${LEGACY_BAG_CAPACITY.large} per small/medium/large satchel`,

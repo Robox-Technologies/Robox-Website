@@ -7,12 +7,7 @@ export type PriceDetails = {
     prices: Record<string, number>
 }
 
-/**
- * Pulls the fields a Product needs off an expanded `default_price`.
- *
- * Shared by both product loaders so the base amount and the per-currency map
- * can't drift apart between the list and the single-product read.
- */
+/** Pulls the fields a Product needs off an expanded `default_price`. Shared by both loaders. */
 export function readPriceDetails(
     price: Stripe.Price,
     productName: string,
@@ -25,9 +20,7 @@ export function readPriceDetails(
 
     const currency = price.currency.toLowerCase()
 
-    // `currency_options` only comes back when it's expanded, and it always
-    // carries the base currency alongside any manual ones - so when it's
-    // present it is the whole map, and when it isn't we still have the base.
+    // When expanded, `currency_options` is the whole map; when it isn't, we still have the base.
     const prices: Record<string, number> = { [currency]: price.unit_amount }
 
     for (const [code, option] of Object.entries(price.currency_options ?? {})) {

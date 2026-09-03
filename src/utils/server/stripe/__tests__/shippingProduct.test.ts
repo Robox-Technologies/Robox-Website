@@ -1,8 +1,4 @@
-/**
- * The browser summary tells postage apart by the shipping product's name, and
- * has nothing else to go on - so the name is an invariant this resolver keeps,
- * not a convention the dashboard is trusted with.
- */
+/** The shipping product's name is an invariant this resolver keeps, not a dashboard convention. */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -22,10 +18,7 @@ vi.mock('../index.server', () => ({
     },
 }))
 
-/**
- * The resolver caches its answer in a module-level variable, so each case needs
- * a fresh copy of the module rather than just cleared mocks.
- */
+/** The resolver caches module-level, so each case needs a fresh copy of the module. */
 async function freshResolver() {
     vi.resetModules()
     const module = await import('../shippingProduct.server')

@@ -3,16 +3,8 @@ export const prerender = false
 import type { APIRoute } from 'astro'
 
 /**
- * Redirects /public/email/<file> to /email/<file>.
- *
- * The pre-Astro site kept its email images under src/pages/public/email/ and so
- * served them from /public/email/<file>. Emails sent by that site are already in
- * people's inboxes and will keep requesting the old paths for as long as they
- * are kept, so those URLs have to keep resolving after cutover.
- *
- * This has to be a real 301 rather than a `redirects` config entry: with
- * output: 'static' those are emitted as HTML pages with a meta refresh, which an
- * email client's image loader cannot follow.
+ * Redirects /public/email/<file> to /email/<file>, for images in emails the pre-Astro
+ * site already sent. A real 301, since `redirects` emits a meta refresh no image loader follows.
  */
 
 // Filenames only - no slashes, no traversal, nothing that could smuggle a

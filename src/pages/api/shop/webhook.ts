@@ -75,9 +75,7 @@ export const POST = (async ({ request }) => {
     // only runs once the signature above has been verified.
     try {
         switch (event.type) {
-            // The customer finished checkout. For an immediate method the money
-            // is already there; for a delayed one this is the order being
-            // placed, and `async_payment_*` closes it out later.
+            // Checkout finished. Delayed methods are closed out later by `async_payment_*`.
             case 'checkout.session.completed':
             case 'checkout.session.async_payment_succeeded': {
                 const session = await loadSession(event.data.object.id)
@@ -122,10 +120,7 @@ export const POST = (async ({ request }) => {
         }
     } catch (error) {
         console.error('[stripe-webhook] error processing email:', error)
-        // Answer with a failure so Stripe retries. An order email that didn't
-        // send is worth another attempt - a Resend outage is transient, and the
-        // alternative is a customer who paid and heard nothing. Stripe backs
-        // off and eventually gives up, so a permanently failing send can't loop.
+        // Fail so Stripe retries; it backs off and gives up, so this can't loop.
         return new Response('Error processing webhook', { status: 500 })
     }
 

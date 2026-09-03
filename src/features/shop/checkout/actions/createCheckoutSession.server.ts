@@ -29,10 +29,9 @@ const shippingDetailsSchema = z.object({
 })
 
 /**
- * Creates the Checkout Session the payment step runs on. No
- * `shipping_address_collection` or `shipping_options` — those make the wallets offer
- * an address of their own — so postage is a line item and the address rides in on
- * `payment_intent_data.shipping`. A changed cart gets a fresh session, not an edit.
+ * Creates the Checkout Session the payment step runs on. Postage is a line item and the
+ * address rides in on `payment_intent_data.shipping`, since shipping options make the
+ * wallets offer an address of their own.
  */
 export const createCheckoutSession = defineAction({
     input: z.object({

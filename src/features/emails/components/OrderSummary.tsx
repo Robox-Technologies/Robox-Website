@@ -41,11 +41,8 @@ export interface OrderSummaryProps {
 }
 
 /**
- * Order summary table: order id, date, line items, then a shipping / discount /
- * total breakdown. Mirrors summary.html and the `appendFeeRow` logic in the
- * original's email.ts.
- *
- * Raw <table> because jsx-email's <Row>/<Column> nest a table per row and don't align.
+ * Order summary table. Raw <table> because jsx-email's <Row>/<Column> nest a table
+ * per row and don't line up column to column.
  */
 
 /** A cell whose content is a <p>, matching the original's `createCell`. */

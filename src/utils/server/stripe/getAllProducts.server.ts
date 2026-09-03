@@ -10,35 +10,22 @@ import { readPriceDetails } from './readPrice.server'
 import { SHIPPING_PRODUCT_MARKER } from '@/features/shop/checkout/utils/shippingLineItem'
 import { readCombo, readPackaging } from './readPackaging.server'
 
-/**
- * Short enough that a price or availability change in the Stripe dashboard shows
- * up on its own, long enough that a burst of checkout traffic is one read rather
- * than one per request. The charged amount is still validated against this list
- * (see `checkoutPricing.server.ts`), so the window is how long a just-changed
- * price keeps applying — not a gap in the price check.
- */
+/** Short enough that a dashboard change shows up on its own, long enough to absorb a burst. */
 const PRODUCT_CACHE_TTL_MS = 60_000
 
 async function fetchAllProducts(): Promise<Product[]> {
     const stripeProducts = await stripeAPI.products.list({
-        // Unfiltered, this returns archived products too, so archiving a
-        // product in the dashboard would leave it on the shop. Availability
-        // still runs through `metadata.status`; this is the harder off switch.
+        // Unfiltered this returns archived products too, which would stay on the shop.
         active: true,
-        // Stripe pages at 10 by default, so without this the catalog would
-        // silently stop at the tenth product. 100 is the API's ceiling; past
-        // that this needs `autoPagingToArray`.
+        // Stripe pages at 10 by default. 100 is the ceiling; past that use `autoPagingToArray`.
         limit: 100,
-        // `currency_options` is only returned when explicitly expanded, and it
-        // is what the storefront's currency switcher reads - without it every
-        // product looks single-currency.
+        // `currency_options` only comes back expanded, and the currency switcher reads it.
         expand: ['data.default_price.currency_options'],
     })
     const products = await Promise.all(
         stripeProducts.data
-            // Postage is billed through a Product of our own, which is not
-            // something the shop sells. Filtered before validation so it never
-            // reports itself as a misconfigured product.
+            // Postage's own Product isn't something the shop sells. Filtered before
+            // validation, so it never reports itself as misconfigured.
             .filter(
                 (product) =>
                     product.metadata[SHIPPING_PRODUCT_MARKER.key] !==
@@ -48,11 +35,8 @@ async function fetchAllProducts(): Promise<Product[]> {
                 try {
                     return await readProduct(product)
                 } catch (error) {
-                    // One unusable product used to take down the whole build, which
-                    // meant a half-finished draft in the dashboard - or a fixture
-                    // left behind by `stripe trigger` - broke the site. Skip it and
-                    // say so instead: it disappears from the shop, which is the
-                    // safe direction, and the log names what to fix.
+                    // Skipped rather than fatal, so a half-finished dashboard draft can't
+                    // take down the build. The log names what to fix.
                     console.error(
                         `[catalog] skipping product ${product.id} (${product.name}): ${(error as Error).message}`,
                     )
@@ -63,15 +47,10 @@ async function fetchAllProducts(): Promise<Product[]> {
     return products.filter((product): product is Product => product !== null)
 }
 
-/**
- * One product, or a throw naming what's wrong with it. Validation stays strict
- * here - the caller decides that an invalid product is skipped rather than
- * fatal, so the reason still has to be specific enough to act on.
- */
+/** One product, or a throw naming what's wrong with it. The caller decides whether that's fatal. */
 async function readProduct(product: Stripe.Product): Promise<Product> {
-    // Checked rather than cast: a product with no default price is the shape a
-    // half-finished dashboard draft takes, and dereferencing it would report a
-    // TypeError instead of naming the product that needs a price.
+    // Checked, not cast: a half-finished draft has no default price, and a TypeError
+    // wouldn't name the product that needs one.
     const price = product.default_price
     if (!price || typeof price === 'string') {
         throw new Error('has no expanded default price')
@@ -112,12 +91,7 @@ async function readProduct(product: Stripe.Product): Promise<Product> {
     }
 }
 
-/**
- * Cached because every public checkout action reads it: the actions under
- * `src/actions` are reachable unauthenticated at `/_actions/*`, and an uncached
- * read turned each of those requests into a Stripe API call. Also collapses the
- * repeat reads a build does across `getStaticPaths` and the shop pages.
- */
+/** Cached because every unauthenticated `/_actions/*` call reads it, as does every build page. */
 const loadAllProducts = createCachedLoader(fetchAllProducts, {
     ttlMs: PRODUCT_CACHE_TTL_MS,
 })

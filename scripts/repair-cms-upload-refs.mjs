@@ -1,13 +1,10 @@
 #!/usr/bin/env node
 /**
- * One-off repair for CMS upload refs orphaned when `media`/`files` were re-inserted
- * with fresh ObjectIds. Rematches old ids to documents by the timestamp an ObjectId
- * encodes, breaking ties on filename and reporting anything still ambiguous.
+ * One-off repair for CMS upload refs orphaned when `media`/`files` were re-inserted with
+ * fresh ObjectIds. Rematches by the timestamp an ObjectId encodes, tie-breaking on filename.
  *
- *   node scripts/repair-cms-upload-refs.mjs            # dry run
- *   node scripts/repair-cms-upload-refs.mjs --apply
- *
- * CMS_URL (default http://localhost:3333), PAYLOAD_EMAIL and PAYLOAD_PASSWORD for --apply.
+ *   node scripts/repair-cms-upload-refs.mjs [--apply]
+ *   env: CMS_URL (default http://localhost:3333), PAYLOAD_EMAIL, PAYLOAD_PASSWORD
  */
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:3333'

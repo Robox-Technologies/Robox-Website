@@ -1,8 +1,4 @@
-/**
- * Money formatting is the one place a display bug reads as a pricing bug, so
- * these pin both the AUD output the site has always shown and the behaviour
- * the multi-currency storefront depends on.
- */
+/** Pins the AUD output the site shows and the multi-currency behaviour the storefront needs. */
 
 import { describe, expect, it } from 'vitest'
 
