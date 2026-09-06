@@ -1,0 +1,181 @@
+---
+import { faMicrochip, faPlay, faStop, faPlugCircleXmark } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import Button from "@/components/button"
+import MotorToggle from "./motorToggle.astro"
+import motorImage from "../images/Motor.png"
+---
+
+<div class="motorCalibrationPanel flex w-full flex-col gap-6">
+    <p class="text-gray-800">
+        Drag the slider towards whichever motor is running slower - the line
+        feeding it pulses faster to show the boost it's getting. This takes
+        effect the next time your program starts; it won't change a program
+        that's already running.
+    </p>
+
+    <div class="motorCalibrationControls flex flex-col gap-6">
+        <div class="flex w-full items-center justify-center gap-2" aria-hidden="true">
+            <img src={motorImage.src} alt="" class="w-20 shrink-0" />
+            <div id="motor-calibrate-line-left" class="motor-calibrate-line h-2 flex-1 rounded-full"></div>
+            <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-black text-white">
+                <FontAwesomeIcon icon={faMicrochip} />
+            </div>
+            <div id="motor-calibrate-line-right" class="motor-calibrate-line h-2 flex-1 rounded-full"></div>
+            <img src={motorImage.src} alt="" class="w-20 shrink-0 motor-calibrate-mirror" />
+        </div>
+
+        <div class="flex w-full items-center gap-3">
+            <span class="text-sm font-semibold">Left</span>
+            <input
+                type="range"
+                id="motor-calibrate-slider"
+                min="-1"
+                max="1"
+                step="0.01"
+                value="0"
+                class="flex-1"
+                aria-label="Motor balance"
+            />
+            <span class="text-sm font-semibold">Right</span>
+        </div>
+        <p id="motor-calibrate-readout" class="text-lg font-bold text-black">Balanced</p>
+
+        <div class="flex w-full flex-col gap-3 border-t border-gray-200 pt-3">
+            <MotorToggle id="motor-calibrate-reverse-left" label="Reverse left motor" />
+            <MotorToggle id="motor-calibrate-reverse-right" label="Reverse right motor" />
+            <MotorToggle id="motor-calibrate-swap" label="Swap left/right motors" />
+        </div>
+
+        <div class="flex w-full flex-col gap-2 border-t border-gray-200 pt-3">
+            <span class="text-sm font-semibold">Test motors</span>
+            <div class="flex w-full items-center gap-2">
+                <button
+                    type="button"
+                    id="motor-calibrate-test-left"
+                    class="button-interactive flex flex-1 items-center justify-center gap-2 rounded-xl bg-black px-3 py-2 text-sm text-white"
+                >
+                    <FontAwesomeIcon icon={faPlay} />
+                    Left
+                </button>
+                <button
+                    type="button"
+                    id="motor-calibrate-test-stop"
+                    class="button-interactive flex items-center justify-center rounded-xl bg-gray-500 px-3 py-2 text-sm text-white"
+                    aria-label="Stop motors"
+                >
+                    <FontAwesomeIcon icon={faStop} />
+                </button>
+                <button
+                    type="button"
+                    id="motor-calibrate-test-right"
+                    class="button-interactive flex flex-1 items-center justify-center gap-2 rounded-xl bg-black px-3 py-2 text-sm text-white"
+                >
+                    <FontAwesomeIcon icon={faPlay} />
+                    Right
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-4">
+            <Button id="motor-calibrate-reset" className="bg-gray-500">Reset</Button>
+            <Button id="motor-calibrate-back" className="bg-green">Back to Editor</Button>
+        </div>
+    </div>
+
+    <Button id="motor-calibrate-disconnected" className="bg-gray-500 self-start hidden">
+        <FontAwesomeIcon icon={faPlugCircleXmark} className="mr-2" />
+        Ro/Box Not Connected — Back to Connect
+    </Button>
+</div>
+
+<style>
+    .motor-calibrate-mirror {
+        transform: scaleX(-1);
+    }
+
+    .motor-calibrate-line {
+        --intensity: 0.4;
+        background-image: repeating-linear-gradient(
+            90deg,
+            var(--color-green) 0 10px,
+            transparent 10px 20px
+        );
+        background-size: 20px 100%;
+        opacity: var(--intensity);
+        /* Only opacity is a CSS transition - position is driven frame by
+           frame from JS in calibrationStep.ts, precisely so its speed can
+           change smoothly mid-flight. Restarting a CSS `animation-duration`
+           on every slider `input` event resyncs the animation's clock and
+           makes it visibly jump. */
+        transition: opacity 200ms ease-out;
+    }
+</style>
+
+<script>
+    import { wireMotorCalibration } from "../calibrationStep";
+
+    // Astro only includes this script once no matter how many instances
+    // render, so wire up every instance found rather than assuming there's a
+    // single one.
+    document.querySelectorAll<HTMLDivElement>(".motorCalibrationPanel").forEach((root) => {
+        const controls = root.querySelector<HTMLDivElement>(".motorCalibrationControls");
+        const disconnectedButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-disconnected");
+        const leftLine = root.querySelector<HTMLDivElement>("#motor-calibrate-line-left");
+        const rightLine = root.querySelector<HTMLDivElement>("#motor-calibrate-line-right");
+        const slider = root.querySelector<HTMLInputElement>("#motor-calibrate-slider");
+        const readout = root.querySelector<HTMLParagraphElement>("#motor-calibrate-readout");
+        const reverseLeftToggle = root.querySelector<HTMLButtonElement>("#motor-calibrate-reverse-left");
+        const reverseRightToggle = root.querySelector<HTMLButtonElement>("#motor-calibrate-reverse-right");
+        const swapToggle = root.querySelector<HTMLButtonElement>("#motor-calibrate-swap");
+        const testLeftButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-left");
+        const testRightButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-right");
+        const testStopButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-stop");
+        const resetButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-reset");
+        const backButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-back");
+
+        if (
+            !controls ||
+            !disconnectedButton ||
+            !leftLine ||
+            !rightLine ||
+            !slider ||
+            !readout ||
+            !reverseLeftToggle ||
+            !reverseRightToggle ||
+            !swapToggle ||
+            !testLeftButton ||
+            !testRightButton ||
+            !testStopButton ||
+            !resetButton ||
+            !backButton
+        ) {
+            throw new Error("Calibrate panel elements not found");
+        }
+
+        wireMotorCalibration({
+            root,
+            controls,
+            disconnectedButton,
+            leftLine,
+            rightLine,
+            slider,
+            readout,
+            reverseLeftToggle,
+            reverseRightToggle,
+            swapToggle,
+            testLeftButton,
+            testRightButton,
+            testStopButton,
+            resetButton,
+        });
+
+        // This page is always reached by navigating away from somewhere in
+        // the hub, so going back returns there directly rather than
+        // guessing a destination.
+        backButton.addEventListener("click", () => {
+            if (window.history.length > 1) window.history.back();
+            else window.location.assign("../");
+        });
+    });
+</script>

@@ -25,6 +25,7 @@ import {
     meetsMinimumVersion,
     parseFirmwareReply,
     reverseMotorCommand,
+    runMotorCommand,
     swapMotorsCommand,
     type CalibrationName,
 } from './protocol'
@@ -528,6 +529,22 @@ export class Pico {
     getCalibration(name: CalibrationName): void {
         this.calibrationCommandPending = true
         void this.communication?.write(GET_CALIBRATION_COMMANDS[name])
+    }
+
+    /**
+     * Test-drives one motor forward at a fixed speed, through the board's
+     * normal `Motors.run_motors` pipeline - so it reflects whatever
+     * bias/reverse/swap is currently set. A direct action like `restart()`
+     * or `bootloaderMode()`, not a calibration value: no reply, so no
+     * `calibrationCommandPending` guard either.
+     */
+    runMotor(index: 0 | 1): void {
+        void this.communication?.write(runMotorCommand(index))
+    }
+
+    /** Stops both motors. The board also calls this itself the instant a program starts, so a test-drive can never fight it for the pins. */
+    stopMotors(): void {
+        void this.communication?.write(COMMANDS.STOP_MOTORS)
     }
 
     /**

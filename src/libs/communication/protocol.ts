@@ -27,6 +27,7 @@ export const COMMANDS = {
     RESTART: 'reset_device',
     BOOTLOADER: 'boot_loader',
     DISCONNECT: 'disconnect_device',
+    STOP_MOTORS: 'stop_motors',
 } as const
 
 /**
@@ -77,6 +78,16 @@ export function reverseMotorCommand(index: 0 | 1, reversed: boolean): string {
 /** Sibling to `reverseMotorCommand` - same absolute-set reasoning, swaps which physical motor answers to "left" and "right". */
 export function swapMotorsCommand(swapped: boolean): string {
     return `swap_motors_${swapped ? 1 : 0}`
+}
+
+/**
+ * Builds the `run_motor_<index>` command that test-drives one motor forward
+ * at a fixed speed through the board's normal `Motors.run_motors` pipeline,
+ * so it reflects whatever bias/reverse/swap is currently set. Direct action
+ * like `STOP_MOTORS`, not a calibration value - there's no reply to wait on.
+ */
+export function runMotorCommand(index: 0 | 1): string {
+    return `run_motor_${index}`
 }
 
 /**

@@ -1,0 +1,21 @@
+---
+import StandardLayout from '@/layouts/StandardLayout.astro';
+import Article from '@/components/article/Article';
+import MotorCalibration from '@/features/studentHub/motorCalibration/motorCalibration.astro';
+---
+<StandardLayout
+    title="Calibrate Your Ro/Box's Motors"
+    description="Trim, reverse, or swap your Ro/Box's left and right motors, right from your browser."
+    header="workshop"
+>
+    <Article className="mx-auto max-w-2xl">
+        <h1 class="text-5xl font-bold mb-8">
+            Calibrate Your Ro/Box's Motors
+        </h1>
+        <p class="mb-8 text-lg text-tone3">
+            If your Ro/Box drifts to one side, drives backwards, or has its
+            wheels crossed, calibrate its motors against each other below.
+        </p>
+        <MotorCalibration />
+    </Article>
+</StandardLayout>

@@ -1,0 +1,106 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlug, faSpinner, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/button';
+import CommunicationMethodToggle from '@/components/communicationMethodToggle.astro';
+
+// The iOS app only ever talks over its own BLE plugin, so there's no method
+// to pick — same as the editor's own communicationSlot.
+const isIOSBuild = process.env.IOS_BUILD === 'true';
+---
+<div class="calibrationConnect flex flex-col gap-3" data-ios-build={isIOSBuild ? "true" : "false"}>
+    <div class="flex items-center gap-3">
+        {!isIOSBuild && <CommunicationMethodToggle />}
+        <Button id="calibration-connect" className="bg-blue">
+            <FontAwesomeIcon icon={faPlug} className="busyIcon mr-2" />
+            <FontAwesomeIcon icon={faSpinner} className="busySpinner mr-2 hidden! fa-spin" />
+            Connect to Ro/Box
+        </Button>
+    </div>
+    <Button id="calibration-connect-back" className="bg-gray-500 self-start">
+        <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
+        Back
+    </Button>
+</div>
+<script>
+    import { pico } from "@/libs/communication/communicate";
+    import type { PicoState } from "src/types/communication";
+    import { ConnectionStatus } from "src/types/communication";
+    import { setButtonBusy, dispatchCalibrationAdvance, dispatchCalibrationClearError, dispatchCalibrationError } from "../stage";
+
+    // Astro only includes this script once no matter how many instances
+    // render, so wire up every instance found rather than assuming there's a
+    // single one.
+    document.querySelectorAll<HTMLDivElement>(".calibrationConnect").forEach((root) => {
+        const connectButton = root.querySelector<HTMLButtonElement>("#calibration-connect");
+        const backButton = root.querySelector<HTMLButtonElement>("#calibration-connect-back");
+        if (!connectButton || !backButton) throw new Error("Calibration connect elements not found");
+
+        if (root.dataset.iosBuild === "true") {
+            void pico.setCommunicationMethod("iOSBluetooth");
+        }
+
+        // A Ro/Box that's already connected (e.g. arriving here straight from
+        // the editor) skips straight past this stage instead of asking to
+        // reconnect to a device that's already talking to us. Resets on
+        // every disconnect rather than firing once for the whole page's
+        // lifetime, so coming back here after the Calibrate stage sends you
+        // back (a dropped connection) still advances on the next reconnect.
+        let hasAdvanced = false;
+
+        // Silently reattaching to a previously authorised USB port the
+        // instant this stage becomes active would start test-driving motors
+        // on whatever Ro/Box that port belongs to without the student
+        // clicking anything - only an explicit click on the button below may
+        // connect here. `setCommunicationMethod` (called by the toggle
+        // above, or by the iOS branch) builds a fresh USBCommunication that
+        // defaults auto-connect back on, and it does so *after* emitting
+        // this very stateChange - queuing this for the next microtask,
+        // rather than calling it inline, is what lets it land on that new
+        // transport instead of the one just torn down.
+        function disableUsbAutoConnect(state: PicoState) {
+            if (state.communicationMethod !== "USB") return;
+            queueMicrotask(() => pico.setAutoConnect(false));
+        }
+
+        function updateUI(state: PicoState) {
+            disableUsbAutoConnect(state);
+            const connecting = state.connectionStatus === ConnectionStatus.CONNECTING;
+            const connected = state.connectionStatus === ConnectionStatus.CONNECTED;
+            if (connected) {
+                if (!hasAdvanced) {
+                    hasAdvanced = true;
+                    dispatchCalibrationAdvance(root, "calibrate");
+                }
+            } else {
+                hasAdvanced = false;
+            }
+            setButtonBusy(connectButton!, connecting);
+            // The toggle picks the method (or the iOS branch above sets it
+            // directly) - until one is actually set there's nothing to
+            // connect to yet.
+            if (!connecting) connectButton!.disabled = !state.communicationMethod;
+            // Leaving mid-attempt would abandon a connect in progress.
+            backButton!.disabled = connecting;
+        }
+
+        pico.on("stateChange", updateUI);
+        updateUI(pico.getState());
+
+        pico.on("error", (data) => {
+            dispatchCalibrationError(root, "Couldn't Connect", data.message);
+        });
+
+        connectButton.addEventListener("click", () => {
+            dispatchCalibrationClearError(root);
+            pico.request();
+        });
+
+        // This is the first stage, so "back" leaves the calibration flow
+        // entirely rather than returning to an earlier one.
+        backButton.addEventListener("click", () => {
+            if (window.history.length > 1) window.history.back();
+            else window.location.assign("../");
+        });
+    });
+</script>
