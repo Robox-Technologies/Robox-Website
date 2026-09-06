@@ -32,14 +32,11 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
     import { editor } from 'monaco-editor/editor/editor.api'
     import 'monaco-editor/languages/definitions/python/register'
     import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
-    import {
-        getProject,
-        getProjectIdFromURL,
-        editProject,
-    } from '@/utils/serialization'
+    import { getProject, getProjectIdFromURL } from '@/utils/serialization'
     import { registerCodeProvider } from '@/features/editor/state/codeProvider'
     import { buildPreamble } from '@/features/editor/utils/preamble'
-    import dayjs from 'dayjs'
+    import { savePython } from '@/features/editor/editors/pythonEditor/utils/serialization'
+    import { pythonTheme } from '@/features/editor/editors/pythonEditor/config/theme'
 
     globalThis.MonacoEnvironment = {
         getWorker: () => new EditorWorker(),
@@ -54,36 +51,7 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
 
     // Both editor bodies render, so skip building Monaco unless this is a python project.
     if (!project || project.type === 'python') {
-        // Colours from the `--color-*` tokens in global.css, not Monaco's `vs` defaults.
-        editor.defineTheme('roboxPython', {
-            base: 'vs',
-            inherit: true,
-            rules: [
-                { token: 'comment', foreground: '717171', fontStyle: 'italic' },
-                // Darker tints of --color-green/--color-yellow; the brand hexes are too light here.
-                { token: 'string', foreground: '4f7619' },
-                { token: 'string.escape', foreground: 'ff6166' },
-                { token: 'number', foreground: '916d08', fontStyle: 'bold' },
-                { token: 'number.hex', foreground: '916d08', fontStyle: 'bold' },
-                { token: 'keyword', foreground: '2588c7', fontStyle: 'bold' },
-                { token: 'identifier', foreground: '405c64' },
-                { token: 'delimiter', foreground: '717171' },
-                { token: 'tag', foreground: 'ff6166' },
-            ],
-            colors: {
-                'editor.background': '#f8f8f8',
-                'editor.foreground': '#405c64',
-                'editorGutter.background': '#efefef',
-                'editorLineNumber.foreground': '#717171',
-                'editorLineNumber.activeForeground': '#405c64',
-                'editorCursor.foreground': '#2588c7',
-                'editor.selectionBackground': '#2588c74d',
-                'editor.lineHighlightBackground': '#2588c714',
-                'editor.lineHighlightBorder': '#00000000',
-                'editorIndentGuide.background': '#c6c6c6',
-                'editorIndentGuide.activeBackground': '#2588c7',
-            },
-        })
+        editor.defineTheme('roboxPython', pythonTheme)
 
         const model = editor.createModel(project?.code ?? '', 'python')
         const codeEditor = editor.create(container, {
@@ -99,15 +67,18 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
         const preambleCode = buildPreamble(project)
         registerCodeProvider(() => preambleCode + '\n' + codeEditor.getValue())
 
+        // Brand-new projects have no code to trigger a save yet, so they'd otherwise
+        // show a blank thumbnail in the hub until the first keystroke.
+        if (projectId && project && !project.code) {
+            void savePython(projectId, '')
+        }
+
         let saveTimeoutId = 0
         model.onDidChangeContent(() => {
             if (!projectId) return
             window.clearTimeout(saveTimeoutId)
             saveTimeoutId = window.setTimeout(() => {
-                void editProject(projectId, {
-                    code: codeEditor.getValue(),
-                    time: dayjs(),
-                })
+                void savePython(projectId, codeEditor.getValue())
             }, 500)
         })
 
