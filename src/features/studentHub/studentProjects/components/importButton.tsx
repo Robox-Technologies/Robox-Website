@@ -39,7 +39,7 @@ export default function ImportButton() {
         const onDrop = (event: DragEvent) => {
             event.preventDefault()
             setDragging(false)
-            void impor6tFile(event.dataTransfer?.files?.[0])
+            void importFile(event.dataTransfer?.files?.[0])
         }
 
         document.addEventListener('dragenter', onDragEnter)

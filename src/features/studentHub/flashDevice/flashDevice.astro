@@ -25,6 +25,16 @@ import { STAGES, STAGE_LABELS } from './stage';
     <div class="stageFlowStages overflow-hidden rounded-3xl bg-white box-shadow transition-[height] duration-300 ease-out motion-reduce:transition-none">
         <div class="stageFlowStage flex flex-col gap-4 p-6" data-stage="bootloader">
             <h2 class="text-xl font-bold text-black">Step 1: Reboot into firmware update mode</h2>
+            <div class="flex items-start gap-3 rounded-xl border-2 border-yellow bg-yellow/20 p-4">
+                <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5 text-xl text-black" />
+                <div>
+                    <p class="font-bold text-black">Recalibration Required</p>
+                    <p class="mt-1 text-sm text-black">
+                        Flashing new firmware resets your Ro/Box's colour and motor
+                        calibration. You'll need to recalibrate afterwards.
+                    </p>
+                </div>
+            </div>
             <p class="text-gray-800">Connect your Ro/Box over USB and we'll ask it to reboot itself into firmware update mode.</p>
             <AutomaticBootsel />
             <ManualBootsel />
