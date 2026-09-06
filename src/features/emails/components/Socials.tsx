@@ -32,13 +32,8 @@ const SOCIAL_LINKS = [
 const darkVariant = (filename: string) => filename.replace(/\.png$/, '-dark.png');
 
 /**
- * "Stay up to date with us!" social icon row, shown on the receipt email.
- * Mirrors the `.socials` block in success.html + the `.socials` /
- * `.socialButtons` rules in email.css.
- *
- * The empty cells on either end are load-bearing: they absorb the leftover
- * width so the three fixed 40px cells sit together in the middle. Without them
- * the icons spread out to the thirds of the table.
+ * Social icon row on the receipt email. The empty end cells are load-bearing —
+ * they absorb the leftover width so the icons group in the middle.
  */
 export const Socials = () => {
     return (

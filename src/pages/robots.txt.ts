@@ -2,14 +2,8 @@ import type { APIRoute } from 'astro'
 import { isProductionOrigin } from '@/data/seo'
 
 /**
- * An endpoint rather than a static file in `public/`, because the `Sitemap:`
- * line has to be an absolute URL and a hardcoded one would have the dev deploy
- * pointing crawlers at production's sitemap.
- *
- * The dev host also turns the whole site away. Every page there already carries
- * `noindex` (see Meta.astro), so this is the second of two signals: whichever a
- * crawler honours, the staging copy stays out of the index and can't compete
- * with the real site for the same content.
+ * An endpoint, not a static file, because the `Sitemap:` line must be absolute and a
+ * hardcoded one would point the dev deploy at production. Dev also disallows everything.
  */
 export const GET: APIRoute = ({ site }) => {
     const production = isProductionOrigin(site)

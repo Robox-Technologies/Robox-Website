@@ -5,11 +5,8 @@ import { cellStyle, logoStyle, mastheadStyle } from '../styles';
 import { ThemedImg } from './ThemedImg';
 
 /**
- * Logo / masthead, shown at the top of every email.
- * Mirrors masthead.html + the `.masthead` / `.logo` rules in email.css.
- *
- * The source image is 444x89; width/height attributes are set to the displayed
- * 250x50 so Outlook, which ignores max-width, does not render it at full size.
+ * Logo masthead. The source is 444x89 but width/height are the displayed 250x50,
+ * because Outlook ignores max-width.
  */
 export const Masthead = () => {
     return (

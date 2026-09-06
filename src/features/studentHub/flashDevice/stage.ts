@@ -18,9 +18,8 @@ export const STAGE_LABELS: Record<Stage, string> = {
 
 const NAMESPACE = 'flashdevice'
 
-// Stage components report progress upward by dispatching these on their own
-// root (bubbles: true), so the flashDevice orchestrator — an ancestor in the
-// DOM — can react without knowing anything about the component internally.
+// Dispatched on the component's own root and bubbled, so the orchestrator can react
+// without knowing anything about the component.
 export function dispatchFlashAdvance(target: EventTarget, stage: Stage): void {
     dispatchStageAdvance(target, NAMESPACE, stage)
 }
@@ -35,11 +34,7 @@ export function dispatchFlashClearError(target: EventTarget): void {
 
 export { setButtonBusy }
 
-/**
- * Shows the FlashProgress bar nested in `root` and resets it to 0 — called
- * once, right before the first chunk write, so a retry after a failed
- * attempt doesn't pick up where the last one left off.
- */
+/** Shows the FlashProgress bar in `root` and resets it to 0, so a retry starts over. */
 export function showFlashProgress(root: ParentNode): void {
     root.querySelector<HTMLElement>('.flashProgress')?.classList.remove('hidden')
     setFlashProgress(root, 0)

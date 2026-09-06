@@ -51,9 +51,7 @@ export async function saveBlockly(workspace: WorkspaceSvg) {
             const data = Blockly.serialization.workspaces.save(workspace)
             const project = await getProject(projectId)
             if (!project) throw new Error('Project not found')
-            // The guard in loadBlockly stops a non-block project's blocks from
-            // being read; without the same guard here the empty workspace that
-            // results would be written straight back over its data.
+            // Mirrors loadBlockly's guard; without it the empty workspace overwrites the project.
             if (project.type !== 'block') return
             project['time'] = dayjs()
             project['workspace'] = data

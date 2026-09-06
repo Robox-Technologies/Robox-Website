@@ -1,10 +1,6 @@
 /**
- * Web Serial transport.
- *
- * The reliable link: USB CDC does its own retransmission, so nothing arrives
- * corrupted. It still needs the shared framer, because a `TextDecoderStream`
- * splits its output wherever the chunk boundaries fall and a single message can
- * straddle two reads.
+ * Web Serial transport. USB CDC retransmits on its own, but the shared framer is still
+ * needed: a `TextDecoderStream` splits wherever chunks fall, so a message can straddle reads.
  */
 
 import { BaseTransport, errorMessage } from './transportBase'
@@ -24,12 +20,8 @@ export class USBCommunication extends BaseTransport {
     private readonly initPortsBound = this.initPorts.bind(this)
 
     /**
-     * On by default, so a page reload with the Ro/Box already plugged in
-     * reconnects on its own (e.g. the editor). Flows where that would be
-     * unwanted - flashing must only ever connect from an explicit
-     * `request()` click - turn it off. Only governs (re)connecting: noticing
-     * an actual disconnect is never gated by this, since that just keeps
-     * `parent`'s state honest and has nothing "automatic" about it.
+     * On by default, so a reload reconnects to a plugged-in Ro/Box. Flashing turns it
+     * off. Only governs reconnecting — noticing a disconnect is never gated by it.
      */
     private autoConnectEnabled = true
 
@@ -67,9 +59,7 @@ export class USBCommunication extends BaseTransport {
             throw new Error('Could not write to Ro/Box!')
         }
 
-        // The port is behind a TextEncoderStream, so bytes go out as text.
-        // Lossless for our traffic: frames and legacy messages are both valid
-        // UTF-8, so decode-then-encode reproduces them exactly.
+        // The port is behind a TextEncoderStream. Lossless here: our traffic is all valid UTF-8.
         await this.currentWriter.write(this.decoder.decode(data))
     }
 
@@ -179,23 +169,12 @@ export class USBCommunication extends BaseTransport {
         const port = event.target as SerialPort
         if (port.getInfo().usbVendorId !== PI_VENDOR_ID) return
 
-        // The board re-enumerates itself several times during its own USB
-        // boot handoff, so one physical plug-in can fire several 'connect'
-        // (and sometimes 'disconnect') events. `Pico`'s connectionStatus is
-        // the shared record of an attempt already in flight - a lock check on
-        // the port itself can't see it, since `port.readable`/`writable` stay
-        // null until `port.open()` resolves deep inside `connect()`. RESTARTING
-        // has to stay allowed here too: a restart bounces the same way a
-        // plug-in does, and the disconnect side already lets that bounce
-        // through untouched, so the connect side has to complete it.
+        // One plug-in fires several 'connect' events as the board re-enumerates, so this
+        // leans on `Pico`'s connectionStatus — `port.readable`/`writable` stay null until
+        // `port.open()` resolves. RESTARTING stays allowed, since a restart bounces the same way.
         if (event.type === 'connect') {
-            // Only reconnecting is opt-in - noticing a disconnect below
-            // always has to run regardless, or a board that vanishes while
-            // this is off (e.g. rebooting into BOOTSEL during flashing)
-            // leaves `parent` reporting CONNECTED to a port that is long
-            // gone, with nothing left to clean it up until something else
-            // tries to reuse the transport and hangs on a port the browser
-            // never got told to let go of.
+            // Only reconnecting is opt-in; the disconnect branch below always runs, or a
+            // board that vanishes leaves `parent` reporting CONNECTED to a dead port.
             if (!this.autoConnectEnabled) return
 
             const { connectionStatus } = this.parent.getState()
@@ -219,9 +198,8 @@ export class USBCommunication extends BaseTransport {
         navigator.serial.addEventListener('connect', this.initPortsBound)
         navigator.serial.addEventListener('disconnect', this.initPortsBound)
 
-        // 'connect' only fires for ports that appear after the listener is
-        // attached, so a board already plugged in when the page loads needs
-        // this explicit scan to be picked up at all.
+        // 'connect' only fires for ports appearing after the listener attaches, so scan
+        // for one that was already plugged in.
         void this.connectExistingPort()
     }
 

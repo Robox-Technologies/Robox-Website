@@ -1,7 +1,4 @@
-/**
- * Connection lifecycle, as seen from the board: that the website tells the
- * board what it is doing, and survives what the link puts in front of a frame.
- */
+/** Connection lifecycle: what the website tells the board, and what it survives. */
 
 import { describe, expect, it, vi } from 'vitest'
 

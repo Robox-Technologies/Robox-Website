@@ -32,19 +32,12 @@ export type ShippingOption = {
 
 export type CheckoutTotals = {
     subtotalCents: number
-    /**
-     * The cheapest option's postage. The customer picks a service on the
-     * payment step, against the Checkout Session - before that there is nothing
-     * to have chosen, so totals quote the cheapest and the summary says "from".
-     */
+    /** The cheapest option's postage; the service isn't chosen until the payment step. */
     shippingCents: number
     /** Every service Australia Post will carry, cheapest first. */
     shippingOptions: ShippingOption[]
     totalCents: number
-    /**
-     * What is physically being sent. Recorded on the payment so an Australia
-     * Post consignment can be raised from the order without re-deriving it.
-     */
+    /** What is physically being sent, recorded on the payment. */
     shipment: Shipment | null
 }
 
@@ -61,11 +54,7 @@ export type ResolvedEntry = {
 
 type CartLike = Record<string, number> | CartItems
 
-/**
- * A cart quantity, whatever shape the client sent it in - the store holds
- * `{ quantity }` but older payloads sent a bare number. Anything non-finite
- * becomes 0 and is dropped, so a hand-crafted request can't smuggle in a NaN.
- */
+/** A cart quantity in either shape the client sends. Non-finite values become 0. */
 function readQuantity(value: number | { quantity: number }): number {
     const quantity = typeof value === 'number' ? value : value.quantity
     return Number.isFinite(quantity) ? Math.floor(quantity) : 0
@@ -171,9 +160,7 @@ export async function calculateCheckoutTotals(
         shippingOptions = quotes.map((quote) => ({
             id: quote.service.id,
             label: quote.service.label,
-            // Packaging is added per option: the box costs the same however
-            // fast it travels, and the rounding has to land on the figure the
-            // customer is actually charged.
+            // Per option, so the rounding lands on the figure the customer is charged.
             amountCents: applyShippingSurcharge(
                 quote.auspostCents,
                 plan.packagingCents,
@@ -185,9 +172,7 @@ export async function calculateCheckoutTotals(
         shipment = plan
     }
 
-    // Discounts are Stripe's now: a promotion code is applied against the
-    // Checkout Session and it re-prices the order. Nothing is computed here, so
-    // there is no second arithmetic to disagree with what is charged.
+    // Discounts are Stripe's: a promotion code re-prices the Checkout Session.
     const totalCents = subtotalCents + shippingCents
 
     if (totalCents < MIN_CHARGE_CENTS) {
@@ -203,12 +188,7 @@ export async function calculateCheckoutTotals(
     }
 }
 
-/**
- * The cart, validated against the live catalog. Exported so the Checkout
- * Session can be built from the same resolution the totals use - an amount and
- * a line item disagreeing about what is in the cart is the one failure this
- * whole module exists to prevent.
- */
+/** The cart validated against the live catalog. Shared with the Checkout Session builder. */
 export function resolveCartEntries(cart: CartLike): Promise<ResolvedEntry[]> {
     return resolveEntries(cart)
 }
@@ -225,14 +205,7 @@ export async function normalizeCartMetadata(cart: CartLike): Promise<string> {
 /** Stripe truncates metadata values past 500 characters. */
 const METADATA_VALUE_LIMIT = 500
 
-/**
- * The same cart written for a person rather than for code - "Ro/Box x 2,
- * Ro/Box 10-Pack x 1".
- *
- * `products` holds ids because that is what the receipt builder resolves
- * against the catalog, but an id tells you nothing when you are looking at a
- * payment in the Stripe dashboard. This is the line that does.
- */
+/** The cart as a readable line for the Stripe dashboard: "Ro/Box x 2, Ro/Box 10-Pack x 1". */
 export async function describeCartForHumans(cart: CartLike): Promise<string> {
     const entries = await resolveEntries(cart)
     const products = await getAllProducts()

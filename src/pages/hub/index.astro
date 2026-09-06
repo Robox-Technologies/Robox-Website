@@ -32,12 +32,8 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
                 </h1>
             </div>
             <div slot="right" class="bg-primary h-full">
-                <!-- The right panel of PageHero is ~72vw wide on desktop and
-                     full-width on mobile, so a single fixed render is either
-                     blurry on a large screen or oversized on a phone. `widths`
-                     + `sizes` let the browser pick; 2560 covers a 1440pt panel
-                     at 2x DPR, which is where the source (8256x5504) stops
-                     buying any visible detail. -->
+                {/* The panel is ~72vw on desktop and full-width on mobile, so let the
+                     browser pick. 2560 covers a 1440pt panel at 2x DPR. */}
                 <Image
                     src={Hero}
                     alt="A Ro/Box next to an open laptop showing a forest scene"

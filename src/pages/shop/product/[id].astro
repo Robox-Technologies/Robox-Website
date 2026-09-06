@@ -30,11 +30,7 @@ const allImages = import.meta.glob<{ default: ImageMetadata }>(
     { eager: true },
 )
 
-/**
- * Every product's photo set uses the same six filenames and, so far, the same
- * six shots, so the descriptions live here keyed by filename rather than being
- * repeated per product folder.
- */
+/** Alt text keyed by filename, since every product's photo set uses the same six names. */
 const PHOTO_ALTS: Record<string, string> = {
     'thumbnail.jpg':
         'An assembled Ro/Box at a three-quarter angle, showing its plywood chassis and yellow wheels',
@@ -74,12 +70,8 @@ const statusText = formatStatus(product.status)
 const priceText = formatPrice(product.price)
 
 /**
- * Prefer the description authored in the product's own .mdx frontmatter. The
- * Stripe copy is written for the page body, not for a search result: it runs
- * well past the length a link preview shows, and cutting it to fit lands
- * mid-sentence. The fallback keeps a new product from shipping without one, by
- * dropping the shared "designed as an engaging tool for teaching kids STEM..."
- * clause after the em dash and closing the sentence that leaves hanging.
+ * Prefers the .mdx frontmatter description; the Stripe copy is written for the page body
+ * and runs past what a link preview shows. The fallback trims it at the em dash.
  */
 const authored: string | undefined = description.frontmatter?.description
 const stripeCopy = product.description.split('—')[0].trim()
@@ -89,7 +81,7 @@ const metaDescription = toDescription(
 )
 ---
 <StandardLayout title={product.name} description={metaDescription}>
-    <!-- The original's --articleMargin: 64px, halved below 1000px. -->
+    {/* The original's --articleMargin: 64px, halved below 1000px. */}
     <Article className="p-16 max-[1000px]:p-8">
         <p class="my-4 text-base">
             <a href="/shop" class="underline opacity-80 hover:opacity-100">Shop all</a>
@@ -97,12 +89,7 @@ const metaDescription = toDescription(
         </p>
         <div class="w-full flex flex-row max-[1250px]:flex-col gap-8">
             <Carousel images={images} client:load/>
-            <!--
-                Type scale and spacing mirror the original's `#important-info`:
-                name and price are both heading-sized (49px), the price at
-                regular weight in the body colour rather than a blue accent, and
-                the copy below them at the 18px body size.
-            -->
+            {/* Name and price both heading-sized (49px), the copy below at 18px. */}
             <div class="flex-1 flex flex-col">
                 {
                     /* Products can carry a promo line (the 10-Pack's "Save 5%"),
@@ -120,12 +107,7 @@ const metaDescription = toDescription(
                 <p class="text-[49px] leading-[1.25] font-normal mb-1">
                     {priceText}
                 </p>
-                <!--
-                    The catalog is priced in AUD; Stripe converts at checkout
-                    via Adaptive Pricing, at a rate only it knows. Saying so
-                    here is why the storefront doesn't try to show a converted
-                    figure it couldn't guarantee.
-                -->
+                {/* Priced in AUD; Adaptive Pricing converts at checkout, at a rate only Stripe knows. */}
                 <p class="text-base text-gray-600 mb-8">
                     Prices in AUD - pay in your local currency at checkout!
                 </p>

@@ -7,11 +7,7 @@ import type React from 'react'
 interface ProductCardProps {
     className?: string
     image: ImageMetadata
-    /**
-     * The catalog entry, so the name, availability and price on the homepage
-     * are the ones Stripe holds rather than a second set of literals that goes
-     * stale the next time a price moves.
-     */
+    /** The catalog entry, so the homepage shows the name and price Stripe holds. */
     product: Product
     absolute?: React.ReactNode
 }

@@ -13,10 +13,8 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
     </div>
 </div>
 <script>
-    // The block and python editor bodies both render (one hidden) on every
-    // editor page load, and each uses its own copy of this component — so
-    // this script, which Astro only includes once, has to wire up every
-    // instance it finds rather than assuming there's a single one.
+    // Astro includes this script once, but both editor bodies render a copy of the
+    // component, so wire up every instance.
     import { pico } from "@/libs/communication/communicate";
     import { ConnectionStatus } from "src/types/communication";
     import type { PicoState } from "src/types/communication";

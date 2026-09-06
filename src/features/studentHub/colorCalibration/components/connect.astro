@@ -28,9 +28,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     import { ConnectionStatus } from "src/types/communication";
     import { setButtonBusy, dispatchCalibrationAdvance, dispatchCalibrationClearError, dispatchCalibrationError } from "../stage";
 
-    // Astro only includes this script once no matter how many instances
-    // render, so wire up every instance found rather than assuming there's a
-    // single one.
+    // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".calibrationConnect").forEach((root) => {
         const connectButton = root.querySelector<HTMLButtonElement>("#calibration-connect");
         const backButton = root.querySelector<HTMLButtonElement>("#calibration-connect-back");
@@ -40,24 +38,13 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             void pico.setCommunicationMethod("iOSBluetooth");
         }
 
-        // A Ro/Box that's already connected (e.g. arriving here straight from
-        // the editor) skips straight past this stage instead of asking to
-        // reconnect to a device that's already talking to us. Resets on
-        // every disconnect rather than firing once for the whole page's
-        // lifetime, so coming back here after the Calibrate stage sends you
-        // back (a dropped connection) still advances on the next reconnect.
+        // An already-connected Ro/Box skips this stage. Reset on every disconnect, so a
+        // drop that sends the student back here still advances on the next reconnect.
         let hasAdvanced = false;
 
-        // Silently reattaching to a previously authorised USB port the
-        // instant this stage becomes active would start calibrating
-        // whatever Ro/Box that port belongs to without the student clicking
-        // anything - only an explicit click on the button below may connect
-        // here. `setCommunicationMethod` (called by the toggle above, or by
-        // the iOS branch) builds a fresh USBCommunication that defaults
-        // auto-connect back on, and it does so *after* emitting this very
-        // stateChange - queuing this for the next microtask, rather than
-        // calling it inline, is what lets it land on that new transport
-        // instead of the one just torn down.
+        // Only an explicit click may connect here, so auto-connect stays off. Queued to
+        // the next microtask because `setCommunicationMethod` builds its fresh transport
+        // (auto-connect back on) after emitting this stateChange.
         function disableUsbAutoConnect(state: PicoState) {
             if (state.communicationMethod !== "USB") return;
             queueMicrotask(() => pico.setAutoConnect(false));
@@ -76,9 +63,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
                 hasAdvanced = false;
             }
             setButtonBusy(connectButton!, connecting);
-            // The toggle picks the method (or the iOS branch above sets it
-            // directly) - until one is actually set there's nothing to
-            // connect to yet.
+            // Nothing to connect to until the toggle (or the iOS branch) sets a method.
             if (!connecting) connectButton!.disabled = !state.communicationMethod;
             // Leaving mid-attempt would abandon a connect in progress.
             backButton!.disabled = connecting;

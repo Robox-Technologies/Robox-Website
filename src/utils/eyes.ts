@@ -1,17 +1,6 @@
 /**
- * Googly-eye tracking, ported from the original site's `root/eyes.ts`.
- *
- * Every `.eyes` overlay leans towards the pointer, with the offset approaching
- * `EYE_MAX_DIST` percent of the overlay's own size as the pointer gets further
- * away (so eyes right under the pointer stay centred). The transform is written
- * inline, so an `.eyes` element must be positioned with insets only — a
- * `translate-*`/`rotate-*` utility on it would be overwritten.
- *
- * Two input models, because a finger is not a cursor. A mouse has a position at
- * all times, so the eyes just follow it. A touchscreen only knows where the
- * user is while they are actually touching, so there the eyes look towards the
- * touch for as long as it is held and drift back to centre on release — which
- * is also why touch gets a transition: first contact is a jump, not a move.
+ * Googly-eye tracking: every `.eyes` overlay leans towards the pointer. The transform is
+ * written inline, so an `.eyes` element must be positioned with insets only.
  */
 
 /** Peak offset, as a percentage of the overlay's own size. */
@@ -34,11 +23,7 @@ export function initEyes(): void {
 
     /** Where the eyes are looking, or `undefined` for straight ahead. */
     let target: Point | undefined
-    /**
-     * Latched on the first touch and never cleared: iOS follows a tap with a
-     * synthetic `mousemove`, which would otherwise strand the eyes wherever the
-     * finger last was.
-     */
+    /** Latched forever on first touch: iOS follows a tap with a synthetic `mousemove`. */
     let touchInput = false
 
     function render() {

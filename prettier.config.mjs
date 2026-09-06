@@ -1,11 +1,4 @@
-/**
- * Prettier config.
- *
- * .mjs rather than .ts: Prettier loads this through Node's ESM loader, which
- * cannot import TypeScript without a type-stripping flag, so a .ts config made
- * every prettier invocation fail with "Unknown file extension .ts". There is
- * nothing here that needs types.
- */
+// .mjs, not .ts: Prettier loads this through Node's ESM loader, which can't import TypeScript.
 
 /** @type {import("prettier").Config} */
 const config = {

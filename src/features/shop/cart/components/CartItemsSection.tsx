@@ -8,10 +8,7 @@ export default function CartItemsSection({
     onInputChange,
     onRemove,
 }: {
-    /**
-     * Optional: the original only labels the preorder group, so the
-     * available items sit directly under the page heading.
-     */
+    /** Optional — only the preorder group is labelled. */
     title?: string
     items: CartEntry[]
     imageSrcById: Record<string, string>

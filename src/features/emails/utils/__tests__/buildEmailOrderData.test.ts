@@ -1,11 +1,4 @@
-/**
- * The order the emails render, built off a Checkout Session.
- *
- * The postage line is the delicate part: it rides in as an ordinary line item
- * so the wallets don't collect an address, so the summary has to pull it back
- * out. When that failed it failed silently and plausibly - the receipt billed
- * postage as an item called "Shipping" and then charged AU$0.00 for shipping.
- */
+/** The order the emails render. The delicate part is pulling the postage line back out. */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Stripe } from 'stripe'
@@ -30,10 +23,7 @@ vi.mock('@/utils/server/stripe/resolveBilling.server', () => ({
 
 const { buildEmailOrderData } = await import('../buildEmailOrderData.server')
 
-/**
- * `expandProduct: false` reproduces a session loaded without
- * `line_items.data.price.product`, where Stripe returns the product as an id.
- */
+/** `expandProduct: false` reproduces a session where Stripe returns the product as an id. */
 function session({
     expandProduct = true,
 }: { expandProduct?: boolean } = {}): Stripe.Checkout.Session {

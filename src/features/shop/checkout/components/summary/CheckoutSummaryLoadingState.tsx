@@ -9,11 +9,7 @@ function SkeletonLine({ className = 'h-4 w-24' }: { className?: string }) {
     )
 }
 
-/**
- * Stands in for the summary while the island hydrates or a session is being
- * created. Mirrors the real card's wrapper and row spacing, or the summary
- * resizes the moment one replaces the other.
- */
+/** Stands in for the summary while it loads. Mirrors the real card's spacing so nothing resizes. */
 export default function CheckoutSummaryLoadingState() {
     return (
         <SummaryCard title="Order Summary" className={SUMMARY_CARD_CLASS}>

@@ -29,10 +29,7 @@ export interface PackingSummary {
     parcels: ParcelLine[]
     /** Pre-formatted total weight, e.g. "2200g", when one was recorded. */
     totalWeight?: string
-    /**
-     * Parcels this order has beyond the ones listed, because Stripe's metadata
-     * could not hold them all.
-     */
+    /** Parcels beyond the ones listed, because Stripe's metadata could not hold them all. */
     unlistedParcels: number
 }
 
@@ -42,16 +39,8 @@ export interface PackingListProps {
 }
 
 /**
- * What to physically put in the post: one row per parcel, saying what to reach
- * for, what goes inside it, and the size and weight to declare on the label.
- *
- * Internal only - this never goes to a customer. The figures are the ones the
- * order was priced and quoted on, so the label matches what Australia Post was
- * charged for rather than a fresh guess made at packing time.
- *
- * Built from a raw <table> for the same reason as `OrderSummary`: jsx-email's
- * <Row>/<Column> render a nested table per row, so nothing lines up column to
- * column.
+ * What to physically put in the post, one row per parcel. Internal only.
+ * Raw <table> because jsx-email's <Row>/<Column> nest a table per row and don't align.
  */
 export const PackingList = ({ packing }: PackingListProps) => {
     if (!packing || packing.parcels.length === 0) {
@@ -143,12 +132,7 @@ export const PackingList = ({ packing }: PackingListProps) => {
                 </tbody>
             </table>
 
-            {/*
-              Stripe caps how many parcel lines the order's metadata can hold,
-              so a freak order can have more parcels than are listed above. Said
-              out loud rather than silently short, which would read as a
-              complete packing list.
-            */}
+            {/* Stripe's metadata cap means a huge order can have more parcels than are listed. */}
             {packing.unlistedParcels > 0 && (
                 <Text style={cellTextStyle}>
                     + {packing.unlistedParcels} further parcel

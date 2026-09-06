@@ -2,12 +2,8 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 /**
- * Stands in for the payment column while Stripe loads. It has to stay *in
- * flow*: this doubles as the `client:only` fallback for the whole payment
- * section, and while it was `absolute inset-0` it took up no space at all, so
- * the flex row collapsed and the order summary rendered on the left until
- * hydration finished. `CheckoutForm` supplies the positioned wrapper when it
- * needs this as an overlay.
+ * Stands in for the payment column while Stripe loads. Must stay in flow — it doubles
+ * as the `client:only` fallback, and an out-of-flow one collapses the row.
  */
 export default function CheckoutPaymentLoadingState() {
     return (

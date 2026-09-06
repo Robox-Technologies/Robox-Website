@@ -9,13 +9,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import eyes from '@/images/goobers/eyes.svg'
 
-/**
- * Divider plus bottom row. Rendered twice: once dark in the footer's own flow,
- * and once white inside the clipped red block, which masks the white copy down
- * to the red wedge. That's how the original gets a divider that reads black over
- * the white background and white over the red one — no colour maths, just two
- * copies of the same markup landing in the same place.
- */
+/** Divider plus bottom row. Rendered twice — dark in flow, white inside the clipped red block. */
 function FooterBottomBar({ tone }: { tone: 'dark' | 'light' }) {
     const light = tone === 'light'
     return (
@@ -60,9 +54,7 @@ export default function Footer() {
                     className="relative h-full w-full overflow-hidden bg-red"
                     overhang="3vw"
                 >
-                    {/* This block is a quarter of the footer, so 400% of it is
-                        the full footer width — that lets the masked copies use
-                        the same offsets as the originals. */}
+                    {/* A quarter of the footer wide, so 400% lets the masked copies reuse the same offsets. */}
                     <div className="absolute inset-y-0 right-0 w-[400%]">
                         <img
                             src={eyes.src}

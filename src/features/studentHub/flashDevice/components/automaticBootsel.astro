@@ -21,9 +21,7 @@ import Button from '@/components/button';
     import { ConnectionStatus } from "src/types/communication";
     import { dispatchFlashAdvance, dispatchFlashClearError, dispatchFlashError, setButtonBusy, type Stage } from "../stage";
 
-    // Astro only includes this script once no matter how many instances
-    // render, so wire up every instance found rather than assuming there's a
-    // single one.
+    // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".automaticBootsel").forEach((root) => {
         const noMethodNotice = root.querySelector<HTMLParagraphElement>(".automaticBootselNoMethod");
         const connectButton = root.querySelector<HTMLButtonElement>("#flash-connect");
@@ -31,9 +29,7 @@ import Button from '@/components/button';
             throw new Error("Automatic bootsel elements not found");
         }
 
-        // This flow reports its own inline errors below, so the global toast
-        // host popping up "Ro/Box Connected" / "Ro/Box Error" over it would
-        // just be noise.
+        // This flow reports its own inline errors, so the global toasts would be noise.
         pico.setToastsEnabled(false);
 
         // The button just reflects pico's live connection status, same as
@@ -48,58 +44,36 @@ import Button from '@/components/button';
                 hasTriggeredReboot = true;
                 pico.bootloaderMode();
 
-                // Rebooting into BOOTSEL makes the Ro/Box vanish from the bus
-                // and re-enumerate as a mass-storage drive, so there's no
-                // connected transport left to confirm it over — advance
-                // optimistically and let the drive check in the next step
-                // catch a failed reboot.
+                // The reboot re-enumerates the Ro/Box as a drive, so there's no transport
+                // left to confirm over; the next step's drive check catches a failure.
                 setTimeout(() => dispatchFlashAdvance(root, "flash"), 1500);
             }
 
             noMethodNotice!.classList.toggle("hidden", hasMethod);
             connectButton!.classList.toggle("hidden", !hasMethod);
 
-            // Once the reboot has been triggered, stay busy right through to
-            // the "flash" stage — the Ro/Box disconnects itself moments
-            // later as it vanishes from the bus, and reacting to that would
-            // otherwise flash the button back to idle mid-sequence.
+            // Stay busy through to the flash stage, or the imminent self-disconnect
+            // flicks the button back to idle mid-sequence.
             setButtonBusy(connectButton!, connecting || hasTriggeredReboot);
         }
 
-        // Registered before anything below can change pico's state, so the
-        // listener itself is what picks up the resulting update — no need to
-        // separately re-render after calling setCommunicationMethod.
+        // Registered first, so the listener picks up whatever the calls below change.
         pico.on("stateChange", updateUI);
         updateUI(pico.getState());
 
-        // Rebooting into BOOTSEL turns the Ro/Box into a USB mass-storage
-        // drive — that only happens over a wired connection, so flashing
-        // (unlike the editor) only ever talks to the Ro/Box over USB.
+        // BOOTSEL needs a wired connection, so flashing is USB-only.
         const supportsUsb = "serial" in navigator;
 
-        /**
-         * "Flash Another Device" brings this stage back without a page
-         * reload, so a fresh connection has to be armed each time - without
-         * it, pico would still report the previous board as CONNECTED and
-         * hasTriggeredReboot would still be true, leaving the button stuck
-         * busy forever and never picking up the next device.
-         */
+        /** "Flash Another Device" returns here without a reload, so arm a fresh connection each time. */
         async function armForBootloaderStage() {
             hasTriggeredReboot = false;
 
-            // setCommunicationMethod tears down any existing transport
-            // before building a fresh one - on every call after the first,
-            // that teardown is genuinely asynchronous. Awaiting it here
-            // matters: firing setAutoConnect(false) without waiting would
-            // land on the transport being torn down, not the new one
-            // replacing it, leaving the new one on its default (enabled).
+            // Awaited, or setAutoConnect(false) lands on the transport being torn down
+            // rather than the fresh one replacing it.
             if (supportsUsb) await pico.setCommunicationMethod("USB");
 
-            // Silently reattaching to a previously authorised port the
-            // instant this stage becomes active would reboot whatever
-            // Ro/Box that port belongs to into bootloader mode without the
-            // student clicking anything - only an explicit click on the
-            // button below (pico.request()) may connect here.
+            // Only an explicit click may connect here, or an authorised port would be
+            // rebooted into bootloader mode unprompted.
             pico.setAutoConnect(false);
         }
 

@@ -27,22 +27,19 @@ const { title, description, noindex, header='standard' } = Astro.props as Props;
     <head>
         <Meta title={title} description={description} noindex={noindex} />
         {isIOSBuild && <IOSAppReset />}
-        <!-- Not in the iOS bundle: it's a Capacitor app, and neither the tag
-             nor a cookie bar belongs in one. -->
+        {/* Not in the iOS bundle: it's a Capacitor app, and neither the tag
+             nor a cookie bar belongs in one. */}
         {!isIOSBuild && <Analytics />}
     </head>
     <body class="flex min-h-screen flex-col">
         {!isIOSBuild && <Header type={header} />}
 
-        <!-- `flex-1`, so a page shorter than the viewport (an empty cart, a
-             thin wizard step) still pushes the footer to the bottom of the
-             screen instead of leaving a gap under it; taller pages just push
-             this past 100% and scroll normally. -->
+        {/* `flex-1`, so a short page still pushes the footer to the bottom of the screen. */}
         <main class="flex-1">
             <slot />
         </main>
         <ToastHost client:only="react" />
-        <!-- Sits with the footer, which is where the original kept it. -->
+        {/* Sits with the footer, which is where the original kept it. */}
         {!isIOSBuild && <CookieConsent />}
         {!isIOSBuild && <Footer />}
     </body>

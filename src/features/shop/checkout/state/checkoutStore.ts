@@ -1,14 +1,9 @@
 import { atom } from 'nanostores'
 
 /**
- * The checkout runs as two steps rather than one page.
- *
- * The delivery address has to be known *before* the Checkout Session exists:
- * the session is created with the exact Australia Post rate already in
- * `shipping_options`, and with no `shipping_address_collection`, so that no
- * wallet is collecting an address of its own. That is what keeps Apple Pay and
- * Google Pay available alongside a per-postcode shipping quote — Stripe
- * disables those wallets whenever the server owns the shipping details.
+ * Two steps, because the address must be known before the Checkout Session exists:
+ * the session carries a fixed rate and no `shipping_address_collection`, which is what
+ * keeps the wallets available alongside a per-postcode quote.
  */
 export type CheckoutStep = 'address' | 'payment'
 
@@ -26,24 +21,8 @@ export type ShippingDetails = {
 
 export const checkoutStep = atom<CheckoutStep>('address')
 
-/**
- * The delivery address, set only once Stripe reports the form `complete` and
- * cleared the moment it isn't - so a quote is never requested for a half-typed
- * address.
- *
- * Deliberately not persisted: a reload sends the customer back to the address
- * step, which is recoverable, whereas a stale address surviving a cart change
- * is not.
- */
+/** The delivery address, set only while Stripe reports the form `complete`. Not persisted. */
 export const shippingDetails = atom<ShippingDetails | null>(null)
 
-/**
- * The delivery speed, chosen on the address step.
- *
- * It has to be settled *before* the Checkout Session exists. A session carrying
- * more than one shipping option is not a static transaction, and Apple Pay
- * responds by offering its own editable delivery address inside the sheet -
- * which would let a customer ship somewhere we never quoted postage for. One
- * fixed rate keeps the wallet out of the shipping business entirely.
- */
+/** The delivery speed, settled before the session exists so it carries exactly one rate. */
 export const shippingServiceId = atom<string>('standard')

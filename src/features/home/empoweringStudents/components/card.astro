@@ -13,8 +13,8 @@ const hasGoober = Astro.slots.has('goober');
 ---
 <div class:list={["relative w-[350px] basis-[350px]", hasGoober && "isolate"]}>
     <slot name="goober" />
-    <!-- Background belongs on the card itself, not the content block: the card
-         adds padding below the content, which showed through as a bare strip. -->
+    {/* Background belongs on the card itself, not the content block: the card
+         adds padding below the content, which showed through as a bare strip. */}
     <BaseCard
         className='w-full h-full box-shadow bg-white'
         description={description}

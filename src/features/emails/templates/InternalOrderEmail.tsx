@@ -27,14 +27,7 @@ export interface InternalOrderEmailProps {
     testMode: boolean
 }
 
-/**
- * The order as it lands in hello@robox.com.au - who it is for, where it goes,
- * how to pack it, and what is in it.
- *
- * A fulfilment document, not a customer one: no sign-off, no socials, no
- * marketing footer, and the delivery address and packing plan sit above the
- * money so the person packing the order reads what they need first.
- */
+/** The order as it lands in hello@robox.com.au. A fulfilment document, so packing comes before money. */
 export const InternalOrderEmail = ({
     customerName,
     customerEmail,
@@ -60,11 +53,7 @@ export const InternalOrderEmail = ({
         >
             <Masthead />
 
-            {/*
-              Loud and first, because the whole point of the marker is that a
-              sandbox order is never mistaken for one to pack. The subject says
-              so too, for anyone scanning the inbox rather than the message.
-            */}
+            {/* Loud and first, so a sandbox order is never mistaken for one to pack. */}
             {testMode && (
                 <Section style={testBannerStyle}>
                     <Text style={testBannerTextStyle}>

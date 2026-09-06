@@ -11,6 +11,7 @@ import node from '@astrojs/node';
 import { promises as fs } from 'fs'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
+import { unified } from '@astrojs/markdown-remark'
 import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
 import { isNoindex, PRODUCTION_ORIGIN } from './src/data/seo'
 
@@ -68,9 +69,7 @@ export default defineConfig({
         process.env.IOS_BUILD === 'true'
             ? undefined
             : sitemap({
-                  // Same list Meta.astro marks `noindex` from, so a page can't
-                  // end up telling crawlers to skip it and then inviting them
-                  // in through the sitemap.
+                  // Same list Meta.astro marks `noindex` from, so the two can't disagree.
                   filter: (page) => !isNoindex(new URL(page).pathname),
               }),
         process.env.IOS_BUILD === 'true' ? transformIOSBuild() : undefined,
@@ -112,7 +111,7 @@ export default defineConfig({
         },
     },
     markdown: {
-        remarkPlugins: [RoboxSectionize],
+        processor: unified({ remarkPlugins: [RoboxSectionize] }),
     },
 })
 function transformIOSBuild(): AstroIntegration {

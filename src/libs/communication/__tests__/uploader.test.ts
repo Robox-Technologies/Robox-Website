@@ -1,12 +1,4 @@
-/**
- * End-to-end tests for the framed upload, against a mock board.
- *
- * The mock mirrors src/framed.py: sequence checks, cumulative ACKs, NAK on a
- * gap, and a verdict on END built from a running CRC over what it actually
- * stored. That is what makes these tests worth something. They exercise the
- * refusal path in particular, which is the behaviour that stops a truncated
- * program being run.
- */
+/** End-to-end framed upload against a mock board mirroring src/framed.py. */
 
 import { describe, expect, it } from 'vitest'
 
@@ -38,12 +30,7 @@ interface MockOptions {
     silent?: boolean
 }
 
-/**
- * A transport wired straight to a mock board.
- *
- * Replies are looped back through `ingest`, which is the same path a real
- * transport uses, so the line routing and frame unwrapping are under test too.
- */
+/** A transport wired to a mock board, looping replies back through `ingest`. */
 class MockTransport extends BaseTransport {
     private reader = new FrameReader()
     private expected = 0
@@ -261,9 +248,8 @@ describe('uploadProgram', () => {
     })
 
     it('verifies two uploads in a row on one connection', async () => {
-        // Without BEGIN acting as a resync point, the second upload restarts
-        // at sequence 0 while the board still expects N, so every frame reads
-        // as a stale duplicate and the upload is silently ignored.
+        // Without BEGIN as a resync point, the second upload's frames all read as
+        // stale duplicates and are silently ignored.
         const transport = build()
 
         const first = await uploadProgram(transport, program)

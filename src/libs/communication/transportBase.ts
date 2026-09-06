@@ -1,13 +1,6 @@
 /**
- * Behaviour every transport shares.
- *
- * USB, Web Bluetooth and the iOS plugin each carried their own copy of the
- * write fan-out, receive buffer, dispatch and error normalisation, and they
- * drifted. Most consequentially in how they reported errors, so a cancelled
- * Bluetooth picker restarted the board on one platform and did nothing on
- * another.
- *
- * Subclasses supply only how to open a link, push bytes, and tear down.
+ * Behaviour every transport shares: write fan-out, receive buffer, dispatch,
+ * error normalisation. Subclasses supply only open, push bytes, and tear down.
  */
 
 import type { Communication, PicoMessage } from 'src/types/communication'
@@ -62,7 +55,7 @@ export abstract class BaseTransport implements Communication {
     /** CONTINUE payloads accumulated for a device message still arriving. */
     private continuation: Uint8Array[] = []
 
-    /** Frames or messages thrown away. Non-fatal, but worth counting. */
+    /** Frames or messages thrown away. */
     private discardedCount: number = 0
 
     private readonly frames = new FrameReader()
@@ -70,13 +63,7 @@ export abstract class BaseTransport implements Communication {
     /** Set by the uploader while a framed upload is in flight. */
     private flowListener: ((frame: Frame) => void) | null = null
 
-    /**
-     * Outbound sequence for this connection.
-     *
-     * One counter for everything we send, so an upload and the commands around
-     * it form a single ordered stream. The board resynchronises on BEGIN and
-     * COMMAND, so a reconnect starting over at zero is fine.
-     */
+    /** One outbound sequence for everything we send, so uploads and commands stay ordered. */
     private outSeq: number = 0
 
     constructor(protected parent: Pico) {}
@@ -88,12 +75,7 @@ export abstract class BaseTransport implements Communication {
 
     // === platform hooks ===
 
-    /**
-     * Push bytes as-is. Implementations handle their own chunking.
-     *
-     * Frames go through here unmodified: they are length-prefixed, so anything
-     * that reflows or re-terminates them breaks the framing.
-     */
+    /** Push bytes as-is — frames are length-prefixed, so nothing may reflow them. */
     protected abstract sendRaw(data: Uint8Array): Promise<void>
 
     abstract request(): Promise<void>
@@ -211,12 +193,7 @@ export abstract class BaseTransport implements Communication {
         this.flowListener = listener
     }
 
-    /**
-     * Pacing feedback from the uploader.
-     *
-     * Only BLE paces itself, so these are no-ops elsewhere: USB is a reliable
-     * stream with its own flow control and nothing to tune.
-     */
+    /** Pacing feedback from the uploader. Only BLE uses it; no-op elsewhere. */
     notePacingClean(): void {}
     notePacingLoss(): void {}
 
@@ -227,12 +204,7 @@ export abstract class BaseTransport implements Communication {
 
     // === receiving ===
 
-    /**
-     * Route received text. Every receive path ends here.
-     *
-     * Everything the board sends is framed, so anything outside a frame is
-     * noise: counted rather than guessed at.
-     */
+    /** Route received text. Every receive path ends here; anything unframed is counted as noise. */
     protected ingest(chunk: string): void {
         // console.log(chunk)
         if (this.destroyed) return
@@ -243,8 +215,7 @@ export abstract class BaseTransport implements Communication {
         const lines = this.buffer.split('\n')
         this.buffer = lines.pop() ?? ''
 
-        // Unterminated chatter would otherwise grow without bound. Keep
-        // everything from the newest sentinel, where a frame can still start.
+        // Cap unterminated chatter: keep from the newest sentinel, where a frame can start.
         if (this.buffer.length > MAX_LINE_LENGTH) {
             const start = this.buffer.lastIndexOf(SOH_CHAR)
             this.discardedCount += start === -1 ? this.buffer.length : start
@@ -252,9 +223,7 @@ export abstract class BaseTransport implements Communication {
         }
 
         for (const line of lines) {
-            // Taken from wherever the sentinel is, not only from the front:
-            // the module's unterminated chatter arrives glued to the next
-            // frame, and insisting otherwise discarded that frame with it.
+            // From wherever the sentinel is: chatter arrives glued to the next frame.
             const start = line.indexOf(SOH_CHAR)
             if (start === -1) {
                 if (line.trim()) this.discardedCount += line.length
@@ -277,8 +246,7 @@ export abstract class BaseTransport implements Communication {
         )
         this.discardedCount += damage
 
-        // A lost frame means the pieces either side of it no longer belong
-        // together, so a half-built message must not be completed with them.
+        // A lost frame orphans the pieces either side of it.
         if (damage) this.continuation = []
 
         for (const frame of frames) {
@@ -321,10 +289,7 @@ export abstract class BaseTransport implements Communication {
 
     /**
      * Report a host-side failure: cancelled picker, failed write, dropped link.
-     *
-     * Distinct from `handleMessage({type: 'error'})`, which means the board
-     * reported an error and therefore restarts it. Conflating the two is why a
-     * failed `requestDevice` used to send RESTART over Web Bluetooth.
+     * Distinct from `handleMessage({type: 'error'})`, which restarts the board.
      */
     protected reportError(message: string): void {
         this.parent.emit('error', { message })

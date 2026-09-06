@@ -17,21 +17,14 @@ const lessonPlans = await getCMSContentFor('Teacher Resources');
     <PageHero gradient='positive' className='bg-black' leftWidth='66%' lineWidth='20px' overlap='10vw'>
         <div slot="left" class="bg-primary h-full">
             <div class="h-full w-full flex justify-start items-end p-8">
-                <!-- Above the hero photo that follows it in the markup, but
-                     below the header's z-50: z-100 put the title on top of the
-                     open mobile menu. -->
+                {/* Above the hero photo, below the header's z-50 so the mobile menu wins. */}
                 <h1 class="relative z-10 text-5xl font-bold" >
                     Teacher Resources
                 </h1>
 
             </div>
-            <!-- The left panel is ~71vw wide on desktop (66% - 20px/2 + 10vw/2,
-                 see pageHero) and full-width on mobile, so a single fixed
-                 render is either blurry on a large screen or oversized on a
-                 phone. `widths` + `sizes` let the browser pick. The 85vw hint
-                 is the panel width plus headroom: the source is 3.06:1 against
-                 a 400px-tall panel, so object-cover crops horizontally and
-                 paints ~1.2x wider than the panel is. -->
+            {/* The panel is ~71vw on desktop and full-width on mobile, so let the browser
+                 pick. 85vw is the panel plus the ~1.2x object-cover paints over it. */}
             <Image
                 src={Hero}
                 alt=""

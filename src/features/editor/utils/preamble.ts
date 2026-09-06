@@ -3,9 +3,7 @@ import type { SensorKey } from 'src/types/extraSensors'
 import type { UserExtensions, UserSensor, UserSensors } from 'src/types/projects'
 import { preamble, ExtensionsPreamble, ExtraSensorsPreamble } from '../config/preamble'
 
-// Shared between the block editor and the raw python editor, so a project's
-// robot API setup (roboxlib imports, sensor/motor singletons, configured
-// extensions/sensors) stays identical regardless of which editor produced it.
+// Shared by both editors, so a project's robot API setup is identical either way.
 export function buildPreamble(
     project: { extensions?: UserExtensions; sensors?: UserSensors } | null,
 ): string {

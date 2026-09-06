@@ -18,9 +18,7 @@ import PythonEditor from "../editors/pythonEditor/components/editor.astro";
     if (!blockSlot || !pythonSlot)
         throw new Error("Editor slots not found");
 
-    // Which editor a project opens with is stored data, not something the
-    // URL encodes — both bodies render, and this picks the one that matches
-    // once the project loads (defaults to block until then).
+    // Both bodies render; the project's stored type picks one, defaulting to block.
     void (async () => {
         const projectId = getProjectIdFromURL();
         const project = projectId ? await getProject(projectId) : null;

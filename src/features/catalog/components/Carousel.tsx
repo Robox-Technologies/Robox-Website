@@ -16,10 +16,8 @@ export default function Carousel({ images }: { images: CarouselImage[] }) {
     const [currentIndex, setCurrentIndex] = useState(0)
 
     return (
-        // 60vh tall with a 500px floor, and a 1.4 hero aspect ratio, as on the
-        // original. The ratio matters beyond the image itself: it's what leaves
-        // room for the info column beside it (a 16/9 hero squeezed that column
-        // down to ~240px at 1440px wide).
+        // 60vh with a 500px floor and a 1.4 hero ratio — a wider ratio squeezes the
+        // info column beside it.
         <div className="carousel flex flex-row h-[60vh] min-h-[500px] gap-[10px] max-[940px]:h-auto max-[940px]:min-h-0">
             <CarouselSideBar
                 images={images}
@@ -67,9 +65,7 @@ function CarouselSideBar({
     setCurrentIndex: (index: number) => void
 }) {
     return (
-        // The rail is a fixed 115px wide and drops out below 940px; its
-        // thumbnails shrink to share the carousel's height rather than scroll,
-        // same as the original.
+        // Fixed 115px, dropped below 940px; thumbnails shrink to share the height rather than scroll.
         <div
             role="group"
             aria-label="Product photos"
@@ -105,19 +101,8 @@ function CarouselSideBarItem({
     onClick: () => void
 }) {
     return (
-        // A real <button> so the rail can be tabbed to and driven from the
-        // keyboard; `aria-pressed` is what tells a screen reader which photo is
-        // currently up, since swapping the main image announces nothing.
-        //
-        // The layout classes are the ones the old <div> carried, unchanged --
-        // `overflow-hidden` in particular is load-bearing, as it's what zeroes
-        // this flex item's automatic minimum size and lets the rail squeeze the
-        // thumbnails to share the carousel's height instead of scrolling. The
-        // rest only undo the UA's button chrome (background, border, padding,
-        // font) so it renders exactly as before.
-        //
-        // The focus ring lives on `.carousel-item` in global.css, alongside the
-        // site's other focus styles.
+        // A real <button> so the rail is keyboard-drivable. `overflow-hidden` is
+        // load-bearing: it zeroes the flex item's automatic minimum size.
         <button
             type="button"
             aria-label={`Show photo ${index + 1} of ${total}`}

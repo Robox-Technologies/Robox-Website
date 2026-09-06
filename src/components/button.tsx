@@ -24,9 +24,7 @@ export default function Button({
         return (
             <a
                 href={href}
-                // An anchor can't be `:disabled`, so carry the state as
-                // `aria-disabled` — that's what the greyed-out look and the
-                // click-blocking in `.button-interactive` key off.
+                // An anchor can't be `:disabled`; `.button-interactive` keys off `aria-disabled`.
                 aria-disabled={disabled || undefined}
                 tabIndex={disabled ? -1 : undefined}
                 className={twMerge(

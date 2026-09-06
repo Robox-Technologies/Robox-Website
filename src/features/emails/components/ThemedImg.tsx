@@ -13,20 +13,9 @@ export interface ThemedImgProps {
 }
 
 /**
- * An image with a separate dark-mode variant.
- *
- * Email has no way to swap an `src` on a media query, so both images ship and
- * one is hidden. The `light-img` / `dark-img` classes are driven by the
- * `prefers-color-scheme` block in styles.ts.
- *
- * The dark variant also carries `display: none` inline, so that clients which
- * strip <style> (where the media query would never run) fall back to showing
- * only the light image rather than stacking both. The stylesheet uses
- * `!important` to override that inline value when dark mode does apply.
- *
- * Clients that honour `prefers-color-scheme` - Apple Mail, iOS Mail, Outlook for
- * Mac/iOS, Thunderbird - get the dark variant. Gmail applies its own colour
- * inversion instead and will keep showing the light one.
+ * An image with a dark-mode variant. Both ship and one is hidden, since email can't
+ * swap an `src` on a media query. The dark one is inline `display: none` so clients
+ * that strip <style> show the light image rather than both.
  */
 export const ThemedImg = ({ src, darkSrc, alt, width, height, style }: ThemedImgProps) => {
     return (

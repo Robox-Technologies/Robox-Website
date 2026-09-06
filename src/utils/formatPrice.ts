@@ -1,9 +1,6 @@
 /**
- * Currencies Stripe treats as having no minor unit, so an amount of `100` is
- * 100 of the currency rather than 1.00. Kept as Stripe's list rather than
- * derived from `Intl`, because "minor units" here means whatever Stripe's API
- * accepts - the two disagree for a few currencies (ISK, for one).
- *
+ * Currencies Stripe treats as having no minor unit. Stripe's own list, not `Intl`'s —
+ * they disagree for a few, ISK among them.
  * @see https://docs.stripe.com/currencies#zero-decimal
  */
 const ZERO_DECIMAL_CURRENCIES = new Set([
@@ -29,13 +26,8 @@ const ZERO_DECIMAL_CURRENCIES = new Set([
 const THREE_DECIMAL_CURRENCIES = new Set(['bhd', 'jod', 'kwd', 'omr', 'tnd'])
 
 /**
- * `Intl`'s narrow symbols collapse the whole dollar family to a bare "$" in
- * en-AU, so AUD, USD and NZD all render identically - unusable next to a
- * currency selector. Disambiguate them by hand, and keep AUD as the "AU$" the
- * site and the receipt emails have always shown.
- *
- * Only the symbol is overridden; the digits, grouping and symbol placement
- * still come from `Intl`.
+ * `Intl`'s narrow symbols collapse the dollar family to a bare "$" in en-AU, so the
+ * symbols are overridden by hand. Digits, grouping and placement still come from `Intl`.
  */
 const SYMBOL_OVERRIDES: Record<string, string> = {
     AUD: 'AU$',
@@ -59,22 +51,12 @@ export function minorUnitDivisor(currency: string): number {
 }
 
 export type FormatMoneyOptions = {
-    /**
-     * Always show the currency's full precision. Off by default so a whole-unit
-     * amount reads "AU$35" on a product card; on for anything in a totals
-     * column, where the decimal points should line up.
-     */
+    /** Always show full precision. Off by default so a product card reads "AU$35". */
     forceCents?: boolean
     locale?: string
 }
 
-/**
- * Formats a Stripe minor-unit amount in the given currency.
- *
- * Amounts arriving from Stripe are always integers in the currency's smallest
- * unit, so the number of decimal places has to come from the currency rather
- * than from the value - `3550` is 35.50 AUD but 3550 JPY.
- */
+/** Formats a Stripe minor-unit amount. `3550` is 35.50 AUD but 3550 JPY, so precision comes from the currency. */
 export function formatMoney(
     minorUnits: number,
     currency: string,
@@ -83,9 +65,7 @@ export function formatMoney(
     const code = currency.toUpperCase()
     const major = minorUnits / minorUnitDivisor(currency)
 
-    // Test the *major* value: every minor-unit amount is an integer, so asking
-    // `Number.isInteger` about the raw input always said yes and rounded 35.50
-    // up to "AU$36".
+    // The major value, since every minor-unit amount is trivially an integer.
     const fractionDigits =
         !forceCents && Number.isInteger(major) ? 0 : decimalPlaces(currency)
 
@@ -113,11 +93,7 @@ export function formatMoney(
         .join('')
 }
 
-/**
- * AUD shorthand for `formatMoney`. Retained because the receipt emails and
- * every catalog surface render in the settlement currency; anything showing a
- * customer-selected currency should call `formatMoney` directly.
- */
+/** AUD shorthand for `formatMoney`. Anything in a customer-selected currency should call that directly. */
 export function formatPrice(price: number, forceCents = false): string {
     return formatMoney(price, 'aud', { forceCents })
 }

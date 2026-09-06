@@ -2,18 +2,9 @@ import { createHash, randomUUID } from 'node:crypto'
 import { ActionError, type ActionAPIContext } from 'astro:actions'
 
 /**
- * Ties a Checkout Session to the browser that created it.
- *
- * Server endpoints take a session id from the client and read or rewrite that
- * order. The id is not a secret — Stripe puts `session_id=cs_...` in the return
- * URL, so it lands in browser history, access logs and any `Referer` sent to a
- * third party — so without an ownership check, anyone holding another
- * customer's id could read or alter that customer's order.
- *
- * The owner is a random token in an httpOnly cookie. What goes into the intent's
- * metadata is only its SHA-256, so the recorded value can't be replayed as the
- * cookie, and no server-side session store is needed — the binding survives a
- * restart because it lives on the intent.
+ * Ties a Checkout Session to the browser that created it. Session ids aren't secret —
+ * Stripe puts them in the return URL — so endpoints need an ownership check. The owner is
+ * a random httpOnly cookie; only its SHA-256 goes into the intent's metadata.
  */
 
 const COOKIE_NAME = 'robox_checkout'
@@ -28,12 +19,7 @@ function fingerprint(token: string): string {
     return createHash('sha256').update(token).digest('hex')
 }
 
-/**
- * The caller's fingerprint, minting the cookie when they don't have one yet.
- *
- * Called from `createPaymentIntent`, whose response is what carries the
- * `Set-Cookie` back (the Node adapter renders actions with `addCookieHeader`).
- */
+/** The caller's fingerprint, minting the cookie if they have none. */
 export function resolveCheckoutOwner(context: ActionAPIContext): string {
     const existing = context.cookies.get(COOKIE_NAME)?.value
     if (existing) return fingerprint(existing)
@@ -42,9 +28,8 @@ export function resolveCheckoutOwner(context: ActionAPIContext): string {
 
     context.cookies.set(COOKIE_NAME, token, {
         httpOnly: true,
-        // 'lax' rather than 'strict': the customer comes back from Stripe through
-        // a top-level cross-site redirect, and 'strict' would withhold the cookie
-        // on that navigation.
+        // 'lax': the customer returns from Stripe through a cross-site redirect, which
+        // 'strict' would withhold the cookie on.
         sameSite: 'lax',
         // Only mark it Secure when the request actually is: dev runs on http.
         secure: context.url.protocol === 'https:',
@@ -62,13 +47,8 @@ export function readCheckoutOwner(context: ActionAPIContext): string | null {
 }
 
 /**
- * Fails closed: an order carrying no owner — one created before this check
- * existed — counts as not ours to touch. The client answers a rejection by
- * abandoning the session and creating a fresh one, so this costs a round trip
- * rather than a sale.
- *
- * Takes anything with metadata rather than a specific Stripe type, so the same
- * check covers the Checkout Session and the PaymentIntent behind it.
+ * Fails closed: an order with no recorded owner counts as not ours. Takes anything with
+ * metadata, so it covers both the session and the PaymentIntent.
  */
 export function assertCheckoutOwner(
     subject: { metadata?: Record<string, string> | null },

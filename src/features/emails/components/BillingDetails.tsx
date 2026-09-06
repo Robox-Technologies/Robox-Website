@@ -12,12 +12,7 @@ export interface BillingDetailsProps {
     rows: BillingRow[];
 }
 
-/**
- * Splits a multi-line string on newlines and joins the lines with <br />.
- * `resolveBilling` returns newline-joined address and payment-method strings;
- * the original template put the same data in as an innerHTML string of
- * <br>-separated lines.
- */
+/** Splits a multi-line string on newlines and joins the lines with <br />. */
 const withLineBreaks = (value: React.ReactNode): React.ReactNode => {
     if (typeof value !== 'string') return value;
 
@@ -32,15 +27,7 @@ const withLineBreaks = (value: React.ReactNode): React.ReactNode => {
     ));
 };
 
-/**
- * Two-column label/value block used for "Shipping to:", "Billed to:", and
- * "Payment details:" rows. Mirrors the `.billing-details` table shared by
- * success.html and failure.html.
- *
- * A single table holds every row, as in the original, so the labels and values
- * line up across rows. Column widths are left to the table to work out from the
- * content, which is what the original did.
- */
+/** Two-column label/value block for the "Shipping to:" / "Billed to:" / "Payment details:" rows. */
 export const BillingDetails = ({ rows }: BillingDetailsProps) => {
     return (
         <Section style={billingDetailsStyle}>

@@ -4,10 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { cartItems } from '@/state/cartStore'
 import { shippingDetails, shippingServiceId } from '../state/checkoutStore'
 
-/**
- * Identifies the order a session was created for. A change here means the
- * session no longer describes what the customer is buying.
- */
+/** Identifies the order a session was created for; a change means the session is stale. */
 function buildSessionKey(
     cart: Record<string, { quantity: number } | number>,
     details: ReturnType<typeof shippingDetails.get>,
@@ -29,13 +26,8 @@ function buildSessionKey(
 }
 
 /**
- * Creates the Checkout Session the payment step runs on, and replaces it when
- * the order changes.
- *
- * Replacing rather than updating is deliberate: `payment_intent_data` is fixed
- * at creation and carries the figures the receipt reads, so an edited session
- * would charge one amount and email another. The cart can't be edited from the
- * payment step, so in practice this only fires if another tab changes it.
+ * Creates the Checkout Session, and replaces it when the order changes —
+ * `payment_intent_data` is fixed at creation and carries the figures the receipt reads.
  */
 export function useCheckoutSession() {
     const cart = useStore(cartItems)

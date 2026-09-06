@@ -1,10 +1,5 @@
-// Cross-platform SQLite storage for user projects.
-//
-// On native (iOS) this uses a durable SQLite database file, which — unlike
-// localStorage/IndexedDB in a WKWebView — is not wiped by the system under
-// storage pressure. On the web the same API is backed by `jeep-sqlite`
-// (SQLite compiled to WASM, persisted to IndexedDB), so the rest of the app
-// talks to a single async storage layer regardless of platform.
+// Cross-platform SQLite storage for user projects: a real database file on iOS, where
+// WKWebView storage is wiped under pressure, and `jeep-sqlite` (WASM) on the web.
 import {
     CapacitorSQLite,
     SQLiteConnection,
@@ -26,10 +21,8 @@ let dbPromise: Promise<SQLiteDBConnection> | null = null
 // Only needed on the web platform; native has its own SQLite implementation.
 async function setupWebStore(): Promise<void> {
     if (!customElements.get('jeep-sqlite')) {
-        // Use the self-contained component build rather than the lazy
-        // `jeep-sqlite/loader`: the loader defers the implementation to a
-        // separate chunk that a bundler (Vite) doesn't serve, leaving the
-        // element defined but never hydrated so its methods hang forever.
+        // The self-contained build, not `jeep-sqlite/loader` — the loader's deferred chunk
+        // isn't served by Vite, leaving the element defined but never hydrated.
         const { JeepSqlite } = await import(
             'jeep-sqlite/dist/components/jeep-sqlite'
         )
@@ -81,9 +74,7 @@ async function openDatabase(): Promise<SQLiteDBConnection> {
     return db
 }
 
-// One-time migration of projects created before the SQLite switch. Existing
-// users may have projects living in localStorage under `roboxProjects`; copy
-// them into SQLite and drop the legacy key once they are safely stored.
+// One-time migration of pre-SQLite projects out of localStorage's `roboxProjects`.
 async function migrateFromLocalStorage(db: SQLiteDBConnection): Promise<void> {
     if (typeof localStorage === 'undefined') return
     const raw = localStorage.getItem(LEGACY_STORAGE_KEY)

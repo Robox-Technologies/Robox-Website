@@ -1,10 +1,6 @@
 /**
- * Framed upload driver: the sender half of credit-based batching.
- *
- * Sends frames back to back within the credit the board granted, advances on a
- * cumulative ACK, rewinds on a NAK, and resends from the window base if
- * neither arrives. Nothing here calls the upload good until the board reports a
- * matching line count and CRC, which is what lets `runCode` be gated on it.
+ * Framed upload driver: the sender half of credit-based batching. Advances on a
+ * cumulative ACK, rewinds on a NAK, resends from the window base on a timeout.
  */
 
 import {
@@ -63,18 +59,12 @@ function delay(milliseconds: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, milliseconds))
 }
 
-/**
- * Upload `code` over `transport` and wait for the board to confirm it.
- *
- * Rejects rather than resolving on a failed verification: a caller that awaits
- * this and then runs the program cannot accidentally run a bad upload.
- */
+/** Upload `code` over `transport`. Rejects on a failed verification rather than resolving. */
 export async function uploadProgram(
     transport: BaseTransport,
     code: string,
 ): Promise<UploadResult> {
-    // Draw from the connection's counter so the upload and the commands around
-    // it form one ordered stream rather than three independent ones.
+    // From the connection's counter, so the upload and surrounding commands stay ordered.
     const startSeq = transport.peekSequence()
     const frames = encodeProgram(code, startSeq)
     transport.takeSequence(frames.length)
@@ -88,8 +78,7 @@ export async function uploadProgram(
         if (frame.kind === Kind.ACK) {
             const { expectedSeq, credit } = parseFlow(frame.payload)
             const advanced = window.onAck(expectedSeq, credit)
-            // Only an ACK that actually moved the window is evidence the link
-            // is coping. A repeat of one we already had proves nothing.
+            // Only an ACK that moved the window is evidence the link is coping.
             if (advanced) transport.notePacingClean()
         } else if (frame.kind === Kind.NAK) {
             const { expectedSeq } = parseFlow(frame.payload)
@@ -98,9 +87,7 @@ export async function uploadProgram(
         }
     }
 
-    // The board's verdict arrives as a REPLY frame, which the transport
-    // unwraps and dispatches as an ordinary message, so it is picked up here
-    // rather than in the flow listener.
+    // The verdict arrives as a REPLY, which the transport dispatches as an ordinary message.
     const onUploaded = (payload: unknown) => {
         if (isVerdict(payload)) verdict = payload
     }
@@ -119,8 +106,7 @@ export async function uploadProgram(
         while (!window.complete()) {
             if (deviceError) break
 
-            // Backstop: MAX_RETRANSMITS bounds the timeout path, but a logic
-            // error elsewhere should surface as a failure, not a hang.
+            // Backstop, so a logic error surfaces as a failure rather than a hang.
             rounds += 1
             if (rounds > 10000) {
                 throw new Error(
@@ -131,24 +117,19 @@ export async function uploadProgram(
             const batch = window.ready()
 
             if (batch.length) {
-                // Account for the batch before sending it. An ACK can land
-                // while the write is still in progress, and if the window has
-                // not recorded the frames as in flight by then, advancing
-                // afterwards pushes past frames that were never sent.
+                // Before sending: an ACK can land mid-write, and must see the frames in flight.
                 window.advance(batch.length)
                 await transport.writeFrames(batch)
                 lastProgress = Date.now()
             } else if (Date.now() - lastProgress > ACK_TIMEOUT_MS) {
-                // The credit is spent and no ACK came back, so one was lost.
-                // Resending from the base is what stops that stalling forever.
+                // Credit spent with no ACK, so one was lost; resend from the base.
                 if (window.retransmits >= MAX_RETRANSMITS) {
                     throw new Error(
                         'Lost contact with the Ro/Box while sending your program. Try reconnecting it.',
                     )
                 }
                 window.rewindToBase()
-                // A silent peer is the same evidence as a NAK: we are offering
-                // faster than it can take.
+                // A silent peer is the same evidence as a NAK.
                 transport.notePacingLoss()
                 lastProgress = Date.now()
             } else {

@@ -32,29 +32,17 @@ export interface OrderSummaryProps {
     items: OrderItem[]
     /** Pre-formatted shipping cost string, e.g. "AU$9.95" */
     shipping: string
-    /**
-     * Australia Post service the order ships by, e.g. "Express shipping". Used
-     * as the row label so the customer can see what they paid for; falls back
-     * to a plain "Shipping" when the order has no rate attached.
-     */
+    /** Australia Post service, e.g. "Express shipping". Falls back to plain "Shipping". */
     shippingMethod?: string
-    /**
-     * Pre-formatted discount amount, e.g. "AU$10.00", or undefined when no
-     * discount applies. Rendered parenthesised, as in the original.
-     */
+    /** Pre-formatted discount amount, e.g. "AU$10.00", or undefined when none applies. */
     discount?: string
     /** Pre-formatted grand total string, e.g. "AU$58.95" */
     total: string
 }
 
 /**
- * Order summary table: order id, date, line items, then a shipping / discount /
- * total breakdown. Mirrors summary.html and the `appendFeeRow` logic in the
- * original's email.ts.
- *
- * Built from raw <table>/<tr>/<td> rather than jsx-email's <Row>/<Column>,
- * because those render one nested <table> per row - which drops every cell into
- * its own independent grid, so nothing lines up column to column.
+ * Order summary table. Raw <table> because jsx-email's <Row>/<Column> nest a table
+ * per row and don't line up column to column.
  */
 
 /** A cell whose content is a <p>, matching the original's `createCell`. */
@@ -170,11 +158,7 @@ export const OrderSummary = ({
                         </Cell>
                     </tr>
 
-                    {/*
-                      The `discount-row` class is load-bearing: the dark-mode
-                      override in styles.ts targets `.discount-row p` to swap the
-                      green for a lighter shade.
-                    */}
+                    {/* `discount-row` is load-bearing: styles.ts targets `.discount-row p` in dark mode. */}
                     {discount && (
                         <tr className="discount-row">
                             <td style={{ ...cellStyle, ...rowSeparateStyle }}>

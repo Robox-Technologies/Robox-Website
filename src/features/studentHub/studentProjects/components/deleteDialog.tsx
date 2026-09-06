@@ -51,18 +51,12 @@ export default function DeleteDialog() {
                     <div className="bg-red/50 h-full w-full rounded-lg flex-col items-center justify-center p-4">
                         <p>
                             <span className="font-bold">Warning: </span>
-                            Deleting a project is irreversible. This action will
-                            remove:
+                            Deleting a project means it will be gone forever (a <em>very, very</em> long time)!
                         </p>
-                        <ul className="list-disc list-inside mt-2">
-                            <li>The project and all its contents</li>
-                            <li>All versions of the project</li>
-                            <li>Associated assets and resources</li>
-                        </ul>
                     </div>
                     <div className="mt-4">
                         <p className="text-black">
-                            Please confirm that you want to delete this project.
+                            Please confirm that you want to delete.
                         </p>
                     </div>
                 </div>

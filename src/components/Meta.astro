@@ -1,42 +1,23 @@
 ---
 /**
- * Everything that goes in `<head>`: the document title, the search-engine
- * description, and the Open Graph / Twitter tags link unfurlers read.
- *
- * Was a React component; it's Astro now because the social tags need absolute
- * URLs, and `Astro.site` / `Astro.url` are the only places those come from.
- * (`site` is set in astro.config.ts — without it `new URL()` below throws,
- * which is the loud failure we want rather than silently shipping a relative
- * `og:image` that no crawler can resolve.)
+ * Everything that goes in `<head>`: title, description, Open Graph and Twitter tags.
+ * Needs `site` set in astro.config.ts, or the absolute-URL construction below throws.
  */
 import { DEFAULT_DESCRIPTION, isNoindex, isProductionOrigin } from '@/data/seo'
 
 interface Props {
     title: string
-    /**
-     * The page's own description, used for `<meta name="description">` and both
-     * social descriptions so they can't drift apart. Keep it under
-     * `DESCRIPTION_LIMIT`; the OG validators truncate past that.
-     */
+    /** Used for the meta and both social descriptions. Keep it under `DESCRIPTION_LIMIT`. */
     description?: string
-    /**
-     * Force the page out of search results. Normally left alone: the routes that
-     * need it are listed in `NOINDEX_PATHS`, which also keeps them out of the
-     * sitemap. This is the escape hatch for a route that has to decide at build
-     * time (an unpublished CMS article, say).
-     */
+    /** Escape hatch for a route deciding at build time; static routes belong in `NOINDEX_PATHS`. */
     noindex?: boolean
 }
 
 const SITE_NAME = 'Ro/Box'
 
 /**
- * Served straight from `public/`, not imported from `src/images/`. An imported
- * asset gets a content hash in its filename, so its URL changes every time the
- * picture is touched — and unfurlers cache OG images hard, which leaves every
- * link shared before the change pointing at a 404. This path never moves.
- * The dimensions are the real ones for that file and have to be kept in step
- * with it; they're what Facebook and LinkedIn lay the preview card out from.
+ * From `public/` so the URL never changes — unfurlers cache OG images hard.
+ * The dimensions must be kept in step with the actual file.
  */
 const OG_IMAGE = {
     path: '/og-image.jpg',
@@ -46,8 +27,7 @@ const OG_IMAGE = {
 }
 
 /**
- * A dev deploy gets `noindex` on every page, not just the usual routes: two
- * copies of the same site competing in search is worse than either alone.
+ * A dev deploy gets `noindex` on every page, so it can't compete with production.
  */
 const isProduction = isProductionOrigin(Astro.site)
 
@@ -70,13 +50,13 @@ const ogImageUrl = new URL(OG_IMAGE.path, Astro.site)
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<!-- PNG fallback for browsers that don't take an SVG favicon; they pick the
-     best `icon` they understand, so this only gets used where it's needed. -->
+{/* PNG fallback for browsers that don't take an SVG favicon; they pick the
+     best `icon` they understand, so this only gets used where it's needed. */}
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
-<!-- iOS home screen. Kept at the conventional root filename, which is also
-     where Safari looks when a page declares no icon at all. -->
+{/* iOS home screen. Kept at the conventional root filename, which is also
+     where Safari looks when a page declares no icon at all. */}
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-<!-- Android home screen; the 192 and 512 icons are declared in here. -->
+{/* Android home screen; the 192 and 512 icons are declared in here. */}
 <link rel="manifest" href="/site.webmanifest" />
 
 <meta name="viewport" content="width=device-width, initial-scale=1" />

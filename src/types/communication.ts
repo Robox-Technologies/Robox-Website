@@ -36,13 +36,7 @@ export type CommunicationMethod = 'USB' | 'WebBluetooth' | 'iOSBluetooth' | null
 
 // Types
 
-/**
- * Message types the board can send.
- *
- * `calibrated` was missing here while the firmware was already sending it
- * (main.py, calibrate_color), so the framer treated every calibration
- * confirmation as noise and dropped it.
- */
+/** Message types the board can send. Anything missing here is dropped as noise. */
 export type PicoMessageType =
     | 'console'
     | 'download'

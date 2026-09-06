@@ -1,8 +1,4 @@
-/**
- * The internal notice is what tells us an order exists and how to pack it, and
- * the `[TEST]` marker is what keeps a sandbox order out of the post - so both
- * are pinned here rather than checked by eye in an inbox.
- */
+/** Pins the internal notice's contents and the `[TEST]` marker. */
 
 import { describe, expect, it } from 'vitest'
 

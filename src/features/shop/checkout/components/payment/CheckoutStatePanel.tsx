@@ -1,9 +1,4 @@
-/**
- * Stands in for the payment form when there's nothing to pay for, or when
- * preparing the payment intent failed. Without this the section sat on its
- * loading spinner forever, since `clientSecret` never arrives in either case.
- * Mirrors the original's `#checkout-error` block.
- */
+/** Stands in for the payment form when there's nothing to pay for, or the intent failed. */
 export default function CheckoutStatePanel({
     heading,
     children,

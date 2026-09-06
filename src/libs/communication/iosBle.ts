@@ -1,10 +1,4 @@
-/**
- * iOS Bluetooth transport, via the Capacitor BLE plugin.
- *
- * Web Bluetooth does not exist in the Capacitor WebView, so the app talks to
- * the same HM-10 service through the plugin instead. Everything above the
- * plugin calls is shared with `webBle.ts`.
- */
+/** iOS Bluetooth via the Capacitor BLE plugin; Web Bluetooth doesn't exist in the WebView. */
 
 import {
     BleClient,

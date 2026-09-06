@@ -1,8 +1,4 @@
-/**
- * Packing decides the parcels Australia Post is quoted on, what the customer
- * pays for packaging, and what the warehouse is told to send - so the rules are
- * pinned here rather than discovered from a live quote.
- */
+/** Pins the packing rules: parcel splits, packaging cost, and what the warehouse is told. */
 
 import { describe, expect, it } from 'vitest'
 
@@ -374,11 +370,7 @@ describe('shipmentToMetadata', () => {
     })
 })
 
-/**
- * The metadata is the only record of how an order was packed, and the internal
- * order email reads it back to say what to put in the post - so the round trip
- * is pinned here, not just the write.
- */
+/** The metadata round trip, not just the write — the internal email reads it back. */
 describe('parseShipmentMetadata', () => {
     it('reads the parcels back out of what it wrote', () => {
         const summary = parseShipmentMetadata(

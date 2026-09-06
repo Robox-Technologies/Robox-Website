@@ -10,14 +10,8 @@ import {
 export type CheckoutOutcome = 'processing' | 'succeeded' | 'failed' | 'expired'
 
 /**
- * Reports how a Checkout Session ended, for the page Stripe returns the
- * customer to.
- *
- * The session id arrives in the return URL, so it is not a secret. The outcome
- * is harmless to hand back, but the customer's email is not - it is only
- * included when the caller's checkout cookie matches the session's recorded
- * owner. Someone who obtained a session id from a log or a `Referer` learns
- * whether it was paid, and nothing about who paid it.
+ * Reports how a Checkout Session ended. The session id isn't a secret, so the email
+ * is only returned when the caller's checkout cookie matches the recorded owner.
  */
 export const getCheckoutStatus = defineAction({
     input: z.object({
@@ -58,10 +52,8 @@ export const getCheckoutStatus = defineAction({
         ) {
             outcome = 'processing'
         } else if (intent?.last_payment_error) {
-            // Session still open with a failed attempt behind it: the customer
-            // came back from a redirect that didn't go through. A hard decline
-            // on a card never gets here - `confirm` reports that inline
-            // without redirecting - so this is the redirect-method case.
+            // Open session with a failed attempt: a redirect method that didn't go through.
+            // Card declines are reported inline by `confirm` and never reach here.
             outcome = 'failed'
         } else {
             outcome = 'processing'

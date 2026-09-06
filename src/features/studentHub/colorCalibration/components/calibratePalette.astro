@@ -66,9 +66,7 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
     import type { PaletteColorName } from "@/data/colorPalette";
     import { wireColorCalibration, type SwatchButton } from "../calibrationStep";
 
-    // Astro only includes this script once no matter how many instances
-    // render, so wire up every instance found rather than assuming there's a
-    // single one.
+    // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".calibrationPalette").forEach((root) => {
         const swatchGrid = root.querySelector<HTMLDivElement>(".calibrationSwatchGrid");
         const backButton = root.querySelector<HTMLButtonElement>("#calibration-back");
@@ -104,9 +102,7 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
             previewRgb,
         });
 
-        // This page is always reached by navigating away from somewhere in
-        // the hub, so going back returns there directly rather than
-        // guessing a destination.
+        // Always reached from somewhere in the hub, so back returns there directly.
         backButton.addEventListener("click", () => {
             if (window.history.length > 1) window.history.back();
             else window.location.assign("../");

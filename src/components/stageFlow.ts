@@ -1,12 +1,7 @@
 /**
- * Generic building blocks for a small multi-step page: child components
- * report progress upward by dispatching namespaced custom events on their
- * own root (bubbles: true), so the orchestrator - an ancestor in the DOM -
- * can react without knowing anything about the component internally.
- *
- * Shared by every page built this way (UF2 flashing, colour calibration, ...)
- * so they all get the same height-animated stage switching, error banner,
- * and URL-backed stage persistence for free.
+ * Building blocks for a multi-step page. Child components dispatch namespaced
+ * bubbling events on their own root; an ancestor orchestrates stage switching,
+ * the error banner and URL-backed stage persistence.
  */
 
 export function dispatchStageAdvance<S extends string>(
@@ -35,20 +30,18 @@ export function dispatchStageClearError(target: EventTarget, namespace: string):
 }
 
 export interface StageFlowOptions<S extends string> {
-    /** The flow's own container - stage components dispatch on this, and it's what `stageStepper.astro` looks for via `[data-stage-flow-root]`. */
+    /** The flow's container, marked `[data-stage-flow-root]`; stage components dispatch on it. */
     root: HTMLElement
-    /** Event prefix (e.g. `"flashdevice"`) - keeps this flow's events from colliding with another one elsewhere on the page. */
+    /** Event prefix, e.g. `"flashdevice"`, so two flows on a page don't collide. */
     namespace: string
     stages: readonly S[]
     isStage: (value: unknown) => value is S
-    /** Query param that persists the active stage across reload and responds to back/forward. Omit to skip URL syncing. */
+    /** Query param the active stage syncs to. Omit to skip URL syncing. */
     stageParam?: string
 }
 
 /**
- * Wires up `.stageFlowStages` / `.stageFlowStage[data-stage]` / `.stageFlowError`
- * (with `.stageFlowErrorTitle` / `.stageFlowErrorMessage`) found inside `root`:
- * height-animated show/hide between stage panels, and the
+ * Wires the `.stageFlow*` elements inside `root` to the
  * `${namespace}:advance` / `:error` / `:clear-error` event contract.
  */
 export function createStageFlow<S extends string>(options: StageFlowOptions<S>): void {

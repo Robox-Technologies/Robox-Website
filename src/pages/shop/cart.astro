@@ -30,11 +30,7 @@ const imageSrcById = products.reduce(
     title="Cart"
     description="Review the Ro/Box kits in your cart before you check out."
 >
-    <!--
-        The original flows down the page: no viewport-height shell and no
-        inner scroll area, `--articleMargin` padding, and a breadcrumb sized
-        by `.navigation` (18px on a 64px line box).
-    -->
+    {/* Flows down the page: no viewport-height shell, no inner scroll area. */}
     <Article className="p-16 max-[1000px]:p-8">
         <a href="/shop" class="text-lg leading-[64px] hover:underline">
             &lsaquo;&nbsp;Shop
@@ -47,7 +43,7 @@ const imageSrcById = products.reduce(
                     <h2 class="my-[20.75px] text-[25px] font-medium">Loading cart...</h2>
                 </div>
 
-                <!-- Mirrors SummaryCard's own wrapper so hydration doesn't move it. -->
+                {/* Mirrors SummaryCard's own wrapper so hydration doesn't move it. */}
                 <div class="w-full min-[900px]:w-96 min-[900px]:shrink-0">
                     <aside class="flex flex-col rounded-xl border border-black/10 bg-white p-6 shadow-sm">
                         <h2 class="mb-4! text-2xl font-bold">Order Summary</h2>

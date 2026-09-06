@@ -1,15 +1,5 @@
-/**
- * Frame encoding for the Ro/Box link, mirroring src/protocol.py in the
- * firmware repo.
- *
- * Both ends must agree byte for byte. The conformance vectors in
- * `__tests__/vectors/frames.json` are generated from the Python side and
- * asserted against here, so drift fails a test rather than a board.
- *
- * Control and data are told apart by the frame's `kind`, never by inspecting
- * payload bytes. That is what stops a line of user code spelling a command
- * from being executed instead of stored.
- */
+// Frame encoding for the Ro/Box link. Must stay byte-for-byte compatible with
+// src/protocol.py in the firmware repo; `__tests__/vectors/frames.json` checks it.
 
 export const SOH = 0x01
 export const LF = 0x0a
@@ -38,7 +28,7 @@ export type FrameKind = (typeof Kind)[keyof typeof Kind]
 
 export const DATA_KINDS: readonly string[] = [Kind.DATA, Kind.CONTINUE]
 
-/** Acknowledge after this many accepted frames. The amortisation factor. */
+/** Acknowledge after this many accepted frames. */
 export const ACK_EVERY = 8
 
 /** Half the board's UART receive buffer, so a full window cannot overflow it. */
@@ -48,10 +38,7 @@ export const DEFAULT_CREDIT = 2048
 export const INITIAL_CREDIT = 512
 
 // === pacing ===
-//
-// Credit bounds what the *board* buffers. It says nothing about the HM-10 in
-// between, which drains to the board over a 9600 baud UART and has a small
-// buffer of its own, so writes have to be paced as well.
+// Credit bounds the board's buffer, not the HM-10's, so writes need pacing too.
 
 /** Bytes per BLE write-without-response. */
 export const BLE_CHUNK_SIZE = 20
@@ -59,37 +46,20 @@ export const BLE_CHUNK_SIZE = 20
 /** HM-10 UART egress: 9600 baud, 8N1, ten bits on the wire per byte. */
 export const UART_BYTES_PER_SECOND = 960
 
-/**
- * The floor, and it is arithmetic rather than a guess: the time the module
- * needs to forward one chunk to the board. Pace faster than this and bytes are
- * offered faster than they can leave, so overflow is certain given enough of
- * them. Measured sweeps agree: 25ms held with strain, 20ms collapsed to a
- * seventh of the goodput at 7x the wire traffic.
- */
+/** Time the HM-10 needs to forward one chunk. Pacing faster than this overflows it. */
 export const MIN_CHUNK_DELAY_MS =
     Math.floor((BLE_CHUNK_SIZE * 1000) / UART_BYTES_PER_SECOND) + 1
 
-/**
- * Where a fresh connection starts. Deliberately well clear of the floor: the
- * first upload should be safe, not fast.
- */
+/** Starting delay for a fresh connection, kept well clear of the floor. */
 export const START_CHUNK_DELAY_MS = 40
 
-/**
- * Ceiling. Past this the link is not slow, it is broken, and crawling is worse
- * than reporting a failure.
- */
+/** Past this the link is broken, not slow. */
 export const MAX_CHUNK_DELAY_MS = 80
 
 /** Clean acknowledged batches required before probing faster. */
 export const CLEAN_BATCHES_BEFORE_PROBE = 2
 
-/**
- * Fraction shaved per probe. Proportional rather than a fixed step so the time
- * to recover from a backoff does not depend on how far it went: a fixed 2ms
- * step needed eighty acknowledgements to come back from 100ms, which is longer
- * than most uploads, so the controller spent its life crawling downhill.
- */
+/** Fraction shaved per probe. Proportional so recovery time doesn't scale with the backoff. */
 export const PROBE_FRACTION = 0.1
 
 /** Multiplier applied per loss *episode*. */
@@ -107,30 +77,13 @@ export interface PacerStats {
 }
 
 /**
- * Chooses the inter-chunk delay from the loss the link is showing.
- *
- * Additive decrease, multiplicative increase, on the delay. A fixed constant
- * cannot be right for every board: the same firmware runs behind HM-10s of
- * varying quality, at varying distances, in varying interference. The protocol
- * already produces the signal needed to tune it, so this uses it.
- *
- * State lives on the connection rather than the upload, so a second upload
- * starts from what the link already taught us instead of probing again.
- *
- * Mirrors AdaptivePacer in src/protocol.py.
+ * Additive-decrease/multiplicative-increase on the inter-chunk delay.
+ * Mirrors AdaptivePacer in src/protocol.py; state lives on the connection.
  */
 export class AdaptivePacer {
     private cleanStreak = 0
 
-    /**
-     * One backoff per loss episode, not per lost frame.
-     *
-     * Go-back-N resends a whole run of frames after a gap, so a single bad
-     * patch of radio draws a NAK for each one. Reacting to every NAK compounded
-     * the factor six times over and sent the delay to the ceiling for something
-     * that warranted one step. Rearmed by the next clean acknowledgement, which
-     * is the evidence the episode is over.
-     */
+    /** One backoff per loss episode, not per lost frame; rearmed by a clean ACK. */
     private armed = true
 
     probes = 0
@@ -139,7 +92,6 @@ export class AdaptivePacer {
     fastestMs: number
     slowestMs: number
 
-    /** Time-weighted, via the chunks actually paced. */
     private pacedChunks = 0
     private delayMsTotal = 0
 
@@ -160,7 +112,7 @@ export class AdaptivePacer {
         return Math.max(this.minimumMs, Math.min(this.maximumMs, value))
     }
 
-    /** A batch was acknowledged with nothing lost. Consider probing. */
+    /** A batch was acknowledged with nothing lost. Considers probing faster. */
     onCleanBatch(): boolean {
         this.armed = true
         this.cleanStreak += 1
@@ -176,12 +128,7 @@ export class AdaptivePacer {
         return true
     }
 
-    /**
-     * A NAK, a damaged frame, or a timeout.
-     *
-     * Backs off once per episode. Further losses before the next clean
-     * acknowledgement are the same episode and are counted, not acted on.
-     */
+    /** A NAK, damaged frame, or timeout. Backs off at most once per episode. */
     onLoss(): boolean {
         this.cleanStreak = 0
 
@@ -199,7 +146,7 @@ export class AdaptivePacer {
         return true
     }
 
-    /** The current delay, and a note that a chunk was paced by it. */
+    /** Current delay, recording that a chunk was paced by it. */
     takeDelayMs(): number {
         this.pacedChunks += 1
         this.delayMsTotal += this.delayMs
@@ -229,13 +176,7 @@ export class ProtocolError extends Error {}
 
 // === CRC-32 ===
 
-/**
- * Standard CRC-32 table, matching Python's binascii.crc32.
- *
- * Built once on first use rather than inlined as a literal: 256 entries of
- * hand-copied hex is a place for a typo to hide, and the vectors would only
- * catch it after the fact.
- */
+/** Standard CRC-32 table, matching Python's binascii.crc32. Built on first use. */
 let crcTable: Uint32Array | null = null
 
 function table(): Uint32Array {
@@ -265,12 +206,7 @@ export function crc32(data: Uint8Array, seed = 0): number {
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
-/**
- * Check over the header fields and payload.
- *
- * Covers seq and kind too: a corrupted header misroutes a frame, which a
- * payload-only checksum would not notice.
- */
+/** Checksum over seq, length and kind as well as payload, so header corruption is caught. */
 export function frameChecksum(
     seq: number,
     kind: string,
@@ -286,15 +222,7 @@ export function frameChecksum(
 
 // === program normalisation ===
 
-/**
- * Canonical form both ends checksum.
- *
- * Line endings collapse to \n and exactly one trailing newline is guaranteed;
- * nothing else changes. Blank lines are preserved: the old protocol dropped
- * them because an empty line was indistinguishable from noise on the UART, but
- * a frame states its payload length, so an empty line is now explicit and the
- * stored program can be a faithful copy of what was written.
- */
+/** Canonical form both ends checksum: \n endings, one trailing newline, blank lines kept. */
 export function normaliseProgram(text: string): string {
     const unified = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
     if (!unified) return ''
@@ -367,15 +295,7 @@ export interface Piece {
     payload: Uint8Array
 }
 
-/**
- * Break text into frame-sized payloads.
- *
- * Splits on encoded bytes but never inside a multi-byte character, which would
- * decode to a replacement character and corrupt the result. All but the last
- * piece are CONTINUE, so CONTINUE means only "the payload continues in the
- * next frame" and works either direction: program text ends in DATA, a device
- * message ends in REPLY.
- */
+/** Break text into frame-sized payloads, never splitting a multi-byte character. */
 export function splitPayload(
     text: string,
     finalKind: string,
@@ -413,12 +333,7 @@ export function splitLine(line: string, limit = MAX_PAYLOAD): Piece[] {
     return splitPayload(line, Kind.DATA, limit)
 }
 
-/**
- * Frames for a whole upload: BEGIN, body, END.
- *
- * BEGIN and END carry the line count and program CRC, so the receiver can
- * verify the result independently of individual frame delivery.
- */
+/** Frames for a whole upload: BEGIN, body, END. BEGIN/END carry line count and program CRC. */
 export function encodeProgram(text: string, startSeq = 0): Uint8Array[] {
     const normalised = normaliseProgram(text)
     const lines = normalised.length ? normalised.split('\n').slice(0, -1) : []
@@ -491,13 +406,7 @@ export function frameText(frame: Frame): string {
     return decoder.decode(frame.payload)
 }
 
-/**
- * Pulls frames from a stream that may be missing pieces.
- *
- * `feed` returns the frames it recovered and how many were damaged. Damage is
- * reported rather than swallowed: "we lost something" is the signal the old
- * protocol never had.
- */
+/** Pulls frames from a lossy stream. `feed` reports damaged frames rather than swallowing them. */
 export class FrameReader {
     private buffer: Uint8Array = new Uint8Array(0)
 
@@ -559,8 +468,7 @@ export class FrameReader {
 
             const total = HEADER_LENGTH + length + 1
             if (this.buffer.length < total) {
-                // Still arriving, or truncated by a lost packet. A later SOH
-                // proves the latter, since payloads cannot contain one.
+                // A later SOH proves truncation, since payloads cannot contain one.
                 if (this.buffer.subarray(1).indexOf(SOH) !== -1) {
                     damage += 1
                     this.resync()
@@ -590,7 +498,6 @@ export class FrameReader {
         return { frames, damage }
     }
 
-    /** Skip this sentinel, hunt for the next. */
     private resync(): void {
         const next = this.buffer.subarray(1).indexOf(SOH)
         this.buffer =
@@ -624,12 +531,7 @@ export function sequenceDistance(later: number, earlier: number): number {
     )
 }
 
-/**
- * Credit window with go-back-N retransmission.
- *
- * Mirrors CreditWindow in src/protocol.py so both implementations can be tested
- * against the same expectations.
- */
+/** Credit window with go-back-N retransmission. Mirrors CreditWindow in src/protocol.py. */
 export class CreditWindow {
     private base = 0
     private nextIndex = 0
@@ -704,7 +606,7 @@ export class CreditWindow {
         return false
     }
 
-    /** Resend from the oldest unacknowledged frame. The timeout path. */
+    /** Resend from the oldest unacknowledged frame; the timeout path. */
     rewindToBase(): void {
         if (this.nextIndex > this.base) {
             this.nextIndex = this.base

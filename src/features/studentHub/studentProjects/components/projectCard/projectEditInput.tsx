@@ -87,11 +87,8 @@ export default function ProjectEditInput({
                 )}
             </div>
             <Button
-                // Prevent the button from stealing focus on press: in WebKit
-                // (Safari / the iOS WKWebView) a mouse/touch press on a button
-                // doesn't focus it, so the input would blur with a null
-                // relatedTarget and handleBlur would cancel the edit before
-                // this onClick (save) could fire.
+                // WebKit doesn't focus a button on press, so the input would blur with a
+                // null relatedTarget and handleBlur would cancel the edit before this fires.
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={(e) => {
                     e.preventDefault()

@@ -4,15 +4,7 @@ import type {
     StripeCheckoutRemovePromotionCodeResult,
 } from '@stripe/stripe-js'
 
-/**
- * Voucher entry, handed to Stripe.
- *
- * Nothing here works out what a code is worth. Apply hands the code to the
- * Checkout Session and Stripe re-prices the order; the summary above then shows
- * whatever came back. The previous version resolved coupons and computed the
- * discount by hand, which meant the figure on screen and the figure charged
- * were two separate calculations that could disagree.
- */
+/** Voucher entry. The code goes to the Checkout Session and Stripe re-prices the order. */
 export default function CheckoutVoucher({
     applyPromotionCode,
     removePromotionCode,

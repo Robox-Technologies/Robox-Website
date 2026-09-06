@@ -37,12 +37,7 @@ import FlashProgress from './flashProgress.astro';
 
     const FIRMWARE_URL = "/latest.uf2";
 
-    /**
-     * The File System Access API gives no write-progress event, so this
-     * writes the firmware in slices instead of one `write()` call — each
-     * chunk is a real, awaited transfer to the drive, so the percentage
-     * reflects actual bytes sent rather than a simulated timer.
-     */
+    /** Written in slices because the File System Access API has no write-progress event. */
     const WRITE_CHUNK_SIZE = 64 * 1024;
 
     async function writeWithProgress(
@@ -58,13 +53,7 @@ import FlashProgress from './flashProgress.astro';
         }
     }
 
-    /**
-     * DOMException names seen from a successful flash: the Ro/Box reboots
-     * itself the instant the UF2 finishes writing, and the exact moment the
-     * drive vanishes out from under the write determines which one comes
-     * back (an abort from Chrome's post-write scan, or the file/directory
-     * simply no longer being found) - not which of them fired.
-     */
+    /** DOMException names a *successful* flash throws, as the Ro/Box reboots out from under the write. */
     const EXPECTED_RESTART_ERRORS = ["AbortError", "NotFoundError"];
 
     async function isRoboxDrive(directory: FileSystemDirectoryHandle): Promise<boolean> {
@@ -75,30 +64,22 @@ import FlashProgress from './flashProgress.astro';
         return false;
     }
 
-    // Astro only includes this script once no matter how many instances
-    // render, so wire up every instance found rather than assuming there's a
-    // single one.
+    // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".selectDrive").forEach((root) => {
         const button = root.querySelector<HTMLButtonElement>("#flash-select-drive");
         const backButton = root.querySelector<HTMLButtonElement>("#flash-back-to-bootloader");
         const buttonsGroup = root.querySelector<HTMLDivElement>(".selectDriveButtons");
         if (!button || !backButton || !buttonsGroup) throw new Error("Select drive elements not found");
 
-        // The "Go Back" escape hatch is disabled mid-write too: leaving this
-        // stage doesn't cancel the in-flight write, so re-enabling it while
-        // busy would let a student bail out and immediately retrigger a
-        // second write against the same drive.
+        // "Go Back" is disabled mid-write: leaving doesn't cancel it, so a second write
+        // could be started against the same drive.
         function setFlowBusy(busy: boolean) {
             setButtonBusy(button!, busy);
             backButton!.disabled = busy;
         }
 
-        // The progress bar replaces the buttons rather than sitting next to
-        // a disabled one — there's nothing left to click once the write has
-        // actually started. `invisible`, not `hidden`: the buttons group
-        // stays in the grid's layout flow so its height keeps pinning the
-        // card at its taller size instead of shrinking around the much
-        // shorter progress bar stacked in the same cell.
+        // `invisible`, not `hidden`: the buttons stay in flow so their height keeps the
+        // card from shrinking around the shorter progress bar.
         function enterWriting() {
             buttonsGroup!.classList.add("invisible");
             showFlashProgress(root);
@@ -158,9 +139,7 @@ import FlashProgress from './flashProgress.astro';
                 await writeWithProgress(writable, firmware, (percent) => setFlashProgress(root, percent));
                 await writable.close();
             } catch (error) {
-                // Confirmed against real hardware: this is what a
-                // *successful* flash looks like, even though these read
-                // like rejections rather than the drive having vanished.
+                // These read like rejections, but on real hardware they mean the flash worked.
                 console.log(error)
                 if (error instanceof DOMException && EXPECTED_RESTART_ERRORS.includes(error.name)) {
                     setFlashProgress(root, 100);

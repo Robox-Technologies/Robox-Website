@@ -1,9 +1,4 @@
-/**
- * Payload CMS client, ported from the original's CMS.ts.
- *
- * The CMS is optional infrastructure: if it isn't running, every getter returns
- * empty and the build still succeeds with the affected sections simply empty.
- */
+/** Payload CMS client. The CMS is optional — every getter returns empty when it's unreachable. */
 
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:3333'
 
@@ -76,25 +71,15 @@ async function getJson<T>(path: string): Promise<T | null> {
     }
 }
 
-/**
- * At `depth=1` Payload populates upload relationships into full documents. A
- * ref left as a bare id string means the id no longer exists in `media`/`files`
- * — run `scripts/repair-cms-upload-refs.mjs` if that starts happening again.
- */
+/** A bare id here means the upload no longer exists — see `scripts/repair-cms-upload-refs.mjs`. */
 function resolveUpload(ref: UploadRef): string | null {
     if (!ref || typeof ref === 'string') return null
     return absolute(ref.url)
 }
 
-/**
- * Published content, ordered the way the original did: favourites first, then
- * newest.
- */
+/** Published content, favourites first then newest. */
 export async function getCMSContent(): Promise<CMSItem[]> {
-    // `depth=1` is load-bearing: it's what populates the `thumbnail`/`File`
-    // relationships *and* the `upload` nodes inside article richtext into full
-    // documents. At depth=0 all of those are bare ids, and the article body
-    // images silently render as nothing.
+    // `depth=1` is load-bearing: it populates thumbnails and richtext upload nodes.
     const data = await getJson<{ docs: RawContentItem[] }>(
         '/api/content?pagination=false&depth=1',
     )
@@ -127,23 +112,15 @@ export async function getCMSContent(): Promise<CMSItem[]> {
         })
 }
 
-/**
- * A CMS-managed short link: /api/redirect/<slug> lands on the uploaded file the
- * editors pointed the slug at, so printed URLs stay valid when the file behind
- * them is replaced.
- */
+/** A CMS-managed short link, so printed URLs survive the file behind them being replaced. */
 type RawRedirect = {
     slug: string
     destination: UploadRef
 }
 
-/**
- * Resolves a redirect slug to the absolute URL of its destination file, or null
- * when the slug is unknown (or the CMS is unreachable).
- */
+/** Resolves a redirect slug to its destination file URL, or null if unknown or unreachable. */
 export async function getCMSRedirect(slug: string): Promise<string | null> {
-    // `depth=1` is what turns `destination` from a bare id into the file
-    // document that actually carries the `url`.
+    // `depth=1` turns `destination` from a bare id into the document carrying the `url`.
     const data = await getJson<{ docs: RawRedirect[] }>(
         `/api/redirects?where[slug][equals]=${encodeURIComponent(slug)}&depth=1&limit=1`,
     )
@@ -160,10 +137,7 @@ export async function getCMSContentFor(
     return content.filter((item) => item.location === location)
 }
 
-/**
- * Where a card should point: articles get a generated page, resources link
- * straight at their download.
- */
+/** Where a card points: articles to a generated page, resources straight to the download. */
 export function itemHref(item: CMSItem): string | null {
     return item.type === 'article' ? `/articles/${item.slug}` : item.fileUrl
 }

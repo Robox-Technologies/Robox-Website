@@ -208,9 +208,8 @@ const socials = [
         showFailure('no checkout session id in the URL')
     } else {
         void (async () => {
-            // The status is read on the server: the session id is not a secret,
-            // but the secret key needed to resolve it is, and the customer's
-            // email only comes back if their checkout cookie owns this order.
+            // Read on the server, and the email only comes back if the checkout cookie
+            // owns this order.
             for (let attempt = 0; attempt < MAX_POLLS; attempt++) {
                 const result = await actions.getCheckoutStatus({ sessionId })
 

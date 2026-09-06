@@ -54,9 +54,7 @@ export default function Dialog({
                         onClick={handleClick}
                         className={twMerge(
                             'fixed open:flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50',
-                            // Full-bleed on a phone put the rounded
-                            // corners off-screen and left the contents no room
-                            // to breathe; keep a margin at every width.
+                            // A margin at every width: full-bleed puts the rounded corners off-screen.
                             'w-[calc(100%-2rem)] max-w-lg',
                             'rounded-lg shadow-lg bg-white',
                             'open:zoom-in-95 open:duration-200',
@@ -124,12 +122,8 @@ export function DialogBody({
     return (
         <div
             className={twMerge(
-                // `flex-auto`, not `flex-1`: the dialog sizes itself with
-                // `height: fit-content`, and WebKit (the iPad's WKWebView)
-                // treats a `flex-basis: 0` child as contributing nothing to a
-                // fit-content main size — the body collapsed to its padding and
-                // the dialog rendered as a flattened strip. A content-based
-                // basis still grows to fill a taller dialog.
+                // `flex-auto`, not `flex-1`: WebKit gives a `flex-basis: 0` child no
+                // contribution to a `fit-content` main size, flattening the dialog.
                 'relative gap-4 flex-auto overflow-auto',
                 className,
             )}

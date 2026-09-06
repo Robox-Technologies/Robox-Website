@@ -35,9 +35,7 @@ export default function ProductCard({
             }
         >
             <div className="flex justify-center px-4">
-                {/* A <span>, not a <button>: the card is the link, and nesting a
-                    control inside it would both be invalid markup and shrink the
-                    tappable area back to this pill. */}
+                {/* A <span>, not a <button>: the card is the link, so nesting a control is invalid. */}
                 <span className="card-cta px-4 py-2 bg-red text-white text-center w-full rounded-full">
                     View Product
                 </span>

@@ -1,43 +1,19 @@
 import type { Stripe } from 'stripe'
 
-/**
- * How postage is identified once it's a line item rather than a shipping rate.
- *
- * Shared by the client summary and the server, and imported by both - so it
- * carries no server-only dependencies.
- */
+/** How postage is identified as a line item. Imported by client and server, so no server-only deps. */
 
 /**
- * Product name, and therefore the line item's display name.
- *
- * Load-bearing, not cosmetic: the client-side Checkout object exposes a line's
- * `id`, `name` and amounts but no price or product, so the browser summary has
- * nothing but this name to tell postage apart from something ordered. Renaming
- * the Stripe Product in the dashboard would break it silently - postage would
- * fold into the subtotal and the shipping row would read as free - so
- * `resolveShippingProductId` reconciles the name back to this on every lookup
- * rather than trusting whatever is in the dashboard.
+ * The line item's display name. Load-bearing: it's all the browser summary has to tell
+ * postage apart, so `resolveShippingProductId` reconciles the Stripe Product back to it.
  */
 export const SHIPPING_LINE_ITEM_NAME = 'Shipping'
 
-/**
- * Marks the Stripe Product that postage is billed through, so the catalog can
- * leave it out of the shop and the receipt can tell it apart from a real
- * product.
- */
+/** Marks the Stripe Product postage is billed through, so the catalog can leave it out. */
 export const SHIPPING_PRODUCT_MARKER = { key: 'robox', value: 'shipping' }
 
 /**
- * Whether a Checkout line is the postage line rather than something ordered.
- *
- * Matched on the product's marker metadata rather than on the display name, so
- * renaming the product cannot quietly turn postage back into an item.
- *
- * That reading needs `line_items.data.price.product` expanded. When it isn't,
- * `product` is a bare id and the id is all there is to go on - hence
- * `shippingProductId`, which callers that can resolve it should pass. Without
- * either, postage is indistinguishable from a product and this says so by
- * returning false rather than guessing.
+ * Whether a Checkout line is postage, matched on the product's marker metadata.
+ * Needs `line_items.data.price.product` expanded, or `shippingProductId` passed.
  */
 export function isShippingLine(
     line: Stripe.LineItem,
@@ -58,15 +34,8 @@ export function isShippingLine(
 }
 
 /**
- * Whether a line's display name is the postage line's.
- *
- * The browser's fallback for `isShippingLine`, which it cannot use: the
- * client-side session carries no product, so there is no marker metadata to
- * read. Safe only because the name is enforced rather than assumed - see
- * `SHIPPING_LINE_ITEM_NAME`.
- *
- * Server code should prefer `isShippingLine`, which does not depend on the name
- * at all.
+ * The browser's fallback for `isShippingLine`, matching on name because the client
+ * session carries no product. Server code should use `isShippingLine`.
  */
 export function isShippingLineName(name: string | null | undefined): boolean {
     return name === SHIPPING_LINE_ITEM_NAME

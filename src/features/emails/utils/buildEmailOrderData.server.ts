@@ -20,30 +20,15 @@ export interface EmailOrderData {
     total: string
     address: string
     billing: string
-    /**
-     * How the order was packed, read back off the PaymentIntent metadata the
-     * checkout wrote. Null for an order that carries none - one placed before
-     * the metadata existed, or one whose shipment could not be planned.
-     *
-     * Only the internal email shows this; the customer has no use for it.
-     */
+    /** How the order was packed, from the PaymentIntent metadata. Internal email only. */
     packing: PackingSummary | null
-    /**
-     * Whether the payment was taken in Stripe's sandbox, i.e. from localhost or
-     * the dev site. The internal email says so in its subject so a test order
-     * is never mistaken for one to pack.
-     */
+    /** Whether the payment was taken in Stripe's sandbox; the internal subject says so. */
     testMode: boolean
 }
 
 /**
- * The packing plan the checkout recorded on the PaymentIntent, in the shape the
- * internal email renders.
- *
- * The metadata is the only surviving record of it - the shipment is planned
- * when the session is created and stored nowhere else - so this reads it back
- * rather than re-planning from the cart, which could land on a different answer
- * than the postage was quoted on.
+ * The packing plan recorded on the PaymentIntent. Read back rather than re-planned,
+ * since the metadata is the only record of what the postage was quoted on.
  */
 function toPackingSummary(
     metadata: Stripe.Metadata | null | undefined,
@@ -64,16 +49,8 @@ function toPackingSummary(
 
 /**
  * Turns a completed Checkout Session into the strings the order emails render.
- *
- * Everything comes off the session, which is the same object the customer's
- * summary was drawn from - so the receipt cannot disagree with what they saw.
- * That replaces reading amounts out of PaymentIntent metadata and re-resolving
- * product names against the catalog: `line_items` already carries the name and
- * the charged amount for each line, in the currency the order was presented in.
- *
- * Amounts are formatted with the session's own currency rather than assumed to
- * be AUD, so a receipt for a converted order reads in the currency the customer
- * actually paid.
+ * Everything comes off the session, in its own currency, so the receipt can't
+ * disagree with the summary the customer saw.
  */
 export async function buildEmailOrderData(
     session: Stripe.Checkout.Session,
@@ -95,17 +72,12 @@ export async function buildEmailOrderData(
             ? session.payment_intent
             : session.payment_intent?.id
 
-    // Postage rides in as a line item so the wallets don't ask for an address
-    // (see `createCheckoutSession`), which means it has to be told apart from
-    // the things the customer actually ordered.
+    // Postage rides in as a line item (see `createCheckoutSession`), so it has to be
+    // told apart from what the customer ordered.
     const lines = session.line_items?.data ?? []
 
-    // `isShippingLine` reads the product's marker metadata, which is only there
-    // when the caller expanded `line_items.data.price.product`. Resolving the
-    // id as well means a session loaded without that expansion still tells
-    // postage apart - getting this wrong is silent and looked like a real
-    // order: postage billed as an item called "Shipping", and the shipping row
-    // itself charging nothing.
+    // `isShippingLine` needs `line_items.data.price.product` expanded; resolving the id
+    // as well covers a session loaded without it.
     const shippingProductId = lines.some(
         (line) => typeof line.price?.product === 'string',
     )
@@ -124,10 +96,8 @@ export async function buildEmailOrderData(
             // price nickname, so it is what the customer saw in their summary.
             name: line.description ?? 'Item',
             quantity: line.quantity ?? 1,
-            // `amount_subtotal`, not `amount_total`: Stripe spreads a discount
-            // across every line, so totals here would show the reduction a
-            // second time alongside the discount row and the figures would not
-            // add up.
+            // `amount_subtotal`: Stripe spreads a discount across lines, which would
+            // double-count it against the discount row.
             subtotal: money(line.amount_subtotal),
         }))
 
@@ -135,9 +105,7 @@ export async function buildEmailOrderData(
     // the row when one actually applied.
     const discountMinor = session.total_details?.amount_discount ?? 0
 
-    // The service the customer chose. Recorded on the intent when the session
-    // was created, since the postage line item carries only an amount - the
-    // summary falls back to a plain "Shipping" without it.
+    // Recorded on the intent at session creation; the postage line item carries only an amount.
     const intent =
         typeof session.payment_intent === 'string'
             ? null
@@ -154,14 +122,10 @@ export async function buildEmailOrderData(
         to: session.customer_details?.email ?? '',
         name: name || 'Customer',
         date,
-        // The PaymentIntent id is what shows against the payment in Stripe and
-        // on the customer's bank statement; the session id means nothing to
-        // them. Falls back to the session for an order that never got that far.
+        // The PaymentIntent id is what shows on the bank statement; the session id doesn't.
         orderId: paymentIntentId ?? session.id,
         items,
-        // Falls back to `shipping_cost` for orders placed before postage
-        // became a line item, so re-sending an old receipt still shows what was
-        // charged rather than zero.
+        // `shipping_cost` covers orders placed before postage became a line item.
         shipping: money(
             postageLine?.amount_subtotal ??
                 session.shipping_cost?.amount_subtotal ??
@@ -173,9 +137,7 @@ export async function buildEmailOrderData(
         address,
         billing,
         packing: toPackingSummary(intent?.metadata),
-        // `livemode` is Stripe's own word for which set of keys took the
-        // payment, so this cannot drift from whichever environment actually
-        // charged the card - unlike inferring it from a hostname or an env var.
+        // `livemode` is which set of keys took the payment, so it can't drift from a hostname.
         testMode: !session.livemode,
     }
 }

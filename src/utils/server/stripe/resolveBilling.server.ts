@@ -48,16 +48,9 @@ async function resolvePaymentMethod(
 }
 
 /**
- * Pulls the customer name, delivery address and payment-method details off a
- * Checkout Session for the order emails.
- *
- * The delivery address comes from the PaymentIntent's `shipping`, which the
- * checkout sets from the address collected on its first step. That is the
- * authoritative copy: the session itself never collects an address, because
- * doing so would let a wallet supply one and bypass the postage quote.
- *
- * The payment-method summary needs the intent too, so both are read from the
- * one expanded session where possible and fetched only if they weren't.
+ * Customer name, delivery address and payment-method details for the order emails. The
+ * address comes from the PaymentIntent's `shipping`, which is the authoritative copy —
+ * the session never collects one.
  */
 export async function resolveBilling(
     session: Stripe.Checkout.Session,

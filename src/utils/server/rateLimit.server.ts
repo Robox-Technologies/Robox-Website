@@ -1,25 +1,14 @@
 import { ActionError, type ActionAPIContext } from 'astro:actions'
 
 /**
- * Fixed-window rate limiting for the checkout actions.
- *
- * Every action under `src/actions` is reachable unauthenticated at
- * `/_actions/<name>`, and each one does upstream work on metered APIs (Stripe,
- * and AusPost for anything that quotes shipping). The limits here are set well
- * above what a customer working through the checkout produces — the address is
- * only quoted once Stripe reports it `complete`, not per keystroke — so they
- * bite on scripted abuse rather than on real use.
- *
- * In-process, same as `cache.server.ts`: one standalone Node server, one set of
- * counters. A second instance would double every limit.
+ * Fixed-window rate limiting for the checkout actions, which are reachable
+ * unauthenticated at `/_actions/*` and all do metered upstream work. Limits sit well
+ * above real use. In-process, so a second instance would double every limit.
  */
 
 const DEFAULT_WINDOW_MS = 60_000
 
-/**
- * Ceiling on tracked clients, so the Map can't be grown without bound by traffic
- * that arrives from many addresses.
- */
+/** Ceiling on tracked clients, so many addresses can't grow the Map without bound. */
 const MAX_TRACKED_CLIENTS = 5_000
 
 type Window = {
@@ -89,14 +78,8 @@ function consume(
 }
 
 /**
- * Who to count a request against.
- *
- * `clientAddress` is the socket peer unless the request arrived with
- * `x-forwarded-for`, which Astro only trusts once the request's host matches
- * `security.allowedDomains` (see astro.config.ts). Behind a proxy that passes an
- * inbound XFF through instead of overwriting it, a caller can rotate that header
- * for a fresh bucket — so the proxy has to set it, which is the same assumption
- * the framework already makes.
+ * Who to count a request against. Astro only trusts `x-forwarded-for` for hosts in
+ * `security.allowedDomains`, so the proxy has to set it rather than pass one through.
  */
 function clientKey(context: ActionAPIContext): string {
     try {
