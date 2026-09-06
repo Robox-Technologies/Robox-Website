@@ -13,8 +13,7 @@ const CALIBRATION_TIMEOUT_MS = 6000
 
 export interface SwatchButton {
     name: PaletteColorName
-    calibrateButton: HTMLButtonElement
-    resetButton: HTMLButtonElement
+    toggleButton: HTMLButtonElement
     check: HTMLElement
     spinner: HTMLElement
 }
@@ -29,7 +28,7 @@ export interface ColorCalibrationOptions {
     previewRgb: HTMLElement
 }
 
-/** Wires up the calibrate stage: a calibrate/reset pair per colour, each independent. */
+/** Wires up the calibrate stage: one toggle per colour, calibrating or resetting depending on its current state. */
 export function wireColorCalibration(options: ColorCalibrationOptions): void {
     const { root, disconnectedButton, swatchGrid, swatches, previewSwatch, previewName, previewRgb } = options
 
@@ -48,16 +47,14 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
     }
 
     function setSwatchBusy(swatch: SwatchButton, busy: boolean) {
-        swatch.calibrateButton.disabled = busy
-        swatch.resetButton.disabled = busy
+        swatch.toggleButton.disabled = busy
         swatch.spinner.classList.toggle('hidden!', !busy)
         if (busy) swatch.check.classList.add('hidden!')
     }
 
     function setInteractive(enabled: boolean) {
         for (const swatch of swatches) {
-            swatch.calibrateButton.disabled = !enabled
-            swatch.resetButton.disabled = !enabled
+            swatch.toggleButton.disabled = !enabled
         }
     }
 
@@ -113,7 +110,12 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         finish(() => {
             dispatchCalibrationClearError(root)
             if (!swatch) return
-            swatch.check.classList.toggle('hidden!', action !== 'calibrate')
+            const calibrated = action === 'calibrate'
+            swatch.check.classList.toggle('hidden!', !calibrated)
+            swatch.toggleButton.setAttribute('aria-checked', String(calibrated))
+            swatch.toggleButton.title = calibrated
+                ? `Reset ${swatch.name} to default`
+                : `Calibrate ${swatch.name}`
         })
     })
 
@@ -147,22 +149,23 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
     }
 
     for (const swatch of swatches) {
-        swatch.calibrateButton.addEventListener('click', () => {
-            sendRequest(
-                swatch,
-                'calibrate',
-                () => pico.colorCalibrate(swatch.name),
-                `The Ro/Box didn't respond to the ${swatch.name} calibration request. Check that it's connected, then try again.`,
-            )
-        })
-
-        swatch.resetButton.addEventListener('click', () => {
-            sendRequest(
-                swatch,
-                'reset',
-                () => pico.colorResetColor(swatch.name),
-                `The Ro/Box didn't respond to the request to reset ${swatch.name}. Check that it's connected, then try again.`,
-            )
+        swatch.toggleButton.addEventListener('click', () => {
+            const isCalibrated = swatch.toggleButton.getAttribute('aria-checked') === 'true'
+            if (isCalibrated) {
+                sendRequest(
+                    swatch,
+                    'reset',
+                    () => pico.colorResetColor(swatch.name),
+                    `The Ro/Box didn't respond to the request to reset ${swatch.name}. Check that it's connected, then try again.`,
+                )
+            } else {
+                sendRequest(
+                    swatch,
+                    'calibrate',
+                    () => pico.colorCalibrate(swatch.name),
+                    `The Ro/Box didn't respond to the ${swatch.name} calibration request. Check that it's connected, then try again.`,
+                )
+            }
         })
     }
 
