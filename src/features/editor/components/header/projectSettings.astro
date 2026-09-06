@@ -41,10 +41,12 @@ import Button from "@/components/button"
                 Update Firmware
             </Button>
             <Button
+                type="button"
+                id="project-export-button"
                 className="text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
             >
                 <FontAwesomeIcon className="text-green" icon={faDownload} />
-                Download Project
+                Export Project
             </Button>
         </div>
     </dialog>
@@ -101,4 +103,16 @@ import Button from "@/components/button"
             }
         })
     }
+</script>
+
+<script type="module">
+    import { exportProject, getProjectIdFromURL } from '@/utils/serialization'
+
+    const exportButton = document.getElementById('project-export-button')
+
+    exportButton?.addEventListener('click', () => {
+        const projectId = getProjectIdFromURL()
+        if (!projectId) return
+        void exportProject(projectId)
+    })
 </script>

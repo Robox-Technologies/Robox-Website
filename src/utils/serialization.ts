@@ -119,18 +119,30 @@ export async function importProject(payload: unknown): Promise<string | null> {
         return null
     }
     const incoming = payload as Record<string, unknown>
-    if (typeof incoming.name !== 'string' || !('workspace' in incoming)) {
+    if (typeof incoming.name !== 'string') {
         return null
     }
 
-    // Only the block editor's .robox format is importable today.
-    const project = generateEmptyProject('block')
+    // Python exports carry `code`, not `workspace`; anything else is treated
+    // as a block export, which must have a `workspace` key (even if null).
+    const type: ProjectType = incoming.type === 'python' ? 'python' : 'block'
+    if (type === 'python') {
+        if (typeof incoming.code !== 'string') return null
+    } else if (!('workspace' in incoming)) {
+        return null
+    }
+
+    const project = generateEmptyProject(type)
     project.name = incoming.name
     project.time = dayjs()
-    project.workspace =
-        incoming.workspace && typeof incoming.workspace === 'object'
-            ? (incoming.workspace as Record<string, unknown>)
-            : null
+    if (type === 'python') {
+        project.code = incoming.code as string
+    } else {
+        project.workspace =
+            incoming.workspace && typeof incoming.workspace === 'object'
+                ? (incoming.workspace as Record<string, unknown>)
+                : null
+    }
     // Thumbnails are data URLs rendered straight into an <img src>.
     project.thumbnail =
         typeof incoming.thumbnail === 'string' && incoming.thumbnail
@@ -186,6 +198,43 @@ export async function getProject(id: string): Promise<UserProject | null> {
     const row = res.values?.[0]
     return row ? parseProject(row.id, row.data) : null
 }
+/** Downloads a project as a `.robox` file (JSON), named after the project. */
+export async function exportProject(id: string): Promise<boolean> {
+    if (typeof window === 'undefined') return false
+    const project = await getProject(id)
+    if (!project) return false
+
+    const payload = {
+        name: project.name,
+        type: project.type,
+        workspace: project.workspace,
+        code: project.code,
+        thumbnail: project.thumbnail,
+        extensions: project.extensions,
+        sensors: project.sensors,
+    }
+    const blob = new Blob([JSON.stringify(payload)], {
+        type: 'application/json',
+    })
+    const url = URL.createObjectURL(blob)
+    try {
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${sanitizeFileName(project.name)}.robox`
+        link.click()
+    } finally {
+        URL.revokeObjectURL(url)
+    }
+    return true
+}
+
+// A `download` filename isn't a path, but stray slashes/control characters
+// would still make for a confusing save-as suggestion.
+function sanitizeFileName(name: string): string {
+    const cleaned = name.replace(/[\\/:*?"<>| -]/g, '_').trim()
+    return cleaned || 'project'
+}
+
 export async function renameProject(
     id: string,
     newName: string,
