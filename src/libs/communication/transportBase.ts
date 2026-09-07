@@ -209,7 +209,6 @@ export abstract class BaseTransport implements Communication {
         // console.log(chunk)
         if (this.destroyed) return
         if (!chunk) return
-
         this.buffer += chunk
 
         const lines = this.buffer.split('\n')

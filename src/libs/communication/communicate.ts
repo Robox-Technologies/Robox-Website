@@ -25,9 +25,10 @@ import {
     meetsMinimumVersion,
     parseFirmwareReply,
     reverseMotorCommand,
-    runMotorCommand,
     swapMotorsCommand,
+    TEST_DRIVE_COMMANDS,
     type CalibrationName,
+    type TestDriveDirection,
 } from './protocol'
 import type { PaletteColorName } from '@/data/colorPalette'
 import { uploadProgram } from './uploader'
@@ -483,14 +484,14 @@ export class Pico {
     }
 
     /**
-     * Test-drives one motor forward at a fixed speed, through the board's
-     * normal `Motors.run_motors` pipeline - so it reflects whatever
-     * bias/reverse/swap is currently set. A direct action like `restart()`
-     * or `bootloaderMode()`, not a calibration value: no reply, so no
-     * `calibrationCommandPending` guard either.
+     * Test-drives the whole robot at a fixed speed in one direction, through
+     * the board's normal `Motors.run_motors` pipeline - so it reflects
+     * whatever bias/reverse/swap is currently set. A direct action like
+     * `restart()` or `bootloaderMode()`, not a calibration value: no reply,
+     * so no `calibrationCommandPending` guard either.
      */
-    runMotor(index: 0 | 1): void {
-        void this.communication?.write(runMotorCommand(index))
+    testDrive(direction: TestDriveDirection): void {
+        void this.communication?.write(TEST_DRIVE_COMMANDS[direction])
     }
 
     /** Stops both motors. The board also calls this itself the instant a program starts, so a test-drive can never fight it for the pins. */

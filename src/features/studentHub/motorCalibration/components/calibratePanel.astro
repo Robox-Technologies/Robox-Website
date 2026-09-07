@@ -1,5 +1,5 @@
 ---
-import { faMicrochip, faPlay, faStop, faHouse } from "@fortawesome/free-solid-svg-icons"
+import { faMicrochip, faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faStop, faHouse } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
 import MotorToggle from "./motorToggle.astro"
@@ -47,21 +47,29 @@ import motorImage from "../images/Motor.png"
             <MotorToggle id="motor-calibrate-swap" label="Swap left/right motors" />
         </div>
 
-        <div class="flex w-full flex-col gap-2 border-t border-gray-200 pt-3">
-            <span class="text-sm font-semibold">Test motors</span>
-            <div class="flex w-full items-center gap-2">
+        <div class="flex w-full flex-col items-center gap-2 border-t border-gray-200 pt-3">
+            <span class="text-sm font-semibold">Test drive</span>
+            <div class="grid w-40 grid-cols-3 grid-rows-3 gap-2">
+                <button
+                    type="button"
+                    id="motor-calibrate-test-forward"
+                    class="button-interactive col-start-2 row-start-1 flex items-center justify-center rounded-xl bg-black px-3 py-2 text-white"
+                    aria-label="Drive forward"
+                >
+                    <FontAwesomeIcon icon={faArrowUp} />
+                </button>
                 <button
                     type="button"
                     id="motor-calibrate-test-left"
-                    class="button-interactive flex flex-1 items-center justify-center gap-2 rounded-xl bg-black px-3 py-2 text-sm text-white"
+                    class="button-interactive col-start-1 row-start-2 flex items-center justify-center rounded-xl bg-black px-3 py-2 text-white"
+                    aria-label="Pivot left"
                 >
-                    <FontAwesomeIcon icon={faPlay} />
-                    Left
+                    <FontAwesomeIcon icon={faArrowLeft} />
                 </button>
                 <button
                     type="button"
                     id="motor-calibrate-test-stop"
-                    class="button-interactive flex items-center justify-center rounded-xl bg-gray-500 px-3 py-2 text-sm text-white"
+                    class="button-interactive col-start-2 row-start-2 flex items-center justify-center rounded-xl bg-gray-500 px-3 py-2 text-white"
                     aria-label="Stop motors"
                 >
                     <FontAwesomeIcon icon={faStop} />
@@ -69,10 +77,18 @@ import motorImage from "../images/Motor.png"
                 <button
                     type="button"
                     id="motor-calibrate-test-right"
-                    class="button-interactive flex flex-1 items-center justify-center gap-2 rounded-xl bg-black px-3 py-2 text-sm text-white"
+                    class="button-interactive col-start-3 row-start-2 flex items-center justify-center rounded-xl bg-black px-3 py-2 text-white"
+                    aria-label="Pivot right"
                 >
-                    <FontAwesomeIcon icon={faPlay} />
-                    Right
+                    <FontAwesomeIcon icon={faArrowRight} />
+                </button>
+                <button
+                    type="button"
+                    id="motor-calibrate-test-backward"
+                    class="button-interactive col-start-2 row-start-3 flex items-center justify-center rounded-xl bg-black px-3 py-2 text-white"
+                    aria-label="Drive backward"
+                >
+                    <FontAwesomeIcon icon={faArrowDown} />
                 </button>
             </div>
         </div>
@@ -127,6 +143,8 @@ import motorImage from "../images/Motor.png"
         const reverseLeftToggle = root.querySelector<HTMLButtonElement>("#motor-calibrate-reverse-left");
         const reverseRightToggle = root.querySelector<HTMLButtonElement>("#motor-calibrate-reverse-right");
         const swapToggle = root.querySelector<HTMLButtonElement>("#motor-calibrate-swap");
+        const testForwardButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-forward");
+        const testBackwardButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-backward");
         const testLeftButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-left");
         const testRightButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-right");
         const testStopButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-stop");
@@ -140,6 +158,8 @@ import motorImage from "../images/Motor.png"
             !reverseLeftToggle ||
             !reverseRightToggle ||
             !swapToggle ||
+            !testForwardButton ||
+            !testBackwardButton ||
             !testLeftButton ||
             !testRightButton ||
             !testStopButton ||
@@ -157,6 +177,8 @@ import motorImage from "../images/Motor.png"
             reverseLeftToggle,
             reverseRightToggle,
             swapToggle,
+            testForwardButton,
+            testBackwardButton,
             testLeftButton,
             testRightButton,
             testStopButton,

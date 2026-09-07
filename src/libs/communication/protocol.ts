@@ -55,14 +55,20 @@ export function swapMotorsCommand(swapped: boolean): string {
 }
 
 /**
- * Builds the `run_motor_<index>` command that test-drives one motor forward
- * at a fixed speed through the board's normal `Motors.run_motors` pipeline,
- * so it reflects whatever bias/reverse/swap is currently set. Direct action
- * like `STOP_MOTORS`, not a calibration value - there's no reply to wait on.
+ * Test-drives the whole robot at a fixed speed through the board's normal
+ * `Motors.run_motors` pipeline, so it reflects whatever bias/reverse/swap is
+ * currently set. Direct action like `STOP_MOTORS`, not a calibration value -
+ * there's no reply to wait on. Replaced the old per-motor `run_motor_<index>`
+ * commands, which firmware no longer accepts.
  */
-export function runMotorCommand(index: 0 | 1): string {
-    return `run_motor_${index}`
-}
+export const TEST_DRIVE_COMMANDS = {
+    forward: 'move_forward',
+    backward: 'move_backward',
+    left: 'move_left',
+    right: 'move_right',
+} as const
+
+export type TestDriveDirection = keyof typeof TEST_DRIVE_COMMANDS
 
 /**
  * One argument-less COMMAND per gettable calibration value, replying with

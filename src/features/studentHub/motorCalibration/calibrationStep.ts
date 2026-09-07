@@ -13,6 +13,8 @@ export interface MotorCalibrationOptions {
     reverseLeftToggle: HTMLElement
     reverseRightToggle: HTMLElement
     swapToggle: HTMLElement
+    testForwardButton: HTMLButtonElement
+    testBackwardButton: HTMLButtonElement
     testLeftButton: HTMLButtonElement
     testRightButton: HTMLButtonElement
     testStopButton: HTMLButtonElement
@@ -38,6 +40,8 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         reverseLeftToggle,
         reverseRightToggle,
         swapToggle,
+        testForwardButton,
+        testBackwardButton,
         testLeftButton,
         testRightButton,
         testStopButton,
@@ -225,8 +229,12 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         pico.motorSwap(swapped)
     })
 
-    testLeftButton.addEventListener('click', () => pico.runMotor(0))
-    testRightButton.addEventListener('click', () => pico.runMotor(1))
+    testForwardButton.addEventListener('click', () => pico.testDrive('forward'))
+    testBackwardButton.addEventListener('click', () =>
+        pico.testDrive('backward'),
+    )
+    testLeftButton.addEventListener('click', () => pico.testDrive('left'))
+    testRightButton.addEventListener('click', () => pico.testDrive('right'))
     testStopButton.addEventListener('click', () => pico.stopMotors())
 
     resetButton.addEventListener('click', () => {
