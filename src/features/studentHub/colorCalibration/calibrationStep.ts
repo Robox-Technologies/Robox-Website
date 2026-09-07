@@ -1,4 +1,5 @@
 import { pico } from '@/libs/communication/communicate'
+import { toast } from '@/libs/ui/toast'
 import type { PaletteColorName } from '@/data/colorPalette'
 import type { ColorReading, PicoEventMap, PicoState } from 'src/types/communication'
 import { ConnectionStatus } from 'src/types/communication'
@@ -20,8 +21,6 @@ export interface SwatchButton {
 
 export interface ColorCalibrationOptions {
     root: HTMLElement
-    disconnectedButton: HTMLButtonElement
-    swatchGrid: HTMLElement
     swatches: SwatchButton[]
     previewSwatch: HTMLElement
     previewName: HTMLElement
@@ -30,7 +29,7 @@ export interface ColorCalibrationOptions {
 
 /** Wires up the calibrate stage: one toggle per colour, calibrating or resetting depending on its current state. */
 export function wireColorCalibration(options: ColorCalibrationOptions): void {
-    const { root, disconnectedButton, swatchGrid, swatches, previewSwatch, previewName, previewRgb } = options
+    const { root, swatches, previewSwatch, previewName, previewRgb } = options
 
     let waitingForResult = false
     let activeSwatch: SwatchButton | null = null
@@ -71,29 +70,51 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         after()
     }
 
-    // Reachable by URL or after a mid-stage disconnect, so check the connection here
-    // rather than trusting the Connect stage ran.
+    // Whether this stage has seen a real connection since it mounted - lets
+    // the disconnect handling below skip the "Ro/Box Disconnected" toast for
+    // the initial synchronous call (arriving here disconnected, e.g.
+    // straight off a URL, isn't a drop worth alarming anyone about).
+    let wasConnected = false
+
+    // A dropped connection here sends the student straight back to the
+    // Connect stage rather than degrading this one in place - with one
+    // request in flight per swatch and no way to act on a stale preview,
+    // there's nothing worth keeping this stage around for.
     function updateConnectionUI(state: PicoState) {
         const connected = state.connectionStatus === ConnectionStatus.CONNECTED
-        if (!connected && waitingForResult) {
-            // Nothing is going to answer a request sent to a Ro/Box that's
-            // no longer there.
-            finish(() => dispatchCalibrationClearError(root))
-        }
-        setInteractive(connected)
-        swatchGrid.classList.toggle('hidden', !connected)
-        disconnectedButton.classList.toggle('hidden', connected)
 
-        if (connected && !colorModeStarted) {
+        if (!connected) {
+            // Nothing is going to answer a request sent to a Ro/Box that's no longer there.
+            if (waitingForResult) finish(() => {})
+            colorModeStarted = false
+            if (wasConnected) {
+                toast.danger({
+                    title: 'Ro/Box Disconnected',
+                    message: 'Your Ro/Box lost its connection. Reconnect it, then calibrate again.',
+                    durationMs: 6000,
+                })
+            }
+            wasConnected = false
+            dispatchCalibrationAdvance(root, 'connect')
+            return
+        }
+
+        wasConnected = true
+        if (!colorModeStarted) {
             colorModeStarted = true
             pico.colorMode()
-        } else if (!connected) {
-            colorModeStarted = false
         }
     }
 
     pico.on('stateChange', updateConnectionUI)
-    updateConnectionUI(pico.getState())
+    // Deferred: this stage's script can run before the page's own
+    // `createStageFlow` script has registered its `advance` listener - both
+    // are separate module scripts that mount back to back, so redirecting
+    // synchronously here (e.g. landing on this stage via URL while
+    // disconnected) would dispatch into a listener that doesn't exist yet
+    // and silently go nowhere. A macrotask later, every script on the page
+    // has finished mounting.
+    setTimeout(() => updateConnectionUI(pico.getState()), 0)
 
     pico.on('color', (reading: ColorReading) => {
         previewSwatch.style.backgroundColor = `rgb(${reading.r}, ${reading.g}, ${reading.b})`
@@ -168,9 +189,4 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
             }
         })
     }
-
-    disconnectedButton.addEventListener('click', () => {
-        dispatchCalibrationClearError(root)
-        dispatchCalibrationAdvance(root, 'connect')
-    })
 }

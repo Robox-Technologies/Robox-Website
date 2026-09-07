@@ -1,6 +1,6 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlug, faSpinner, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faPlug, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/button';
 import CommunicationMethodToggle from '@/components/communicationMethodToggle.astro';
 
@@ -17,10 +17,6 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             Connect to Ro/Box
         </Button>
     </div>
-    <Button id="calibration-connect-back" className="bg-gray-500 self-start">
-        <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
-        Back
-    </Button>
 </div>
 <script>
     import { pico } from "@/libs/communication/communicate";
@@ -31,8 +27,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".calibrationConnect").forEach((root) => {
         const connectButton = root.querySelector<HTMLButtonElement>("#calibration-connect");
-        const backButton = root.querySelector<HTMLButtonElement>("#calibration-connect-back");
-        if (!connectButton || !backButton) throw new Error("Calibration connect elements not found");
+        if (!connectButton) throw new Error("Calibration connect elements not found");
 
         if (root.dataset.iosBuild === "true") {
             void pico.setCommunicationMethod("iOSBluetooth");
@@ -65,8 +60,6 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             setButtonBusy(connectButton!, connecting);
             // Nothing to connect to until the toggle (or the iOS branch) sets a method.
             if (!connecting) connectButton!.disabled = !state.communicationMethod;
-            // Leaving mid-attempt would abandon a connect in progress.
-            backButton!.disabled = connecting;
         }
 
         pico.on("stateChange", updateUI);
@@ -79,13 +72,6 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         connectButton.addEventListener("click", () => {
             dispatchCalibrationClearError(root);
             pico.request();
-        });
-
-        // This is the first stage, so "back" leaves the calibration flow
-        // entirely rather than returning to an earlier one.
-        backButton.addEventListener("click", () => {
-            if (window.history.length > 1) window.history.back();
-            else window.location.assign("../");
         });
     });
 </script>

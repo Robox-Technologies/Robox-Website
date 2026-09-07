@@ -1,16 +1,11 @@
 import { pico } from '@/libs/communication/communicate'
+import { toast } from '@/libs/ui/toast'
 import type { PicoState, MotorCalibration } from 'src/types/communication'
 import { ConnectionStatus } from 'src/types/communication'
-import {
-    dispatchCalibrationAdvance,
-    dispatchCalibrationClearError,
-} from './stage'
+import { dispatchCalibrationAdvance } from './stage'
 
 export interface MotorCalibrationOptions {
     root: HTMLElement
-    /** Everything the calibrate stage shows only while actually connected - hidden, not just disabled, when it isn't. */
-    controls: HTMLElement
-    disconnectedButton: HTMLButtonElement
     leftLine: HTMLElement
     rightLine: HTMLElement
     slider: HTMLInputElement
@@ -27,17 +22,15 @@ export interface MotorCalibrationOptions {
 /**
  * Wires up the single calibrate stage: the left/right bias slider, the
  * reverse and swap toggles, and the test-drive buttons, all against a live
- * connection - `updateConnectionUI` below hides the whole panel rather than
- * just disabling pieces of it the moment that connection drops, since a
- * dropped connection here (unlike colour calibration's independent
- * per-swatch requests) would otherwise leave a bias slider showing a value
- * nothing can act on.
+ * connection - a dropped connection here (unlike colour calibration's
+ * independent per-swatch requests) would otherwise leave a bias slider
+ * showing a value nothing can act on, so `updateConnectionUI` below sends
+ * the student straight back to the Connect stage instead of trying to
+ * degrade this one in place.
  */
 export function wireMotorCalibration(options: MotorCalibrationOptions): void {
     const {
         root,
-        controls,
-        disconnectedButton,
         leftLine,
         rightLine,
         slider,
@@ -145,22 +138,35 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
     // it. Reset on every disconnect so the next connection fetches fresh.
     let calibrationFetched = false
 
-    // Reachable either by URL (a reload or a bookmark landing straight on
-    // this stage) or by the Ro/Box dropping out mid-stage, not just by
-    // arriving here normally from a successful Connect stage - so this
-    // checks the connection itself rather than trusting it was already
-    // verified upstream.
+    // Whether this stage has seen a real connection since it mounted - lets
+    // the disconnect handling below skip the "Ro/Box Disconnected" message
+    // for the initial synchronous call (arriving here disconnected, e.g.
+    // straight off a URL, isn't a drop worth alarming anyone about).
+    let wasConnected = false
+
+    // A dropped connection here (unlike colour calibration's independent
+    // per-swatch requests) would leave a bias slider showing a value
+    // nothing can act on, so this sends the student straight back to the
+    // Connect stage rather than trying to degrade this one in place.
     function updateConnectionUI(state: PicoState) {
         const connected = state.connectionStatus === ConnectionStatus.CONNECTED
-        controls.classList.toggle('hidden', !connected)
-        disconnectedButton.classList.toggle('hidden', connected)
 
         if (!connected) {
             calibrationFetched = false
             stopFlowAnimation()
+            if (wasConnected) {
+                toast.danger({
+                    title: 'Ro/Box Disconnected',
+                    message: 'Your Ro/Box lost its connection. Reconnect it, then calibrate again.',
+                    durationMs: 6000,
+                })
+            }
+            wasConnected = false
+            dispatchCalibrationAdvance(root, 'connect')
             return
         }
 
+        wasConnected = true
         startFlowAnimation()
 
         // Fetched as soon as the board connects, in the background, rather
@@ -175,7 +181,14 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
     }
 
     pico.on('stateChange', updateConnectionUI)
-    updateConnectionUI(pico.getState())
+    // Deferred: this stage's script can run before the page's own
+    // `createStageFlow` script has registered its `advance` listener - both
+    // are separate module scripts that mount back to back, so redirecting
+    // synchronously here (e.g. landing on this stage via URL while
+    // disconnected) would dispatch into a listener that doesn't exist yet
+    // and silently go nowhere. A macrotask later, every script on the page
+    // has finished mounting.
+    setTimeout(() => updateConnectionUI(pico.getState()), 0)
     updateDiagram(Number(slider.value))
 
     // The board's answer to getCalibration("motors") above - display only,
@@ -244,16 +257,11 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         pico.stopMotors()
     })
 
-    disconnectedButton.addEventListener('click', () => {
-        dispatchCalibrationClearError(root)
-        dispatchCalibrationAdvance(root, 'connect')
-    })
-
     // Unlike the old in-editor modal, leaving this page tears down the
     // whole connection - but not whatever motor was test-driven, since
     // that's driven by the board's own firmware, not by this tab staying
     // open. Best-effort: covers the back button, closing the tab, and
-    // typing a new URL, not just the in-page "Back to Editor" click.
+    // typing a new URL.
     window.addEventListener('pagehide', () => {
         pico.stopMotors()
     })

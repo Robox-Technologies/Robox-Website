@@ -1,6 +1,6 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faPlugCircleXmark, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { faSpinner, faCircleCheck, faHouse } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/button';
 import { COLOR_PALETTE, CALIBRATION_ORDER } from '@/data/colorPalette';
 
@@ -50,12 +50,11 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
     </div>
 
     <div class="flex flex-wrap gap-4">
-        <Button id="calibration-back" className="bg-green">Back to Editor</Button>
+        <Button href="/hub" className="bg-black">
+            <FontAwesomeIcon icon={faHouse} className="mr-2" />
+            Return to Student Hub
+        </Button>
     </div>
-    <Button id="calibration-disconnected" className="bg-gray-500 self-start hidden">
-        <FontAwesomeIcon icon={faPlugCircleXmark} className="mr-2" />
-        Ro/Box Not Connected — Back to Connect
-    </Button>
 </div>
 <script>
     import type { PaletteColorName } from "@/data/colorPalette";
@@ -64,12 +63,10 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
     // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".calibrationPalette").forEach((root) => {
         const swatchGrid = root.querySelector<HTMLDivElement>(".calibrationSwatchGrid");
-        const backButton = root.querySelector<HTMLButtonElement>("#calibration-back");
-        const disconnectedButton = root.querySelector<HTMLButtonElement>("#calibration-disconnected");
         const previewSwatch = root.querySelector<HTMLDivElement>(".calibrationPreviewSwatch");
         const previewName = root.querySelector<HTMLSpanElement>(".calibrationPreviewName");
         const previewRgb = root.querySelector<HTMLParagraphElement>(".calibrationPreviewRgb");
-        if (!swatchGrid || !backButton || !disconnectedButton || !previewSwatch || !previewName || !previewRgb) {
+        if (!swatchGrid || !previewSwatch || !previewName || !previewRgb) {
             throw new Error("Calibrate palette stage elements not found");
         }
 
@@ -88,18 +85,10 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
 
         wireColorCalibration({
             root,
-            disconnectedButton,
-            swatchGrid,
             swatches,
             previewSwatch,
             previewName,
             previewRgb,
-        });
-
-        // Always reached from somewhere in the hub, so back returns there directly.
-        backButton.addEventListener("click", () => {
-            if (window.history.length > 1) window.history.back();
-            else window.location.assign("../");
         });
     });
 </script>

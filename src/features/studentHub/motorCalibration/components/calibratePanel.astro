@@ -1,5 +1,5 @@
 ---
-import { faMicrochip, faPlay, faStop, faPlugCircleXmark } from "@fortawesome/free-solid-svg-icons"
+import { faMicrochip, faPlay, faStop, faHouse } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
 import MotorToggle from "./motorToggle.astro"
@@ -79,14 +79,15 @@ import motorImage from "../images/Motor.png"
 
         <div class="flex flex-wrap gap-4">
             <Button id="motor-calibrate-reset" className="bg-gray-500">Reset</Button>
-            <Button id="motor-calibrate-back" className="bg-green">Back to Editor</Button>
         </div>
     </div>
 
-    <Button id="motor-calibrate-disconnected" className="bg-gray-500 self-start hidden">
-        <FontAwesomeIcon icon={faPlugCircleXmark} className="mr-2" />
-        Ro/Box Not Connected — Back to Connect
-    </Button>
+    <div class="flex flex-wrap gap-4">
+        <Button href="/hub" className="bg-black">
+            <FontAwesomeIcon icon={faHouse} className="mr-2" />
+            Return to Student Hub
+        </Button>
+    </div>
 </div>
 
 <style>
@@ -119,8 +120,6 @@ import motorImage from "../images/Motor.png"
     // render, so wire up every instance found rather than assuming there's a
     // single one.
     document.querySelectorAll<HTMLDivElement>(".motorCalibrationPanel").forEach((root) => {
-        const controls = root.querySelector<HTMLDivElement>(".motorCalibrationControls");
-        const disconnectedButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-disconnected");
         const leftLine = root.querySelector<HTMLDivElement>("#motor-calibrate-line-left");
         const rightLine = root.querySelector<HTMLDivElement>("#motor-calibrate-line-right");
         const slider = root.querySelector<HTMLInputElement>("#motor-calibrate-slider");
@@ -132,11 +131,8 @@ import motorImage from "../images/Motor.png"
         const testRightButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-right");
         const testStopButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-stop");
         const resetButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-reset");
-        const backButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-back");
 
         if (
-            !controls ||
-            !disconnectedButton ||
             !leftLine ||
             !rightLine ||
             !slider ||
@@ -147,16 +143,13 @@ import motorImage from "../images/Motor.png"
             !testLeftButton ||
             !testRightButton ||
             !testStopButton ||
-            !resetButton ||
-            !backButton
+            !resetButton
         ) {
             throw new Error("Calibrate panel elements not found");
         }
 
         wireMotorCalibration({
             root,
-            controls,
-            disconnectedButton,
             leftLine,
             rightLine,
             slider,
@@ -168,14 +161,6 @@ import motorImage from "../images/Motor.png"
             testRightButton,
             testStopButton,
             resetButton,
-        });
-
-        // This page is always reached by navigating away from somewhere in
-        // the hub, so going back returns there directly rather than
-        // guessing a destination.
-        backButton.addEventListener("click", () => {
-            if (window.history.length > 1) window.history.back();
-            else window.location.assign("../");
         });
     });
 </script>
