@@ -1,4 +1,5 @@
 import type { BleDevice } from '@capacitor-community/bluetooth-le'
+import type { PaletteColorName } from '@/data/colorPalette'
 export interface Communication {
     destroyed: boolean
     request(): Promise<void>
@@ -81,6 +82,13 @@ export interface MotorCalibration {
     reverse: [boolean, boolean]
     swap: boolean
 }
+
+/**
+ * `value`'s shape for `{ name: "colors" }` - see `GET_CALIBRATION_COMMANDS`.
+ * `false` covers both "never calibrated" and "no colour sensor attached" -
+ * the board doesn't distinguish the two.
+ */
+export type ColorCalibration = Record<PaletteColorName, boolean>
 
 export interface PicoState {
     connectionStatus: ConnectionStatus

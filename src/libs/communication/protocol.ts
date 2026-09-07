@@ -67,13 +67,12 @@ export function runMotorCommand(index: 0 | 1): string {
 /**
  * One argument-less COMMAND per gettable calibration value, replying with
  * the generic `calibration` message type - `{ name, value }` - rather than
- * one message type per calibration kind. `motors` is the only one today;
- * colour calibrations are expected to grow this table later, all answered
- * the same way, which is why the website's handler branches on
- * `message.name` instead of on the message type.
+ * one message type per calibration kind, which is why the website's handler
+ * branches on `message.name` instead of on the message type.
  */
 export const GET_CALIBRATION_COMMANDS = {
     motors: 'get_calibration_motors',
+    colors: 'get_calibration_colors',
 } as const
 
 export type CalibrationName = keyof typeof GET_CALIBRATION_COMMANDS
