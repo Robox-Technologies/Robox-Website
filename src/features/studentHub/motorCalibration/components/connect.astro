@@ -43,6 +43,41 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         // back (a dropped connection) still advances on the next reconnect.
         let hasAdvanced = false;
 
+        // Fetched here, before advancing, rather than by the Calibrate
+        // stage's own script once it's visible - that ordering left the
+        // panel showing its default "nothing calibrated" state for a beat
+        // before the reply arrived and updated it. Waiting on the reply
+        // first means the panel is already showing the right state the
+        // instant it's revealed. Short-lived: this is a local config read,
+        // not a live sensor calibration (unlike `CALIBRATION_TIMEOUT_MS` in
+        // the Calibrate stage), and a board too old to answer just times out
+        // and advances anyway rather than blocking the student here.
+        const CALIBRATION_FETCH_TIMEOUT_MS = 2000;
+        let awaitingCalibration = false;
+        let calibrationTimeout: ReturnType<typeof setTimeout> | null = null;
+
+        function onCalibrationReply(data: { name: string }) {
+            if (data.name !== "motors") return;
+            finishCalibrationWait();
+        }
+
+        function finishCalibrationWait() {
+            if (!awaitingCalibration) return;
+            awaitingCalibration = false;
+            if (calibrationTimeout) clearTimeout(calibrationTimeout);
+            calibrationTimeout = null;
+            pico.off("calibration", onCalibrationReply);
+            dispatchCalibrationAdvance(root, "calibrate");
+        }
+
+        function cancelCalibrationWait() {
+            if (!awaitingCalibration) return;
+            awaitingCalibration = false;
+            if (calibrationTimeout) clearTimeout(calibrationTimeout);
+            calibrationTimeout = null;
+            pico.off("calibration", onCalibrationReply);
+        }
+
         // Silently reattaching to a previously authorised USB port the
         // instant this stage becomes active would start test-driving motors
         // on whatever Ro/Box that port belongs to without the student
@@ -65,22 +100,35 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             if (connected) {
                 if (!hasAdvanced) {
                     hasAdvanced = true;
-                    dispatchCalibrationAdvance(root, "calibrate");
+                    awaitingCalibration = true;
+                    pico.on("calibration", onCalibrationReply);
+                    calibrationTimeout = setTimeout(finishCalibrationWait, CALIBRATION_FETCH_TIMEOUT_MS);
+                    pico.getCalibration("motors");
                 }
             } else {
                 hasAdvanced = false;
+                cancelCalibrationWait();
             }
-            setButtonBusy(connectButton!, connecting);
+            setButtonBusy(connectButton!, connecting || awaitingCalibration);
             // The toggle picks the method (or the iOS branch above sets it
             // directly) - until one is actually set there's nothing to
             // connect to yet.
-            if (!connecting) connectButton!.disabled = !state.communicationMethod;
+            if (!connecting && !awaitingCalibration) connectButton!.disabled = !state.communicationMethod;
         }
 
         pico.on("stateChange", updateUI);
         updateUI(pico.getState());
 
         pico.on("error", (data) => {
+            // The board answers a refused `get_calibration_motors` (e.g. an
+            // older firmware that doesn't recognise it) with this same
+            // generic error type - that's not a connection failure, so it
+            // must not show "Couldn't Connect" while we're actually
+            // connected and simply move on to the Calibrate stage.
+            if (awaitingCalibration) {
+                finishCalibrationWait();
+                return;
+            }
             dispatchCalibrationError(root, "Couldn't Connect", data.message);
         });
 

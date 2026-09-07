@@ -37,6 +37,41 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         // drop that sends the student back here still advances on the next reconnect.
         let hasAdvanced = false;
 
+        // Fetched here, before advancing, rather than by the Calibrate
+        // stage's own script once it's visible - that ordering left the
+        // swatches showing "nothing calibrated" for a beat before the reply
+        // arrived and updated them. Waiting on the reply first means the
+        // panel already shows the right state the instant it's revealed.
+        // Short-lived: this is a local config read, not a live sensor
+        // calibration (unlike `CALIBRATION_TIMEOUT_MS` in the Calibrate
+        // stage), and a board too old to answer just times out and advances
+        // anyway rather than blocking the student here.
+        const CALIBRATION_FETCH_TIMEOUT_MS = 2000;
+        let awaitingCalibration = false;
+        let calibrationTimeout: ReturnType<typeof setTimeout> | null = null;
+
+        function onCalibrationReply(data: { name: string }) {
+            if (data.name !== "colors") return;
+            finishCalibrationWait();
+        }
+
+        function finishCalibrationWait() {
+            if (!awaitingCalibration) return;
+            awaitingCalibration = false;
+            if (calibrationTimeout) clearTimeout(calibrationTimeout);
+            calibrationTimeout = null;
+            pico.off("calibration", onCalibrationReply);
+            dispatchCalibrationAdvance(root, "calibrate");
+        }
+
+        function cancelCalibrationWait() {
+            if (!awaitingCalibration) return;
+            awaitingCalibration = false;
+            if (calibrationTimeout) clearTimeout(calibrationTimeout);
+            calibrationTimeout = null;
+            pico.off("calibration", onCalibrationReply);
+        }
+
         // Only an explicit click may connect here, so auto-connect stays off. Queued to
         // the next microtask because `setCommunicationMethod` builds its fresh transport
         // (auto-connect back on) after emitting this stateChange.
@@ -52,20 +87,32 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             if (connected) {
                 if (!hasAdvanced) {
                     hasAdvanced = true;
-                    dispatchCalibrationAdvance(root, "calibrate");
+                    awaitingCalibration = true;
+                    pico.on("calibration", onCalibrationReply);
+                    calibrationTimeout = setTimeout(finishCalibrationWait, CALIBRATION_FETCH_TIMEOUT_MS);
+                    pico.getCalibration("colors");
                 }
             } else {
                 hasAdvanced = false;
+                cancelCalibrationWait();
             }
-            setButtonBusy(connectButton!, connecting);
+            setButtonBusy(connectButton!, connecting || awaitingCalibration);
             // Nothing to connect to until the toggle (or the iOS branch) sets a method.
-            if (!connecting) connectButton!.disabled = !state.communicationMethod;
+            if (!connecting && !awaitingCalibration) connectButton!.disabled = !state.communicationMethod;
         }
 
         pico.on("stateChange", updateUI);
         updateUI(pico.getState());
 
         pico.on("error", (data) => {
+            // A refused `get_calibration_colors` (e.g. firmware too old to
+            // recognise it) answers with this same generic error type -
+            // that's not a connection failure, so it must not show "Couldn't
+            // Connect" while we're actually connected and simply move on.
+            if (awaitingCalibration) {
+                finishCalibrationWait();
+                return;
+            }
             dispatchCalibrationError(root, "Couldn't Connect", data.message);
         });
 

@@ -40,12 +40,6 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
     // Colour mode is entered once per connection, as soon as it's available.
     let colorModeStarted = false
 
-    // Tracks whether the current connection has already had its calibration
-    // status fetched, so a `stateChange` firing for unrelated reasons while
-    // still connected doesn't re-request it. Reset on every disconnect so
-    // the next connection fetches fresh.
-    let calibrationFetched = false
-
     function applySwatchState(swatch: SwatchButton, calibrated: boolean) {
         swatch.check.classList.toggle('hidden!', !calibrated)
         swatch.toggleButton.setAttribute('aria-checked', String(calibrated))
@@ -101,7 +95,6 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
             // Nothing is going to answer a request sent to a Ro/Box that's no longer there.
             if (waitingForResult) finish(() => {})
             colorModeStarted = false
-            calibrationFetched = false
             if (wasConnected) {
                 toast.danger({
                     title: 'Ro/Box Disconnected',
@@ -118,16 +111,6 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         if (!colorModeStarted) {
             colorModeStarted = true
             pico.colorMode()
-        }
-
-        // Fetched as soon as the board connects, in the background, rather
-        // than only once this stage is visible - so the swatches already
-        // reflect what's persisted on the board (e.g. from a previous
-        // session) by the time anyone sees this panel, mirroring motor
-        // calibration's fetch-on-connect.
-        if (!calibrationFetched) {
-            calibrationFetched = true
-            pico.getCalibration('colors')
         }
     }
 
@@ -160,10 +143,12 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         })
     })
 
-    // The board's answer to getCalibration("colors") above - display only,
-    // same reasoning as motor calibration's `calibration` handler: this must
-    // never turn around and call pico.colorCalibrate()/colorResetColor(), or
-    // a mere read would overwrite whatever's actually persisted on the board.
+    // The board's answer to getCalibration("colors"), fetched by the Connect
+    // stage before advancing here (so the swatches never flash their
+    // uncalibrated default) - display only, same reasoning as motor
+    // calibration's `calibration` handler: this must never turn around and
+    // call pico.colorCalibrate()/colorResetColor(), or a mere read would
+    // overwrite whatever's actually persisted on the board.
     pico.on('calibration', (data) => {
         if (data.name !== 'colors') return
         const value = data.value as ColorCalibration

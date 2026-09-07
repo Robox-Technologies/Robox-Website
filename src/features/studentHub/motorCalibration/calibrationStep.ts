@@ -132,12 +132,6 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         toggle.setAttribute('aria-checked', String(checked))
     }
 
-    // Tracks whether the current connection has already had its motor trim
-    // fetched, so a `stateChange` firing for unrelated reasons (firmware
-    // status, isRestarting, ...) while still connected doesn't re-request
-    // it. Reset on every disconnect so the next connection fetches fresh.
-    let calibrationFetched = false
-
     // Whether this stage has seen a real connection since it mounted - lets
     // the disconnect handling below skip the "Ro/Box Disconnected" message
     // for the initial synchronous call (arriving here disconnected, e.g.
@@ -152,7 +146,6 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         const connected = state.connectionStatus === ConnectionStatus.CONNECTED
 
         if (!connected) {
-            calibrationFetched = false
             stopFlowAnimation()
             if (wasConnected) {
                 toast.danger({
@@ -168,16 +161,6 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
 
         wasConnected = true
         startFlowAnimation()
-
-        // Fetched as soon as the board connects, in the background, rather
-        // than when this stage becomes visible - fetching then meant the
-        // slider sat wherever it last was and then visibly jumped once the
-        // reply arrived. Fetching here means it's already in place by the
-        // time anyone sees this panel.
-        if (!calibrationFetched) {
-            calibrationFetched = true
-            pico.getCalibration('motors')
-        }
     }
 
     pico.on('stateChange', updateConnectionUI)
@@ -191,11 +174,13 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
     setTimeout(() => updateConnectionUI(pico.getState()), 0)
     updateDiagram(Number(slider.value))
 
-    // The board's answer to getCalibration("motors") above - display only,
-    // same as setBias/setToggle themselves: this must never turn around and
-    // call pico.motorCalibrate()/motorReverse()/motorSwap(), or a mere read
-    // would overwrite whatever's actually persisted on the board with what
-    // it just told us.
+    // The board's answer to getCalibration("motors"), fetched by the Connect
+    // stage before advancing here (so the panel never flashes an
+    // uncalibrated default) - display only, same as setBias/setToggle
+    // themselves: this must never turn around and call
+    // pico.motorCalibrate()/motorReverse()/motorSwap(), or a mere read would
+    // overwrite whatever's actually persisted on the board with what it just
+    // told us.
     pico.on('calibration', (data) => {
         if (data.name !== 'motors') return
         const value = data.value as MotorCalibration
