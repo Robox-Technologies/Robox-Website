@@ -1,0 +1,147 @@
+name: Sync firmware (latest.uf2)
+
+# Watches Robox-Technologies/Robox-pythonLibs for a new release and, if the
+# published latest.uf2 differs from the one committed here, opens a PR to
+# update public/latest.uf2. It never pushes to master/develop/epic/astro
+# directly (those branches auto-deploy on push, see deploy.yml) — a human
+# always reviews and merges before new firmware reaches devices.
+
+on:
+    schedule:
+        - cron: '0 */6 * * *'
+    workflow_dispatch: {}
+
+permissions:
+    contents: write
+    pull-requests: write
+
+concurrency:
+    group: sync-firmware
+    cancel-in-progress: false
+
+env:
+    UPSTREAM_REPO: Robox-Technologies/Robox-pythonLibs
+    FIRMWARE_ASSET: latest.uf2
+    TARGET_PATH: public/latest.uf2
+    BASE_BRANCH: develop
+
+jobs:
+    sync:
+        name: Check upstream firmware release
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  ref: ${{ env.BASE_BRANCH }}
+
+            - name: Fetch latest release metadata
+              id: release
+              run: |
+                  release_json=$(curl -fsSL \
+                      -H "Accept: application/vnd.github+json" \
+                      "https://api.github.com/repos/${UPSTREAM_REPO}/releases/latest")
+
+                  tag=$(echo "$release_json" | jq -r '.tag_name')
+                  url=$(echo "$release_json" | jq -r '.html_url')
+
+                  if [ -z "$tag" ] || [ "$tag" = "null" ]; then
+                      echo "::error::Could not resolve latest release tag for ${UPSTREAM_REPO}"
+                      exit 1
+                  fi
+
+                  echo "tag=$tag" >> "$GITHUB_OUTPUT"
+                  echo "url=$url" >> "$GITHUB_OUTPUT"
+                  echo "Latest upstream release: $tag ($url)"
+
+            - name: Skip if a sync PR for this release already exists
+              id: existing
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  TAG: ${{ steps.release.outputs.tag }}
+              run: |
+                  branch="firmware-sync/${TAG}"
+                  count=$(gh pr list --state open --head "$branch" --json number --jq 'length')
+                  echo "branch=$branch" >> "$GITHUB_OUTPUT"
+                  echo "exists=$([ "$count" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+            - name: Download and validate firmware asset
+              if: steps.existing.outputs.exists == 'false'
+              id: download
+              run: |
+                  download_url="https://github.com/${UPSTREAM_REPO}/releases/latest/download/${FIRMWARE_ASSET}"
+                  tmp_file="$RUNNER_TEMP/latest.uf2"
+
+                  curl -fsSL --max-filesize 20971520 -o "$tmp_file" "$download_url"
+
+                  size=$(stat -c%s "$tmp_file")
+                  echo "Downloaded $size bytes"
+
+                  # Basic sanity checks — this is a third-party binary flashed onto
+                  # physical hardware, so we refuse anything that doesn't look like
+                  # a well-formed UF2 image before it's ever offered up for a PR.
+                  if [ "$size" -lt 1024 ] || [ "$size" -gt 20971520 ]; then
+                      echo "::error::Downloaded file size ($size bytes) is outside the expected range"
+                      exit 1
+                  fi
+
+                  if [ "$((size % 512))" -ne 0 ]; then
+                      echo "::error::Downloaded file size ($size bytes) is not a multiple of 512 — not a valid UF2 image"
+                      exit 1
+                  fi
+
+                  # Compare as hex — command substitution strips trailing newlines,
+                  # which would silently break a plain string comparison here since
+                  # the UF2 magic's 4th byte is 0x0a.
+                  magic=$(head -c 4 "$tmp_file" | od -An -tx1 | tr -d ' \n')
+                  if [ "$magic" != "5546320a" ]; then
+                      echo "::error::Downloaded file does not start with the UF2 magic header"
+                      exit 1
+                  fi
+
+                  sha256=$(sha256sum "$tmp_file" | cut -d' ' -f1)
+                  echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
+                  echo "path=$tmp_file" >> "$GITHUB_OUTPUT"
+
+            - name: Compare against committed firmware
+              if: steps.existing.outputs.exists == 'false'
+              id: diff
+              run: |
+                  if [ -f "$TARGET_PATH" ] && cmp -s "${{ steps.download.outputs.path }}" "$TARGET_PATH"; then
+                      echo "changed=false" >> "$GITHUB_OUTPUT"
+                      echo "Firmware is already up to date, nothing to do."
+                  else
+                      echo "changed=true" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Open PR with updated firmware
+              if: steps.existing.outputs.exists == 'false' && steps.diff.outputs.changed == 'true'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  TAG: ${{ steps.release.outputs.tag }}
+                  RELEASE_URL: ${{ steps.release.outputs.url }}
+                  SHA256: ${{ steps.download.outputs.sha256 }}
+                  BRANCH: ${{ steps.existing.outputs.branch }}
+              run: |
+                  cp "${{ steps.download.outputs.path }}" "$TARGET_PATH"
+
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+                  git checkout -b "$BRANCH"
+                  git add "$TARGET_PATH"
+                  git commit -m "Sync latest.uf2 from ${UPSTREAM_REPO} ${TAG}"
+                  git push -u origin "$BRANCH"
+
+                  gh pr create \
+                      --base "$BASE_BRANCH" \
+                      --head "$BRANCH" \
+                      --title "Sync firmware: ${UPSTREAM_REPO} ${TAG}" \
+                      --body "$(cat <<EOF
+                  Automated firmware sync from [${UPSTREAM_REPO} ${TAG}](${RELEASE_URL}).
+
+                  - **SHA-256:** \`${SHA256}\`
+                  - Passed automated checks: non-empty, size is a multiple of 512, starts with the UF2 magic header.
+
+                  This binary has **not** been reviewed by a human. Please verify the upstream release before merging — merging this PR will deploy it to \`${BASE_BRANCH}\` and make it the firmware served to \`public/latest.uf2\` on the next flash.
+                  EOF
+                  )"
