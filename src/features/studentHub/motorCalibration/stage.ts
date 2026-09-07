@@ -43,4 +43,17 @@ export function dispatchCalibrationClearError(target: EventTarget): void {
     dispatchStageClearError(target, NAMESPACE)
 }
 
+/**
+ * Fired by the Calibrate stage's own script once it has applied a fetched
+ * calibration value to its controls. Bubbling, not a plain pico event,
+ * because the Connect stage - a DOM sibling, not an ancestor - needs to hear
+ * it too: it holds off advancing until this fires, so the panel is never
+ * revealed still showing its default "nothing calibrated" state.
+ */
+export const CALIBRATION_READY_EVENT = `${NAMESPACE}:calibration-ready`
+
+export function dispatchCalibrationReady(target: EventTarget): void {
+    target.dispatchEvent(new CustomEvent(CALIBRATION_READY_EVENT, { bubbles: true }))
+}
+
 export { setButtonBusy }

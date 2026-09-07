@@ -2,7 +2,7 @@ import { pico } from '@/libs/communication/communicate'
 import { toast } from '@/libs/ui/toast'
 import type { PicoState, MotorCalibration } from 'src/types/communication'
 import { ConnectionStatus } from 'src/types/communication'
-import { dispatchCalibrationAdvance } from './stage'
+import { dispatchCalibrationAdvance, dispatchCalibrationReady } from './stage'
 
 export interface MotorCalibrationOptions {
     root: HTMLElement
@@ -175,12 +175,14 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
     updateDiagram(Number(slider.value))
 
     // The board's answer to getCalibration("motors"), fetched by the Connect
-    // stage before advancing here (so the panel never flashes an
-    // uncalibrated default) - display only, same as setBias/setToggle
+    // stage before advancing here - display only, same as setBias/setToggle
     // themselves: this must never turn around and call
     // pico.motorCalibrate()/motorReverse()/motorSwap(), or a mere read would
     // overwrite whatever's actually persisted on the board with what it just
-    // told us.
+    // told us. Reports back with `dispatchCalibrationReady` once applied, so
+    // the Connect stage - which can't otherwise tell this panel has caught
+    // up - knows it's safe to reveal this stage without a flash of the
+    // default "nothing calibrated" state.
     pico.on('calibration', (data) => {
         if (data.name !== 'motors') return
         const value = data.value as MotorCalibration
@@ -188,6 +190,7 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         setToggle(reverseLeftToggle, value.reverse[0])
         setToggle(reverseRightToggle, value.reverse[1])
         setToggle(swapToggle, value.swap)
+        dispatchCalibrationReady(root)
     })
 
     slider.addEventListener('input', () => {

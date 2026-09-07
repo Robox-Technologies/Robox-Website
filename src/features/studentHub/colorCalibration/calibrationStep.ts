@@ -7,6 +7,7 @@ import {
     dispatchCalibrationAdvance,
     dispatchCalibrationClearError,
     dispatchCalibrationError,
+    dispatchCalibrationReady,
 } from './stage'
 
 /** More generous than the firmware check: calibration is a real sensor read, not an echo. */
@@ -144,17 +145,21 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
     })
 
     // The board's answer to getCalibration("colors"), fetched by the Connect
-    // stage before advancing here (so the swatches never flash their
-    // uncalibrated default) - display only, same reasoning as motor
+    // stage before advancing here - display only, same reasoning as motor
     // calibration's `calibration` handler: this must never turn around and
     // call pico.colorCalibrate()/colorResetColor(), or a mere read would
-    // overwrite whatever's actually persisted on the board.
+    // overwrite whatever's actually persisted on the board. Reports back
+    // with `dispatchCalibrationReady` once applied, so the Connect stage -
+    // which can't otherwise tell these swatches have caught up - knows it's
+    // safe to reveal this stage without a flash of the default "nothing
+    // calibrated" state.
     pico.on('calibration', (data) => {
         if (data.name !== 'colors') return
         const value = data.value as ColorCalibration
         for (const swatch of swatches) {
             applySwatchState(swatch, value[swatch.name])
         }
+        dispatchCalibrationReady(root)
     })
 
     pico.on('error', (data: PicoEventMap['error']) => {

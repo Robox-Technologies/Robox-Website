@@ -22,7 +22,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     import { pico } from "@/libs/communication/communicate";
     import type { PicoState } from "src/types/communication";
     import { ConnectionStatus } from "src/types/communication";
-    import { setButtonBusy, dispatchCalibrationAdvance, dispatchCalibrationClearError, dispatchCalibrationError } from "../stage";
+    import { setButtonBusy, dispatchCalibrationAdvance, dispatchCalibrationClearError, dispatchCalibrationError, CALIBRATION_READY_EVENT } from "../stage";
 
     // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".calibrationConnect").forEach((root) => {
@@ -40,9 +40,12 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         // Fetched here, before advancing, rather than by the Calibrate
         // stage's own script once it's visible - that ordering left the
         // swatches showing "nothing calibrated" for a beat before the reply
-        // arrived and updated them. Waiting on the reply first means the
-        // panel already shows the right state the instant it's revealed.
-        // Short-lived: this is a local config read, not a live sensor
+        // arrived and updated them. Advancing waits on
+        // `CALIBRATION_READY_EVENT`, which the Calibrate stage's own script
+        // fires only after it has applied the value to its swatches -
+        // rather than on the raw pico `calibration` reply here, which would
+        // only prove the *board* answered, not that the *panel* has caught
+        // up. Short-lived: this is a local config read, not a live sensor
         // calibration (unlike `CALIBRATION_TIMEOUT_MS` in the Calibrate
         // stage), and a board too old to answer just times out and advances
         // anyway rather than blocking the student here.
@@ -50,17 +53,12 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         let awaitingCalibration = false;
         let calibrationTimeout: ReturnType<typeof setTimeout> | null = null;
 
-        function onCalibrationReply(data: { name: string }) {
-            if (data.name !== "colors") return;
-            finishCalibrationWait();
-        }
-
         function finishCalibrationWait() {
             if (!awaitingCalibration) return;
             awaitingCalibration = false;
             if (calibrationTimeout) clearTimeout(calibrationTimeout);
             calibrationTimeout = null;
-            pico.off("calibration", onCalibrationReply);
+            document.removeEventListener(CALIBRATION_READY_EVENT, finishCalibrationWait);
             dispatchCalibrationAdvance(root, "calibrate");
         }
 
@@ -69,7 +67,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             awaitingCalibration = false;
             if (calibrationTimeout) clearTimeout(calibrationTimeout);
             calibrationTimeout = null;
-            pico.off("calibration", onCalibrationReply);
+            document.removeEventListener(CALIBRATION_READY_EVENT, finishCalibrationWait);
         }
 
         // Only an explicit click may connect here, so auto-connect stays off. Queued to
@@ -88,7 +86,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
                 if (!hasAdvanced) {
                     hasAdvanced = true;
                     awaitingCalibration = true;
-                    pico.on("calibration", onCalibrationReply);
+                    document.addEventListener(CALIBRATION_READY_EVENT, finishCalibrationWait);
                     calibrationTimeout = setTimeout(finishCalibrationWait, CALIBRATION_FETCH_TIMEOUT_MS);
                     pico.getCalibration("colors");
                 }
