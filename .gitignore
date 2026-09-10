@@ -2,8 +2,10 @@
 dist/
 build/
 
-# copied from node_modules/pyodide by scripts/sync-pyodide-assets.mjs
+# copied from node_modules/pyodide and vendor/robox-python-libs by the
+# astro/integrations/pyodide and astro/integrations/roboxlib integrations
 public/hub/pyodide/
+public/hub/roboxlib/
 # generated types
 .astro/
 

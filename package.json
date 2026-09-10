@@ -3,6 +3,7 @@
     "type": "module",
     "version": "0.0.1",
     "scripts": {
+        "postinstall": "node scripts/init-roboxlib-submodule.mjs",
         "build:ios": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" IOS_BUILD=true npm run build && npx cap sync && npx cap open ios",
         "start:ios": "npx cap add ios",
         "ios": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" IOS_BUILD=true npm run build && npx cap sync && npx cap run ios",

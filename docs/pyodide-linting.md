@@ -9,9 +9,11 @@ from Python's own `compile()`, and argument-count/keyword errors come from
 user-defined function being called, so students see the same error Python
 itself would raise.
 
-- Worker (loads Pyodide, runs the checks): [`src/features/editor/editors/pythonEditor/workers/pyodideLint.worker.ts`](../src/features/editor/editors/pythonEditor/workers/pyodideLint.worker.ts)
+- Worker (loads Pyodide, loads roboxlib, runs the checks): [`src/features/editor/editors/pythonEditor/workers/pyodideLint.worker.ts`](../src/features/editor/editors/pythonEditor/workers/pyodideLint.worker.ts)
+- The actual checking logic, shared with the compatibility test below: [`src/features/editor/editors/pythonEditor/workers/pyodideCheckSetup.ts`](../src/features/editor/editors/pythonEditor/workers/pyodideCheckSetup.ts)
 - Wiring (debounce, Monaco markers): [`src/features/editor/editors/pythonEditor/config/linting.ts`](../src/features/editor/editors/pythonEditor/config/linting.ts)
 - Mount point: [`src/features/editor/editors/pythonEditor/components/editor.astro`](../src/features/editor/editors/pythonEditor/components/editor.astro)
+- Generators/preamble checked against the real library automatically: [`src/features/editor/__tests__/roboxlibCompatibility.test.ts`](../src/features/editor/__tests__/roboxlibCompatibility.test.ts)
 
 ## Scope
 
@@ -19,13 +21,22 @@ Only checks that don't need real type inference:
 
 - Real Python `SyntaxError`s (unmatched brackets, missing colons, bad
   indentation, ...).
-- Argument count/keyword checks for calls to **builtins** (`len(1, 2)`) and
-  the student's own **top-level functions** (`def foo(a, b): ...` called as
-  `foo(1)`).
-- **Not** checked: method calls (`motors.run_motors(1)`), since that needs
-  knowing the type of `motors` -- there's no static analysis of what a name
-  refers to beyond a plain function/class lookup. Once roboxlib's real source
-  is available to the linter, this is the natural place to extend.
+- Argument count/keyword checks for calls to **builtins** (`len(1, 2)`), the
+  student's own **top-level functions** (`def foo(a, b): ...` called as
+  `foo(1)`), **roboxlib class constructors** (`UltrasonicSensor(trig_pin=4)`),
+  and **method calls on the base preamble's instances** (`motors.run_motors(1)`)
+  -- checked against roboxlib's real classes (see `docs/installation.md` for
+  where those come from), via `inspect.Signature.bind()` on the actual method,
+  so students see the same error the real library would raise.
+- **Not** checked: method calls on extension-only instances (e.g. `servo`,
+  which only exists if the SERVO extension is enabled) -- the live linter
+  doesn't know which extensions a given project has turned on, only the
+  fixed instances the base preamble always creates. The compatibility test
+  (`src/features/editor/__tests__/roboxlibCompatibility.test.ts`) covers
+  `servo` separately, since it already knows the full extension list.
+- **Not** checked, at all: bare attribute reads with no call (`servo.angle`)
+  -- only `ast.Call` nodes are inspected, so a property access with no
+  parentheses is invisible to this mechanism regardless of instance.
 
 Linting is web-only. It's skipped entirely on the iOS build (`IOS_BUILD=true`)
 -- Pyodide is a ~13MB WASM blob with no track record in the iOS WKWebView
@@ -33,6 +44,10 @@ target, unlike the rest of this editor, so it isn't shipped there rather than
 risk bloating/breaking the app bundle.
 
 ## Why the Pyodide runtime isn't committed to git
+
+See [`installation.md`](installation.md) for the full picture, including how
+roboxlib's real source (not a hand-written copy of its API) gets into the
+build the same way. Short version:
 
 `pyodide` is a normal `npm install` dependency (see `package.json`), so its
 wasm + stdlib zip (~13MB) already land in `node_modules/pyodide` on every

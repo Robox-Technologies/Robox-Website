@@ -14,6 +14,7 @@ import sitemap from '@astrojs/sitemap'
 import { unified } from '@astrojs/markdown-remark'
 import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
 import { syncPyodideAssets } from './astro/integrations/pyodide/syncPyodideAssets'
+import { syncRoboxlibAssets } from './astro/integrations/roboxlib/syncRoboxlibAssets'
 import { isNoindex, PRODUCTION_ORIGIN } from './src/data/seo'
 
 export default defineConfig({
@@ -64,6 +65,7 @@ export default defineConfig({
     },
     integrations: [
         syncPyodideAssets(),
+        syncRoboxlibAssets(),
         react(),
         mdx(),
         // No sitemap in the iOS bundle: it ships as a Capacitor app off the

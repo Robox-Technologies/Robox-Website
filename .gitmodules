@@ -1,0 +1,3 @@
+[submodule "vendor/robox-python-libs"]
+	path = vendor/robox-python-libs
+	url = https://github.com/Robox-Technologies/Robox-pythonLibs.git
