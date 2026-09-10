@@ -31,6 +31,11 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
     </div>
 </div>
 <script>
+    // Registers the suggest contribution's DI singletons before
+    // monaco-editor/editor/editor.api's StandaloneServices takes its first
+    // snapshot of the singleton registry -- importing it any later means the
+    // suggest widget silently fails ("UNKNOWN service ISuggestMemories").
+    import { ensurePythonCompletionProvider } from '@/features/editor/editors/pythonEditor/config/completion'
     import { editor } from 'monaco-editor/editor/editor.api'
     import 'monaco-editor/languages/definitions/python/register'
     import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
@@ -54,6 +59,7 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
     // Both editor bodies render, so skip building Monaco unless this is a python project.
     if (!project || project.type === 'python') {
         editor.defineTheme('roboxPython', pythonTheme)
+        ensurePythonCompletionProvider()
 
         const model = editor.createModel(project?.code ?? '', 'python')
         const codeEditor = editor.create(container, {
@@ -62,6 +68,7 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
             automaticLayout: true,
             minimap: { enabled: false },
             fontSize: 14,
+            quickSuggestions: { other: true, comments: false, strings: false },
         })
 
         // Prepended on send, never shown: the firmware expects the same roboxlib setup
@@ -100,5 +107,17 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
 <style is:global>
     #monacoContainer .margin {
         border-right: 1px solid #c6c6c6;
+    }
+
+    /*
+     * global.css's `span { color: black }` base rule reaches into Monaco's
+     * own overlay widgets (suggest list, hover, etc.), which style themselves
+     * by setting color on an ancestor and letting spans inherit it -- so it
+     * overrides their light-on-dark text with unreadable black-on-blue.
+     * Scoped to the widgets, not `.view-lines`, so it can't touch the
+     * `.mtkN`-classed spans the syntax theme colours.
+     */
+    #monacoContainer .suggest-widget span {
+        color: inherit;
     }
 </style>
