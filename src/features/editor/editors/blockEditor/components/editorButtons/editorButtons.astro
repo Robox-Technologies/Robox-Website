@@ -1,5 +1,6 @@
 ---
 import CommunicationSlot from "@/features/editor/components/editorButtons/communicationSlot.astro";
+import DisconnectButton from "@/features/editor/components/editorButtons/disconnectButton.astro";
 import MainButton from "@/features/editor/components/editorButtons/mainButton";
 import UndoRedo from "./undoRedo.astro";
 import ZoomButtons from "./zoomButtons.astro";
@@ -13,6 +14,9 @@ import ZoomButtons from "./zoomButtons.astro";
             <CommunicationSlot />
             <ZoomButtons />
         </div>
-        <MainButton client:only="react" />
+        <div class="flex items-center gap-4">
+            <DisconnectButton />
+            <MainButton client:only="react" />
+        </div>
     </div>
 </div>

@@ -2,6 +2,7 @@
 import { faUndo, faRedo } from "@fortawesome/free-solid-svg-icons";
 import Button from "@/components/button";
 import CommunicationSlot from "@/features/editor/components/editorButtons/communicationSlot.astro";
+import DisconnectButton from "@/features/editor/components/editorButtons/disconnectButton.astro";
 import MainButton from "@/features/editor/components/editorButtons/mainButton";
 ---
 
@@ -25,6 +26,7 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
 
     <div class="bg-gray-100 border-t border-gray-300 flex items-center justify-end gap-4 px-4 py-3">
         <CommunicationSlot />
+        <DisconnectButton />
         <MainButton client:only="react" />
     </div>
 </div>

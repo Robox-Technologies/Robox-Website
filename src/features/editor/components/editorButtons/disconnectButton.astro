@@ -1,0 +1,110 @@
+---
+import { faLinkSlash, faSpinner } from "@fortawesome/free-solid-svg-icons";
+import Button from "@/components/button";
+---
+<div class="disconnectButton hidden">
+    <div class="disconnectButtonIdleWrap">
+        <Button
+            icon={faLinkSlash}
+            title="Disconnect from Ro/Box"
+            aria-label="Disconnect from Ro/Box"
+            className="flex items-center w-10 h-10 justify-center border-2 border-red rounded-full bg-white box-shadow pointer-events-auto"
+            iconStyle="text-red text-xl"
+        />
+    </div>
+    <div class="disconnectButtonLoadingWrap hidden">
+        <Button
+            icon={faSpinner}
+            disabled
+            aria-label="Disconnecting"
+            className="flex items-center w-10 h-10 justify-center border-2 border-red rounded-full bg-white box-shadow pointer-events-auto"
+            iconStyle="text-red text-xl animate-spin"
+        />
+    </div>
+</div>
+<style>
+    /* `hidden` (display:none) can't be transitioned, so appearing plays this
+       keyframe automatically (browsers restart animations when an element
+       goes from display:none to displayed); disappearing needs the script
+       below to hold off adding `hidden` until `disconnectButtonOut` finishes. */
+    .disconnectButton {
+        animation: disconnectButtonIn 200ms ease-out;
+    }
+    .disconnectButton.disconnectButtonLeaving {
+        animation: disconnectButtonOut 150ms ease-in forwards;
+    }
+    @keyframes disconnectButtonIn {
+        from {
+            opacity: 0;
+            transform: scale(0.6);
+        }
+    }
+    @keyframes disconnectButtonOut {
+        to {
+            opacity: 0;
+            transform: scale(0.6);
+        }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .disconnectButton,
+        .disconnectButton.disconnectButtonLeaving {
+            animation: none;
+        }
+    }
+</style>
+<script>
+    // Astro includes this script once, but both editor bodies render a copy of the
+    // component, so wire up every instance.
+    import { pico } from "@/libs/communication/communicate";
+    import { ConnectionStatus } from "src/types/communication";
+    import type { PicoState } from "src/types/communication";
+
+    document
+        .querySelectorAll<HTMLDivElement>(".disconnectButton")
+        .forEach((root) => {
+            const idleWrap = root.querySelector<HTMLDivElement>(
+                ".disconnectButtonIdleWrap",
+            );
+            const loadingWrap = root.querySelector<HTMLDivElement>(
+                ".disconnectButtonLoadingWrap",
+            );
+            const idleButton =
+                idleWrap?.querySelector<HTMLButtonElement>("button");
+            if (!idleWrap || !loadingWrap || !idleButton)
+                throw new Error("Disconnect button elements not found");
+
+            idleButton.addEventListener("click", () => {
+                void pico.disconnect();
+            });
+
+            // See the <style> block above for why hiding waits on animationend.
+            const setVisible = (visible: boolean) => {
+                if (visible) {
+                    root.classList.remove("disconnectButtonLeaving");
+                    root.classList.remove("hidden");
+                } else if (!root.classList.contains("hidden")) {
+                    root.classList.add("disconnectButtonLeaving");
+                }
+            };
+
+            root.addEventListener("animationend", (event) => {
+                if (event.animationName !== "disconnectButtonOut") return;
+                root.classList.add("hidden");
+                root.classList.remove("disconnectButtonLeaving");
+            });
+
+            const update = (state: PicoState) => {
+                const disconnected =
+                    state.connectionStatus === ConnectionStatus.DISCONNECTED ||
+                    state.connectionStatus === ConnectionStatus.CONNECTING;
+                const disconnecting =
+                    state.connectionStatus === ConnectionStatus.DISCONNECTING;
+                setVisible(!disconnected);
+                idleWrap.classList.toggle("hidden", disconnecting);
+                loadingWrap.classList.toggle("hidden", !disconnecting);
+            };
+
+            update(pico.getState());
+            pico.on("stateChange", update);
+        });
+</script>
