@@ -25,17 +25,17 @@ const ServoCategory: ToolboxItemInfo = {
                 },
             },
         },
-        {
-            kind: 'block',
-            type: 'servo_rotate',
-            inputs: {
-                ANGLE: {
-                    shadow: {
-                        type: 'servo_angle',
-                    },
-                },
-            },
-        },
+        // {
+        //     kind: 'block',
+        //     type: 'servo_rotate',
+        //     inputs: {
+        //         ANGLE: {
+        //             shadow: {
+        //                 type: 'servo_angle',
+        //             },
+        //         },
+        //     },
+        // },
         {
             kind: 'block',
             type: 'servo_get_angle',
