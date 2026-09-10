@@ -4,9 +4,14 @@ import Button from "@/components/button";
 import CommunicationSlot from "@/features/editor/components/editorButtons/communicationSlot.astro";
 import DisconnectButton from "@/features/editor/components/editorButtons/disconnectButton.astro";
 import MainButton from "@/features/editor/components/editorButtons/mainButton";
+
+// Pyodide (a ~13MB WASM CPython build, used for real syntax linting) has no
+// proven track record in the iOS WKWebView target, unlike the rest of this
+// editor -- skip it there rather than risk bloating/breaking the app bundle.
+const isIOSBuild = process.env.IOS_BUILD === "true";
 ---
 
-<div class="h-full flex flex-col">
+<div class="h-full flex flex-col" data-ios-build={isIOSBuild ? "true" : "false"}>
     <div class="bg-gray-100 border-b border-gray-300 flex items-center justify-center gap-4 py-2">
         <Button
             icon={faUndo}
@@ -44,6 +49,7 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
     import { buildPreamble } from '@/features/editor/utils/preamble'
     import { savePython } from '@/features/editor/editors/pythonEditor/utils/serialization'
     import { pythonTheme } from '@/features/editor/editors/pythonEditor/config/theme'
+    import { lintPythonModel } from '@/features/editor/editors/pythonEditor/config/linting'
 
     globalThis.MonacoEnvironment = {
         getWorker: () => new EditorWorker(),
@@ -70,6 +76,10 @@ import MainButton from "@/features/editor/components/editorButtons/mainButton";
             fontSize: 14,
             quickSuggestions: { other: true, comments: false, strings: false },
         })
+
+        if (container.closest<HTMLElement>('[data-ios-build]')?.dataset.iosBuild !== 'true') {
+            lintPythonModel(model)
+        }
 
         // Prepended on send, never shown: the firmware expects the same roboxlib setup
         // the block editor generates (see buildPreamble).
