@@ -4,6 +4,8 @@
 import 'monaco-editor/editor/contrib/suggest/browser/suggestController.js'
 import { languages, Range } from 'monaco-editor/editor/editor.api'
 import type { Position, editor as editorNamespace } from 'monaco-editor/editor/editor.api'
+import { describeRoboxlib, runWhenIdle } from '../workers/pyodideWorkerClient'
+import { PREAMBLE_INSTANCE_CLASSES, type RoboxlibClass } from '../workers/pyodideCheckSetup'
 
 const KEYWORDS = [
     'False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await',
@@ -50,8 +52,55 @@ const SNIPPETS: { label: string; insertText: string; doc: string }[] = [
     { label: 'try', insertText: 'try:\n\t${1:pass}\nexcept ${2:Exception}:\n\t$0', doc: 'Try/except block' },
 ]
 
+// Populated once describeRoboxlib() resolves -- real classes/methods/
+// docstrings introspected from the vendored submodule (see
+// pyodideCheckSetup.ts), not hand-written here. Empty until then, so early
+// completions just won't include roboxlib members yet.
+let roboxlibClasses = new Map<string, RoboxlibClass>()
+
+function loadRoboxlibClasses() {
+    // Deferred the same way linting.ts defers its first lint: this is what
+    // actually creates the worker and starts the ~13MB Pyodide download, so
+    // it shouldn't happen just because the editor mounted.
+    runWhenIdle(() => {
+        void describeRoboxlib().then((classes) => {
+            roboxlibClasses = new Map(classes.map((cls) => [cls.name, cls]))
+        })
+    })
+}
+
+function memberCompletion(
+    model: editorNamespace.ITextModel,
+    position: Position,
+    range: InstanceType<typeof Range>,
+): languages.CompletionItem[] | null {
+    const lineUntilPosition = model
+        .getLineContent(position.lineNumber)
+        .slice(0, position.column - 1)
+    const match = /([A-Za-z_]\w*)\.\w*$/.exec(lineUntilPosition)
+    if (!match) return null
+
+    const className = PREAMBLE_INSTANCE_CLASSES[match[1]]
+    const cls = className ? roboxlibClasses.get(className) : undefined
+    if (!cls) return []
+
+    return cls.members.map((member) => ({
+        label: member.name,
+        kind: languages.CompletionItemKind.Method,
+        detail: member.signature,
+        documentation: member.doc ?? undefined,
+        insertText: member.name,
+        range,
+    }))
+}
+
 function registerPythonCompletionProvider() {
     languages.registerCompletionItemProvider('python', {
+        // Quick-suggest's default word-based heuristic doesn't fire right
+        // after a bare "." with nothing typed after it yet (there's no
+        // "word" at that position for it to key off), so member completion
+        // needs its own explicit trigger character.
+        triggerCharacters: ['.'],
         provideCompletionItems(model: editorNamespace.ITextModel, position: Position) {
             const word = model.getWordUntilPosition(position)
             const range = new Range(
@@ -60,6 +109,9 @@ function registerPythonCompletionProvider() {
                 position.lineNumber,
                 word.endColumn,
             )
+
+            const members = memberCompletion(model, position, range)
+            if (members) return { suggestions: members }
 
             return {
                 suggestions: [
@@ -79,6 +131,13 @@ function registerPythonCompletionProvider() {
                         label: identifier,
                         kind: languages.CompletionItemKind.Variable,
                         insertText: identifier,
+                        range,
+                    })),
+                    ...[...roboxlibClasses.values()].map((cls) => ({
+                        label: cls.name,
+                        kind: languages.CompletionItemKind.Class,
+                        documentation: cls.doc ?? undefined,
+                        insertText: cls.name,
                         range,
                     })),
                     ...SNIPPETS.map((snippet) => ({
@@ -105,4 +164,5 @@ export function ensurePythonCompletionProvider() {
     if (registered) return
     registered = true
     registerPythonCompletionProvider()
+    loadRoboxlibClasses()
 }

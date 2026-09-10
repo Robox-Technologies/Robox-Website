@@ -16,6 +16,35 @@ export type LintDiagnostic = {
     kind: 'syntax' | 'semantic'
 }
 
+export type RoboxlibMember = {
+    name: string
+    signature: string
+    doc: string | null
+}
+
+export type RoboxlibClass = {
+    name: string
+    doc: string | null
+    members: RoboxlibMember[]
+}
+
+// Which preamble-created name is an instance of which roboxlib class -- this
+// is metadata about *this website's* preamble (src/features/editor/config/
+// preamble.ts), not about roboxlib itself, so unlike everything else here it
+// can't be discovered by introspecting the library. Extension-only instances
+// (e.g. \`servo\`) aren't included, since whether they exist depends on
+// per-project state neither the live linter nor the completion provider has.
+export const PREAMBLE_INSTANCE_CLASSES: Record<string, string> = {
+    motors: 'Motors',
+    line: 'LineSensors',
+    ultrasonic: 'UltrasonicSensor',
+    color_sensor: 'ColorSensor',
+}
+
+const INSTANCE_CLASSES_PYTHON = Object.entries(PREAMBLE_INSTANCE_CLASSES)
+    .map(([instanceName, className]) => `"${instanceName}": roboxlib.${className}`)
+    .join(', ')
+
 // roboxlib.py is real MicroPython source (imports `machine`/`utime`, calls
 // the MicroPython-only `const()` builtin), so it can't just be imported
 // under Pyodide's CPython as-is. None of these are called at import time
@@ -74,27 +103,19 @@ builtins.const = lambda x: x
 // Free functions checked against builtins/user defs; method calls (e.g.
 // motors.run_motors(...)) checked against roboxlib's real classes, mapped
 // from the fixed instance names the preamble always creates (see
-// src/features/editor/config/preamble.ts's base \`preamble\` string --
-// extension-only instances like \`servo\` aren't included, since whether
-// they exist depends on per-project state the linter doesn't have).
+// PREAMBLE_INSTANCE_CLASSES above). __CLASS_CONSTRUCTORS, used for
+// constructor calls like UltrasonicSensor(trigger_pin=4), is discovered
+// from the real module instead -- every class roboxlib actually defines,
+// not a hand-picked list, so a new class shows up here automatically.
 export const ROBOXLIB_SETUP = `
 try:
     import roboxlib
-    __INSTANCE_CLASSES = {
-        "motors": roboxlib.Motors,
-        "line": roboxlib.LineSensors,
-        "ultrasonic": roboxlib.UltrasonicSensor,
-        "color_sensor": roboxlib.ColorSensor,
-    }
-    # Constructor calls, e.g. UltrasonicSensor(trigger_pin=4) -- a plain
-    # Name call, not a method call, so it needs its own signature source
-    # (roboxlib's own classes, keyed by their own names).
+    import inspect as __inspect_for_setup
+
+    __INSTANCE_CLASSES = {${INSTANCE_CLASSES_PYTHON}}
     __CLASS_CONSTRUCTORS = {
-        "Motors": roboxlib.Motors,
-        "LineSensors": roboxlib.LineSensors,
-        "UltrasonicSensor": roboxlib.UltrasonicSensor,
-        "ColorSensor": roboxlib.ColorSensor,
-        "Servo": roboxlib.Servo,
+        name: obj for name, obj in vars(roboxlib).items()
+        if __inspect_for_setup.isclass(obj) and obj.__module__ == "roboxlib"
     }
 except Exception as __roboxlib_import_error:
     print("roboxlib import failed, method calls won't be checked:", __roboxlib_import_error)
@@ -250,4 +271,32 @@ def __lint(source):
             "kind": "syntax",
         }])
     return json.dumps(__check_calls(tree))
+`
+
+// Autocomplete data for roboxlib's classes, for the same reason the checks
+// above use inspect.Signature instead of a hand-written table: real
+// introspection of the actual submodule, not a copy of its API that could
+// drift. Every public method of every class __CLASS_CONSTRUCTORS discovered
+// -- run once (see pyodideWorkerClient.ts), not on every keystroke.
+export const DESCRIBE_SETUP = `
+def __describe_member(name, member):
+    try:
+        signature = inspect.signature(member)
+        # Drop \`self\` -- it's never part of what you'd type at a call site.
+        signature = inspect.Signature(list(signature.parameters.values())[1:])
+        signature_text = str(signature)
+    except (TypeError, ValueError):
+        signature_text = "(...)"
+    return {"name": name, "signature": signature_text, "doc": inspect.getdoc(member)}
+
+def __describe_roboxlib():
+    classes = []
+    for class_name, cls in sorted(__CLASS_CONSTRUCTORS.items()):
+        members = [
+            __describe_member(member_name, member)
+            for member_name, member in inspect.getmembers(cls, predicate=inspect.isfunction)
+            if not member_name.startswith("_")
+        ]
+        classes.append({"name": class_name, "doc": inspect.getdoc(cls), "members": members})
+    return json.dumps(classes)
 `

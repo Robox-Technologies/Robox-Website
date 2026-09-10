@@ -3,20 +3,20 @@ import {
     HARDWARE_STUBS,
     ROBOXLIB_SETUP,
     LINT_SETUP,
+    DESCRIBE_SETUP,
     type LintDiagnostic,
+    type RoboxlibClass,
 } from './pyodideCheckSetup'
 
-export type { LintDiagnostic }
+export type { LintDiagnostic, RoboxlibClass }
 
-export type LintRequest = {
-    id: number
-    code: string
-}
+export type WorkerRequest =
+    | { kind: 'lint'; id: number; code: string }
+    | { kind: 'describe'; id: number }
 
-export type LintResponse = {
-    id: number
-    diagnostics: LintDiagnostic[]
-}
+export type WorkerResponse =
+    | { kind: 'lint'; id: number; diagnostics: LintDiagnostic[] }
+    | { kind: 'describe'; id: number; classes: RoboxlibClass[] }
 
 const ROBOXLIB_DIR = '/roboxlib_src'
 const ROBOXLIB_FILES = ['roboxlib.py', 'calibration.py', 'colors.py', 'matrix.py']
@@ -39,20 +39,31 @@ function getPyodide(): Promise<PyodideInterface> {
         pyodide.runPython(HARDWARE_STUBS)
         await loadRoboxlibSource(pyodide)
         pyodide.runPython(LINT_SETUP)
+        pyodide.runPython(DESCRIBE_SETUP)
         return pyodide
     })
     return pyodidePromise
 }
 
-self.onmessage = async (event: MessageEvent<LintRequest>) => {
-    const { id, code } = event.data
+self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
+    const request = event.data
     try {
         const pyodide = await getPyodide()
-        const lint = pyodide.globals.get('__lint') as (source: string) => string
-        const diagnostics = JSON.parse(lint(code)) as LintDiagnostic[]
-        self.postMessage({ id, diagnostics } satisfies LintResponse)
+        if (request.kind === 'lint') {
+            const lint = pyodide.globals.get('__lint') as (source: string) => string
+            const diagnostics = JSON.parse(lint(request.code)) as LintDiagnostic[]
+            self.postMessage({ kind: 'lint', id: request.id, diagnostics } satisfies WorkerResponse)
+        } else {
+            const describe = pyodide.globals.get('__describe_roboxlib') as () => string
+            const classes = JSON.parse(describe()) as RoboxlibClass[]
+            self.postMessage({ kind: 'describe', id: request.id, classes } satisfies WorkerResponse)
+        }
     } catch (error) {
-        console.error('Pyodide lint failed', error)
-        self.postMessage({ id, diagnostics: [] } satisfies LintResponse)
+        console.error('Pyodide worker request failed', error)
+        if (request.kind === 'lint') {
+            self.postMessage({ kind: 'lint', id: request.id, diagnostics: [] } satisfies WorkerResponse)
+        } else {
+            self.postMessage({ kind: 'describe', id: request.id, classes: [] } satisfies WorkerResponse)
+        }
     }
 }
