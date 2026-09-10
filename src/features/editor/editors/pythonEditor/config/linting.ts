@@ -3,7 +3,7 @@ import type { editor as editorNamespace } from 'monaco-editor/editor/editor.api'
 import PyodideLintWorker from '../workers/pyodideLint.worker?worker'
 import type { LintRequest, LintResponse } from '../workers/pyodideLint.worker'
 
-const MARKER_OWNER = 'pyodide-syntax'
+const MARKER_OWNER = 'pyodide-python'
 const LINT_DEBOUNCE_MS = 400
 
 const runWhenIdle: (callback: () => void) => void =
@@ -11,10 +11,13 @@ const runWhenIdle: (callback: () => void) => void =
         ? (callback) => window.requestIdleCallback(callback)
         : (callback) => window.setTimeout(callback, 1000)
 
-// Real Python syntax errors from `compile()`, run off the main thread since
+// Real Python syntax errors, plus argument-count/keyword checks for calls to
+// builtins and the student's own top-level functions (via
+// inspect.Signature.bind against the real signature -- same TypeError
+// Python itself would raise). Method calls (`obj.method()`) aren't checked,
+// since that needs knowing the type of `obj`. Runs off the main thread since
 // spinning up Pyodide (a WASM CPython build) blocks for a few seconds on
-// first use. Only line/col from a genuine SyntaxError -- no semantic checks
-// (undefined names etc.), since that would need real static analysis.
+// first use.
 export function lintPythonModel(model: editorNamespace.ITextModel) {
     let worker: Worker | null = null
     let requestId = 0
