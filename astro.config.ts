@@ -13,6 +13,7 @@ import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
 import { unified } from '@astrojs/markdown-remark'
 import RoboxSectionize from './astro/integrations/markdown/roboxSectionize'
+import { syncPyodideAssets } from './astro/integrations/pyodide/syncPyodideAssets'
 import { isNoindex, PRODUCTION_ORIGIN } from './src/data/seo'
 
 export default defineConfig({
@@ -62,6 +63,7 @@ export default defineConfig({
         },
     },
     integrations: [
+        syncPyodideAssets(),
         react(),
         mdx(),
         // No sitemap in the iOS bundle: it ships as a Capacitor app off the
@@ -69,9 +71,9 @@ export default defineConfig({
         process.env.IOS_BUILD === 'true'
             ? undefined
             : sitemap({
-                  // Same list Meta.astro marks `noindex` from, so the two can't disagree.
-                  filter: (page) => !isNoindex(new URL(page).pathname),
-              }),
+                // Same list Meta.astro marks `noindex` from, so the two can't disagree.
+                filter: (page) => !isNoindex(new URL(page).pathname),
+            }),
         process.env.IOS_BUILD === 'true' ? transformIOSBuild() : undefined,
     ],
     adapter: node({

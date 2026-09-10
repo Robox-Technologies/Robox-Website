@@ -1,6 +1,9 @@
 # build output
 dist/
 build/
+
+# copied from node_modules/pyodide by scripts/sync-pyodide-assets.mjs
+public/hub/pyodide/
 # generated types
 .astro/
 
