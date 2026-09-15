@@ -17,6 +17,7 @@ export default defineConfig([
             'build/**',
             '.astro/**',
             'ios/**',
+            'public/**',
             'package-lock.json',
             'package.json',
         ],

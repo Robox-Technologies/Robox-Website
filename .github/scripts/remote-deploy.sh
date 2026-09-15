@@ -62,7 +62,16 @@ npm ci --include=dev
 
 log "Building"
 export NODE_ENV=production
-export NODE_OPTIONS="${NODE_OPTIONS:-} --max-old-space-size=4096"
+
+# Asking V8 for more heap than the box has turns a memory-hungry build into the
+# kernel OOM-killing whatever else is resident -- including the pm2 process
+# still serving the live site -- so cap the heap at 70% of RAM, 4GB ceiling.
+if [[ "${NODE_OPTIONS:-}" != *--max-old-space-size* ]]; then
+    heap_mb="$(node -e 'const mb = require("os").totalmem() / 1024 / 1024
+        console.log(Math.max(512, Math.min(4096, Math.floor(mb * 0.7))))')"
+    echo "Build heap capped at ${heap_mb}MB"
+    export NODE_OPTIONS="${NODE_OPTIONS:-} --max-old-space-size=$heap_mb"
+fi
 npm run build
 
 [ -f "$SERVER_ENTRY" ] || {
