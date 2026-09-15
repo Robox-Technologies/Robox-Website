@@ -18,6 +18,16 @@ SERVER_ENTRY='dist/server/entry.mjs'
 
 log() { printf '\n==> %s\n' "$*"; }
 
+# Cancelling a workflow run kills the SSH client but leaves this script building
+# here, and a second build alongside it pushes a 1GB box far enough into swap
+# that sshd stops answering -- which is how a cancelled deploy took out the next
+# one before it even got a host key. One build per target at a time.
+exec 9>"$HOME/.robox-deploy-$PM2_NAME.lock"
+if ! flock -w 900 9; then
+    echo "another deploy of '$PM2_NAME' has held the lock for 15 minutes" >&2
+    exit 1
+fi
+
 # Prints the pm2 status of $1 ("online", "stopped", ...) or "missing".
 pm2_status() {
     { pm2 jlist 2>/dev/null || echo '[]'; } | node -e '

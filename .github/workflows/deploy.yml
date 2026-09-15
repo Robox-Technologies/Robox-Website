@@ -12,8 +12,9 @@ name: Deploy
 #                      ~/.ssh/authorized_keys
 # Optional:
 #   DEPLOY_SSH_PORT        - SSH port (default 22)
-#   DEPLOY_SSH_KNOWN_HOSTS - pinned host key(s); when unset the host key is
-#                            fetched with ssh-keyscan on every run
+#   DEPLOY_SSH_KNOWN_HOSTS - pinned host key(s) from `ssh-keyscan <host>`; re-run
+#                            that and update the secret if the VM is rebuilt.
+#                            When unset the key is scanned on every deploy.
 
 on:
     push:
@@ -87,8 +88,23 @@ jobs:
                   if [ -n "$SSH_KNOWN_HOSTS" ]; then
                       printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
                   else
-                      echo "DEPLOY_SSH_KNOWN_HOSTS is not set — trusting the key ssh-keyscan returns"
-                      ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" > ~/.ssh/known_hosts 2>/dev/null
+                      # ssh-keyscan gives up after 5s by default. The VM is small
+                      # enough that a build in flight can keep sshd from answering
+                      # inside that window, which failed the deploy with a bare
+                      # "exit code 1" because the reason went to /dev/null. Wait
+                      # longer, retry, and keep the error text.
+                      echo "::warning::DEPLOY_SSH_KNOWN_HOSTS is not set — trusting the key ssh-keyscan returns"
+                      for attempt in 1 2 3; do
+                          ssh-keyscan -T 20 -p "${SSH_PORT:-22}" "$SSH_HOST" > ~/.ssh/known_hosts || true
+                          [ -s ~/.ssh/known_hosts ] && break
+                          echo "ssh-keyscan returned no host key (attempt $attempt/3)"
+                          [ "$attempt" = 3 ] || sleep 15
+                      done
+                  fi
+
+                  if [ ! -s ~/.ssh/known_hosts ]; then
+                      echo "::error::No host key for the deploy server. It is unreachable on port ${SSH_PORT:-22}, or too loaded to answer — check the VM, then re-run."
+                      exit 1
                   fi
                   chmod 600 ~/.ssh/known_hosts
 
