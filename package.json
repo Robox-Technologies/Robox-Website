@@ -48,7 +48,7 @@
     "nodemailer": "^9.0.5",
     "parse5": "^7.3.0",
     "path-to-regexp": "^8.2.0",
-    "payload": "^3.86.0",
+    "payload": "^3.88.0",
     "prismjs": "^1.30.0",
     "rehype-document": "^7.0.3",
     "rehype-format": "^5.0.1",
