@@ -1,15 +1,15 @@
-import type * as React from 'react';
-import { Img } from 'jsx-email';
+import type * as React from 'react'
+import { Img } from 'jsx-email'
 
 export interface ThemedImgProps {
     /** Image shown in light mode, and anywhere the swap is unsupported. */
-    src: string;
+    src: string
     /** Image shown in dark mode. */
-    darkSrc: string;
-    alt: string;
-    width: string;
-    height: string;
-    style?: React.CSSProperties;
+    darkSrc: string
+    alt: string
+    width: string
+    height: string
+    style?: React.CSSProperties
 }
 
 /**
@@ -17,7 +17,14 @@ export interface ThemedImgProps {
  * swap an `src` on a media query. The dark one is inline `display: none` so clients
  * that strip <style> show the light image rather than both.
  */
-export const ThemedImg = ({ src, darkSrc, alt, width, height, style }: ThemedImgProps) => {
+export const ThemedImg = ({
+    src,
+    darkSrc,
+    alt,
+    width,
+    height,
+    style,
+}: ThemedImgProps) => {
     return (
         <>
             <Img
@@ -34,16 +41,18 @@ export const ThemedImg = ({ src, darkSrc, alt, width, height, style }: ThemedImg
                 width={width}
                 height={height}
                 className="dark-img"
-                style={{
-                    ...style,
-                    display: 'none',
-                    // Outlook's Word engine is unreliable about display:none on
-                    // images; mso-hide is what it actually honours.
-                    msoHide: 'all'
-                } as React.CSSProperties}
+                style={
+                    {
+                        ...style,
+                        display: 'none',
+                        // Outlook's Word engine is unreliable about display:none on
+                        // images; mso-hide is what it actually honours.
+                        msoHide: 'all',
+                    } as React.CSSProperties
+                }
             />
         </>
-    );
-};
+    )
+}
 
-export default ThemedImg;
+export default ThemedImg

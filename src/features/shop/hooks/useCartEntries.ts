@@ -8,8 +8,8 @@ import { clampQuantity } from '../cart/utils/quantity'
 export function useCartEntries(products: Product[]) {
     const currentCart = useStore(cartItems)
 
-    const entries: CartEntry[] = Object.entries(currentCart)
-        .flatMap(([productId, { quantity }]) => {
+    const entries: CartEntry[] = Object.entries(currentCart).flatMap(
+        ([productId, { quantity }]) => {
             const product = products.find(
                 ({ internalName }) => internalName === productId,
             )
@@ -28,7 +28,8 @@ export function useCartEntries(products: Product[]) {
                     quantity: safeQuantity,
                 },
             ]
-        })
+        },
+    )
 
     const updateQuantity = (productId: string, nextValue: number) => {
         setCartQuantity(productId, clampQuantity(nextValue))

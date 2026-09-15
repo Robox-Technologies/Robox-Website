@@ -46,7 +46,9 @@ export function initEyes(): void {
             }
 
             const offset =
-                (EYE_MAX_DIST - FALLOFF_FAC / (dist + FALLOFF_FAC / EYE_MAX_DIST)) * (touchInput ? MOBILE_DIST_MULT : 1)
+                (EYE_MAX_DIST -
+                    FALLOFF_FAC / (dist + FALLOFF_FAC / EYE_MAX_DIST)) *
+                (touchInput ? MOBILE_DIST_MULT : 1)
 
             eye.style.transform = `translate(${(delta.x / dist) * offset}%,${(delta.y / dist) * offset}%)`
         }

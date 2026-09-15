@@ -1,7 +1,15 @@
 import type { ExtensionKey } from 'src/types/extensions'
 import type { SensorKey } from 'src/types/extraSensors'
-import type { UserExtensions, UserSensor, UserSensors } from 'src/types/projects'
-import { preamble, ExtensionsPreamble, ExtraSensorsPreamble } from '../config/preamble'
+import type {
+    UserExtensions,
+    UserSensor,
+    UserSensors,
+} from 'src/types/projects'
+import {
+    preamble,
+    ExtensionsPreamble,
+    ExtraSensorsPreamble,
+} from '../config/preamble'
 
 // Shared by both editors, so a project's robot API setup is identical either way.
 export function buildPreamble(
@@ -9,7 +17,9 @@ export function buildPreamble(
 ): string {
     return (
         preamble +
-        generateExtensionsPreamble(project?.extensions ?? ({} as UserExtensions)) +
+        generateExtensionsPreamble(
+            project?.extensions ?? ({} as UserExtensions),
+        ) +
         generateExtraSensorsPreamble(project?.sensors ?? {})
     )
 }

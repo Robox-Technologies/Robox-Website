@@ -36,13 +36,15 @@ wasted round-trips:
 ## Traps that cost real time before
 
 - **Stale scoped CSS.** Editing an `.astro` component's `<style>` can leave the
-  dev server injecting the *old* scoped CSS even though `curl`ing the page shows
+  dev server injecting the _old_ scoped CSS even though `curl`ing the page shows
   the new rules — Vite's transform cache for the `?astro&type=style` module goes
   stale. `touch <file>.astro`, load a fresh tab, and confirm before concluding
   your CSS is wrong:
-  ```js
-  [...document.querySelectorAll('style')].some(s => s.textContent.includes('<your-selector>'))
-  ```
+    ```js
+    ;[...document.querySelectorAll('style')].some((s) =>
+        s.textContent.includes('<your-selector>'),
+    )
+    ```
 - **Screenshots lie about numbers.** They come back downscaled. For anything
   numeric use `getBoundingClientRect()` / computed styles.
 - **Below-the-fold capture.** The in-app browser pane can return blank frames for

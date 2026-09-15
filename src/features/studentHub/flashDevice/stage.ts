@@ -1,5 +1,9 @@
 import { setButtonBusy } from '@/components/busyButton'
-import { dispatchStageAdvance, dispatchStageClearError, dispatchStageError } from '@/components/stageFlow'
+import {
+    dispatchStageAdvance,
+    dispatchStageClearError,
+    dispatchStageError,
+} from '@/components/stageFlow'
 
 export type Stage = 'bootloader' | 'flash' | 'done'
 
@@ -24,7 +28,11 @@ export function dispatchFlashAdvance(target: EventTarget, stage: Stage): void {
     dispatchStageAdvance(target, NAMESPACE, stage)
 }
 
-export function dispatchFlashError(target: EventTarget, title: string, message: string): void {
+export function dispatchFlashError(
+    target: EventTarget,
+    title: string,
+    message: string,
+): void {
     dispatchStageError(target, NAMESPACE, title, message)
 }
 
@@ -36,7 +44,9 @@ export { setButtonBusy }
 
 /** Shows the FlashProgress bar in `root` and resets it to 0, so a retry starts over. */
 export function showFlashProgress(root: ParentNode): void {
-    root.querySelector<HTMLElement>('.flashProgress')?.classList.remove('hidden')
+    root.querySelector<HTMLElement>('.flashProgress')?.classList.remove(
+        'hidden',
+    )
     setFlashProgress(root, 0)
 }
 
@@ -52,7 +62,9 @@ export function setFlashProgress(root: ParentNode, percent: number): void {
     const clamped = Math.min(100, Math.max(0, Math.round(percent)))
     progress.setAttribute('aria-valuenow', String(clamped))
     const fill = progress.querySelector<HTMLDivElement>('.flashProgressFill')
-    const label = progress.querySelector<HTMLSpanElement>('.flashProgressPercent')
+    const label = progress.querySelector<HTMLSpanElement>(
+        '.flashProgressPercent',
+    )
     if (fill) fill.style.width = `${clamped}%`
     if (label) label.textContent = String(clamped)
 }

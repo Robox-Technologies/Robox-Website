@@ -1,18 +1,18 @@
 ---
 name: robox-web
 description: >-
-  Playbook for developing the Ro/Box website — an Astro 7 + React 19 islands +
-  Tailwind v4 codebase that is simultaneously a marketing/e-commerce site and a
-  Capacitor iOS app. Use this whenever work touches this repo: editing .astro
-  pages/layouts/components, React islands, global.css or Tailwind classes, cards,
-  buttons, goobers, heroes, the header/footer, Astro Actions or API routes,
-  Stripe checkout or Australia Post shipping, jsx-email templates, the Blockly
-  block editor, student hub / SQLite project storage, IOS_BUILD branches, or any
-  "make this page look/behave like X" request. Also use for build, `astro check`,
-  dev-server, and browser-verification questions here. Read it before the first
-  edit, not after — it records traps (Tailwind v4 `translate`, iOS 15 CSS floor,
-  raw-CSS `<style>`, stale scoped CSS) that silently produce code that looks
-  right and does nothing.
+    Playbook for developing the Ro/Box website — an Astro 7 + React 19 islands +
+    Tailwind v4 codebase that is simultaneously a marketing/e-commerce site and a
+    Capacitor iOS app. Use this whenever work touches this repo: editing .astro
+    pages/layouts/components, React islands, global.css or Tailwind classes, cards,
+    buttons, goobers, heroes, the header/footer, Astro Actions or API routes,
+    Stripe checkout or Australia Post shipping, jsx-email templates, the Blockly
+    block editor, student hub / SQLite project storage, IOS_BUILD branches, or any
+    "make this page look/behave like X" request. Also use for build, `astro check`,
+    dev-server, and browser-verification questions here. Read it before the first
+    edit, not after — it records traps (Tailwind v4 `translate`, iOS 15 CSS floor,
+    raw-CSS `<style>`, stale scoped CSS) that silently produce code that looks
+    right and does nothing.
 ---
 
 # Ro/Box website
@@ -33,18 +33,18 @@ WKWebView on iOS 15** — see `references/ios-app.md`.
 
 Repo shape worth knowing before you go looking:
 
-| Where | What |
-| --- | --- |
-| `src/pages/` | routes only — thin, delegate to features |
-| `src/features/<name>/` | feature-owned components + logic (`home`, `shop`, `catalog`, `studentHub`, `blockEditor`, `emails`) |
-| `src/components/` | cross-feature primitives: `card.tsx`, `button.tsx`, `dialog.tsx`, `Goober.astro`, `Hero.astro`, `Meta.astro`, `pageHero.tsx`, `header/`, `footer/` |
-| `src/layouts/` | `StandardLayout` (site), `EditorLayout` (app), `LegalLayout` |
-| `src/styles/global.css` | design tokens (`@theme`), `@layer components` (button/card/carousel systems), `@layer base`, `@layer utilities` |
-| `src/actions/index.ts` | every Astro Action, re-exported from `*.server.ts` files |
-| `src/utils/server/` | server-only helpers (`cms.server.ts`, `stripe/`, `rateLimit.server.ts`, `safeUrl.ts`, `cache.server.ts`) |
-| `src/state/` | `nanostores` (cart); `studentProjects/stores/` for hub projects |
-| `src/data/` | `seo.ts` (noindex list + `PRODUCTION_ORIGIN`), products, legal MDX, sensor/extension JSON |
-| `astro/integrations/markdown/` | `RoboxSectionize` remark plugin |
+| Where                          | What                                                                                                                                               |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/pages/`                   | routes only — thin, delegate to features                                                                                                           |
+| `src/features/<name>/`         | feature-owned components + logic (`home`, `shop`, `catalog`, `studentHub`, `blockEditor`, `emails`)                                                |
+| `src/components/`              | cross-feature primitives: `card.tsx`, `button.tsx`, `dialog.tsx`, `Goober.astro`, `Hero.astro`, `Meta.astro`, `pageHero.tsx`, `header/`, `footer/` |
+| `src/layouts/`                 | `StandardLayout` (site), `EditorLayout` (app), `LegalLayout`                                                                                       |
+| `src/styles/global.css`        | design tokens (`@theme`), `@layer components` (button/card/carousel systems), `@layer base`, `@layer utilities`                                    |
+| `src/actions/index.ts`         | every Astro Action, re-exported from `*.server.ts` files                                                                                           |
+| `src/utils/server/`            | server-only helpers (`cms.server.ts`, `stripe/`, `rateLimit.server.ts`, `safeUrl.ts`, `cache.server.ts`)                                           |
+| `src/state/`                   | `nanostores` (cart); `studentProjects/stores/` for hub projects                                                                                    |
+| `src/data/`                    | `seo.ts` (noindex list + `PRODUCTION_ORIGIN`), products, legal MDX, sensor/extension JSON                                                          |
+| `astro/integrations/markdown/` | `RoboxSectionize` remark plugin                                                                                                                    |
 
 Conventions that the linter or a reviewer will hold you to:
 
@@ -87,7 +87,7 @@ The habit that has worked here, in order:
    exercise email rendering or the iOS transform.
 5. **Commit as you go.** Yuma's standing preference: one commit per page or
    coherent phase with a short imperative subject (`Add new mobile goober
-   behaviour`, `Downsize certain h1 tags (6xl -> 5xl)`), not one giant drop at
+behaviour`, `Downsize certain h1 tags (6xl -> 5xl)`), not one giant drop at
    the end. Work happens on `epic/astro`.
 
 When a request is "make it match the old site": `/Users/yuma/robox/Robox-Website-ORIGINAL`
@@ -102,7 +102,7 @@ They are the reason this skill exists.
 
 - **Tailwind v4 owns the `translate` property.** `-translate-y-1/2` compiles to
   `translate: 0 -50%`, not `transform`. Hand-written CSS that sets `translate:`
-  *replaces* the utility. Express nudges as `transform: translateY(...)` so they
+  _replaces_ the utility. Express nudges as `transform: translateY(...)` so they
   compose. (`.button-interactive:active` records this.)
 - **`<style>` in `.astro` is raw CSS, not JSX.** `<style>{`...`}</style>` dumps
   literal braces and backticks into the stylesheet. Inject dynamic CSS with

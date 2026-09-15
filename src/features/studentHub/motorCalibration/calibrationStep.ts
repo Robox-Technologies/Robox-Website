@@ -75,7 +75,8 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         MIN_SPEED_PX_S + favor * (MAX_SPEED_PX_S - MIN_SPEED_PX_S)
 
     const applyFavor = (line: HTMLElement, favor: number) => {
-        const intensity = MIN_INTENSITY + favor * (MAX_INTENSITY - MIN_INTENSITY)
+        const intensity =
+            MIN_INTENSITY + favor * (MAX_INTENSITY - MIN_INTENSITY)
         line.style.setProperty('--intensity', String(intensity))
     }
 
@@ -154,7 +155,8 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
             if (wasConnected) {
                 toast.danger({
                     title: 'Ro/Box Disconnected',
-                    message: 'Your Ro/Box lost its connection. Reconnect it, then calibrate again.',
+                    message:
+                        'Your Ro/Box lost its connection. Reconnect it, then calibrate again.',
                     durationMs: 6000,
                 })
             }

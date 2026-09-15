@@ -33,7 +33,7 @@ Three families, and new UI should join them rather than hand-roll hover states:
   `.button-interactive::after` carries the hover wash; press, focus-visible and
   disabled states are all handled, including a `prefers-reduced-motion` branch.
 - **Cards** — `.card-interactive` owns cursor, lift, press and focus-visible;
-  `.card-cta` is the pill *inside* a card. Opt out of the press with
+  `.card-cta` is the pill _inside_ a card. Opt out of the press with
   `.card-no-press`.
 - **Carousels** — `.carousel-item` and friends, including focus-visible handling.
 
@@ -53,7 +53,7 @@ or `<a>`. Background colour belongs on the Card root (`className`), not
 ## Tailwind v4 vs hand-written CSS
 
 Tailwind v4 compiles `-translate-y-1/2` to the **individual `translate`
-property** (`translate: 0 -50%`). Individual transform properties apply *before*
+property** (`translate: 0 -50%`). Individual transform properties apply _before_
 `transform`, so:
 
 - CSS in `global.css` that writes `translate:` **replaces** the utility. This is

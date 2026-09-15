@@ -3,7 +3,9 @@ import { clampQuantity, toQuantity } from '@/features/shop/cart/utils/quantity'
 
 export function addToCart(productId: string, quantity = 1) {
     const cart = cartItems.get()
-    const nextQuantity = clampQuantity((cart[productId]?.quantity || 0) + toQuantity(quantity))
+    const nextQuantity = clampQuantity(
+        (cart[productId]?.quantity || 0) + toQuantity(quantity),
+    )
 
     if (nextQuantity === 0) {
         removeFromCart(productId)

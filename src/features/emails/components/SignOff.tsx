@@ -1,11 +1,11 @@
-import * as React from 'react';
-import { Link, Text } from 'jsx-email';
+import * as React from 'react'
+import { Link, Text } from 'jsx-email'
 
-import { linkStyle, textStyle } from '../styles';
+import { linkStyle, textStyle } from '../styles'
 
 export interface SignOffProps {
     /** The sentence(s) preceding the "Cheers," closing, e.g. help/contact copy. */
-    children: React.ReactNode;
+    children: React.ReactNode
 }
 
 /**
@@ -22,13 +22,13 @@ export const SignOff = ({ children }: SignOffProps) => {
             <br />
             The Ro/Box Team
         </Text>
-    );
-};
+    )
+}
 
 export const SupportLink = () => (
     <Link href="mailto:hello@robox.com.au" style={linkStyle}>
         hello@robox.com.au
     </Link>
-);
+)
 
-export default SignOff;
+export default SignOff

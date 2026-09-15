@@ -44,14 +44,13 @@ export default function DeleteDialog() {
                 </div>
             </DialogHeader>
 
-            <DialogBody
-                className='overflow-visible'
-            >
+            <DialogBody className="overflow-visible">
                 <div className="px-6 py-4">
                     <div className="bg-red/50 h-full w-full rounded-lg flex-col items-center justify-center p-4">
                         <p>
                             <span className="font-bold">Warning: </span>
-                            Deleting a project means it will be gone forever (a <em>very, very</em> long time)!
+                            Deleting a project means it will be gone forever (a{' '}
+                            <em>very, very</em> long time)!
                         </p>
                     </div>
                     <div className="mt-4">
@@ -63,10 +62,7 @@ export default function DeleteDialog() {
             </DialogBody>
 
             <DialogFooter>
-                <Button
-                    className="bg-red w-25"
-                    onClick={onDeleteProject}
-                >
+                <Button className="bg-red w-25" onClick={onDeleteProject}>
                     Delete
                 </Button>
             </DialogFooter>

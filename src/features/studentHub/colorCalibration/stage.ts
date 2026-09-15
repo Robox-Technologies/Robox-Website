@@ -1,5 +1,9 @@
 import { setButtonBusy } from '@/components/busyButton'
-import { dispatchStageAdvance, dispatchStageClearError, dispatchStageError } from '@/components/stageFlow'
+import {
+    dispatchStageAdvance,
+    dispatchStageClearError,
+    dispatchStageError,
+} from '@/components/stageFlow'
 
 export type Stage = 'connect' | 'calibrate'
 
@@ -19,11 +23,18 @@ const NAMESPACE = 'colorcalibration'
 
 // Dispatched on the component's own root and bubbled, so the orchestrator can react
 // without knowing anything about the component.
-export function dispatchCalibrationAdvance(target: EventTarget, stage: Stage): void {
+export function dispatchCalibrationAdvance(
+    target: EventTarget,
+    stage: Stage,
+): void {
     dispatchStageAdvance(target, NAMESPACE, stage)
 }
 
-export function dispatchCalibrationError(target: EventTarget, title: string, message: string): void {
+export function dispatchCalibrationError(
+    target: EventTarget,
+    title: string,
+    message: string,
+): void {
     dispatchStageError(target, NAMESPACE, title, message)
 }
 
@@ -41,7 +52,9 @@ export function dispatchCalibrationClearError(target: EventTarget): void {
 export const CALIBRATION_READY_EVENT = `${NAMESPACE}:calibration-ready`
 
 export function dispatchCalibrationReady(target: EventTarget): void {
-    target.dispatchEvent(new CustomEvent(CALIBRATION_READY_EVENT, { bubbles: true }))
+    target.dispatchEvent(
+        new CustomEvent(CALIBRATION_READY_EVENT, { bubbles: true }),
+    )
 }
 
 export { setButtonBusy }

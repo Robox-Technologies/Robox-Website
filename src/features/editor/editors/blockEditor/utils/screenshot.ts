@@ -208,7 +208,10 @@ function getBlocksBoundingBox(workspace: WorkspaceSvg) {
     return { left, top, right, bottom }
 }
 
-function removeExcludedBlocksFromClone(workspace: WorkspaceSvg, clone: SVGElement) {
+function removeExcludedBlocksFromClone(
+    workspace: WorkspaceSvg,
+    clone: SVGElement,
+) {
     const includedBlockIds = new Set(
         getIncludedBlocks(workspace).map((block) => block.id),
     )

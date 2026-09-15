@@ -3,9 +3,7 @@
 const CMS_URL = process.env.CMS_URL ?? 'http://localhost:3333'
 
 export type CMSLocation =
-    | 'Newsletter'
-    | 'Teacher Resources'
-    | 'Student Resources'
+    'Newsletter' | 'Teacher Resources' | 'Student Resources'
 
 type UploadRef = string | { url?: string } | null | undefined
 

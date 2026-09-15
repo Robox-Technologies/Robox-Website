@@ -10,7 +10,10 @@ export function dispatchStageAdvance<S extends string>(
     stage: S,
 ): void {
     target.dispatchEvent(
-        new CustomEvent(`${namespace}:advance`, { detail: { stage }, bubbles: true }),
+        new CustomEvent(`${namespace}:advance`, {
+            detail: { stage },
+            bubbles: true,
+        }),
     )
 }
 
@@ -21,12 +24,20 @@ export function dispatchStageError(
     message: string,
 ): void {
     target.dispatchEvent(
-        new CustomEvent(`${namespace}:error`, { detail: { title, message }, bubbles: true }),
+        new CustomEvent(`${namespace}:error`, {
+            detail: { title, message },
+            bubbles: true,
+        }),
     )
 }
 
-export function dispatchStageClearError(target: EventTarget, namespace: string): void {
-    target.dispatchEvent(new CustomEvent(`${namespace}:clear-error`, { bubbles: true }))
+export function dispatchStageClearError(
+    target: EventTarget,
+    namespace: string,
+): void {
+    target.dispatchEvent(
+        new CustomEvent(`${namespace}:clear-error`, { bubbles: true }),
+    )
 }
 
 export interface StageFlowOptions<S extends string> {
@@ -44,21 +55,29 @@ export interface StageFlowOptions<S extends string> {
  * Wires the `.stageFlow*` elements inside `root` to the
  * `${namespace}:advance` / `:error` / `:clear-error` event contract.
  */
-export function createStageFlow<S extends string>(options: StageFlowOptions<S>): void {
+export function createStageFlow<S extends string>(
+    options: StageFlowOptions<S>,
+): void {
     const { root, namespace, stages, isStage, stageParam } = options
 
     const stagesWrapper = root.querySelector<HTMLElement>('.stageFlowStages')
-    const stageElements = Array.from(root.querySelectorAll<HTMLElement>('.stageFlowStage'))
+    const stageElements = Array.from(
+        root.querySelectorAll<HTMLElement>('.stageFlowStage'),
+    )
     const errorBanner = root.querySelector<HTMLElement>('.stageFlowError')
     const errorTitle = root.querySelector<HTMLElement>('.stageFlowErrorTitle')
-    const errorMessage = root.querySelector<HTMLElement>('.stageFlowErrorMessage')
+    const errorMessage = root.querySelector<HTMLElement>(
+        '.stageFlowErrorMessage',
+    )
     if (!stagesWrapper || !errorBanner || !errorTitle || !errorMessage) {
         throw new Error('Stage flow elements not found')
     }
 
     function stageFromURL(): S {
         if (!stageParam) return stages[0]
-        const value = new URLSearchParams(window.location.search).get(stageParam)
+        const value = new URLSearchParams(window.location.search).get(
+            stageParam,
+        )
         return isStage(value) ? value : stages[0]
     }
 
@@ -70,21 +89,41 @@ export function createStageFlow<S extends string>(options: StageFlowOptions<S>):
 
     function showStage(stage: S, animate = true) {
         if (!animate) {
-            stageElements.forEach((el) => el.classList.toggle('hidden', el.dataset.stage !== stage))
+            stageElements.forEach((el) =>
+                el.classList.toggle('hidden', el.dataset.stage !== stage),
+            )
             stagesWrapper!.style.height = ''
-            root.dispatchEvent(new CustomEvent(`${namespace}:stage-changed`, { detail: { stage } }))
+            root.dispatchEvent(
+                new CustomEvent(`${namespace}:stage-changed`, {
+                    detail: { stage },
+                }),
+            )
             return
         }
 
         const fromHeight = stagesWrapper!.offsetHeight
         stagesWrapper!.style.height = `${fromHeight}px`
         void stagesWrapper!.offsetHeight
-        stageElements.forEach((el) => el.classList.toggle('hidden', el.dataset.stage !== stage))
-        root.dispatchEvent(new CustomEvent(`${namespace}:stage-changed`, { detail: { stage } }))
-        const activeStage = stageElements.find((el) => el.dataset.stage === stage)
+        stageElements.forEach((el) =>
+            el.classList.toggle('hidden', el.dataset.stage !== stage),
+        )
+        root.dispatchEvent(
+            new CustomEvent(`${namespace}:stage-changed`, {
+                detail: { stage },
+            }),
+        )
+        const activeStage = stageElements.find(
+            (el) => el.dataset.stage === stage,
+        )
         const toHeight = activeStage?.scrollHeight ?? fromHeight
         stagesWrapper!.style.height = `${toHeight}px`
-        stagesWrapper!.addEventListener('transitionend', () => { stagesWrapper!.style.height = '' }, { once: true })
+        stagesWrapper!.addEventListener(
+            'transitionend',
+            () => {
+                stagesWrapper!.style.height = ''
+            },
+            { once: true },
+        )
     }
 
     root.addEventListener(`${namespace}:advance`, (event) => {
@@ -95,7 +134,9 @@ export function createStageFlow<S extends string>(options: StageFlowOptions<S>):
     })
 
     root.addEventListener(`${namespace}:error`, (event) => {
-        const { title, message } = (event as CustomEvent<{ title: string; message: string }>).detail
+        const { title, message } = (
+            event as CustomEvent<{ title: string; message: string }>
+        ).detail
         errorTitle.textContent = title
         errorMessage.textContent = message
         errorBanner.style.display = 'flex'
@@ -106,7 +147,12 @@ export function createStageFlow<S extends string>(options: StageFlowOptions<S>):
     })
 
     const initialStage = stageFromURL()
-    if (stageParam) history.replaceState({ stage: initialStage }, '', urlForStage(initialStage))
+    if (stageParam)
+        history.replaceState(
+            { stage: initialStage },
+            '',
+            urlForStage(initialStage),
+        )
     showStage(initialStage, false)
 
     if (stageParam) {

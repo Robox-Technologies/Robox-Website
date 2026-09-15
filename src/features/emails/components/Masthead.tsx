@@ -1,8 +1,8 @@
-import { Link, Section } from 'jsx-email';
+import { Link, Section } from 'jsx-email'
 
-import { emailAsset } from '../assets';
-import { cellStyle, logoStyle, mastheadStyle } from '../styles';
-import { ThemedImg } from './ThemedImg';
+import { emailAsset } from '../assets'
+import { cellStyle, logoStyle, mastheadStyle } from '../styles'
+import { ThemedImg } from './ThemedImg'
 
 /**
  * Logo masthead. The source is 444x89 but width/height are the displayed 250x50,
@@ -37,7 +37,7 @@ export const Masthead = () => {
                 </tbody>
             </table>
         </Section>
-    );
-};
+    )
+}
 
-export default Masthead;
+export default Masthead

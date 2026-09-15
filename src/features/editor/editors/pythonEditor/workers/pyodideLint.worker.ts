@@ -130,10 +130,12 @@ def __lint(source):
 let pyodidePromise: Promise<PyodideInterface> | null = null
 
 function getPyodide(): Promise<PyodideInterface> {
-    pyodidePromise ??= loadPyodide({ indexURL: '/hub/pyodide/' }).then((pyodide) => {
-        pyodide.runPython(LINT_SETUP)
-        return pyodide
-    })
+    pyodidePromise ??= loadPyodide({ indexURL: '/hub/pyodide/' }).then(
+        (pyodide) => {
+            pyodide.runPython(LINT_SETUP)
+            return pyodide
+        },
+    )
     return pyodidePromise
 }
 

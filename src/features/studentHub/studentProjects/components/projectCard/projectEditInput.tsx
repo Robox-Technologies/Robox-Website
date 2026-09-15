@@ -21,10 +21,13 @@ export default function ProjectEditInput({
         inputRef.current?.select()
     }, [])
 
-    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setInputValue(e.target.value)
-        setError(null)
-    }, [])
+    const handleInputChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            setInputValue(e.target.value)
+            setError(null)
+        },
+        [],
+    )
 
     const handleSave = useCallback(() => {
         const trimmedName = inputValue.trim()
@@ -52,7 +55,7 @@ export default function ProjectEditInput({
                 onCancel()
             }
         },
-        [handleSave, onCancel]
+        [handleSave, onCancel],
     )
 
     const handleBlur = useCallback(
@@ -63,7 +66,7 @@ export default function ProjectEditInput({
             }
             onCancel()
         },
-        [onCancel]
+        [onCancel],
     )
 
     return (
@@ -97,7 +100,10 @@ export default function ProjectEditInput({
                 }}
                 className="p-1! h-8 w-8 flex items-center justify-center bg-green"
             >
-                <FontAwesomeIcon icon={faCheck} className="text-white h-4 w-4" />
+                <FontAwesomeIcon
+                    icon={faCheck}
+                    className="text-white h-4 w-4"
+                />
             </Button>
             <Button
                 onMouseDown={(e) => e.preventDefault()}

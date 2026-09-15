@@ -1,6 +1,12 @@
-import { Link, Section, Text } from 'jsx-email';
+import { Link, Section, Text } from 'jsx-email'
 
-import { alignRight, footerStyle, subLinkStyle, subStyle, topCellStyle } from '../styles';
+import {
+    alignRight,
+    footerStyle,
+    subLinkStyle,
+    subStyle,
+    topCellStyle,
+} from '../styles'
 
 /**
  * Company address / ABN / contact footer, shown at the bottom of every email.
@@ -34,11 +40,17 @@ export const Footer = () => {
                             <Text style={{ ...subStyle, ...alignRight }}>
                                 ABN 89 684 550 249
                                 <br />
-                                <Link href="mailto:hello@robox.com.au" style={subLinkStyle}>
+                                <Link
+                                    href="mailto:hello@robox.com.au"
+                                    style={subLinkStyle}
+                                >
                                     hello@robox.com.au
                                 </Link>
                                 <br />
-                                <Link href="tel:+61422987506" style={subLinkStyle}>
+                                <Link
+                                    href="tel:+61422987506"
+                                    style={subLinkStyle}
+                                >
                                     +61 422 987 506
                                 </Link>
                             </Text>
@@ -47,7 +59,7 @@ export const Footer = () => {
                 </tbody>
             </table>
         </Section>
-    );
-};
+    )
+}
 
-export default Footer;
+export default Footer

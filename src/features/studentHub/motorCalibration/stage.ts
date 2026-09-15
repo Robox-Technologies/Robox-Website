@@ -53,7 +53,9 @@ export function dispatchCalibrationClearError(target: EventTarget): void {
 export const CALIBRATION_READY_EVENT = `${NAMESPACE}:calibration-ready`
 
 export function dispatchCalibrationReady(target: EventTarget): void {
-    target.dispatchEvent(new CustomEvent(CALIBRATION_READY_EVENT, { bubbles: true }))
+    target.dispatchEvent(
+        new CustomEvent(CALIBRATION_READY_EVENT, { bubbles: true }),
+    )
 }
 
 export { setButtonBusy }

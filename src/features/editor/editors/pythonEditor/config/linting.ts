@@ -31,14 +31,16 @@ export function lintPythonModel(model: editorNamespace.ITextModel) {
             const { id, diagnostics } = event.data
             if (id !== latestSentId || model.isDisposed()) return
 
-            const markers: editorNamespace.IMarkerData[] = diagnostics.map((d) => ({
-                severity: MarkerSeverity.Error,
-                message: d.message,
-                startLineNumber: d.startLine,
-                startColumn: d.startColumn,
-                endLineNumber: d.endLine,
-                endColumn: d.endColumn,
-            }))
+            const markers: editorNamespace.IMarkerData[] = diagnostics.map(
+                (d) => ({
+                    severity: MarkerSeverity.Error,
+                    message: d.message,
+                    startLineNumber: d.startLine,
+                    startColumn: d.startColumn,
+                    endLineNumber: d.endLine,
+                    endColumn: d.endColumn,
+                }),
+            )
             editor.setModelMarkers(model, MARKER_OWNER, markers)
         }
         return worker

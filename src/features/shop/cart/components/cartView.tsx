@@ -14,11 +14,7 @@ export default function CartView({
     products: Product[]
     imageSrcById: Record<string, string>
 }) {
-    const {
-        entries,
-        updateQuantity,
-        removeItem,
-    } = useCartEntries(products)
+    const { entries, updateQuantity, removeItem } = useCartEntries(products)
     const subtotalCents = useCartTotals(products)
     const showSummaryContent = entries.length > 0
     // The original lists preorder items under their own heading so it's clear

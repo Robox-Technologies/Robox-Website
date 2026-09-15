@@ -47,7 +47,7 @@ into `public/hub/pyodide/` (gitignored) on `astro:config:setup` -- the hook
 that fires on **every** `astro` CLI invocation (`dev`, `build`, `check`,
 `preview`), regardless of which npm script or IDE launch config triggers it.
 That's deliberate: an npm `pre*` script only fires when someone runs that
-*exact* npm script name, so a new command that shells out to `astro build`
+_exact_ npm script name, so a new command that shells out to `astro build`
 directly (or a teammate running `npx astro dev`) would silently serve a 404
 for `/hub/pyodide/*` instead. Hooking the sync into Astro's own integration
 lifecycle means there's nothing to remember to wire up.

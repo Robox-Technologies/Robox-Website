@@ -29,36 +29,36 @@ between them.
 
 ### Every product
 
-| Key | Example | Notes |
-| --- | --- | --- |
-| `weight` | `200` | Grams, whole number. The weight of the product **as shipped**, including its own packaging. Required. |
-| `status` | `available` | `available`, `not-available` or `preorder`. |
-| `packagingType` | `bag` | `bag` or `box`. See below. Defaults to `bag` with a warning if absent. |
+| Key             | Example     | Notes                                                                                                 |
+| --------------- | ----------- | ----------------------------------------------------------------------------------------------------- |
+| `weight`        | `200`       | Grams, whole number. The weight of the product **as shipped**, including its own packaging. Required. |
+| `status`        | `available` | `available`, `not-available` or `preorder`.                                                           |
+| `packagingType` | `bag`       | `bag` or `box`. See below. Defaults to `bag` with a warning if absent.                                |
 
 ### Bagged products (`packagingType: bag`)
 
 Padded satchels. The satchels themselves are shop-wide — a bagged product only
 declares **how many of itself** fit in each size.
 
-| Key | Example | Notes |
-| --- | --- | --- |
-| `bagCapacitySmall` | `1` | Max units of this product per small satchel. `0` means it does not fit. |
-| `bagCapacityMedium` | `3` | As above, medium satchel. |
-| `bagCapacityLarge` | `10` | As above, large satchel. |
+| Key                 | Example | Notes                                                                   |
+| ------------------- | ------- | ----------------------------------------------------------------------- |
+| `bagCapacitySmall`  | `1`     | Max units of this product per small satchel. `0` means it does not fit. |
+| `bagCapacityMedium` | `3`     | As above, medium satchel.                                               |
+| `bagCapacityLarge`  | `10`    | As above, large satchel.                                                |
 
 ### Boxed products (`packagingType: box`)
 
 Cartons. Both the carton and its cost vary per product, so both live here.
 
-| Key | Example | Notes |
-| --- | --- | --- |
-| `boxDimensions` | `24x16x8` | `LxWxH` in **centimetres**. One field so three numbers cannot disagree. |
-| `boxPackagingCents` | `377` | What the packaging for one unit costs, in cents. E.g. $3.39 carton + $0.38 glassine = `377`. |
+| Key                 | Example   | Notes                                                                                        |
+| ------------------- | --------- | -------------------------------------------------------------------------------------------- |
+| `boxDimensions`     | `24x16x8` | `LxWxH` in **centimetres**. One field so three numbers cannot disagree.                      |
+| `boxPackagingCents` | `377`     | What the packaging for one unit costs, in cents. E.g. $3.39 carton + $0.38 glassine = `377`. |
 
 ### Bundles (any product that is really several others)
 
-| Key | Example | Notes |
-| --- | --- | --- |
+| Key     | Example                       | Notes                                   |
+| ------- | ----------------------------- | --------------------------------------- |
 | `combo` | `{"prod_QYzaVvEwI509MU": 10}` | JSON: Stripe **product id** → quantity. |
 
 A bundle is a billing concept; the warehouse packs its contents. A product with
@@ -119,15 +119,15 @@ boxes is one request to Australia Post rather than ten.
 Enforced per parcel, from
 [Australia Post's size and weight guidelines](https://auspost.com.au/business/shipping/shipping-guidelines/size-weight-guidelines):
 
-| Limit | Value |
-| --- | --- |
-| Greatest linear dimension | 105 cm |
-| Volume | 0.25 m³ |
-| Weight | 22 kg |
+| Limit                     | Value                          |
+| ------------------------- | ------------------------------ |
+| Greatest linear dimension | 105 cm                         |
+| Volume                    | 0.25 m³                        |
+| Weight                    | 22 kg                          |
 | Minimum side (box-shaped) | 5 cm on the two smallest sides |
 
 Large orders are **split across more parcels** rather than refused — satchels are
-filled until the next item would overflow one by bulk *or* by weight, then a new
+filled until the next item would overflow one by bulk _or_ by weight, then a new
 one is opened. So there is no cap on order size and no reason to block checkout.
 
 What splitting cannot fix raises an error instead, because it is a data problem
@@ -153,11 +153,11 @@ Satchel costs are shop-wide constants; carton costs come from
 Defined in `BAG_SIZES` in `packaging.server.ts`, carried over from the old
 site's `fees.json`. Change them there, not in product metadata.
 
-| Size | Dimensions (cm) | Cost |
-| --- | --- | --- |
-| Small | 22.9 × 15.1 × 5 | $1.65 |
-| Medium | 43 × 28.5 × 5 | $2.75 |
-| Large | 48.5 × 36 × 5 | $3.45 |
+| Size   | Dimensions (cm) | Cost  |
+| ------ | --------------- | ----- |
+| Small  | 22.9 × 15.1 × 5 | $1.65 |
+| Medium | 43 × 28.5 × 5   | $2.75 |
+| Large  | 48.5 × 36 × 5   | $3.45 |
 
 ---
 
@@ -167,17 +167,17 @@ So an Australia Post consignment can be raised straight from a Stripe payment
 without re-deriving anything, the PaymentIntent metadata carries a line per
 parcel saying what to reach for, what goes in it, and what to declare:
 
-| Key | Example |
-| --- | --- |
-| `parcelCount` | `2` |
-| `parcel1` | `large satchel \| 10x Ro/Box \| 48.5x36x5cm \| 3000g` |
-| `parcel2` | `large satchel \| 1x Ro/Box \| 48.5x36x5cm \| 300g` |
-| `packaging` | `2 large satchels` |
-| `weightGrams` | `3300` |
-| `packagingCents` | `690` |
-| `productSummary` | `Ro/Box 10-Pack x 1, Ro/Box x 1` |
-| `products` | `{"prod_Rq4KbfaKyka8u5":1,"prod_QYzaVvEwI509MU":1}` |
-| `subtotalCents` / `shippingCents` | `36500` / `3890` |
+| Key                               | Example                                               |
+| --------------------------------- | ----------------------------------------------------- |
+| `parcelCount`                     | `2`                                                   |
+| `parcel1`                         | `large satchel \| 10x Ro/Box \| 48.5x36x5cm \| 3000g` |
+| `parcel2`                         | `large satchel \| 1x Ro/Box \| 48.5x36x5cm \| 300g`   |
+| `packaging`                       | `2 large satchels`                                    |
+| `weightGrams`                     | `3300`                                                |
+| `packagingCents`                  | `690`                                                 |
+| `productSummary`                  | `Ro/Box 10-Pack x 1, Ro/Box x 1`                      |
+| `products`                        | `{"prod_Rq4KbfaKyka8u5":1,"prod_QYzaVvEwI509MU":1}`   |
+| `subtotalCents` / `shippingCents` | `36500` / `3890`                                      |
 
 `parcelN` keys stop at 20 to stay inside Stripe's 50-key limit; `parcelCount` is
 always exact. These keys are absent, rather than zero, when no shipment was
@@ -190,18 +190,18 @@ priced.
 Using the current V1 kit (bag, 1/3/10 per satchel, 300 g) and a hypothetical V2
 box (24 × 16 × 8, $3.77).
 
-| Cart | Parcels | Packaging |
-| --- | --- | --- |
-| 1 kit | 1 small satchel — 1 kit, 300 g | $1.65 |
-| 3 kits | 1 medium satchel — 3 kits, 900 g | $2.75 |
-| 4 kits | 1 large satchel — 4 kits, 1.2 kg | $3.45 |
-| 10 kits | 1 large satchel — 10 kits, 3 kg | $3.45 |
-| 11 kits | 2 large satchels — 10 kits + 1 kit | $6.90 |
-| 1 ten-pack (`combo: 10 kits`) | 1 large satchel — 10 kits, 3 kg | $3.45 |
-| 1 ten-pack + 1 kit | 2 large satchels — 10 kits + 1 kit | $6.90 |
-| 3 ten-packs | 3 large satchels — 10 kits each | $10.35 |
-| 3 V2 boxes | 3 boxes, one kit each | $11.31 |
-| 1 kit + 1 V2 box | 1 small satchel + 1 box | $5.42 |
+| Cart                          | Parcels                            | Packaging |
+| ----------------------------- | ---------------------------------- | --------- |
+| 1 kit                         | 1 small satchel — 1 kit, 300 g     | $1.65     |
+| 3 kits                        | 1 medium satchel — 3 kits, 900 g   | $2.75     |
+| 4 kits                        | 1 large satchel — 4 kits, 1.2 kg   | $3.45     |
+| 10 kits                       | 1 large satchel — 10 kits, 3 kg    | $3.45     |
+| 11 kits                       | 2 large satchels — 10 kits + 1 kit | $6.90     |
+| 1 ten-pack (`combo: 10 kits`) | 1 large satchel — 10 kits, 3 kg    | $3.45     |
+| 1 ten-pack + 1 kit            | 2 large satchels — 10 kits + 1 kit | $6.90     |
+| 3 ten-packs                   | 3 large satchels — 10 kits each    | $10.35    |
+| 3 V2 boxes                    | 3 boxes, one kit each              | $11.31    |
+| 1 kit + 1 V2 box              | 1 small satchel + 1 box            | $5.42     |
 
 ---
 
@@ -216,7 +216,7 @@ box (24 × 16 × 8, $3.77).
   logs `[packaging] <product> has no bagCapacity metadata` when a product falls
   back — treat that warning as a missing-metadata bug.
 - **The old bracket lookup was off by one.** `fees.json` was read with
-  `unitVolume < maxQty`, so one kit got the *medium* satchel and ten kits matched
+  `unitVolume < maxQty`, so one kit got the _medium_ satchel and ten kits matched
   nothing and fell through to a $5.00 "excess penalty". The brackets here are
   inclusive, so the data now means what it reads.
 - **`excessPenalty` is gone.** Overflow opens more large satchels instead of

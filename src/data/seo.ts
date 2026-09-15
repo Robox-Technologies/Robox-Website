@@ -6,10 +6,7 @@ export const DEFAULT_DESCRIPTION =
 export const DESCRIPTION_LIMIT = 125
 
 /** Trims longer copy to preview length without cutting mid-word. */
-export function toDescription(
-    text: string,
-    limit = DESCRIPTION_LIMIT,
-): string {
+export function toDescription(text: string, limit = DESCRIPTION_LIMIT): string {
     const clean = text.replace(/\s+/g, ' ').trim()
     if (clean.length <= limit) return clean
 

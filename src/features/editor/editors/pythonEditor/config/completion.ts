@@ -3,20 +3,74 @@
 // has to be pulled in as a side effect, same as any other opt-in Monaco feature.
 import 'monaco-editor/editor/contrib/suggest/browser/suggestController.js'
 import { languages, Range } from 'monaco-editor/editor/editor.api'
-import type { Position, editor as editorNamespace } from 'monaco-editor/editor/editor.api'
+import type {
+    Position,
+    editor as editorNamespace,
+} from 'monaco-editor/editor/editor.api'
 
 const KEYWORDS = [
-    'False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await',
-    'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except',
-    'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is',
-    'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try',
-    'while', 'with', 'yield',
+    'False',
+    'None',
+    'True',
+    'and',
+    'as',
+    'assert',
+    'async',
+    'await',
+    'break',
+    'class',
+    'continue',
+    'def',
+    'del',
+    'elif',
+    'else',
+    'except',
+    'finally',
+    'for',
+    'from',
+    'global',
+    'if',
+    'import',
+    'in',
+    'is',
+    'lambda',
+    'nonlocal',
+    'not',
+    'or',
+    'pass',
+    'raise',
+    'return',
+    'try',
+    'while',
+    'with',
+    'yield',
 ]
 
 const BUILTINS = [
-    'print', 'len', 'range', 'str', 'int', 'float', 'bool', 'list', 'dict',
-    'set', 'tuple', 'abs', 'min', 'max', 'sum', 'sorted', 'reversed',
-    'enumerate', 'zip', 'map', 'filter', 'isinstance', 'type', 'round',
+    'print',
+    'len',
+    'range',
+    'str',
+    'int',
+    'float',
+    'bool',
+    'list',
+    'dict',
+    'set',
+    'tuple',
+    'abs',
+    'min',
+    'max',
+    'sum',
+    'sorted',
+    'reversed',
+    'enumerate',
+    'zip',
+    'map',
+    'filter',
+    'isinstance',
+    'type',
+    'round',
 ]
 
 const RESERVED = new Set([...KEYWORDS, ...BUILTINS])
@@ -41,18 +95,45 @@ function getDocumentIdentifiers(
 }
 
 const SNIPPETS: { label: string; insertText: string; doc: string }[] = [
-    { label: 'if', insertText: 'if ${1:condition}:\n\t$0', doc: 'If statement' },
-    { label: 'elif', insertText: 'elif ${1:condition}:\n\t$0', doc: 'Else-if branch' },
+    {
+        label: 'if',
+        insertText: 'if ${1:condition}:\n\t$0',
+        doc: 'If statement',
+    },
+    {
+        label: 'elif',
+        insertText: 'elif ${1:condition}:\n\t$0',
+        doc: 'Else-if branch',
+    },
     { label: 'else', insertText: 'else:\n\t$0', doc: 'Else branch' },
-    { label: 'for', insertText: 'for ${1:item} in ${2:iterable}:\n\t$0', doc: 'For loop' },
-    { label: 'while', insertText: 'while ${1:condition}:\n\t$0', doc: 'While loop' },
-    { label: 'def', insertText: 'def ${1:name}(${2:args}):\n\t$0', doc: 'Function definition' },
-    { label: 'try', insertText: 'try:\n\t${1:pass}\nexcept ${2:Exception}:\n\t$0', doc: 'Try/except block' },
+    {
+        label: 'for',
+        insertText: 'for ${1:item} in ${2:iterable}:\n\t$0',
+        doc: 'For loop',
+    },
+    {
+        label: 'while',
+        insertText: 'while ${1:condition}:\n\t$0',
+        doc: 'While loop',
+    },
+    {
+        label: 'def',
+        insertText: 'def ${1:name}(${2:args}):\n\t$0',
+        doc: 'Function definition',
+    },
+    {
+        label: 'try',
+        insertText: 'try:\n\t${1:pass}\nexcept ${2:Exception}:\n\t$0',
+        doc: 'Try/except block',
+    },
 ]
 
 function registerPythonCompletionProvider() {
     languages.registerCompletionItemProvider('python', {
-        provideCompletionItems(model: editorNamespace.ITextModel, position: Position) {
+        provideCompletionItems(
+            model: editorNamespace.ITextModel,
+            position: Position,
+        ) {
             const word = model.getWordUntilPosition(position)
             const range = new Range(
                 position.lineNumber,
@@ -75,19 +156,22 @@ function registerPythonCompletionProvider() {
                         insertText: builtin,
                         range,
                     })),
-                    ...getDocumentIdentifiers(model, word.word).map((identifier) => ({
-                        label: identifier,
-                        kind: languages.CompletionItemKind.Variable,
-                        insertText: identifier,
-                        range,
-                    })),
+                    ...getDocumentIdentifiers(model, word.word).map(
+                        (identifier) => ({
+                            label: identifier,
+                            kind: languages.CompletionItemKind.Variable,
+                            insertText: identifier,
+                            range,
+                        }),
+                    ),
                     ...SNIPPETS.map((snippet) => ({
                         label: snippet.label,
                         kind: languages.CompletionItemKind.Snippet,
                         detail: snippet.doc,
                         insertText: snippet.insertText,
                         insertTextRules:
-                            languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            languages.CompletionItemInsertTextRule
+                                .InsertAsSnippet,
                         range,
                     })),
                 ],

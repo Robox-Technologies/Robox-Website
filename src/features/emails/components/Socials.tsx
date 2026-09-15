@@ -1,35 +1,36 @@
-import { Hr, Link, Section, Text } from 'jsx-email';
+import { Hr, Link, Section, Text } from 'jsx-email'
 
-import { emailAsset } from '../assets';
+import { emailAsset } from '../assets'
 import {
     cellStyle,
     hrStyle,
     SOCIAL_HR_CLASS,
     socialsCaptionStyle,
-    socialsStyle
-} from '../styles';
-import { ThemedImg } from './ThemedImg';
+    socialsStyle,
+} from '../styles'
+import { ThemedImg } from './ThemedImg'
 
 const SOCIAL_LINKS = [
     {
         href: 'https://www.instagram.com/robox.kit',
         icon: 'instagram.png',
-        alt: 'Instagram'
+        alt: 'Instagram',
     },
     {
         href: 'https://x.com/robox_kit',
         icon: 'x.png',
-        alt: 'X (formerly Twitter)'
+        alt: 'X (formerly Twitter)',
     },
     {
         href: 'https://www.linkedin.com/company/roboxeducation',
         icon: 'linkedin.png',
-        alt: 'LinkedIn'
-    }
-];
+        alt: 'LinkedIn',
+    },
+]
 
 /** "instagram.png" -> "instagram-dark.png" */
-const darkVariant = (filename: string) => filename.replace(/\.png$/, '-dark.png');
+const darkVariant = (filename: string) =>
+    filename.replace(/\.png$/, '-dark.png')
 
 /**
  * Social icon row on the receipt email. The empty end cells are load-bearing —
@@ -62,7 +63,9 @@ export const Socials = () => {
                                 <Link href={social.href} target="_blank">
                                     <ThemedImg
                                         src={emailAsset(social.icon)}
-                                        darkSrc={emailAsset(darkVariant(social.icon))}
+                                        darkSrc={emailAsset(
+                                            darkVariant(social.icon),
+                                        )}
                                         alt={social.alt}
                                         width="24"
                                         height="24"
@@ -75,7 +78,7 @@ export const Socials = () => {
                 </tbody>
             </table>
         </Section>
-    );
-};
+    )
+}
 
-export default Socials;
+export default Socials

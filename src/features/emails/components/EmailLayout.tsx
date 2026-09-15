@@ -1,8 +1,8 @@
-import * as React from 'react';
-import { Body, ColorScheme, Head, Html, Preview } from 'jsx-email';
+import * as React from 'react'
+import { Body, ColorScheme, Head, Html, Preview } from 'jsx-email'
 
-import { fontFaceCss } from '../fonts';
-import { bodyStyle, cellStyle, containerStyle, globalCss } from '../styles';
+import { fontFaceCss } from '../fonts'
+import { bodyStyle, cellStyle, containerStyle, globalCss } from '../styles'
 
 /**
  * Shared <Html>/<Head>/<Body> wrapper for every transactional email. The font block
@@ -11,13 +11,17 @@ import { bodyStyle, cellStyle, containerStyle, globalCss } from '../styles';
 
 export interface EmailLayoutProps {
     /** Short preview text shown by recipient email clients in the inbox list. */
-    previewText: string;
+    previewText: string
     /** Document <title>. */
-    title: string;
-    children: React.ReactNode;
+    title: string
+    children: React.ReactNode
 }
 
-export const EmailLayout = ({ previewText, title, children }: EmailLayoutProps) => {
+export const EmailLayout = ({
+    previewText,
+    title,
+    children,
+}: EmailLayoutProps) => {
     return (
         <Html lang="en">
             <Head>
@@ -30,9 +34,15 @@ export const EmailLayout = ({ previewText, title, children }: EmailLayoutProps) 
                     would cost the headings their Nunito. */}
                 {/* dangerouslySetInnerHTML because jsx-email HTML-escapes text children
                     even inside <style>, breaking @font-face and `>` selectors. */}
-                <style type="text/css" dangerouslySetInnerHTML={{ __html: fontFaceCss }} />
+                <style
+                    type="text/css"
+                    dangerouslySetInnerHTML={{ __html: fontFaceCss }}
+                />
 
-                <style type="text/css" dangerouslySetInnerHTML={{ __html: globalCss }} />
+                <style
+                    type="text/css"
+                    dangerouslySetInnerHTML={{ __html: globalCss }}
+                />
             </Head>
             <Preview>{previewText}</Preview>
             <Body style={bodyStyle}>
@@ -56,7 +66,7 @@ export const EmailLayout = ({ previewText, title, children }: EmailLayoutProps) 
                 </table>
             </Body>
         </Html>
-    );
-};
+    )
+}
 
-export default EmailLayout;
+export default EmailLayout

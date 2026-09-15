@@ -1,7 +1,12 @@
 import { pico } from '@/libs/communication/communicate'
 import { toast } from '@/libs/ui/toast'
 import type { PaletteColorName } from '@/data/colorPalette'
-import type { ColorCalibration, ColorReading, PicoEventMap, PicoState } from 'src/types/communication'
+import type {
+    ColorCalibration,
+    ColorReading,
+    PicoEventMap,
+    PicoState,
+} from 'src/types/communication'
 import { ConnectionStatus } from 'src/types/communication'
 import {
     dispatchCalibrationAdvance,
@@ -99,7 +104,8 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
             if (wasConnected) {
                 toast.danger({
                     title: 'Ro/Box Disconnected',
-                    message: 'Your Ro/Box lost its connection. Reconnect it, then calibrate again.',
+                    message:
+                        'Your Ro/Box lost its connection. Reconnect it, then calibrate again.',
                     durationMs: 6000,
                 })
             }
@@ -164,7 +170,9 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
 
     pico.on('error', (data: PicoEventMap['error']) => {
         if (!waitingForResult) return
-        finish(() => dispatchCalibrationError(root, 'Calibration Failed', data.message))
+        finish(() =>
+            dispatchCalibrationError(root, 'Calibration Failed', data.message),
+        )
     })
 
     function sendRequest(
@@ -187,13 +195,20 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         clearTimer()
         timeoutHandle = setTimeout(() => {
             if (!waitingForResult) return
-            finish(() => dispatchCalibrationError(root, 'Calibration Failed', failureMessage))
+            finish(() =>
+                dispatchCalibrationError(
+                    root,
+                    'Calibration Failed',
+                    failureMessage,
+                ),
+            )
         }, CALIBRATION_TIMEOUT_MS)
     }
 
     for (const swatch of swatches) {
         swatch.toggleButton.addEventListener('click', () => {
-            const isCalibrated = swatch.toggleButton.getAttribute('aria-checked') === 'true'
+            const isCalibrated =
+                swatch.toggleButton.getAttribute('aria-checked') === 'true'
             if (isCalibrated) {
                 sendRequest(
                     swatch,

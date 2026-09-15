@@ -9,7 +9,7 @@
 
 Repository for the official source code of the [Ro/Box website](https://robox.com.au).
 
-Usage of this repository's code is permitted under the terms of the *GPL-3.0 License*.
+Usage of this repository's code is permitted under the terms of the _GPL-3.0 License_.
 
 ## Feedback & Contributions
 
@@ -38,7 +38,6 @@ Create a new `.env` file in the root folder. An example of its contents can be f
 
 All commands are run from the root of the project, from a terminal:
 
-
 | Command                 | Action                                                                      |
 | ----------------------- | --------------------------------------------------------------------------- |
 | `npm install`           | Installs dependencies                                                       |
@@ -50,20 +49,19 @@ All commands are run from the root of the project, from a terminal:
 | `npm run email:build`   | Builds emails to `./build/emails`                                           |
 | `npm run email:preview` | Previews emails through a local server at `localhost:55420`                 |
 
-
 The code automatically recompiles upon file changes.
 
 ## Testing Webhooks
 
 When testing emails on a local server, webhooks will need to be set up locally to ensure Stripe sends payment updates.
 
-First ensure sure the server is running with 
+First ensure sure the server is running with
 
 ```bash
 npm run dev
 ```
 
-Then, with the [Stripe CLI](https://docs.stripe.com/stripe-cli) installed, run 
+Then, with the [Stripe CLI](https://docs.stripe.com/stripe-cli) installed, run
 
 ```bash
 stripe listen --forward-to localhost:3000/api/shop/webhook
@@ -71,4 +69,4 @@ stripe listen --forward-to localhost:3000/api/shop/webhook
 
 ---
 
-*Copyright &copy; Ro/Box Technologies 2026*
+_Copyright &copy; Ro/Box Technologies 2026_
