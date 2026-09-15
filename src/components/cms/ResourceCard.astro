@@ -30,11 +30,11 @@ const Wrapper = href ? 'a' : 'div'
     ]}
     {...href
         ? {
-              href,
-              ...(external
-                  ? { target: '_blank', rel: 'noopener noreferrer' }
-                  : {}),
-          }
+            href,
+            ...(external
+                ? { target: '_blank', rel: 'noopener noreferrer' }
+                : {}),
+        }
         : {}}
 >
     {

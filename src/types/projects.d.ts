@@ -1,14 +1,13 @@
-import { DayJS } from 'dayjs'
-import { Workspace } from 'blockly'
+import type { Dayjs } from 'dayjs'
 import type { PinsOf, SensorKey } from './extraSensors'
 import type { ExtensionKey } from './extensions'
 export type ProjectType = 'block' | 'python'
 
 interface UserProject {
     name: string
-    time: DayJS
+    time: Dayjs
     type: ProjectType
-    workspace: Record<string, any> | null
+    workspace: Record<string, unknown> | null
     code: string | null
     thumbnail: string | null
     extensions: UserExtensions

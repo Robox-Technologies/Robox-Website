@@ -139,7 +139,7 @@ rather than an order problem:
 
 ### 7. Cost
 
-```
+```text
 postage charged = roundUpTo10c( Σ AusPost quote per parcel + Σ satchel costs + Σ carton costs )
 ```
 
