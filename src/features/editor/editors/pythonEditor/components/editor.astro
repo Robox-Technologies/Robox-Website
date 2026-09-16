@@ -1,6 +1,4 @@
 ---
-import { faUndo, faRedo } from "@fortawesome/free-solid-svg-icons";
-import Button from "@/components/button";
 import CommunicationSlot from "@/features/editor/components/editorButtons/communicationSlot.astro";
 import DisconnectButton from "@/features/editor/components/editorButtons/disconnectButton.astro";
 import MainButton from "@/features/editor/components/editorButtons/mainButton";
@@ -12,21 +10,6 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
 ---
 
 <div class="h-full flex flex-col" data-ios-build={isIOSBuild ? "true" : "false"}>
-    <div class="bg-gray-100 border-b border-gray-300 flex items-center justify-center gap-4 py-2">
-        <Button
-            icon={faUndo}
-            id="pythonUndoButton"
-            className="flex items-center justify-center w-9 h-9 p-0! rounded-full! bg-white text-blue border border-gray-300"
-            iconStyle="text-lg"
-        />
-        <Button
-            icon={faRedo}
-            id="pythonRedoButton"
-            className="flex items-center justify-center w-9 h-9 p-0! rounded-full! bg-white text-blue border border-gray-300"
-            iconStyle="text-lg"
-        />
-    </div>
-
     <div id="monacoContainer" class="flex-1"></div>
 
     <div class="bg-gray-100 border-t border-gray-300 flex items-center justify-end gap-4 px-4 py-3">
@@ -100,17 +83,6 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
                 void savePython(projectId, codeEditor.getValue())
             }, 500)
         })
-
-        document
-            .querySelector('button#pythonUndoButton')
-            ?.addEventListener('click', () => {
-                codeEditor.trigger('toolbar', 'undo', null)
-            })
-        document
-            .querySelector('button#pythonRedoButton')
-            ?.addEventListener('click', () => {
-                codeEditor.trigger('toolbar', 'redo', null)
-            })
     }
 </script>
 
