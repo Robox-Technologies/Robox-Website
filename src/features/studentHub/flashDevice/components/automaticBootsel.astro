@@ -36,24 +36,29 @@ import Button from '@/components/button';
         // everywhere else it's used (e.g. the editor's connect button).
         let hasTriggeredReboot = false;
 
+        // Separate from `hasTriggeredReboot`: the "connected" branch below
+        // already sets that flag the instant it calls `bootloaderMode()`, so
+        // reusing it to guard the advance too would make `bootloaderEntered`
+        // a no-op on exactly the path it needs to fire for.
+        let hasAdvanced = false;
+
         function updateUI(state: PicoState) {
             const hasMethod = state.communicationMethod !== null;
             const connecting = state.connectionStatus === ConnectionStatus.CONNECTING;
             const connected = state.connectionStatus === ConnectionStatus.CONNECTED;
             if (connected && !hasTriggeredReboot) {
                 hasTriggeredReboot = true;
-                pico.bootloaderMode();
 
-                // The reboot re-enumerates the Ro/Box as a drive, so there's no transport
-                // left to confirm over; the next step's drive check catches a failure.
-                setTimeout(() => dispatchFlashAdvance(root, "flash"), 1500);
+                // Only advances on the `bootloaderEntered` event below - `bootloaderMode()`
+                // confirms the reboot actually happened before reporting anything, so
+                // there is no other, unconfirmed way this flow moves to the flash stage.
+                void pico.bootloaderMode();
             }
 
             noMethodNotice!.classList.toggle("hidden", hasMethod);
             connectButton!.classList.toggle("hidden", !hasMethod);
 
-            // Stay busy through to the flash stage, or the imminent self-disconnect
-            // flicks the button back to idle mid-sequence.
+            // Stay busy until the reboot is confirmed (or fails) below.
             setButtonBusy(connectButton!, connecting || hasTriggeredReboot);
         }
 
@@ -67,6 +72,7 @@ import Button from '@/components/button';
         /** "Flash Another Device" returns here without a reload, so arm a fresh connection each time. */
         async function armForBootloaderStage() {
             hasTriggeredReboot = false;
+            hasAdvanced = false;
 
             // Awaited, or setAutoConnect(false) lands on the transport being torn down
             // rather than the fresh one replacing it.
@@ -86,6 +92,14 @@ import Button from '@/components/button';
         });
 
         pico.on("error", (data) => {
+            // An unconfirmed reboot (see `bootloaderMode()`/
+            // `recoverViaLegacyBootloader` in communicate.ts) leaves this
+            // flow with no further `stateChange` to clear its busy state on
+            // its own, so this is the only place that happens - safe to do
+            // unconditionally, since any other error already reset it via a
+            // `stateChange` before this ever fires.
+            hasTriggeredReboot = false;
+            setButtonBusy(connectButton!, false);
             dispatchFlashError(
                 root,
                 "Couldn't Connect Automatically",
@@ -93,9 +107,24 @@ import Button from '@/components/button';
             );
         });
 
+        // The only route to the flash stage - fired once `disconnect()`
+        // confirms a reboot actually happened, whether via `bootloaderMode()`
+        // above (firmware already up to date) or the legacy REPL fallback a
+        // failed firmware check triggers on its own (see
+        // `recoverViaLegacyBootloader` in communicate.ts).
+        pico.on("bootloaderEntered", () => {
+            if (hasAdvanced) return;
+            hasAdvanced = true;
+            // The wait is over - moving on, not staying busy for a stage
+            // this button is about to be hidden away from.
+            setButtonBusy(connectButton!, false);
+            dispatchFlashAdvance(root, "flash");
+        });
+
         connectButton.addEventListener("click", () => {
             dispatchFlashClearError(root);
             hasTriggeredReboot = false;
+            hasAdvanced = false;
             pico.request();
         });
     });

@@ -44,6 +44,9 @@ type PicoEventHandler = (data: unknown) => void
 /** Generous: the board's send throttle plus chunked writes can push a reply past half a second. */
 const FIRMWARE_CHECK_TIMEOUT_MS = 2500
 
+/** How long to wait for the wire to actually drop before giving up on a bootloader-entry attempt. */
+const BOOTLOADER_CONFIRM_TIMEOUT_MS = 3000
+
 const revertStateMapping: Partial<Record<ConnectionStatus, ConnectionStatus>> =
     {
         [ConnectionStatus.CONNECTING]: ConnectionStatus.DISCONNECTED,
@@ -59,6 +62,15 @@ export class Pico {
     private responded: boolean = false
     private firmwareConfirmed: boolean = false
     private toastsEnabled: boolean = true
+
+    /**
+     * Set while `awaitBootloaderReboot` is waiting to see whether the board
+     * actually rebooted. `disconnect()` resolves it - the wire dropping is
+     * the only real proof bootsel engaged, since a board that silently
+     * ignored the attempt (framed `BOOTLOADER` or the legacy REPL fallback
+     * alike) looks identical up to this point.
+     */
+    private bootloaderRebootConfirmed: (() => void) | null = null
 
     /** Protocol the board speaks. 1 is the unframed legacy path. */
     private protocolVersion: number = 1
@@ -226,6 +238,13 @@ export class Pico {
 
     /** Guarded, because USB re-enumeration and flaky BLE report the same disconnect repeatedly. */
     async disconnect(): Promise<void> {
+        // Fires even though `connectionStatus` is already DISCONNECTED by the
+        // time a legacy-bootloader reboot actually drops the wire - that
+        // early return below would otherwise swallow the one signal that
+        // proves the reboot happened.
+        this.bootloaderRebootConfirmed?.()
+        this.bootloaderRebootConfirmed = null
+
         if (!this.communication) return
 
         if (
@@ -281,10 +300,9 @@ export class Pico {
                     connectionStatus: ConnectionStatus.DISCONNECTED,
                     firmwareVersion: version,
                 })
-                this.emit('error', {
-                    message: `This Ro/Box is running firmware ${version}, and ${MINIMUM_FIRMWARE_VERSION} or newer is required. Please update it before uploading.`,
-                })
-                void this.tryLegacyBootloaderFallback()
+                void this.recoverViaLegacyBootloader(
+                    `This Ro/Box is running firmware ${version}, and ${MINIMUM_FIRMWARE_VERSION} or newer is required. Please update it before uploading.`,
+                )
                 return
             }
 
@@ -389,7 +407,7 @@ export class Pico {
                     connectionStatus: ConnectionStatus.DISCONNECTED,
                     firmwareStatus: FirmwareStatus.OUT_OF_DATE,
                 })
-                this.emit('error', { message })
+                void this.recoverViaLegacyBootloader(message)
             } else {
                 const message =
                     'Ro/Box did not respond to the firmware check! Please try disconnecting and reconnecting it. If this issue persists, try reflashing the Ro/Box.'
@@ -397,10 +415,46 @@ export class Pico {
                     connectionStatus: ConnectionStatus.DISCONNECTED,
                     firmwareStatus: FirmwareStatus.NO_RESPONSE,
                 })
-                this.emit('error', { message })
+                void this.recoverViaLegacyBootloader(message)
             }
-            void this.tryLegacyBootloaderFallback()
         }, FIRMWARE_CHECK_TIMEOUT_MS)
+    }
+
+    /**
+     * A failed firmware check only warrants the original failure message if
+     * the legacy bootloader fallback couldn't get the board into bootloader
+     * mode either - if it worked, the board is already rebooting to update
+     * mode and there's nothing left for the student to act on.
+     */
+    private async recoverViaLegacyBootloader(
+        failureMessage: string,
+    ): Promise<void> {
+        const rebooted = await this.tryLegacyBootloaderFallback()
+        if (rebooted) {
+            this.emit('bootloaderEntered', {})
+            return
+        }
+        this.emit('error', { message: failureMessage })
+    }
+
+    /**
+     * Races `disconnect()` confirming a bootloader-entry attempt actually
+     * rebooted the board against a timeout. Set up before the write that
+     * might trigger it - a board fast enough to reboot before this is
+     * listening would otherwise have its confirmation dropped on the floor.
+     */
+    private awaitBootloaderReboot(): Promise<boolean> {
+        const confirmed = new Promise<boolean>((resolve) => {
+            this.bootloaderRebootConfirmed = () => resolve(true)
+        })
+
+        const timedOut = new Promise<boolean>((resolve) => {
+            setTimeout(() => resolve(false), BOOTLOADER_CONFIRM_TIMEOUT_MS)
+        })
+
+        return Promise.race([confirmed, timedOut]).finally(() => {
+            this.bootloaderRebootConfirmed = null
+        })
     }
 
     /**
@@ -408,20 +462,28 @@ export class Pico {
      * `BOOTLOADER` command either, so a failed firmware check is their only
      * route into bootloader mode: interrupt whatever they're running and
      * drop into the REPL by hand, the way the pre-framed-protocol client
-     * used to. Best-effort - `machine.bootloader()` reboots the board mid-
-     * sequence, so a later write failing here is the expected outcome, not
-     * a real error.
+     * used to.
+     *
+     * Whether this actually worked can't be read off the writes themselves -
+     * `machine.bootloader()` reboots the board asynchronously, so every write
+     * up to and including it can succeed on a board that never reboots at
+     * all (e.g. one stuck somewhere the REPL can't hear Ctrl-C). The wire
+     * itself dropping, via `awaitBootloaderReboot`, is the only real proof.
      */
-    private async tryLegacyBootloaderFallback(): Promise<void> {
-        if (!(this.communication instanceof BaseTransport)) return
+    private async tryLegacyBootloaderFallback(): Promise<boolean> {
+        if (!(this.communication instanceof BaseTransport)) return false
+
+        const confirmation = this.awaitBootloaderReboot()
 
         try {
             await this.communication.writeRaw(COMMANDS.KEYBOARD_INTERRUPT)
             await this.communication.writeRaw('import machine\r')
             await this.communication.writeRaw('machine.bootloader()\r')
         } catch {
-            // The reboot itself drops the link before a reply can arrive.
+            // A write failing here usually means the reboot already dropped the link.
         }
+
+        return confirmation
     }
 
     write(command: string | string[]): void {
@@ -438,8 +500,25 @@ export class Pico {
         void this.communication?.write(COMMANDS.RESTART)
     }
 
-    bootloaderMode(): void {
+    /**
+     * Reboots into bootloader mode and confirms it actually happened before
+     * telling the caller anything - a `write()` resolving only means the
+     * board received the command, not that it acted on it. Emits
+     * `bootloaderEntered` once `disconnect()` proves the reboot went
+     * through, or `error` if it didn't - there is no other way to find out.
+     */
+    async bootloaderMode(): Promise<void> {
+        const confirmation = this.awaitBootloaderReboot()
         void this.communication?.write(COMMANDS.BOOTLOADER)
+
+        if (await confirmation) {
+            this.emit('bootloaderEntered', {})
+        } else {
+            this.emit('error', {
+                message:
+                    'Ro/Box did not reboot into bootloader mode. Try again, or follow the manual steps below.',
+            })
+        }
     }
 
     request(): void {

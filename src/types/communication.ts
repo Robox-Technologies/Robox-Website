@@ -111,4 +111,6 @@ export interface PicoEventMap {
     error: { message: string }
     firmware: { status: FirmwareStatus; version: string }
     color: ColorReading
+    /** The legacy bootloader fallback confirmed the board rebooted into bootloader mode. */
+    bootloaderEntered: object
 }

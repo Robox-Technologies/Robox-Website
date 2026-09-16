@@ -56,7 +56,7 @@ export function usePico() {
     }, [])
 
     const bootloaderMode = useCallback(() => {
-        pico.bootloaderMode()
+        void pico.bootloaderMode()
     }, [])
 
     return {
