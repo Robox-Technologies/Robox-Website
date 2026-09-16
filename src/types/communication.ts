@@ -7,6 +7,8 @@ export interface Communication {
     disconnect(): Promise<void>
     destroy(): Promise<void>
     write(message: string | string[]): Promise<void>
+    /** Push literal text as unframed bytes - for talking to the MicroPython REPL directly, not the COMMAND-frame protocol. */
+    writeRaw(text: string): Promise<void>
     /** Tell the board this client is done, so it stops claiming the link. */
     release(): Promise<void>
     read(): void

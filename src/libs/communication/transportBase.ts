@@ -154,6 +154,20 @@ export abstract class BaseTransport implements Communication {
     }
 
     /**
+     * Push literal text straight onto the wire, with no COMMAND framing. For
+     * boards whose firmware doesn't speak the framed protocol at all, so a
+     * `write()` of `BOOTLOADER` would never be understood - this instead
+     * reaches the MicroPython REPL directly, the way the pre-framed-protocol
+     * client used to.
+     */
+    writeRaw(text: string): Promise<void> {
+        return this.enqueueSend(async () => {
+            if (this.destroyed) return
+            await this.sendRaw(this.encoder.encode(text))
+        })
+    }
+
+    /**
      * Hand the board back before the link goes away, so it stops claiming this
      * interface.
      *

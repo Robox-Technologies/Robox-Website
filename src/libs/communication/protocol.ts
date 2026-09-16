@@ -12,6 +12,14 @@ export const COMMANDS = {
     BOOTLOADER: 'boot_loader',
     DISCONNECT: 'disconnect_device',
     STOP_MOTORS: 'stop_motors',
+    /**
+     * Ctrl-C, sent raw (not frame-encoded): the MicroPython REPL's interrupt
+     * keystroke. A board whose firmware fails the check doesn't understand
+     * COMMAND frames at all, so `BOOTLOADER` can't reach it - this drops it
+     * out of whatever it's running and back to the REPL, ready for the
+     * `import machine` / `machine.bootloader()` fallback that follows.
+     */
+    KEYBOARD_INTERRUPT: '\x03\n',
 } as const
 
 /** One argument-less COMMAND per calibratable colour; the protocol has no parameterised payload. */

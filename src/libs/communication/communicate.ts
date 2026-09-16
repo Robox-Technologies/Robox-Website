@@ -276,7 +276,6 @@ export class Pico {
                 meetsMinimumVersion(version, MINIMUM_FIRMWARE_VERSION)
 
             if (!usable) {
-                // No fallback: the unframed path can't detect its own failures.
                 this.updateState({
                     firmwareStatus: FirmwareStatus.OUT_OF_DATE,
                     connectionStatus: ConnectionStatus.DISCONNECTED,
@@ -285,6 +284,7 @@ export class Pico {
                 this.emit('error', {
                     message: `This Ro/Box is running firmware ${version}, and ${MINIMUM_FIRMWARE_VERSION} or newer is required. Please update it before uploading.`,
                 })
+                void this.tryLegacyBootloaderFallback()
                 return
             }
 
@@ -399,7 +399,29 @@ export class Pico {
                 })
                 this.emit('error', { message })
             }
+            void this.tryLegacyBootloaderFallback()
         }, FIRMWARE_CHECK_TIMEOUT_MS)
+    }
+
+    /**
+     * Boards this build can't talk to won't understand the framed
+     * `BOOTLOADER` command either, so a failed firmware check is their only
+     * route into bootloader mode: interrupt whatever they're running and
+     * drop into the REPL by hand, the way the pre-framed-protocol client
+     * used to. Best-effort - `machine.bootloader()` reboots the board mid-
+     * sequence, so a later write failing here is the expected outcome, not
+     * a real error.
+     */
+    private async tryLegacyBootloaderFallback(): Promise<void> {
+        if (!(this.communication instanceof BaseTransport)) return
+
+        try {
+            await this.communication.writeRaw(COMMANDS.KEYBOARD_INTERRUPT)
+            await this.communication.writeRaw('import machine\r')
+            await this.communication.writeRaw('machine.bootloader()\r')
+        } catch {
+            // The reboot itself drops the link before a reply can arrive.
+        }
     }
 
     write(command: string | string[]): void {
