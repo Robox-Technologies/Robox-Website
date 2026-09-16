@@ -1,6 +1,6 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import { faCircleCheck, faHouse } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/button';
 ---
 <div class="flashComplete flex flex-col items-start gap-4">
@@ -9,11 +9,14 @@ import Button from '@/components/button';
         <h2 class="text-xl font-bold text-black">Ro/Box successfully flashed!</h2>
     </div>
     <p class="text-gray-800">
-        Disconnect and reconnect your Ro/Box, then head back to the editor
-        to start coding.
+        Disconnect and reconnect your Ro/Box, then head back to the Student
+        Hub to start coding.
     </p>
     <div class="flex gap-4">
-        <Button href="/hub/editor" className="bg-green">Go to Editor</Button>
+        <Button href="/hub" className="bg-green">
+            <FontAwesomeIcon icon={faHouse} className="mr-2" />
+            Return to Student Hub
+        </Button>
         <Button id="flash-again" className="bg-gray-500">Flash Another Device</Button>
     </div>
 </div>
