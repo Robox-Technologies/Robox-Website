@@ -19,7 +19,12 @@ export type WorkerResponse =
     | { kind: 'describe'; id: number; classes: RoboxlibClass[] }
 
 const ROBOXLIB_DIR = '/roboxlib_src'
-const ROBOXLIB_FILES = ['roboxlib.py', 'calibration.py', 'colors.py', 'matrix.py']
+const ROBOXLIB_FILES = [
+    'roboxlib.py',
+    'calibration.py',
+    'colors.py',
+    'matrix.py',
+]
 
 async function loadRoboxlibSource(pyodide: PyodideInterface) {
     pyodide.FS.mkdirTree(ROBOXLIB_DIR)
@@ -36,8 +41,13 @@ let pyodidePromise: Promise<PyodideInterface> | null = null
 
 function getPyodide(): Promise<PyodideInterface> {
     pyodidePromise ??= loadPyodide({ indexURL: '/hub/pyodide/' }).then(
-        (pyodide) => {
+        async (pyodide) => {
+            // Stubs first: roboxlib.py imports `machine`/`utime`, which only
+            // exist once these are in place.
+            pyodide.runPython(HARDWARE_STUBS)
+            await loadRoboxlibSource(pyodide)
             pyodide.runPython(LINT_SETUP)
+            pyodide.runPython(DESCRIBE_SETUP)
             return pyodide
         },
     )
@@ -49,20 +59,42 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
     try {
         const pyodide = await getPyodide()
         if (request.kind === 'lint') {
-            const lint = pyodide.globals.get('__lint') as (source: string) => string
-            const diagnostics = JSON.parse(lint(request.code)) as LintDiagnostic[]
-            self.postMessage({ kind: 'lint', id: request.id, diagnostics } satisfies WorkerResponse)
+            const lint = pyodide.globals.get('__lint') as (
+                source: string,
+            ) => string
+            const diagnostics = JSON.parse(
+                lint(request.code),
+            ) as LintDiagnostic[]
+            self.postMessage({
+                kind: 'lint',
+                id: request.id,
+                diagnostics,
+            } satisfies WorkerResponse)
         } else {
-            const describe = pyodide.globals.get('__describe_roboxlib') as () => string
+            const describe = pyodide.globals.get(
+                '__describe_roboxlib',
+            ) as () => string
             const classes = JSON.parse(describe()) as RoboxlibClass[]
-            self.postMessage({ kind: 'describe', id: request.id, classes } satisfies WorkerResponse)
+            self.postMessage({
+                kind: 'describe',
+                id: request.id,
+                classes,
+            } satisfies WorkerResponse)
         }
     } catch (error) {
         console.error('Pyodide worker request failed', error)
         if (request.kind === 'lint') {
-            self.postMessage({ kind: 'lint', id: request.id, diagnostics: [] } satisfies WorkerResponse)
+            self.postMessage({
+                kind: 'lint',
+                id: request.id,
+                diagnostics: [],
+            } satisfies WorkerResponse)
         } else {
-            self.postMessage({ kind: 'describe', id: request.id, classes: [] } satisfies WorkerResponse)
+            self.postMessage({
+                kind: 'describe',
+                id: request.id,
+                classes: [],
+            } satisfies WorkerResponse)
         }
     }
 }

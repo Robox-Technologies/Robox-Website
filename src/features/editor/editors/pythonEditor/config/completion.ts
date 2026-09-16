@@ -7,6 +7,11 @@ import type {
     Position,
     editor as editorNamespace,
 } from 'monaco-editor/editor/editor.api'
+import { runWhenIdle, describeRoboxlib } from '../workers/pyodideWorkerClient'
+import {
+    PREAMBLE_INSTANCE_CLASSES,
+    type RoboxlibClass,
+} from '../workers/pyodideCheckSetup'
 
 const KEYWORDS = [
     'False',
@@ -177,7 +182,10 @@ function registerPythonCompletionProvider() {
         // "word" at that position for it to key off), so member completion
         // needs its own explicit trigger character.
         triggerCharacters: ['.'],
-        provideCompletionItems(model: editorNamespace.ITextModel, position: Position) {
+        provideCompletionItems(
+            model: editorNamespace.ITextModel,
+            position: Position,
+        ) {
             const word = model.getWordUntilPosition(position)
             const range = new Range(
                 position.lineNumber,
@@ -203,12 +211,14 @@ function registerPythonCompletionProvider() {
                         insertText: builtin,
                         range,
                     })),
-                    ...getDocumentIdentifiers(model, word.word).map((identifier) => ({
-                        label: identifier,
-                        kind: languages.CompletionItemKind.Variable,
-                        insertText: identifier,
-                        range,
-                    })),
+                    ...getDocumentIdentifiers(model, word.word).map(
+                        (identifier) => ({
+                            label: identifier,
+                            kind: languages.CompletionItemKind.Variable,
+                            insertText: identifier,
+                            range,
+                        }),
+                    ),
                     ...[...roboxlibClasses.values()].map((cls) => ({
                         label: cls.name,
                         kind: languages.CompletionItemKind.Class,
