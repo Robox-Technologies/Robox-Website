@@ -24,8 +24,12 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
     // snapshot of the singleton registry -- importing it any later means the
     // suggest widget silently fails ("UNKNOWN service ISuggestMemories").
     import { ensurePythonCompletionProvider } from '@/features/editor/editors/pythonEditor/config/completion'
-    import { editor } from 'monaco-editor/editor/editor.api'
+    import { editor, KeyMod, KeyCode } from 'monaco-editor/editor/editor.api'
     import 'monaco-editor/languages/definitions/python/register'
+    // The bare editor.api entry point doesn't register this contribution's
+    // `deleteAllLeft`/`deleteAllRight` actions either -- same story as the
+    // suggest controller import above.
+    import 'monaco-editor/editor/contrib/linesOperations/browser/linesOperations.js'
     import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
     import { getProject, getProjectIdFromURL } from '@/utils/serialization'
     import { registerCodeProvider } from '@/features/editor/state/codeProvider'
@@ -63,6 +67,15 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
         if (container.closest<HTMLElement>('[data-ios-build]')?.dataset.iosBuild !== 'true') {
             lintPythonModel(model)
         }
+
+        // `deleteAllLeft` (delete to the start of the line) only ships with a
+        // default keybinding on Mac (Cmd+Backspace) -- added explicitly here
+        // so Windows/Linux get the equivalent too. `CtrlCmd` already resolves
+        // to Ctrl there, so this one binding covers both.
+        codeEditor.addCommand(
+            KeyMod.CtrlCmd | KeyCode.Backspace,
+            () => codeEditor.trigger('keyboard', 'deleteAllLeft', null),
+        )
 
         // Prepended on send, never shown: the firmware expects the same roboxlib setup
         // the block editor generates (see buildPreamble).
