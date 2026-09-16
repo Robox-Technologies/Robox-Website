@@ -28,7 +28,11 @@ export default function Button({
                 aria-disabled={disabled || undefined}
                 tabIndex={disabled ? -1 : undefined}
                 className={twMerge(
-                    `button-interactive text-white px-4 py-2 rounded-xl`,
+                    // <a> defaults to `display: inline` and left-aligned text,
+                    // unlike <button>'s `inline-block` + centered text - without
+                    // these, width/padding utilities silently no-op and labels
+                    // sit off-centre on the anchor variant.
+                    `button-interactive inline-block text-center text-white px-4 py-2 rounded-xl`,
                     className,
                 )}
                 {...anchorProps}

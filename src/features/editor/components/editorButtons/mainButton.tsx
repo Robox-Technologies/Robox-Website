@@ -42,12 +42,25 @@ export default function MainButton() {
     const {
         connectionStatus,
         communicationMethod,
+        isFirmwareOutOfDate,
         connect,
         restart,
         sendCode,
         runCode,
     } = usePico()
-    const { className, children } = statusStyling[connectionStatus]
+
+    // A failed firmware check drops connectionStatus back to DISCONNECTED
+    // (see communicate.ts), so this is the state that actually means
+    // "board found, but too old to talk to" - send the user to the flash
+    // page instead of leaving them stuck on "Connect to Ro/Box".
+    const needsFirmwareUpdate =
+        connectionStatus === ConnectionStatus.DISCONNECTED &&
+        isFirmwareOutOfDate
+
+    const { className, children } = needsFirmwareUpdate
+        ? { className: 'bg-yellow', children: 'Update Firmware' }
+        : statusStyling[connectionStatus]
+
     const stateClickHandlers: Partial<Record<ConnectionStatus, () => void>> = {
         // No method means the browser supports neither USB nor Bluetooth.
         ...(communicationMethod
@@ -71,11 +84,12 @@ export default function MainButton() {
     const handleClick = stateClickHandlers[connectionStatus]
     return (
         <Button
+            href={needsFirmwareUpdate ? '../flash' : undefined}
             className={twMerge(
                 `rounded-3xl box-shadow w-65 text-xl font-bold py-3 px-2 pointer-events-auto ${className}`,
             )}
-            onClick={handleClick}
-            disabled={!handleClick}
+            onClick={needsFirmwareUpdate ? undefined : handleClick}
+            disabled={!needsFirmwareUpdate && !handleClick}
         >
             {children}
         </Button>

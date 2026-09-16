@@ -74,7 +74,7 @@ export class USBCommunication extends BaseTransport {
             await this.port.open({ baudRate: 9600 })
         } catch {
             throw new Error(
-                'We are unable to open the port on the Ro/Box! Try resetting it? This could also be caused by another application using the Ro/Box.',
+                'We are unable to open the port on the Ro/Box! This could also be caused by another application using the USB port, like another webpage or app, please close these.',
             )
         }
 

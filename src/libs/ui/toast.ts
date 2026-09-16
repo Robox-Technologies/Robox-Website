@@ -5,6 +5,7 @@ export type Toast = {
     variant: ToastVariant
     message: string
     title?: string
+    /** `Infinity` means the toast stays until the user dismisses it. */
     durationMs: number
     dismissible: boolean
 }
@@ -70,7 +71,7 @@ class ToastManager {
             variant,
             message: input.message,
             title: input.title,
-            durationMs: input.durationMs ?? 5000,
+            durationMs: input.durationMs ?? Infinity,
             dismissible: input.dismissible ?? true,
         }
 

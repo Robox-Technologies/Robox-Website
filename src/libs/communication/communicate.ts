@@ -142,7 +142,6 @@ export class Pico {
             toast.danger({
                 title: 'Ro/Box Error',
                 message: errorData.message,
-                durationMs: 6000,
             })
         }
         this.listeners.get(event)?.forEach((listener) => listener(data))
@@ -217,14 +216,6 @@ export class Pico {
 
         try {
             await communication.connect(port)
-
-            if (this.toastsEnabled) {
-                toast.success({
-                    title: 'Ro/Box Connected',
-                    message: 'Your Ro/Box is connected and ready to run.',
-                    durationMs: 3000,
-                })
-            }
 
             this.firmwareCheck()
         } catch (error) {
@@ -303,6 +294,13 @@ export class Pico {
                 connectionStatus: ConnectionStatus.CONNECTED,
                 firmwareVersion: version,
             })
+            if (this.toastsEnabled) {
+                toast.success({
+                    title: 'Ro/Box Connected',
+                    message: 'Your Ro/Box is connected and ready to run.',
+                    durationMs: 3000,
+                })
+            }
         } else if (type === 'connect' && this.state.isRestarting) {
             this.updateState({ connectionStatus: ConnectionStatus.CONNECTED })
         } else if (type === 'console') {
@@ -429,6 +427,7 @@ export class Pico {
                 toast.warning({
                     title: 'Connection Cancelled',
                     message: 'Ro/Box connection was cancelled.',
+                    durationMs: 5000,
                 })
             }
         })

@@ -16,11 +16,12 @@ export default function ImportButton() {
         if (!id) {
             toast.danger({
                 message: `${file.name} isn't a Ro/Box project file.`,
+                durationMs: 5000,
             })
             return
         }
         await reloadProjects()
-        toast.success({ message: 'Project imported.' })
+        toast.success({ message: 'Project imported.', durationMs: 5000, })
     }
 
     // Dropping anywhere on the page works, as in the original — the overlay is

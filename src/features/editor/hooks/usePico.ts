@@ -71,8 +71,12 @@ export function usePico() {
         isConnected: state.connectionStatus === ConnectionStatus.CONNECTED,
         isConnecting: state.connectionStatus === ConnectionStatus.CONNECTING,
         isFirmwareUpToDate: state.firmwareStatus === FirmwareStatus.UP_TO_DATE,
+        // NO_RESPONSE means the board never answered the firmware check at
+        // all, which is what pre-2.0.0 firmware does - treat it the same as
+        // a confirmed OUT_OF_DATE reply.
         isFirmwareOutOfDate:
-            state.firmwareStatus === FirmwareStatus.OUT_OF_DATE,
+            state.firmwareStatus === FirmwareStatus.OUT_OF_DATE ||
+            state.firmwareStatus === FirmwareStatus.NO_RESPONSE,
 
         // Actions
         setCommunicationMethod,

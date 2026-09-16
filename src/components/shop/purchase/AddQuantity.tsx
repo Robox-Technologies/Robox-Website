@@ -48,6 +48,7 @@ export default function AddQuantity({
             toast.danger({
                 title: 'Cart Error',
                 message: 'Unable to add this item to cart right now.',
+                durationMs: 5000,
             })
             return
         }
@@ -57,6 +58,7 @@ export default function AddQuantity({
                 title: 'Quantity Needed',
                 message:
                     'Please choose at least one item before adding to cart.',
+                durationMs: 5000,
             })
             return
         }

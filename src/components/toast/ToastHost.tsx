@@ -72,6 +72,11 @@ export default function ToastHost(props: ToastHostProps) {
                 return
             }
 
+            // Infinity means "stays until dismissed" - a real timer would fire immediately.
+            if (!Number.isFinite(toastItem.durationMs)) {
+                return
+            }
+
             const timeout = setTimeout(() => {
                 toast.dismiss(toastItem.id)
             }, toastItem.durationMs)
