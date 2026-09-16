@@ -100,8 +100,16 @@ import Button from "@/components/button";
                 const disconnecting =
                     state.connectionStatus === ConnectionStatus.DISCONNECTING;
                 setVisible(!disconnected);
-                idleWrap.classList.toggle("hidden", disconnecting);
-                loadingWrap.classList.toggle("hidden", !disconnecting);
+
+                // Skipped once disconnected: swapping the icon back to idle
+                // right as the button starts fading out flashes it for a
+                // frame before it's gone. Leaving it on the spinner it was
+                // already showing (from DISCONNECTING) reads as one smooth
+                // exit instead. Still reset before it's shown again below.
+                if (!disconnected) {
+                    idleWrap.classList.toggle("hidden", disconnecting);
+                    loadingWrap.classList.toggle("hidden", !disconnecting);
+                }
             };
 
             update(pico.getState());
