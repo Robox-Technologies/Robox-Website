@@ -30,10 +30,7 @@ function FooterBottomBar({ tone }: { tone: 'dark' | 'light' }) {
                     </a>
                 </p>
                 <p className="w-fit md:flex-1 md:text-right md:text-nowrap">
-                    <a
-                        href="/privacy"
-                        className="underline"
-                    >
+                    <a href="/privacy" className="underline">
                         Privacy Policy
                     </a>
                 </p>
@@ -79,7 +76,10 @@ export default function Footer() {
                 </div>
                 <div id="contactUs" className="flex flex-col gap-4">
                     <h2 className="text-2xl font-semibold">Connect With Us</h2>
-                    <FooterLink href="https://www.instagram.com/robox.kit" external>
+                    <FooterLink
+                        href="https://www.instagram.com/robox.kit"
+                        external
+                    >
                         <FontAwesomeIcon
                             className="h-6 w-6"
                             icon={faInstagram}

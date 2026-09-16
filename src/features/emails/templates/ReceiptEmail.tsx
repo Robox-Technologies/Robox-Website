@@ -1,26 +1,26 @@
-import { Heading, Text } from 'jsx-email';
+import { Heading, Text } from 'jsx-email'
 
-import { heading, textStyle } from '../styles';
-import { BillingDetails } from '../components/BillingDetails';
-import { EmailLayout } from '../components/EmailLayout';
-import { Footer } from '../components/Footer';
-import { Masthead } from '../components/Masthead';
-import { OrderSummary, type OrderItem } from '../components/OrderSummary';
-import { SignOff, SupportLink } from '../components/SignOff';
-import { Socials } from '../components/Socials';
+import { heading, textStyle } from '../styles'
+import { BillingDetails } from '../components/BillingDetails'
+import { EmailLayout } from '../components/EmailLayout'
+import { Footer } from '../components/Footer'
+import { Masthead } from '../components/Masthead'
+import { OrderSummary, type OrderItem } from '../components/OrderSummary'
+import { SignOff, SupportLink } from '../components/SignOff'
+import { Socials } from '../components/Socials'
 
 export interface ReceiptEmailProps {
-    name: string;
+    name: string
     /** Pre-formatted date string, e.g. "23 June 2026" */
-    date: string;
-    orderId: string;
-    items: OrderItem[];
-    shipping: string;
-    shippingMethod?: string;
-    discount?: string;
-    total: string;
-    address: string;
-    billing: string;
+    date: string
+    orderId: string
+    items: OrderItem[]
+    shipping: string
+    shippingMethod?: string
+    discount?: string
+    total: string
+    address: string
+    billing: string
 }
 
 /**
@@ -37,7 +37,7 @@ export const ReceiptEmail = ({
     discount,
     total,
     address,
-    billing
+    billing,
 }: ReceiptEmailProps) => {
     return (
         <EmailLayout
@@ -69,22 +69,22 @@ export const ReceiptEmail = ({
             <BillingDetails
                 rows={[
                     { label: 'Shipping to:', value: address },
-                    { label: 'Billed to:', value: billing }
+                    { label: 'Billed to:', value: billing },
                 ]}
             />
 
             <SignOff>
-                If you have any questions about this receipt, simply reply to this email or reach
-                out to us at <SupportLink /> for help.
+                If you have any questions about this receipt, simply reply to
+                this email or reach out to us at <SupportLink /> for help.
             </SignOff>
 
             <Socials />
 
             <Footer />
         </EmailLayout>
-    );
-};
- 
+    )
+}
+
 /**
  * Sample data for `email build --use-preview-props` / `email preview`.
  * Amounts use `formatPrice`'s real "AU$" output so the preview matches production.
@@ -95,14 +95,14 @@ export const previewProps: ReceiptEmailProps = {
     orderId: 'pi_3RvKq2CZ6qsJgndP1a2Bc3De',
     items: [
         { name: 'Ro/Box Starter Kit', quantity: 1, subtotal: 'AU$129.00' },
-        { name: 'Sensor Pack', quantity: 2, subtotal: 'AU$58.00' }
+        { name: 'Sensor Pack', quantity: 2, subtotal: 'AU$58.00' },
     ],
     shipping: 'AU$9.95',
     shippingMethod: 'Express shipping',
     discount: 'AU$10.00',
     total: 'AU$186.95',
     address: '42 Analytical Engine Way\nMelbourne VIC 3000\nAustralia',
-    billing: 'Visa\nEnding in ••••4242\nExpires on 4/29'
-};
+    billing: 'Visa\nEnding in ••••4242\nExpires on 4/29',
+}
 
 export const Template = ReceiptEmail

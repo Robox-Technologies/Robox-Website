@@ -35,13 +35,12 @@ async function loadRoboxlibSource(pyodide: PyodideInterface) {
 let pyodidePromise: Promise<PyodideInterface> | null = null
 
 function getPyodide(): Promise<PyodideInterface> {
-    pyodidePromise ??= loadPyodide({ indexURL: '/hub/pyodide/' }).then(async (pyodide) => {
-        pyodide.runPython(HARDWARE_STUBS)
-        await loadRoboxlibSource(pyodide)
-        pyodide.runPython(LINT_SETUP)
-        pyodide.runPython(DESCRIBE_SETUP)
-        return pyodide
-    })
+    pyodidePromise ??= loadPyodide({ indexURL: '/hub/pyodide/' }).then(
+        (pyodide) => {
+            pyodide.runPython(LINT_SETUP)
+            return pyodide
+        },
+    )
     return pyodidePromise
 }
 

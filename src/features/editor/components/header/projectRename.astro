@@ -20,7 +20,7 @@
     </div>
 </div>
 
-<script type="module">
+<script>
     import { editProject, getProject, getProjectIdFromURL } from '@/utils/serialization'
 
     const DEFAULT_PROJECT_NAME = 'Untitled Project'
@@ -34,7 +34,7 @@
     const projectId = getProjectIdFromURL()
     let saveTimeoutId = 0
 
-    const enableEditor = (name) => {
+    const enableEditor = (name: string) => {
         input.value = name
         input.disabled = false
     }

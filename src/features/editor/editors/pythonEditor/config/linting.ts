@@ -22,14 +22,16 @@ export function lintPythonModel(model: editorNamespace.ITextModel) {
             // can't clobber markers a later, more current check already set.
             if (id !== latestRequestId || model.isDisposed()) return
 
-            const markers: editorNamespace.IMarkerData[] = diagnostics.map((d) => ({
-                severity: MarkerSeverity.Error,
-                message: d.message,
-                startLineNumber: d.startLine,
-                startColumn: d.startColumn,
-                endLineNumber: d.endLine,
-                endColumn: d.endColumn,
-            }))
+            const markers: editorNamespace.IMarkerData[] = diagnostics.map(
+                (d) => ({
+                    severity: MarkerSeverity.Error,
+                    message: d.message,
+                    startLineNumber: d.startLine,
+                    startColumn: d.startColumn,
+                    endLineNumber: d.endLine,
+                    endColumn: d.endColumn,
+                }),
+            )
             editor.setModelMarkers(model, MARKER_OWNER, markers)
         })
         latestRequestId = id

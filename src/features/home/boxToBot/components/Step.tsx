@@ -5,10 +5,14 @@ interface StepProps {
     image: string
 }
 const stepColours = ['bg-blue', 'bg-red', 'bg-green', 'bg-yellow']
-const firstStep = 1;
-const numSteps = 4;
-export default function Step({ stepNumber, title, description, image }: StepProps) {
-
+const firstStep = 1
+const numSteps = 4
+export default function Step({
+    stepNumber,
+    title,
+    description,
+    image,
+}: StepProps) {
     return (
         <div
             className={`step

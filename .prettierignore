@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+.astro/
+ios/
+package-lock.json
+
+# static + vendored assets, incl. the Pyodide runtime synced from node_modules
+public/

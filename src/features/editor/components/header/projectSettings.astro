@@ -34,8 +34,8 @@ import Button from "@/components/button"
                 Calibrate Motors
             </Button>
             <Button
-                type="button"
-                className="button-interactive text-black! text-md p-2 text-left flex items-center gap-2"
+                href="../flash"
+                className="text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
             >
                 <FontAwesomeIcon icon={faScrewdriver} />
                 Update Firmware
@@ -105,7 +105,7 @@ import Button from "@/components/button"
     }
 </script>
 
-<script type="module">
+<script>
     import { exportProject, getProjectIdFromURL } from '@/utils/serialization'
 
     const exportButton = document.getElementById('project-export-button')

@@ -10,7 +10,6 @@ Certain laws in Australia and its States and Territories may impose consumer gua
 
 Unless otherwise specified, these Terms apply to the supply by Robox in Australia of Products (including hardware, software, services and/or support) to you (as the Customer) under contract.
 
-
 ## 2. **Orders, Acceptance, Cancellation and Payment**
 
 2.1 By submitting your order, you acknowledge and agree to these Terms.
@@ -21,13 +20,11 @@ Unless otherwise specified, these Terms apply to the supply by Robox in Australi
 
 2.4 If we have taken payment from you for your order and we decline or cancel your order for any reason, or limit your order quantities for any reason, we will contact you to offer you a refund of your purchase monies.
 
-
 ## 3. **Price and Availability**
 
 3.1 Prices and promotions are subject to change.
 
 3.2 Robox uses reasonable endeavours to communicate accurate pricing and Product information, however errors may occur. In the unlikely event that an error affects your order, or a Product that you have ordered is no longer available, we will either contact you for instructions or cancel your order and refund any money you have paid for the relevant Products.
-
 
 ## 4. **GST, Taxes and Duties**
 
@@ -39,15 +36,13 @@ Unless stated otherwise, all Prices specified on our website are GST inclusive p
 
 5.2 You are responsible for inspecting the package(s) upon delivery and promptly informing us of any damage to the packaging, including, where possible by taking contemporaneous photos of any damage and noting that damage on the proof of delivery (POD) or other delivery receipt the carrier may asks you to sign. If you take photos of the damage we may require you to provide them to us so we can address the damage with the carrier.
 
-
 ## 6. **Software**
 
 6.1 All Products that are software are supplied to you subject to the terms and conditions of the licence agreement relating to that software which you will be asked to agree to as part of the installation of that software. The Customer acknowledges its obligations to comply with licence terms.
 
 6.2 The Customer acknowledges that Robox does not make any express warranty in relation to any software under these Terms. In addition to any rights the Customer may have at law, all software is warranted in accordance with the licence agreement that governs its use.
 
-6.3  All rights, title or interest in respect of the intellectual property rights in the software remain with Robox or the licensor of the software at all times.
-
+6.3 All rights, title or interest in respect of the intellectual property rights in the software remain with Robox or the licensor of the software at all times.
 
 ## 7. **Delivery of goods**
 
@@ -61,7 +56,7 @@ Unless stated otherwise, all Prices specified on our website are GST inclusive p
 
 ## 8. **Use of products**
 
-8.1 Robox-branded Products are designed for specific applications and purposes to work under certain operating conditions. 
+8.1 Robox-branded Products are designed for specific applications and purposes to work under certain operating conditions.
 
 8.2 Your use of the Product(s) other than in accordance with any manual, operating instructions, specified operating conditions or any other information on the Robox website or as provided with the Product may damage the Product and data stored on it. Such use may adversely affect your rights with respect to repairs and other claims relating to the Product.
 
@@ -72,7 +67,6 @@ Unless stated otherwise, all Prices specified on our website are GST inclusive p
 8.4.1 Nothing in this clause 8 affects your rights under the Australian Consumer Law. Our goods come with consumer guarantees that cannot be excluded under the Australian Consumer Law. You are entitled to a replacement or refund for a major failure and for compensation for any other reasonably foreseeable loss or damage. You are also entitled to have the goods repaired or replaced if the goods fail to be of acceptable quality and the failure does not amount to a major failure.
 
 8.5 Robox does not give any warranty that Products purchased are fit for any particular purpose.
-
 
 ## 9. **Liability**
 
@@ -92,11 +86,9 @@ Unless stated otherwise, all Prices specified on our website are GST inclusive p
 
 2. in the case of services, the supplying of services again; or the payment of the cost of having services supplied again.
 
-
 ## 10. **Force Majeure**
 
 10.1 Neither party (Robox and the Customer) will be liable for any delay in performing any of its obligations under these Terms and Conditions if such delay is caused by circumstances beyond the reasonable control of the party so delaying, and such party will be entitled to a reasonable extension of time for the performance of such obligations.
-
 
 ## 11. **Privacy laws**
 
@@ -114,11 +106,9 @@ Unless stated otherwise, all Prices specified on our website are GST inclusive p
 
 (iv) anyone else, where authorised by law.
 
-
 ## 12.**Governing Law**
 
 These Terms are governed by and construed in accordance with the laws of Victoria, Australia and are subject to the non-exclusive jurisdiction of the courts of Victoria, Australia.
-
 
 ## 13. **Definitions**
 

@@ -18,7 +18,7 @@ const MAX_SCALE = 3
 // same frame would keep shrinking the font past readable, so past this many lines the preview
 // just stops -- extra lines get cropped instead of the text getting smaller to fit them in.
 const MAX_HEIGHT_LINES = 20
-const additionalXOffset = 25;
+const additionalXOffset = 25
 
 // Everything below is derived from `pythonTheme` (the same object `editor.astro` feeds into
 // `editor.defineTheme`) rather than copied, so editing that one file is enough to re-colour
@@ -92,7 +92,10 @@ export async function codeToPng(code: string): Promise<string> {
     const codeLines = code.split('\n').slice(0, MAX_HEIGHT_LINES)
     // Trailing blank lines shouldn't count towards the bounding box -- otherwise
     // trailing whitespace in the file zooms the actual code out for no reason.
-    while (codeLines.length > 0 && codeLines[codeLines.length - 1].trim() === '') {
+    while (
+        codeLines.length > 0 &&
+        codeLines[codeLines.length - 1].trim() === ''
+    ) {
         codeLines.pop()
     }
 
@@ -145,8 +148,13 @@ export async function codeToPng(code: string): Promise<string> {
                     if (BRACKET_CLOSE.has(ch)) {
                         bracketDepth = Math.max(0, bracketDepth - 1)
                     }
-                    ctx.fillStyle = BRACKET_COLORS[bracketDepth % BRACKET_COLORS.length]
-                    ctx.fillText(ch, offsetX + (token.offset + i) * charWidth, y)
+                    ctx.fillStyle =
+                        BRACKET_COLORS[bracketDepth % BRACKET_COLORS.length]
+                    ctx.fillText(
+                        ch,
+                        offsetX + (token.offset + i) * charWidth,
+                        y,
+                    )
                     if (BRACKET_OPEN.has(ch)) {
                         bracketDepth++
                     }

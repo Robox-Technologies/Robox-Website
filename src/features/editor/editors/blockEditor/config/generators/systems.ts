@@ -28,8 +28,16 @@ pythonGenerator.forBlock['sleep'] = function (block, generator) {
     return code
 }
 pythonGenerator.forBlock['generate_random'] = function (block, generator) {
-    const lower_bound = generator.valueToCode(block, 'lower_bound', Order.ATOMIC)
-    const upper_bound = generator.valueToCode(block, 'upper_bound', Order.ATOMIC)
+    const lower_bound = generator.valueToCode(
+        block,
+        'lower_bound',
+        Order.ATOMIC,
+    )
+    const upper_bound = generator.valueToCode(
+        block,
+        'upper_bound',
+        Order.ATOMIC,
+    )
     const code = `random.randint(${lower_bound}, ${upper_bound})`
     return [code, Order.ATOMIC]
 }

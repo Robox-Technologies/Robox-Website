@@ -55,7 +55,8 @@ export default function AddQuantity({
         if (quantity < CART_MIN_QUANTITY) {
             toast.warning({
                 title: 'Quantity Needed',
-                message: 'Please choose at least one item before adding to cart.',
+                message:
+                    'Please choose at least one item before adding to cart.',
             })
             return
         }

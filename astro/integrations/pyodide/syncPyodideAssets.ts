@@ -3,7 +3,8 @@ import { copyFileSync, mkdirSync, readdirSync } from 'fs'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 
-const RUNTIME_FILE_PATTERN = /^pyodide\.asm\.|^python_stdlib\.zip$|^pyodide-lock\.json$/
+const RUNTIME_FILE_PATTERN =
+    /^pyodide\.asm\.|^python_stdlib\.zip$|^pyodide-lock\.json$/
 
 /*
  * Pyodide is a normal npm dependency, so its wasm/stdlib runtime (~13MB) is
@@ -29,7 +30,12 @@ export function syncPyodideAssets(): AstroIntegration {
                     return
                 }
 
-                const rootDir = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
+                const rootDir = join(
+                    dirname(fileURLToPath(import.meta.url)),
+                    '..',
+                    '..',
+                    '..',
+                )
                 const sourceDir = join(rootDir, 'node_modules', 'pyodide')
                 const targetDir = join(rootDir, 'public', 'hub', 'pyodide')
 
@@ -37,14 +43,18 @@ export function syncPyodideAssets(): AstroIntegration {
                     RUNTIME_FILE_PATTERN.test(name),
                 )
                 if (files.length === 0) {
-                    throw new Error(`No Pyodide runtime files found in ${sourceDir}`)
+                    throw new Error(
+                        `No Pyodide runtime files found in ${sourceDir}`,
+                    )
                 }
 
                 mkdirSync(targetDir, { recursive: true })
                 for (const file of files) {
                     copyFileSync(join(sourceDir, file), join(targetDir, file))
                 }
-                logger.info(`Synced ${files.length} Pyodide runtime file(s) into public/hub/pyodide/`)
+                logger.info(
+                    `Synced ${files.length} Pyodide runtime file(s) into public/hub/pyodide/`,
+                )
             },
         },
     }

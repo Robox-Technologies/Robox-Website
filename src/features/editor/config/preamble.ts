@@ -1,4 +1,3 @@
-
 import type { ExtensionKey } from 'src/types/extensions'
 import type { PinsOf, SensorKey } from 'src/types/extraSensors'
 export const preamble = `

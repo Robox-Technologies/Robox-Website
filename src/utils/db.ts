@@ -23,9 +23,8 @@ async function setupWebStore(): Promise<void> {
     if (!customElements.get('jeep-sqlite')) {
         // The self-contained build, not `jeep-sqlite/loader` — the loader's deferred chunk
         // isn't served by Vite, leaving the element defined but never hydrated.
-        const { JeepSqlite } = await import(
-            'jeep-sqlite/dist/components/jeep-sqlite'
-        )
+        const { JeepSqlite } =
+            await import('jeep-sqlite/dist/components/jeep-sqlite')
         customElements.define('jeep-sqlite', JeepSqlite)
     }
     if (!document.querySelector('jeep-sqlite')) {
@@ -51,12 +50,12 @@ async function openDatabase(): Promise<SQLiteDBConnection> {
         consistency.result && isConn
             ? await sqlite.retrieveConnection(DB_NAME, false)
             : await sqlite.createConnection(
-                DB_NAME,
-                false,
-                'no-encryption',
-                1,
-                false,
-            )
+                  DB_NAME,
+                  false,
+                  'no-encryption',
+                  1,
+                  false,
+              )
 
     if (!(await db.isDBOpen()).result) {
         await db.open()

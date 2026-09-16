@@ -1,6 +1,6 @@
 # The iOS app half of the repo
 
-The Capacitor app (`appId: com.robox.editor`, appName `Ro/Box`) ships the *same*
+The Capacitor app (`appId: com.robox.editor`, appName `Ro/Box`) ships the _same_
 `src/` as the website, filtered down at build time. So most iOS constraints are
 really constraints on the whole codebase.
 
@@ -12,7 +12,7 @@ really constraints on the whole codebase.
 - `transformIOSBuild()` (an `astro:build:done` integration in `astro.config.ts`)
   deletes every top-level folder in `dist/` except `_astro` and `hub`, deletes
   root `index.html`, then hoists `hub/` to the root. The app therefore boots
-  straight into the student hub. Routes are *not* moved during `astro dev` —
+  straight into the student hub. Routes are _not_ moved during `astro dev` —
   only `dist/` is rewritten.
 - `IOS_BUILD` is read in `.astro` frontmatter, so `IOS_BUILD=true npm run dev`
   renders the app branches locally with the web routing intact. Current users:
@@ -57,15 +57,17 @@ scoped, on-device-testing-required effort, not a drive-by fix.
 ## CSS floor: Safari 15
 
 `ios/App/App.xcodeproj` sets `IPHONEOS_DEPLOYMENT_TARGET = 15.0`. An unsupported
-selector invalidates the entire rule *silently*, so a hover state simply never
+selector invalidates the entire rule _silently_, so a hover state simply never
 applies on device while looking perfect in Chrome. Concretely: a selector list
 inside `:not()` needs Safari 16.4 — chain instead.
 
 ```css
 /* breaks on iOS 15 */
-.button-interactive:hover:not(:disabled, [aria-disabled='true']) { }
+.button-interactive:hover:not(:disabled, [aria-disabled='true']) {
+}
 /* works */
-.button-interactive:hover:not(:disabled):not([aria-disabled='true']) { }
+.button-interactive:hover:not(:disabled):not([aria-disabled='true']) {
+}
 ```
 
 Individual `translate`/`rotate`/`scale` and `inset` are fine (Safari 14.1+).
@@ -85,14 +87,14 @@ projects live in native SQLite (`@capacitor-community/sqlite`, iOS location
 - Web uses `jeep-sqlite` (WASM → IndexedDB), needing `public/assets/sql-wasm.wasm`
   at `/assets/sql-wasm.wasm`. Call `persist()` after every web write (no-op on native).
 - Two gotchas that both caused silent hangs, already fixed — don't regress them:
-  1. `sql.js` is pinned to **exactly 1.11.0** because jeep-sqlite@2.8.0 was built
-     against that glue; 1.14.x wasm imports differ (`LinkError: import function
-     a:I must be callable`). The committed wasm must match the pin.
-  2. Import the standalone component, not the lazy loader — `jeep-sqlite/loader`'s
-     `defineCustomElements` registers the element but never hydrates it under
-     Vite, so every `@Method()` hangs with no error:
-     `import { JeepSqlite } from 'jeep-sqlite/dist/components/jeep-sqlite'`
-     then `customElements.define('jeep-sqlite', JeepSqlite)`.
+    1. `sql.js` is pinned to **exactly 1.11.0** because jeep-sqlite@2.8.0 was built
+       against that glue; 1.14.x wasm imports differ (`LinkError: import function
+a:I must be callable`). The committed wasm must match the pin.
+    2. Import the standalone component, not the lazy loader — `jeep-sqlite/loader`'s
+       `defineCustomElements` registers the element but never hydrates it under
+       Vite, so every `@Method()` hangs with no error:
+       `import { JeepSqlite } from 'jeep-sqlite/dist/components/jeep-sqlite'`
+       then `customElements.define('jeep-sqlite', JeepSqlite)`.
 - Blockly toolbox: `config/blockly.ts` injects `BaseToolbox` synchronously, and
   `editor.astro` swaps in the extension-aware one via
   `workspace.updateToolbox(await generateToolbox())`.

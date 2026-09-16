@@ -6,8 +6,8 @@ import react from '@astrojs/react'
 import tailwindcss from '@tailwindcss/vite'
 import svgr from 'vite-plugin-svgr'
 import type { AstroIntegration } from 'astro'
-import {  join } from 'path'
-import node from '@astrojs/node';
+import { join } from 'path'
+import node from '@astrojs/node'
 import { promises as fs } from 'fs'
 import mdx from '@astrojs/mdx'
 import sitemap from '@astrojs/sitemap'
@@ -30,7 +30,7 @@ export default defineConfig({
      * PRODUCTION_ORIGIN is also kept out of search; see src/data/seo.ts.
      */
     site: process.env.SITE_URL ?? PRODUCTION_ORIGIN,
-    output: "static",
+    output: 'static',
     /*
      * Vite only exposes `PUBLIC_`-prefixed variables to client code, so the
      * publishable key has to be declared here to reach the browser under its
@@ -73,9 +73,9 @@ export default defineConfig({
         process.env.IOS_BUILD === 'true'
             ? undefined
             : sitemap({
-                // Same list Meta.astro marks `noindex` from, so the two can't disagree.
-                filter: (page) => !isNoindex(new URL(page).pathname),
-            }),
+                  // Same list Meta.astro marks `noindex` from, so the two can't disagree.
+                  filter: (page) => !isNoindex(new URL(page).pathname),
+              }),
         process.env.IOS_BUILD === 'true' ? transformIOSBuild() : undefined,
     ],
     adapter: node({
@@ -91,7 +91,7 @@ export default defineConfig({
             {
                 hostname: 'robox.com.au',
                 protocol: 'https:',
-            }
+            },
         ],
     },
     vite: {

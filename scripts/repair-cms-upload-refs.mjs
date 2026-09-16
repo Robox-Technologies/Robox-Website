@@ -22,7 +22,9 @@ function createdSecond(doc) {
 
 /** Lowercase alphanumerics, so "Lesson 4" matches "... Lesson 4-1.pdf". */
 function normalise(value) {
-    return String(value).toLowerCase().replace(/[^a-z0-9]/g, '')
+    return String(value)
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
 }
 
 async function getDocs(collection) {
@@ -67,7 +69,9 @@ async function login() {
 
 async function main() {
     console.log(`CMS: ${CMS_URL}`)
-    console.log(APPLY ? 'MODE: apply\n' : 'MODE: dry run (pass --apply to write)\n')
+    console.log(
+        APPLY ? 'MODE: apply\n' : 'MODE: dry run (pass --apply to write)\n',
+    )
 
     const [content, media, files] = await Promise.all([
         getDocs('content'),
@@ -75,7 +79,10 @@ async function main() {
         getDocs('files'),
     ])
 
-    const groups = { thumbnail: groupByCreatedSecond(media), File: groupByCreatedSecond(files) }
+    const groups = {
+        thumbnail: groupByCreatedSecond(media),
+        File: groupByCreatedSecond(files),
+    }
 
     const plan = []
     const problems = []
@@ -92,7 +99,9 @@ async function main() {
             const candidates = groups[field].get(second) ?? []
 
             if (candidates.length === 0) {
-                problems.push(`${doc.previewTitle}: no ${field} created at ${new Date(second * 1000).toISOString()}`)
+                problems.push(
+                    `${doc.previewTitle}: no ${field} created at ${new Date(second * 1000).toISOString()}`,
+                )
                 continue
             }
 
@@ -134,7 +143,9 @@ async function main() {
         for (const problem of problems) console.log(`  ! ${problem}`)
     }
 
-    console.log(`\n${plan.length} of ${content.length} content items would be updated.`)
+    console.log(
+        `\n${plan.length} of ${content.length} content items would be updated.`,
+    )
 
     if (!APPLY) {
         console.log('Dry run — nothing written.')
@@ -143,7 +154,9 @@ async function main() {
 
     const token = await login()
     if (!token) {
-        throw new Error('PAYLOAD_EMAIL and PAYLOAD_PASSWORD are required for --apply')
+        throw new Error(
+            'PAYLOAD_EMAIL and PAYLOAD_PASSWORD are required for --apply',
+        )
     }
 
     let updated = 0
