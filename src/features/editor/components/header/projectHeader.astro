@@ -2,6 +2,7 @@
 import Button from "@/components/button";
 import ProjectRename from "./projectRename.astro";
 import ProjectSettings from "./projectSettings.astro";
+import ExtensionsDialog from "../../editors/blockEditor/components/extensionsDialog.astro";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 
 const isIOSBuild = process.env.IOS_BUILD === 'true';
@@ -19,6 +20,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     />
     <ProjectRename />
     <div class="flex flex-row gap-4">
+        <ExtensionsDialog />
         <ProjectSettings />
 
     </div>

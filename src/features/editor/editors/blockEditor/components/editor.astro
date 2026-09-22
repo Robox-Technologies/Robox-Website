@@ -27,7 +27,7 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
     // Setting up Blockly
     import * as Blockly from 'blockly/core';
     import { loadBlockly, saveBlockly, generateCode } from "../utils/serialization";
-    import generateToolbox from '../utils/toolbox';
+    import generateToolbox, { updateToolboxPreservingScroll } from '../utils/toolbox';
     import { registerControls } from '../utils/controls';
     import { registerCodeProvider } from '@/features/editor/state/codeProvider';
     registerCodeProvider(() =>
@@ -59,7 +59,7 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
     (async () => {
         try {
             await loadBlockly(workspace);
-            workspace.updateToolbox(await generateToolbox());
+            updateToolboxPreservingScroll(workspace, await generateToolbox());
             await new Promise((resolve) => requestAnimationFrame(resolve))
         } finally {
             hideOverlay()

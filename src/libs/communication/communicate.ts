@@ -182,7 +182,7 @@ export class Pico {
 
         this.responded = false
         this.firmwareConfirmed = false
-        this.protocolVersion = 1
+        this.protocolVersion = 2
         this.uploadVerified = false
         this.calibrationCommandPending = false
         this.updateState({
@@ -271,6 +271,7 @@ export class Pico {
             this.updateState({
                 connectionStatus: ConnectionStatus.DISCONNECTED,
                 firmwareStatus: FirmwareStatus.UNKNOWN,
+                isRestarting: false,
             })
         }
     }
@@ -293,6 +294,7 @@ export class Pico {
             const usable =
                 protocol >= SUPPORTED_PROTOCOL_VERSION &&
                 meetsMinimumVersion(version, MINIMUM_FIRMWARE_VERSION)
+            console.log(protocol, SUPPORTED_PROTOCOL_VERSION, version, MINIMUM_FIRMWARE_VERSION)
 
             if (!usable) {
                 this.updateState({
@@ -320,7 +322,10 @@ export class Pico {
                 })
             }
         } else if (type === 'connect' && this.state.isRestarting) {
-            this.updateState({ connectionStatus: ConnectionStatus.CONNECTED })
+            this.updateState({
+                connectionStatus: ConnectionStatus.CONNECTED,
+                isRestarting: false,
+            })
         } else if (type === 'console') {
             this.emit('console', { message })
         } else if (type === 'download') {
@@ -621,7 +626,7 @@ export class Pico {
                 `This Ro/Box needs firmware ${MINIMUM_FIRMWARE_VERSION} or newer before you can upload to it.`,
             )
         }
-
+        console.log(code)
         this.uploadVerified = false
         this.updateState({ connectionStatus: ConnectionStatus.LOADING })
 

@@ -5,6 +5,7 @@ import {
 } from '@/features/editor/editors/blockEditor/config/toolbox'
 import { getProject, getProjectIdFromURL } from '@/utils/serialization'
 import type { ExtensionKey } from 'src/types/extensions'
+import type { WorkspaceSvg } from 'blockly/core'
 
 //TODO: Make this dynamic
 export default async function generateToolbox(): Promise<ToolboxDefinition> {
@@ -26,4 +27,20 @@ export default async function generateToolbox(): Promise<ToolboxDefinition> {
         }
     }
     return toolbox
+}
+
+export function updateToolboxPreservingScroll(
+    workspace: WorkspaceSvg,
+    toolbox: ToolboxDefinition,
+) {
+    const flyoutWorkspace = workspace.getFlyout()?.getWorkspace()
+    const scrollY = flyoutWorkspace?.scrollY ?? 0
+
+    workspace.updateToolbox(toolbox)
+
+    requestAnimationFrame(() => {
+        const updatedFlyoutWorkspace = workspace.getFlyout()?.getWorkspace()
+        updatedFlyoutWorkspace?.scroll(0, scrollY)
+        workspace.getToolbox()?.refreshSelection()
+    })
 }

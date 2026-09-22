@@ -64,7 +64,9 @@ import extensions from '@/data/extensions.json'
     import extensions from '@/data/extensions.json'
     import { getProject, getProjectIdFromURL } from '@/utils/serialization'
     import { setUserExtension } from '@/features/editor/editors/blockEditor/utils/serialization'
-    import generateToolbox from '@/features/editor/editors/blockEditor/utils/toolbox'
+    import generateToolbox, {
+        updateToolboxPreservingScroll,
+    } from '@/features/editor/editors/blockEditor/utils/toolbox'
     import * as Blockly from 'blockly'
     import { dom, library } from '@fortawesome/fontawesome-svg-core'
     import { faPuzzlePiece, faXmark } from '@fortawesome/free-solid-svg-icons'
@@ -158,8 +160,7 @@ import extensions from '@/data/extensions.json'
                 const workspace = Blockly.getMainWorkspace()
 
                 if (workspace instanceof Blockly.WorkspaceSvg) {
-                    workspace.updateToolbox(toolbox)
-                    workspace.getToolbox()?.refreshSelection()
+                    updateToolboxPreservingScroll(workspace, toolbox)
                 }
             })
         }
