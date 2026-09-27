@@ -62,6 +62,20 @@ export function swapMotorsCommand(swapped: boolean): string {
     return `swap_motors_${swapped ? 1 : 0}`
 }
 
+const RENAME_DEVICE_PREFIX = 'rename_device_'
+
+/** Matches the firmware's own `_DEVICE_NAME_CHARS`/`DEVICE_NAME_MAX_LENGTH` in `protocol.py` - anything else is silently ignored by the board, so this must be checked before a command is ever sent. */
+const DEVICE_NAME_PATTERN = /^[A-Za-z0-9_-]{1,16}$/
+
+export function isValidDeviceName(name: string): boolean {
+    return DEVICE_NAME_PATTERN.test(name)
+}
+
+/** Builds the `rename_device_<name>` command that renames the board's AT09 Bluetooth module. Firmware >=2.0.1. */
+export function renameDeviceCommand(name: string): string {
+    return `${RENAME_DEVICE_PREFIX}${name}`
+}
+
 /**
  * Test-drives the whole robot at a fixed speed through the board's normal
  * `Motors.run_motors` pipeline, so it reflects whatever bias/reverse/swap is
@@ -114,6 +128,8 @@ export const MESSAGE_TYPES: readonly PicoMessageType[] = [
     'calibration',
     'uploaded',
     'color',
+    'renaming',
+    'renamed',
 ]
 
 /** Minimum firmware this build can talk to. 2.0.0 removed the unframed protocol; no fallback. */

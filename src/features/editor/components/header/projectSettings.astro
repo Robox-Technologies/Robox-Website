@@ -2,6 +2,7 @@
 import { faEyeDropper, faSliders, faScrewdriver, faDownload } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
+import RenameDeviceDialog from "./renameDeviceDialog.astro"
 ---
 
 <div class="project-settings relative">
@@ -33,6 +34,7 @@ import Button from "@/components/button"
                 <FontAwesomeIcon icon={faSliders}/>
                 Calibrate Motors
             </Button>
+            <RenameDeviceDialog />
             <Button
                 href="../flash"
                 className="text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"

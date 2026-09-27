@@ -1,0 +1,211 @@
+---
+import { faTag, faXmark } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import Button from "@/components/button"
+---
+
+<button
+    type="button"
+    id="rename-device-button"
+    class="button-interactive text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
+>
+    <FontAwesomeIcon icon={faTag} />
+    Rename Ro/Box
+</button>
+
+<dialog
+    id="rename-device-dialog"
+    class="modal fixed inset-0 z-50 m-0 h-screen w-screen max-h-none max-w-none border-0 bg-black/45 p-4 text-black backdrop:bg-black/45 open:flex open:items-center open:justify-center"
+>
+    <div class="flex w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <header class="flex items-center justify-between border-b border-gray-300 px-6 py-4 text-black">
+            <h2 class="flex items-center gap-2 text-xl font-bold">
+                <FontAwesomeIcon icon={faTag} className="text-green mb-0.5" />
+                <span>Rename Ro/Box</span>
+            </h2>
+            <button
+                type="button"
+                id="rename-device-close"
+                class="button-interactive rounded-lg px-3 py-2 text-gray-600"
+                aria-label="Close rename dialog"
+            >
+                <FontAwesomeIcon icon={faXmark} />
+            </button>
+        </header>
+
+        <div class="flex flex-col gap-3 p-6">
+            <p id="rename-device-disconnected" class="hidden text-sm text-gray-600">
+                Connect your Ro/Box before renaming it.
+            </p>
+
+            <div id="rename-device-form" class="hidden">
+                <div class="flex flex-col gap-3">
+                    <label class="text-sm" for="rename-device-input">New name</label>
+                    <input
+                        type="text"
+                        id="rename-device-input"
+                        maxlength="16"
+                        autocomplete="off"
+                        placeholder="e.g. Robox42"
+                        class="border border-gray-300 p-2 rounded-sm w-full text-black"
+                    />
+                    <p class="text-xs text-gray-500">
+                        1-16 characters: letters, numbers, underscores, or hyphens only.
+                    </p>
+                    <p id="rename-device-status" class="hidden text-sm text-gray-600">
+                        Renaming - this can take a few seconds...
+                    </p>
+                    <p id="rename-device-error" class="hidden text-sm text-red-600"></p>
+                    <Button type="button" id="rename-device-submit" className="bg-blue ml-auto" disabled>
+                        Rename
+                    </Button>
+                </div>
+            </div>
+
+            <p id="rename-device-success" class="hidden text-sm">
+                Renamed to <strong id="rename-device-success-name"></strong>.
+                <span id="rename-device-reconnect-status">
+                    Your Ro/Box is reconnecting under its new name - this can take up to
+                    15 seconds.
+                </span>
+            </p>
+        </div>
+    </div>
+</dialog>
+
+<script>
+    import { pico } from "@/libs/communication/communicate"
+    import { isValidDeviceName } from "@/libs/communication/protocol"
+    import type { PicoState } from "src/types/communication"
+    import { ConnectionStatus } from "src/types/communication"
+
+    const dialog = document.getElementById("rename-device-dialog") as HTMLDialogElement | null
+    const openButton = document.getElementById("rename-device-button") as HTMLButtonElement | null
+    const closeButton = document.getElementById("rename-device-close") as HTMLButtonElement | null
+    const disconnectedNotice = document.getElementById("rename-device-disconnected") as HTMLParagraphElement | null
+    const form = document.getElementById("rename-device-form") as HTMLDivElement | null
+    const input = document.getElementById("rename-device-input") as HTMLInputElement | null
+    const statusText = document.getElementById("rename-device-status") as HTMLParagraphElement | null
+    const errorText = document.getElementById("rename-device-error") as HTMLParagraphElement | null
+    const submitButton = document.getElementById("rename-device-submit") as HTMLButtonElement | null
+    const successText = document.getElementById("rename-device-success") as HTMLParagraphElement | null
+    const successName = document.getElementById("rename-device-success-name") as HTMLElement | null
+    const reconnectStatus = document.getElementById("rename-device-reconnect-status") as HTMLElement | null
+
+    if (
+        !dialog || !openButton || !closeButton || !disconnectedNotice || !form ||
+        !input || !statusText || !errorText || !submitButton || !successText || !successName ||
+        !reconnectStatus
+    ) {
+        throw new Error("Rename device dialog elements are missing")
+    }
+
+    type View = "disconnected" | "form" | "success"
+
+    let pending = false
+    let currentView: View = "disconnected"
+
+    // Non-null assertions below: the throw above already guarantees these
+    // are non-null, but TS doesn't carry that narrowing into these nested
+    // function bodies since they can outlive the check (same trade-off as
+    // `connectButton!` in the motor calibration Connect stage).
+    function applyView(view: View) {
+        currentView = view
+        disconnectedNotice!.classList.toggle("hidden", view !== "disconnected")
+        form!.classList.toggle("hidden", view !== "form")
+        successText!.classList.toggle("hidden", view !== "success")
+    }
+
+    function updateReconnectStatus(connected: boolean) {
+        reconnectStatus!.textContent = connected
+            ? "It's back online and ready to use."
+            : "Your Ro/Box is reconnecting under its new name - this can take up to 15 seconds."
+    }
+
+    function updateSubmitDisabled() {
+        submitButton!.disabled = pending || !isValidDeviceName(input!.value)
+    }
+
+    function closeDialog() {
+        if (!dialog!.open) return
+        dialog!.close()
+    }
+
+    function resetForm() {
+        pending = false
+        input!.value = ""
+        input!.disabled = false
+        statusText!.classList.add("hidden")
+        errorText!.classList.add("hidden")
+        errorText!.textContent = ""
+        updateSubmitDisabled()
+    }
+
+    async function submit() {
+        if (pending || !isValidDeviceName(input!.value)) return
+
+        pending = true
+        input!.disabled = true
+        submitButton!.disabled = true
+        errorText!.classList.add("hidden")
+        statusText!.classList.remove("hidden")
+
+        try {
+            const name = await pico.renameDevice(input!.value)
+            pending = false
+            successName!.textContent = name
+            updateReconnectStatus(false)
+            applyView("success")
+        } catch (caught) {
+            pending = false
+            input!.disabled = false
+            statusText!.classList.add("hidden")
+            errorText!.textContent = caught instanceof Error ? caught.message : String(caught)
+            errorText!.classList.remove("hidden")
+            updateSubmitDisabled()
+        }
+    }
+
+    openButton.addEventListener("click", (event) => {
+        event.stopPropagation()
+        resetForm()
+        applyView(pico.isConnected() ? "form" : "disconnected")
+        dialog.showModal()
+    })
+
+    closeButton.addEventListener("click", closeDialog)
+
+    document.addEventListener("click", (event) => {
+        if (dialog.open && event.target instanceof Element && event.target === dialog) {
+            closeDialog()
+        }
+    })
+
+    dialog.addEventListener("cancel", (event) => {
+        event.preventDefault()
+        closeDialog()
+    })
+
+    input.addEventListener("input", updateSubmitDisabled)
+    input.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return
+        event.preventDefault()
+        void submit()
+    })
+
+    submitButton.addEventListener("click", () => void submit())
+
+    // A disconnect mid-form (not from a rename in flight) sends the student
+    // back to the "connect first" notice rather than leaving a dead form up.
+    // Once renamed, the success view stays up regardless - `pico` is already
+    // retrying the reconnect on its own (see `reconnectAfterRename` in
+    // communicate.ts) - and this just reflects that progress in its text.
+    pico.on("stateChange", (state: PicoState) => {
+        if (currentView === "success") {
+            updateReconnectStatus(state.connectionStatus === ConnectionStatus.CONNECTED)
+            return
+        }
+        if (!dialog!.open) return
+        applyView(state.connectionStatus === ConnectionStatus.CONNECTED ? "form" : "disconnected")
+    })
+</script>

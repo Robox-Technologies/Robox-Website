@@ -42,6 +42,24 @@ export class BluetoothCommunication extends BleTransport {
     }
 
     async connect(device: BluetoothDevice): Promise<void> {
+        await this.attach(device)
+    }
+
+    /**
+     * Rejoins the same already-permitted device - e.g. after a rename, where
+     * the AT09 module drops the link on its own and comes back advertising
+     * under its new name, but the underlying device identity (and this
+     * permission grant) is unchanged. Skips `requestDevice()` entirely.
+     */
+    async reconnect(): Promise<void> {
+        if (!this.device) {
+            throw new Error('No previously connected Ro/Box to reconnect to.')
+        }
+
+        await this.attach(this.device)
+    }
+
+    private async attach(device: BluetoothDevice): Promise<void> {
         this.device = device
         this.server = (await device.gatt?.connect()) ?? null
 
@@ -55,10 +73,7 @@ export class BluetoothCommunication extends BleTransport {
         }
 
         await this.characteristic.startNotifications()
-        this.device.addEventListener(
-            'gattserverdisconnected',
-            this.disconnectedBound,
-        )
+        device.addEventListener('gattserverdisconnected', this.disconnectedBound)
         this.read()
     }
 
@@ -108,7 +123,8 @@ export class BluetoothCommunication extends BleTransport {
                 this.server.disconnect()
             }
 
-            this.device = null
+            // `device` is kept deliberately - it's what `reconnect()` rejoins
+            // without a fresh `requestDevice()` picker (e.g. after a rename).
             this.server = null
             this.characteristic = null
             this.resetBuffer()

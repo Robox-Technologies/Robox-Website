@@ -15,6 +15,13 @@ export interface Communication {
     initialize(): void
     /** Whether reconnecting to a previously authorised port/device happens automatically. */
     setAutoConnect(enabled: boolean): void
+    /**
+     * Rejoins the same already-permitted device without a fresh device
+     * picker (e.g. `requestDevice()`). Only the Bluetooth transports can do
+     * this - the underlying device identity survives a rename, only its
+     * advertised name changes. Other transports reject.
+     */
+    reconnect(): Promise<void>
 }
 // Enums for better type safety
 export enum ConnectionStatus {
@@ -50,6 +57,8 @@ export type PicoMessageType =
     | 'calibration'
     | 'uploaded'
     | 'color'
+    | 'renaming'
+    | 'renamed'
 
 export interface PicoMessage {
     type: PicoMessageType

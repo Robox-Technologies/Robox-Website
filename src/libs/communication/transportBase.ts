@@ -91,6 +91,15 @@ export abstract class BaseTransport implements Communication {
     /** Only USB has an auto-connect behaviour to toggle. */
     setAutoConnect(): void {}
 
+    /** Only the Bluetooth transports can rejoin an already-permitted device without a fresh picker; overridden there. */
+    reconnect(): Promise<void> {
+        return Promise.reject(
+            new Error(
+                'Reconnecting without a device picker is not supported for this connection method.',
+            ),
+        )
+    }
+
     // === sending ===
 
     /** The sequence the next frame would use, without consuming it. */
