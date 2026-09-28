@@ -17,6 +17,9 @@ const CHARACTERISTIC_UUID = numberToUUID(UART_CHARACTERISTIC)
 export class IOSBluetoothCommunication extends BleTransport {
     private deviceId: string | null = null
 
+    /** Guards re-entrancy: `BleClient.disconnect()` can itself fire the plugin's onDisconnect callback. */
+    private disconnecting = false
+
     private readonly notificationBound = this.handleNotification.bind(this)
     private readonly disconnectedBound = this.handleDisconnected.bind(this)
 
@@ -51,6 +54,25 @@ export class IOSBluetoothCommunication extends BleTransport {
         } catch (error) {
             this.deviceId = null
             this.resetBuffer()
+            throw new Error(errorMessage(error, 'Could not connect to Ro/Box'))
+        }
+    }
+
+    /**
+     * Rejoins the same already-permitted device - e.g. after a rename, where
+     * the AT09 module drops the link on its own and comes back advertising
+     * under its new name, but the underlying device identity (and this
+     * permission grant) is unchanged. Skips `requestDevice()` entirely.
+     */
+    async reconnect(): Promise<void> {
+        if (!this.deviceId) {
+            throw new Error('No previously connected Ro/Box to reconnect to.')
+        }
+
+        try {
+            await BleClient.connect(this.deviceId, this.disconnectedBound)
+            this.read()
+        } catch (error) {
             throw new Error(errorMessage(error, 'Could not connect to Ro/Box'))
         }
     }
@@ -90,12 +112,15 @@ export class IOSBluetoothCommunication extends BleTransport {
     }
 
     async disconnect(): Promise<void> {
-        if (!this.deviceId) return
+        if (!this.deviceId || this.disconnecting) return
 
         const deviceId = this.deviceId
-        // Cleared first so a disconnect callback fired by the plugin during
-        // teardown does not recurse back into `parent.disconnect`.
-        this.deviceId = null
+        // `deviceId` is deliberately kept (unlike the old teardown here) -
+        // it's what `reconnect()` rejoins without a fresh `requestDevice()`
+        // picker (e.g. after a rename). `disconnecting` guards re-entrancy
+        // instead: a disconnect callback fired by the plugin during teardown
+        // now no-ops here rather than recursing back into `parent.disconnect`.
+        this.disconnecting = true
         this.resetBuffer()
 
         try {
@@ -104,6 +129,8 @@ export class IOSBluetoothCommunication extends BleTransport {
             throw new Error(
                 errorMessage(error, 'Could not disconnect from Ro/Box'),
             )
+        } finally {
+            this.disconnecting = false
         }
     }
 }

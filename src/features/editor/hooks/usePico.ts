@@ -46,9 +46,9 @@ export function usePico() {
         pico.colorResetColor(name)
     }, [])
 
-    const sendCode = useCallback(async () => {
+    const sendAndRunCode = useCallback(async () => {
         const code = await getGeneratedCode()
-        await pico.sendCode(code)
+        await pico.sendAndRunCode(code)
     }, [])
 
     const runCode = useCallback(() => {
@@ -85,7 +85,7 @@ export function usePico() {
         restart,
         colorCalibrate,
         colorResetColor,
-        sendCode,
+        sendAndRunCode,
         runCode,
         bootloaderMode,
     }

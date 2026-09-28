@@ -45,6 +45,7 @@ class MockTransport extends BaseTransport {
 
     stored = ''
     dropped = 0
+    uploads = 0
 
     constructor(
         pico: Pico,
@@ -101,6 +102,7 @@ class MockTransport extends BaseTransport {
 
     private apply(frame: Frame): void {
         if (frame.kind === Kind.BEGIN) {
+            this.uploads += 1
             const [count] = frameText(frame).split(',')
             this.expectedLines = Number.parseInt(count, 10)
             this.storedLines = []
@@ -278,6 +280,22 @@ describe('uploadProgram', () => {
 })
 
 describe('Pico.runCode gating', () => {
+    it('does not upload the same verified program twice', async () => {
+        const pico = new Pico()
+        const transport = new MockTransport(pico)
+        const internals = pico as unknown as {
+            communication: MockTransport
+            protocolVersion: number
+        }
+        internals.communication = transport
+        internals.protocolVersion = 2
+
+        await pico.sendCode(program)
+        await pico.sendCode(program)
+
+        expect(transport.uploads).toBe(1)
+    })
+
     it('refuses to run before a verified upload', () => {
         const pico = new Pico()
         const errors: string[] = []

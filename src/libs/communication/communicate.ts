@@ -22,8 +22,10 @@ import {
     RESET_COLOR_COMMANDS,
     SUPPORTED_PROTOCOL_VERSION,
     calibrateMotorsCommand,
+    isValidDeviceName,
     meetsMinimumVersion,
     parseFirmwareReply,
+    renameDeviceCommand,
     reverseMotorCommand,
     swapMotorsCommand,
     TEST_DRIVE_COMMANDS,
@@ -32,7 +34,7 @@ import {
 } from './protocol'
 import type { PaletteColorName } from '@/data/colorPalette'
 import { uploadProgram } from './uploader'
-import { BaseTransport, errorMessage } from './transportBase'
+import { BaseTransport, delay, errorMessage } from './transportBase'
 import type { BleDevice } from '@capacitor-community/bluetooth-le'
 
 type PicoEventListener<K extends keyof PicoEventMap> = (
@@ -46,6 +48,24 @@ const FIRMWARE_CHECK_TIMEOUT_MS = 2500
 
 /** How long to wait for the wire to actually drop before giving up on a bootloader-entry attempt. */
 const BOOTLOADER_CONFIRM_TIMEOUT_MS = 3000
+/**
+ * How long to wait for the board's "renaming" ack - sent immediately, before
+ * the AT09 module does anything disruptive, so this only needs to cover
+ * normal send/pacing latency, not the whole AT sequence.
+ */
+const RENAME_TIMEOUT_MS = 3000
+
+/**
+ * After a rename, the AT09 module needs the link to stay down for its whole
+ * AT sequence (~0.5s disconnect + ~0.3s name-set + 1.5s reset + up to 6s to
+ * come back online, call it 10s) before it's safe to reconnect - retrying
+ * sooner catches it mid-sequence and breaks it. Retried on an interval
+ * rather than a single wait-then-try, since "online" isn't observable
+ * up front.
+ */
+const RENAME_RECONNECT_INITIAL_DELAY_MS = 3000
+const RENAME_RECONNECT_RETRY_INTERVAL_MS = 1500
+const RENAME_RECONNECT_TOTAL_MS = 15000
 
 const revertStateMapping: Partial<Record<ConnectionStatus, ConnectionStatus>> =
     {
@@ -77,6 +97,7 @@ export class Pico {
 
     /** Whether the program on the board arrived intact. Cleared when a new upload starts. */
     private uploadVerified: boolean = false
+    private verifiedProgram: string | null = null
 
     /**
      * Lets a duplicate 'connect' join the attempt already running. A
@@ -97,6 +118,30 @@ export class Pico {
      * true and silently swallow a real crash later.
      */
     private calibrationCommandPending: boolean = false
+
+    /**
+     * Tracks the promise returned by an outstanding `renameDevice()` call.
+     * The board's immediate "renaming" ack - not its later "renamed"/"error",
+     * which usually can't make it back before the AT09 module drops the link
+     * - is what settles this.
+     */
+    private renameCommandPending: boolean = false
+    private pendingRenameName: string | null = null
+    private renameTimeout: ReturnType<typeof setTimeout> | null = null
+    private renameSettle: {
+        resolve: (name: string) => void
+        reject: (error: Error) => void
+    } | null = null
+
+    /**
+     * Set once a rename acks, cleared by the `disconnect()` it triggers -
+     * which then reconnects to the same device instead of just sitting at
+     * DISCONNECTED, since the module dropping the link is a required step
+     * of the AT sequence, not a failure. Not set for USB: renaming always
+     * targets the BLE module regardless of which interface issued it, so a
+     * USB session never sees a disconnect from it in the first place.
+     */
+    private awaitingRenameReconnect: boolean = false
 
     constructor() {
         this.communication = null
@@ -184,7 +229,10 @@ export class Pico {
         this.firmwareConfirmed = false
         this.protocolVersion = 2
         this.uploadVerified = false
+        this.verifiedProgram = null
         this.calibrationCommandPending = false
+        this.awaitingRenameReconnect = false
+        this.settleRename(new Error('The Ro/Box disconnected.'))
         this.updateState({
             communicationMethod: method,
             connectionStatus: ConnectionStatus.DISCONNECTED,
@@ -244,6 +292,8 @@ export class Pico {
         // proves the reboot happened.
         this.bootloaderRebootConfirmed?.()
         this.bootloaderRebootConfirmed = null
+        this.uploadVerified = false
+        this.verifiedProgram = null
 
         if (!this.communication) return
 
@@ -255,6 +305,13 @@ export class Pico {
         }
 
         this.updateState({ connectionStatus: ConnectionStatus.DISCONNECTING })
+
+        // Read before teardown clears it: a rename acks with "renaming",
+        // then this very disconnect fires as a required step of the AT
+        // sequence, not a failure - so it's what triggers reconnecting to
+        // the same device, rather than just sitting at DISCONNECTED.
+        const reconnectAfterRename = this.awaitingRenameReconnect
+        this.awaitingRenameReconnect = false
 
         try {
             await this.releaseBoard()
@@ -273,6 +330,10 @@ export class Pico {
                 firmwareStatus: FirmwareStatus.UNKNOWN,
                 isRestarting: false,
             })
+
+            if (reconnectAfterRename) {
+                void this.reconnectAfterRename()
+            }
         }
     }
 
@@ -344,6 +405,16 @@ export class Pico {
             this.emit('color', payload.message as ColorReading)
         } else if (type === 'uploaded') {
             this.emit('uploaded', payload.message)
+        } else if (type === 'renaming') {
+            // The reliable success signal, sent before the AT09 module does
+            // anything disruptive - do not wait for "renamed" below, which
+            // usually can't make it back before the link that would carry
+            // it drops.
+            this.settleRename(null)
+        } else if (type === 'renamed') {
+            // Arrives late, if at all, and by then this has almost always
+            // already settled via "renaming" above - a harmless no-op then.
+            this.settleRename(null)
         } else if (type === 'error') {
             // A refusal while the check is outstanding is the check's answer, not a crash.
             if (this.firmwareCheckPending()) {
@@ -359,6 +430,14 @@ export class Pico {
             if (this.calibrationCommandPending) {
                 this.calibrationCommandPending = false
                 this.emit('error', { message })
+                return
+            }
+
+            // Likewise, the AT09 module rejecting the rename (bad name,
+            // config failure) is the request's own answer - the connection
+            // is still alive, so this must not restart the board either.
+            if (this.renameCommandPending) {
+                this.settleRename(new Error(message))
                 return
             }
 
@@ -578,6 +657,127 @@ export class Pico {
     }
 
     /**
+     * Renames the board's AT09 Bluetooth module (firmware >=2.0.1). There is
+     * no readback - the board doesn't report its own name back - so this
+     * client's validated `name` is what gets shown as the result, not
+     * anything parsed from a reply. Resolves on the board's immediate
+     * "renaming" ack, sent before it does anything disruptive - not on the
+     * later "renamed" reply, which is unreliable (see the `renaming` branch
+     * of `handleMessage`). Rejects on a refused name or no response at all
+     * within `RENAME_TIMEOUT_MS`. The disconnect that follows a successful
+     * rename is handled separately, by `disconnect()`/`reconnectAfterRename()`.
+     */
+    renameDevice(name: string): Promise<string> {
+        if (!isValidDeviceName(name)) {
+            return Promise.reject(
+                new Error(
+                    'Device names must be 1-16 characters: letters, numbers, underscores, or hyphens only.',
+                ),
+            )
+        }
+        if (!this.isConnected()) {
+            return Promise.reject(
+                new Error('Connect your Ro/Box before renaming it.'),
+            )
+        }
+        if (this.renameCommandPending) {
+            return Promise.reject(new Error('A rename is already in progress.'))
+        }
+
+        return new Promise<string>((resolve, reject) => {
+            this.renameCommandPending = true
+            this.pendingRenameName = name
+            this.renameSettle = { resolve, reject }
+            this.renameTimeout = setTimeout(() => {
+                this.settleRename(
+                    new Error(
+                        'Ro/Box did not respond to the rename request. Make sure it is connected and not mid-upload, then try again.',
+                    ),
+                )
+            }, RENAME_TIMEOUT_MS)
+            void this.communication?.write(renameDeviceCommand(name))
+        })
+    }
+
+    /** Settles the outstanding `renameDevice()` call, if any. `error` null resolves with the requested name; otherwise rejects. */
+    private settleRename(error: Error | null): void {
+        if (!this.renameCommandPending) return
+
+        if (this.renameTimeout) {
+            clearTimeout(this.renameTimeout)
+            this.renameTimeout = null
+        }
+
+        const settle = this.renameSettle
+        const name = this.pendingRenameName
+        this.renameCommandPending = false
+        this.pendingRenameName = null
+        this.renameSettle = null
+
+        if (!settle || !name) return
+        if (error) {
+            settle.reject(error)
+            return
+        }
+
+        // Not for USB: renaming always targets the BLE module regardless of
+        // which interface issued it, so a USB session never sees a
+        // disconnect from it, and there is nothing here to reconnect to.
+        if (this.state.communicationMethod !== 'USB') {
+            this.awaitingRenameReconnect = true
+        }
+        settle.resolve(name)
+    }
+
+    /**
+     * Waits out the AT09 module's reset (see `RENAME_RECONNECT_*` above),
+     * then rejoins the same already-permitted device - retrying on an
+     * interval, since there's no signal for exactly when it's back online.
+     * Silent on failure: this runs unprompted after a disconnect the user
+     * didn't initiate, so surfacing a mid-retry error would read as a false
+     * alarm; giving up quietly just leaves the ordinary "Connect to Ro/Box"
+     * button for them to retry by hand.
+     */
+    private async reconnectAfterRename(): Promise<void> {
+        const communication = this.communication
+        if (!communication) return
+
+        // Budgeted from now, not from the end of the initial delay - "up to
+        // ~15s total" from the disconnect, not 15s of retries on top of it.
+        const deadline = Date.now() + RENAME_RECONNECT_TOTAL_MS
+        await delay(RENAME_RECONNECT_INITIAL_DELAY_MS)
+
+        while (Date.now() < deadline) {
+            // The user may have moved on - picked a different method,
+            // connected some other way - since this loop started.
+            if (
+                this.communication !== communication ||
+                this.state.connectionStatus !== ConnectionStatus.DISCONNECTED
+            ) {
+                return
+            }
+
+            this.updateState({ connectionStatus: ConnectionStatus.CONNECTING })
+
+            try {
+                await communication.reconnect()
+                if (this.toastsEnabled) {
+                    toast.success({
+                        title: 'Ro/Box Reconnected',
+                        message: "It's back online under its new name.",
+                        durationMs: 3000,
+                    })
+                }
+                this.firmwareCheck()
+                return
+            } catch {
+                this.revertConnectionState()
+                await delay(RENAME_RECONNECT_RETRY_INTERVAL_MS)
+            }
+        }
+    }
+
+    /**
      * Reads back a calibration value already persisted on the board,
      * without changing it. The reply arrives as a `calibration` event -
      * `{ name, value }` - rather than a return value, since it comes back
@@ -617,6 +817,11 @@ export class Pico {
 
     /** Send a program and wait for the board to confirm it arrived intact. */
     async sendCode(code: string): Promise<void> {
+        if (this.uploadVerified && this.verifiedProgram === code) return
+
+        this.uploadVerified = false
+        this.verifiedProgram = null
+
         if (!(this.communication instanceof BaseTransport)) {
             throw new Error('No communication method set')
         }
@@ -626,18 +831,23 @@ export class Pico {
                 `This Ro/Box needs firmware ${MINIMUM_FIRMWARE_VERSION} or newer before you can upload to it.`,
             )
         }
-        console.log(code)
-        this.uploadVerified = false
+
         this.updateState({ connectionStatus: ConnectionStatus.LOADING })
 
         try {
             await uploadProgram(this.communication, code)
             this.uploadVerified = true
+            this.verifiedProgram = code
         } catch (error) {
             this.updateState({ connectionStatus: ConnectionStatus.CONNECTED })
             this.emit('error', { message: errorMessage(error) })
             throw error
         }
+    }
+
+    async sendAndRunCode(code: string): Promise<void> {
+        await this.sendCode(code)
+        this.runCode()
     }
 
     runCode(): void {

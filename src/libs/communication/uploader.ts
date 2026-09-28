@@ -51,7 +51,11 @@ function isVerdict(value: unknown): value is Verdict {
     if (!value || typeof value !== 'object') return false
     const candidate = value as Record<string, unknown>
     return (
-        typeof candidate.ok === 'boolean' && typeof candidate.crc === 'string'
+        typeof candidate.ok === 'boolean' &&
+        typeof candidate.lines === 'number' &&
+        typeof candidate.expected === 'number' &&
+        typeof candidate.crc === 'string' &&
+        typeof candidate.want === 'string'
     )
 }
 
