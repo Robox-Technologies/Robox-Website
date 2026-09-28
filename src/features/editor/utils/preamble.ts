@@ -15,6 +15,9 @@ import {
 export function buildPreamble(
     project: { extensions?: UserExtensions; sensors?: UserSensors } | null,
 ): string {
+    console.log(generateExtensionsPreamble(
+            project?.extensions ?? ({} as UserExtensions),
+        ))
     return (
         preamble +
         generateExtensionsPreamble(

@@ -24,7 +24,9 @@ motor_speed = 80
 `
 export const ExtensionsPreamble: Record<ExtensionKey, string> = {
     SERVO: `
-    `,
+from roboxlib import Servo
+servo = Servo()
+`,
 }
 export const ExtraSensorsPreamble: {
     [K in SensorKey]: (pins: Record<PinsOf<K>, number>) => string
