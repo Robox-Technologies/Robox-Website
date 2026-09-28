@@ -23,7 +23,7 @@ env:
     UPSTREAM_REPO: Robox-Technologies/Robox-pythonLibs
     FIRMWARE_ASSET: latest.uf2
     TARGET_PATH: public/latest.uf2
-    BASE_BRANCH: develop
+    BASE_BRANCH: epic/astro
 
 jobs:
     sync:
