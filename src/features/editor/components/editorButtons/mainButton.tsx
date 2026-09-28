@@ -45,8 +45,7 @@ export default function MainButton() {
         isFirmwareOutOfDate,
         connect,
         restart,
-        sendCode,
-        runCode,
+        sendAndRunCode,
     } = usePico()
 
     // A failed firmware check drops connectionStatus back to DISCONNECTED
@@ -68,13 +67,11 @@ export default function MainButton() {
             : {}),
         [ConnectionStatus.CONNECTED]: async () => {
             try {
-                await sendCode()
+                await sendAndRunCode()
             } catch {
-                // sendCode rejects on a failed verification and has already reported why.
+                // The upload or run failure has already been reported.
                 return
             }
-            //TODO: Make this not run every time
-            runCode()
         },
         [ConnectionStatus.RUNNING]: () => {
             restart()

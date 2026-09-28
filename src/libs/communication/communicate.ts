@@ -97,6 +97,7 @@ export class Pico {
 
     /** Whether the program on the board arrived intact. Cleared when a new upload starts. */
     private uploadVerified: boolean = false
+    private verifiedProgram: string | null = null
 
     /**
      * Lets a duplicate 'connect' join the attempt already running. A
@@ -228,6 +229,7 @@ export class Pico {
         this.firmwareConfirmed = false
         this.protocolVersion = 2
         this.uploadVerified = false
+        this.verifiedProgram = null
         this.calibrationCommandPending = false
         this.awaitingRenameReconnect = false
         this.settleRename(new Error('The Ro/Box disconnected.'))
@@ -290,6 +292,8 @@ export class Pico {
         // proves the reboot happened.
         this.bootloaderRebootConfirmed?.()
         this.bootloaderRebootConfirmed = null
+        this.uploadVerified = false
+        this.verifiedProgram = null
 
         if (!this.communication) return
 
@@ -813,6 +817,11 @@ export class Pico {
 
     /** Send a program and wait for the board to confirm it arrived intact. */
     async sendCode(code: string): Promise<void> {
+        if (this.uploadVerified && this.verifiedProgram === code) return
+
+        this.uploadVerified = false
+        this.verifiedProgram = null
+
         if (!(this.communication instanceof BaseTransport)) {
             throw new Error('No communication method set')
         }
@@ -822,18 +831,23 @@ export class Pico {
                 `This Ro/Box needs firmware ${MINIMUM_FIRMWARE_VERSION} or newer before you can upload to it.`,
             )
         }
-        console.log(code)
-        this.uploadVerified = false
+
         this.updateState({ connectionStatus: ConnectionStatus.LOADING })
 
         try {
             await uploadProgram(this.communication, code)
             this.uploadVerified = true
+            this.verifiedProgram = code
         } catch (error) {
             this.updateState({ connectionStatus: ConnectionStatus.CONNECTED })
             this.emit('error', { message: errorMessage(error) })
             throw error
         }
+    }
+
+    async sendAndRunCode(code: string): Promise<void> {
+        await this.sendCode(code)
+        this.runCode()
     }
 
     runCode(): void {
