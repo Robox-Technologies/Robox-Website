@@ -71,7 +71,6 @@ export async function generateCode(workspace: WorkspaceSvg) {
         buildPreamble(project) +
         pythonGenerator.workspaceToCode(workspace) +
         '\nevent_begin()'
-    console.log(code)
     return code
 }
 export async function setUserExtension(
