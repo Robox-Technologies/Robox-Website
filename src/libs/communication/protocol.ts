@@ -138,8 +138,8 @@ export const MESSAGE_TYPES: readonly PicoMessageType[] = [
     'renamed',
 ]
 
-/** Minimum firmware this build can talk to. 2.0.0 removed the unframed protocol; no fallback. */
-export const MINIMUM_FIRMWARE_VERSION = '2.1.0'
+// Bumped to 2.2.0 due to the verification requirement for rerunning code
+export const MINIMUM_FIRMWARE_VERSION = '2.2.0'
 
 /** Framed protocol version this build speaks. */
 export const SUPPORTED_PROTOCOL_VERSION = 2
