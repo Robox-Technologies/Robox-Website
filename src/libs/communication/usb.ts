@@ -8,6 +8,11 @@ import { ConnectionStatus } from 'src/types/communication'
 
 const PI_VENDOR_ID = 0x2e8a
 
+function portId(port: SerialPort): string {
+    const { usbVendorId, usbProductId } = port.getInfo()
+    return `usb:${(usbVendorId ?? 0).toString(16)}:${(usbProductId ?? 0).toString(16)}`
+}
+
 export class USBCommunication extends BaseTransport {
     private port: SerialPort | null = null
     private textEncoder: TextEncoderStream | null = null
@@ -116,6 +121,28 @@ export class USBCommunication extends BaseTransport {
                 'Could not request Ro/Box! Make sure you have it connected via USB.',
             )
         }
+    }
+
+    /**
+     * Connect to one previously authorised USB device by its Web Serial
+     * identifier. Web Serial exposes vendor/product IDs, but not a serial
+     * number, so identical devices cannot be distinguished by this API.
+     */
+    async autoConnect(deviceId: string): Promise<void> {
+        const ports = await navigator.serial.getPorts()
+        const port = ports.find(
+            (candidate) =>
+                candidate.getInfo().usbVendorId === PI_VENDOR_ID &&
+                portId(candidate) === deviceId,
+        )
+
+        if (!port) {
+            throw new Error(
+                `No authorised USB device was found for id "${deviceId}".`,
+            )
+        }
+
+        await this.parent.connect(port)
     }
 
     async disconnect(): Promise<void> {

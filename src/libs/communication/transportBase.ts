@@ -91,6 +91,15 @@ export abstract class BaseTransport implements Communication {
     /** Only USB has an auto-connect behaviour to toggle. */
     setAutoConnect(): void {}
 
+    /** Resolve and connect to one supplied previously authorised device. */
+    autoConnect(_deviceId: string): Promise<void> {
+        return Promise.reject(
+            new Error(
+                'Connecting to an authorised device is not supported for this connection method.',
+            ),
+        )
+    }
+
     /** Only the Bluetooth transports can rejoin an already-permitted device without a fresh picker; overridden there. */
     reconnect(): Promise<void> {
         return Promise.reject(

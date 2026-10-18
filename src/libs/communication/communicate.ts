@@ -176,6 +176,20 @@ export class Pico {
         this.communication?.setAutoConnect(enabled)
     }
 
+    /**
+     * Connect to one specific previously authorised device. For Web Bluetooth
+     * use `BluetoothDevice.id`; for USB use its `usb:<vendor>:<product>` ID.
+     * Web Serial cannot expose a USB serial number, so identical USB devices
+     * share an ID.
+     */
+    async autoConnect(deviceId: string): Promise<void> {
+        if (!this.communication) {
+            throw new Error('Communication method not set')
+        }
+
+        await this.communication.autoConnect(deviceId)
+    }
+
     // Event listener management (for React hooks)
     on<K extends keyof PicoEventMap>(
         event: K,

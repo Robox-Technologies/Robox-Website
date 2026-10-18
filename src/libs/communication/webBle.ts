@@ -46,6 +46,25 @@ export class BluetoothCommunication extends BleTransport {
     }
 
     /**
+     * Rejoins one specific device from the browser's previously authorised
+     * devices. `BluetoothDevice.id` is stable for this origin.
+     */
+    async autoConnect(deviceId: string): Promise<void> {
+        const devices = await navigator.bluetooth.getDevices()
+        const authorisedDevice = devices.find(
+            (candidate) => candidate.id === deviceId,
+        )
+
+        if (!authorisedDevice) {
+            throw new Error(
+                `No authorised Bluetooth device was found for id "${deviceId}".`,
+            )
+        }
+
+        await this.parent.connect(authorisedDevice)
+    }
+
+    /**
      * Rejoins the same already-permitted device - e.g. after a rename, where
      * the AT09 module drops the link on its own and comes back advertising
      * under its new name, but the underlying device identity (and this
