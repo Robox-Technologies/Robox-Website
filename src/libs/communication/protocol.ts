@@ -22,6 +22,11 @@ export const COMMANDS = {
     KEYBOARD_INTERRUPT: '\x03\n',
 } as const
 
+/** Builds the checksum probe used to reuse a program already on the board. */
+export function verifyProgramCommand(checksum: number): string {
+    return `verify_program_${checksum.toString(16).padStart(8, '0')}`
+}
+
 /** One argument-less COMMAND per calibratable colour; the protocol has no parameterised payload. */
 export const CALIBRATE_COLOR_COMMANDS: Record<PaletteColorName, string> = {
     red: 'calibrate_color_red',
@@ -127,13 +132,14 @@ export const MESSAGE_TYPES: readonly PicoMessageType[] = [
     'calibrated',
     'calibration',
     'uploaded',
+    'verified',
     'color',
     'renaming',
     'renamed',
 ]
 
-/** Minimum firmware this build can talk to. 2.0.0 removed the unframed protocol; no fallback. */
-export const MINIMUM_FIRMWARE_VERSION = '2.1.0'
+// Bumped to 2.2.0 due to the verification requirement for rerunning code
+export const MINIMUM_FIRMWARE_VERSION = '2.2.0'
 
 /** Framed protocol version this build speaks. */
 export const SUPPORTED_PROTOCOL_VERSION = 2

@@ -56,6 +56,7 @@ export type PicoMessageType =
     | 'calibrated'
     | 'calibration'
     | 'uploaded'
+    | 'verified'
     | 'color'
     | 'renaming'
     | 'renamed'

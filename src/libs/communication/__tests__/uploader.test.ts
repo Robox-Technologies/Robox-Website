@@ -46,6 +46,7 @@ class MockTransport extends BaseTransport {
     stored = ''
     dropped = 0
     uploads = 0
+    verificationRequests = 0
 
     constructor(
         pico: Pico,
@@ -101,7 +102,19 @@ class MockTransport extends BaseTransport {
     }
 
     private apply(frame: Frame): void {
-        if (frame.kind === Kind.BEGIN) {
+        if (frame.kind === Kind.COMMAND) {
+            const command = frameText(frame)
+            if (command.startsWith('verify_program_')) {
+                this.verificationRequests += 1
+                const requested = command.slice('verify_program_'.length)
+                const actual = programChecksum(this.stored)
+                    .toString(16)
+                    .padStart(8, '0')
+                this.reply(
+                    `{"type":"verified","message":{"ok":${requested === actual}}}`,
+                )
+            }
+        } else if (frame.kind === Kind.BEGIN) {
             this.uploads += 1
             const [count] = frameText(frame).split(',')
             this.expectedLines = Number.parseInt(count, 10)
@@ -294,6 +307,25 @@ describe('Pico.runCode gating', () => {
         await pico.sendCode(program)
 
         expect(transport.uploads).toBe(1)
+    })
+
+    it('verifies the persisted program after a board restart', async () => {
+        const pico = new Pico()
+        const transport = new MockTransport(pico)
+        const internals = pico as unknown as {
+            communication: MockTransport
+            protocolVersion: number
+        }
+        internals.communication = transport
+        internals.protocolVersion = 2
+
+        await pico.sendCode(program)
+        pico.restart()
+        await pico.sendCode(program)
+        pico.runCode()
+
+        expect(transport.uploads).toBe(1)
+        expect(transport.verificationRequests).toBe(2)
     })
 
     it('refuses to run before a verified upload', () => {
