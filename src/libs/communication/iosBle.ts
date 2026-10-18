@@ -58,6 +58,15 @@ export class IOSBluetoothCommunication extends BleTransport {
         }
     }
 
+    async autoConnect(deviceId: string): Promise<void> {
+        await BleClient.initialize()
+        await this.parent.connect({ deviceId })
+    }
+
+    getConnectionDeviceId(): string | null {
+        return this.deviceId
+    }
+
     /**
      * Rejoins the same already-permitted device - e.g. after a rename, where
      * the AT09 module drops the link on its own and comes back advertising

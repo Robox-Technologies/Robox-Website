@@ -55,6 +55,8 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
 </div>
 
 <script>
+    import { pico } from "@/libs/communication/communicate";
+
     const settingsDialog = document.getElementById(
         'project-settings-dialog',
     ) as HTMLDialogElement | null
@@ -105,6 +107,24 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
             }
         })
     }
+
+    document
+        .querySelectorAll<HTMLAnchorElement>(".project-settings a[href]")
+        .forEach((link) => {
+            link.addEventListener("click", () => {
+                if (!pico.isConnected()) return;
+
+                const deviceId = pico.getConnectionDeviceId();
+                const method = pico.getState().communicationMethod;
+                if (!deviceId || !method) return;
+
+                const url = new URL(link.href, window.location.href);
+                url.searchParams.set("step", "calibrate");
+                url.searchParams.set("connectionMethod", method);
+                url.searchParams.set("deviceId", deviceId);
+                link.href = url.toString();
+            });
+        });
 </script>
 
 <script>

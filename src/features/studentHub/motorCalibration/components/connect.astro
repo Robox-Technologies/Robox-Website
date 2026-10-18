@@ -129,5 +129,28 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             dispatchCalibrationClearError(root);
             pico.request();
         });
+
+        const params = new URLSearchParams(window.location.search);
+        const handoffMethod = params.get("connectionMethod");
+        const handoffDeviceId = params.get("deviceId");
+        if (handoffMethod && handoffDeviceId) {
+            connectButton.disabled = true;
+            void (async () => {
+                try {
+                    await pico.setCommunicationMethod(handoffMethod as "USB" | "WebBluetooth" | "iOSBluetooth");
+                    await pico.autoConnect(handoffDeviceId);
+                    if (!pico.isConnected()) {
+                        dispatchCalibrationAdvance(root, "connect");
+                    }
+                } catch (error) {
+                    dispatchCalibrationAdvance(root, "connect");
+                    dispatchCalibrationError(
+                        root,
+                        "Couldn't Connect",
+                        error instanceof Error ? error.message : String(error),
+                    );
+                }
+            })();
+        }
     });
 </script>

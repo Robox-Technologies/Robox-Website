@@ -100,6 +100,10 @@ export abstract class BaseTransport implements Communication {
         )
     }
 
+    getConnectionDeviceId(): string | null {
+        return null
+    }
+
     /** Only the Bluetooth transports can rejoin an already-permitted device without a fresh picker; overridden there. */
     reconnect(): Promise<void> {
         return Promise.reject(

@@ -64,6 +64,10 @@ export class BluetoothCommunication extends BleTransport {
         await this.parent.connect(authorisedDevice)
     }
 
+    getConnectionDeviceId(): string | null {
+        return this.device?.id ?? null
+    }
+
     /**
      * Rejoins the same already-permitted device - e.g. after a rename, where
      * the AT09 module drops the link on its own and comes back advertising

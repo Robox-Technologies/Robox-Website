@@ -17,6 +17,8 @@ export interface Communication {
     setAutoConnect(enabled: boolean): void
     /** Connect to one specific previously authorised device by its stable identifier. */
     autoConnect(deviceId: string): Promise<void>
+    /** Stable identifier for the currently connected device, when available. */
+    getConnectionDeviceId(): string | null
     /**
      * Rejoins the same already-permitted device without a fresh device
      * picker (e.g. `requestDevice()`). Only the Bluetooth transports can do

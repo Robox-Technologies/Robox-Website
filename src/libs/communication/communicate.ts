@@ -190,6 +190,10 @@ export class Pico {
         await this.communication.autoConnect(deviceId)
     }
 
+    getConnectionDeviceId(): string | null {
+        return this.communication?.getConnectionDeviceId() ?? null
+    }
+
     // Event listener management (for React hooks)
     on<K extends keyof PicoEventMap>(
         event: K,

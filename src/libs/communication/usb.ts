@@ -145,6 +145,10 @@ export class USBCommunication extends BaseTransport {
         await this.parent.connect(port)
     }
 
+    getConnectionDeviceId(): string | null {
+        return this.port ? portId(this.port) : null
+    }
+
     async disconnect(): Promise<void> {
         try {
             if (this.currentReader) {
