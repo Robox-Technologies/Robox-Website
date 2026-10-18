@@ -1,5 +1,5 @@
 ---
-import { faEyeDropper, faSliders, faScrewdriver, faDownload } from "@fortawesome/free-solid-svg-icons"
+import { faEyeDropper, faSliders, faScrewdriver, faDownload, faGear } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
 import RenameDeviceDialog from "./renameDeviceDialog.astro"
@@ -12,7 +12,8 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
         class="button-interactive button-interactive-light text-white h-8 w-8 p-0! rounded-full flex justify-center items-center transition-transform duration-300 ease-in-out"
         aria-label="Project settings"
     >
-        <i class="fa-solid fa-gear fa-xl"></i>
+        <FontAwesomeIcon icon={faGear} size="lg"/>
+
     </button>
 
     <dialog
@@ -73,7 +74,7 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
             if (!settingsDialog.open) return
             settingsDialog.close()
             settingsDialog.classList.remove('open')
-            gearRotation -= 45
+            gearRotation += 45
             updateRotation()
         }
 
@@ -85,7 +86,7 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
             if (isOpen) {
                 settingsDialog.classList.remove('open')
                 settingsDialog.close()
-                gearRotation -= 45
+                gearRotation += 45
             } else {
                 settingsDialog.classList.add('open')
                 settingsDialog.show()
