@@ -19,11 +19,8 @@ export class USBCommunication extends BaseTransport {
 
     private readonly initPortsBound = this.initPorts.bind(this)
 
-    /**
-     * On by default, so a reload reconnects to a plugged-in Ro/Box. Flashing turns it
-     * off. Only governs reconnecting — noticing a disconnect is never gated by it.
-     */
-    private autoConnectEnabled = true
+    /** Reconnecting is opt-in; noticing a disconnect is never gated by this. */
+    private autoConnectEnabled = false
 
     setAutoConnect(enabled: boolean = true): void {
         this.autoConnectEnabled = enabled

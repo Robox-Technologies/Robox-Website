@@ -70,9 +70,8 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             document.removeEventListener(CALIBRATION_READY_EVENT, finishCalibrationWait);
         }
 
-        // Only an explicit click may connect here, so auto-connect stays off. Queued to
-        // the next microtask because `setCommunicationMethod` builds its fresh transport
-        // (auto-connect back on) after emitting this stateChange.
+        // Only an explicit click may connect here, so keep auto-connect disabled.
+        // Queue this until the fresh transport has been installed.
         function disableUsbAutoConnect(state: PicoState) {
             if (state.communicationMethod !== "USB") return;
             queueMicrotask(() => pico.setAutoConnect(false));

@@ -80,12 +80,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         // instant this stage becomes active would start test-driving motors
         // on whatever Ro/Box that port belongs to without the student
         // clicking anything - only an explicit click on the button below may
-        // connect here. `setCommunicationMethod` (called by the toggle
-        // above, or by the iOS branch) builds a fresh USBCommunication that
-        // defaults auto-connect back on, and it does so *after* emitting
-        // this very stateChange - queuing this for the next microtask,
-        // rather than calling it inline, is what lets it land on that new
-        // transport instead of the one just torn down.
+        // connect here. Queue this until the fresh transport is installed.
         function disableUsbAutoConnect(state: PicoState) {
             if (state.communicationMethod !== "USB") return;
             queueMicrotask(() => pico.setAutoConnect(false));

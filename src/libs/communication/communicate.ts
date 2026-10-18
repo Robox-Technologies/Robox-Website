@@ -82,6 +82,7 @@ export class Pico {
     private responded: boolean = false
     private firmwareConfirmed: boolean = false
     private toastsEnabled: boolean = true
+    private autoConnectEnabled: boolean = false
 
     /**
      * Set while `awaitBootloaderReboot` is waiting to see whether the board
@@ -171,6 +172,7 @@ export class Pico {
 
     /** Whether reconnecting to a previously authorised port/device happens automatically. */
     setAutoConnect(enabled: boolean): void {
+        this.autoConnectEnabled = enabled
         this.communication?.setAutoConnect(enabled)
     }
 
@@ -246,6 +248,7 @@ export class Pico {
         } else if (method === 'iOSBluetooth') {
             this.communication = new IOSBluetoothCommunication(this)
         }
+        this.communication?.setAutoConnect(this.autoConnectEnabled)
         this.communication?.initialize()
     }
 
