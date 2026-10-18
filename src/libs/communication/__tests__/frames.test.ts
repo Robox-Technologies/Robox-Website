@@ -38,6 +38,7 @@ import {
     sequenceDistance,
     splitLine,
 } from '../frames'
+import { verifyProgramCommand } from '../protocol'
 
 const encoder = new TextEncoder()
 
@@ -110,6 +111,14 @@ describe('crc32', () => {
     it('matches the known check value', () => {
         // The standard CRC-32 check vector: "123456789" -> 0xcbf43926.
         expect(crc32(encoder.encode('123456789'))).toBe(0xcbf43926)
+    })
+
+    describe('program verification command', () => {
+        it('uses the normalised program checksum as fixed-width hexadecimal', () => {
+            expect(verifyProgramCommand(programChecksum('print(1)'))).toBe(
+                'verify_program_3ce11e06',
+            )
+        })
     })
 
     it('is empty-safe', () => {

@@ -22,6 +22,11 @@ export const COMMANDS = {
     KEYBOARD_INTERRUPT: '\x03\n',
 } as const
 
+/** Builds the checksum probe used to reuse a program already on the board. */
+export function verifyProgramCommand(checksum: number): string {
+    return `verify_program_${checksum.toString(16).padStart(8, '0')}`
+}
+
 /** One argument-less COMMAND per calibratable colour; the protocol has no parameterised payload. */
 export const CALIBRATE_COLOR_COMMANDS: Record<PaletteColorName, string> = {
     red: 'calibrate_color_red',
@@ -127,6 +132,7 @@ export const MESSAGE_TYPES: readonly PicoMessageType[] = [
     'calibrated',
     'calibration',
     'uploaded',
+    'verified',
     'color',
     'renaming',
     'renamed',
