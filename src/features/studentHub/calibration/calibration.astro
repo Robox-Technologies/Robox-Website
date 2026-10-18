@@ -46,10 +46,29 @@ const initialStage = Astro.url.searchParams.get('step') === 'calibrate'
 </div>
 <script>
     import { createStageFlow } from "@/components/stageFlow";
+    import { pico } from "@/libs/communication/communicate";
 
     document.querySelectorAll<HTMLDivElement>("[data-stage-flow-root].calibration").forEach((root) => {
         const namespace = root.querySelector<HTMLElement>(".stageStepper")?.dataset.namespace;
         if (!namespace) throw new Error("Calibration stage namespace not found");
+
+        const returnLink = root.querySelector<HTMLAnchorElement>(".calibration-return-link");
+        const returnLabel = root.querySelector<HTMLElement>(".calibration-return-label");
+        const projectId = new URLSearchParams(window.location.search).get("id");
+        if (returnLink && projectId) {
+            const url = new URL("/hub/editor/index.html", window.location.origin);
+            url.searchParams.set("id", projectId);
+            returnLink.href = url.toString();
+            if (returnLabel) returnLabel.textContent = "Return to Project";
+            returnLink.addEventListener("click", (event) => {
+                const handoff = pico.getConnectionHandoff();
+                if (!handoff) return;
+                event.preventDefault();
+                url.searchParams.set("connectionMethod", handoff.method);
+                url.searchParams.set("deviceId", handoff.deviceId);
+                window.location.assign(url.toString());
+            });
+        }
 
         createStageFlow({
             root,

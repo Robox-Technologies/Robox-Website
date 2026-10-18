@@ -48,6 +48,11 @@ export enum FirmwareStatus {
 
 export type CommunicationMethod = 'USB' | 'WebBluetooth' | 'iOSBluetooth' | null
 
+export interface ConnectionHandoff {
+    method: Exclude<CommunicationMethod, null>
+    deviceId: string
+}
+
 // Types
 
 /** Message types the board can send. Anything missing here is dropped as noise. */

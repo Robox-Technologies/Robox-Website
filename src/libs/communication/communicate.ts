@@ -6,6 +6,7 @@ import type {
     PicoMessage,
     ColorReading,
     CalibrationReading,
+    ConnectionHandoff,
 } from 'src/types/communication'
 
 import { ConnectionStatus, FirmwareStatus } from 'src/types/communication'
@@ -192,6 +193,13 @@ export class Pico {
 
     getConnectionDeviceId(): string | null {
         return this.communication?.getConnectionDeviceId() ?? null
+    }
+
+    getConnectionHandoff(): ConnectionHandoff | null {
+        const method = this.state.communicationMethod
+        const deviceId = this.getConnectionDeviceId()
+        if (!method || !deviceId || !this.isConnected()) return null
+        return { method, deviceId }
     }
 
     // Event listener management (for React hooks)
