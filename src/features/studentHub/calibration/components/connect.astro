@@ -1,0 +1,176 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlug, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/button';
+import CommunicationMethodToggle from '@/components/communicationMethodToggle.astro';
+
+interface Props {
+    namespace: string
+    calibration: 'colors' | 'motors'
+}
+
+const { namespace, calibration } = Astro.props;
+const isIOSBuild = process.env.IOS_BUILD === 'true';
+---
+<div
+    class="calibrationConnect flex flex-col gap-3"
+    data-calibration-namespace={namespace}
+    data-calibration-name={calibration}
+    data-ios-build={isIOSBuild ? "true" : "false"}
+>
+    <div class="flex items-center gap-3">
+        {!isIOSBuild && <CommunicationMethodToggle />}
+        <Button id="calibration-connect" className="bg-blue">
+            <FontAwesomeIcon icon={faPlug} className="busyIcon mr-2" />
+            <FontAwesomeIcon icon={faSpinner} className="busySpinner mr-2 hidden! fa-spin" />
+            Connect to Ro/Box
+        </Button>
+    </div>
+</div>
+<script>
+    import { pico } from "@/libs/communication/communicate";
+    import type { PicoState } from "src/types/communication";
+    import { ConnectionStatus } from "src/types/communication";
+    import { setButtonBusy } from "@/components/busyButton";
+    import {
+        dispatchStageAdvance,
+        dispatchStageClearError,
+        dispatchStageError,
+    } from "@/components/stageFlow";
+    import { debugCalibration } from "../stage";
+
+    const CALIBRATION_FETCH_TIMEOUT_MS = 2000;
+
+    document.querySelectorAll<HTMLDivElement>(".calibrationConnect").forEach((root) => {
+        const connectButton = root.querySelector<HTMLButtonElement>("#calibration-connect");
+        const namespace = root.dataset.calibrationNamespace;
+        const calibration = root.dataset.calibrationName;
+        if (!connectButton || !namespace || (calibration !== "colors" && calibration !== "motors")) {
+            throw new Error("Calibration connect elements not found");
+        }
+        const button = connectButton;
+        const stageNamespace = namespace;
+        const calibrationName = calibration;
+        const debug = (message: string, details?: unknown) =>
+            debugCalibration(stageNamespace, message, details);
+        let lastStatus = "";
+
+        if (root.dataset.iosBuild === "true") {
+            debug("Selecting iOS Bluetooth communication");
+            void pico.setCommunicationMethod("iOSBluetooth");
+        }
+        debug("Connection stage mounted", {
+            calibration: calibrationName,
+            initialState: pico.getState(),
+        });
+
+        let hasAdvanced = false;
+        let awaitingCalibration = false;
+        let calibrationTimeout: ReturnType<typeof setTimeout> | null = null;
+        const calibrationReadyEvent = `${namespace}:calibration-ready`;
+
+        function finishCalibrationWait() {
+            if (!awaitingCalibration) return;
+            debug("Calibration read finished; advancing to calibrate stage");
+            awaitingCalibration = false;
+            if (calibrationTimeout) clearTimeout(calibrationTimeout);
+            calibrationTimeout = null;
+            document.removeEventListener(calibrationReadyEvent, finishCalibrationWait);
+            
+            dispatchStageAdvance(root, stageNamespace, "calibrate");
+        }
+
+        function cancelCalibrationWait() {
+            if (!awaitingCalibration) return;
+            debug("Calibration read wait cancelled");
+            awaitingCalibration = false;
+            if (calibrationTimeout) clearTimeout(calibrationTimeout);
+            calibrationTimeout = null;
+            document.removeEventListener(calibrationReadyEvent, finishCalibrationWait);
+        }
+
+        function updateUI(state: PicoState) {
+            const statusKey = `${state.connectionStatus}:${state.firmwareStatus}`;
+            if (statusKey !== lastStatus) {
+                lastStatus = statusKey;
+                debug("Connection state changed", {
+                    connectionStatus: state.connectionStatus,
+                    firmwareStatus: state.firmwareStatus,
+                    communicationMethod: state.communicationMethod,
+                });
+            }
+            const connecting = state.connectionStatus === ConnectionStatus.CONNECTING;
+            const connected = state.connectionStatus === ConnectionStatus.CONNECTED;
+            if (connected) {
+                if (!hasAdvanced) {
+                    hasAdvanced = true;
+                    awaitingCalibration = true;
+                    document.addEventListener(calibrationReadyEvent, finishCalibrationWait);
+                    calibrationTimeout = setTimeout(
+                        finishCalibrationWait,
+                        CALIBRATION_FETCH_TIMEOUT_MS,
+                    );
+                    debug(`Requesting ${calibrationName} calibration`)
+                    pico.getCalibration(calibrationName);
+                }
+            } else {
+                hasAdvanced = false;
+                cancelCalibrationWait();
+            }
+            setButtonBusy(button, connecting || awaitingCalibration);
+            if (!connecting && !awaitingCalibration) {
+                button.disabled = !state.communicationMethod;
+            }
+        }
+
+        pico.on("stateChange", updateUI);
+        updateUI(pico.getState());
+
+        pico.on("error", (data) => {
+            debug("Communication error", { message: data.message, awaitingCalibration });
+            if (awaitingCalibration) {
+                finishCalibrationWait();
+                return;
+            }
+            dispatchStageError(root, stageNamespace, "Couldn't Connect", data.message);
+        });
+
+        button.addEventListener("click", () => {
+            debug("Manual connection requested");
+            dispatchStageClearError(root, stageNamespace);
+            pico.request();
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        const handoffMethod = params.get("connectionMethod");
+        const handoffDeviceId = params.get("deviceId");
+        if (handoffMethod && handoffDeviceId) {
+            debug("Connection handoff detected", {
+                method: handoffMethod,
+                hasDeviceId: true,
+            });
+            button.disabled = true;
+            void (async () => {
+                try {
+                    debug("Starting handoff connection");
+                    await pico.setCommunicationMethod(
+                        handoffMethod as "USB" | "WebBluetooth" | "iOSBluetooth",
+                    );
+                    await pico.autoConnect(handoffDeviceId);
+                    debug("Handoff connection completed");
+                } catch (error) {
+                    debug("Handoff connection failed", {
+                        message: error instanceof Error ? error.message : String(error),
+                    });
+                    dispatchStageAdvance(root, stageNamespace, "connect");
+                    dispatchStageError(
+                        root,
+                        stageNamespace,
+                        "Couldn't Connect",
+                        error instanceof Error ? error.message : String(error),
+                    );
+                }
+            })();
+        }
+    });
+</script>

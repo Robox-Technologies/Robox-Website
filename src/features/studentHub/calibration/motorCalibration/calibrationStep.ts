@@ -2,7 +2,14 @@ import { pico } from '@/libs/communication/communicate'
 import { toast } from '@/libs/ui/toast'
 import type { PicoState, MotorCalibration } from 'src/types/communication'
 import { ConnectionStatus } from 'src/types/communication'
-import { dispatchCalibrationAdvance, dispatchCalibrationReady } from './stage'
+import { createCalibrationStage, debugCalibration } from '../stage'
+
+const {
+    dispatchAdvance: dispatchCalibrationAdvance,
+    dispatchReady: dispatchCalibrationReady,
+} = createCalibrationStage('motorcalibration')
+const debug = (message: string, details?: unknown) =>
+    debugCalibration('motorcalibration', message, details)
 
 export interface MotorCalibrationOptions {
     root: HTMLElement
@@ -47,6 +54,7 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         testStopButton,
         resetButton,
     } = options
+    debug('Motor calibration stage mounted')
 
     const describeBias = (bias: number) => {
         if (bias === 0) return 'Balanced'
@@ -151,6 +159,11 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         const connected = state.connectionStatus === ConnectionStatus.CONNECTED
 
         if (!connected) {
+            const connectionWasActive = wasConnected
+            debug('Motor calibration connection lost', {
+                previousConnection: connectionWasActive,
+                status: state.connectionStatus,
+            })
             stopFlowAnimation()
             if (wasConnected) {
                 toast.danger({
@@ -161,11 +174,14 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
                 })
             }
             wasConnected = false
-            dispatchCalibrationAdvance(root, 'connect')
+            if (connectionWasActive) {
+                dispatchCalibrationAdvance(root, 'connect')
+            }
             return
         }
 
         wasConnected = true
+        debug('Motor calibration connection ready')
         startFlowAnimation()
     }
 
@@ -191,6 +207,7 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
     // default "nothing calibrated" state.
     pico.on('calibration', (data) => {
         if (data.name !== 'motors') return
+        debug('Received persisted motor calibration')
         const value = data.value as MotorCalibration
         setBias(value.bias)
         setToggle(reverseLeftToggle, value.reverse[0])
@@ -210,23 +227,27 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
     // doesn't live-apply this anyway - it's picked up by the next
     // `Motors()` a user program creates.
     slider.addEventListener('change', () => {
+        debug('Sending motor bias calibration', { bias: Number(slider.value) })
         pico.motorCalibrate(Number(slider.value))
     })
 
     reverseLeftToggle.addEventListener('click', () => {
         const reversed = !isToggled(reverseLeftToggle)
+        debug('Sending left motor reverse change', { reversed })
         setToggle(reverseLeftToggle, reversed)
         pico.motorReverse(0, reversed)
     })
 
     reverseRightToggle.addEventListener('click', () => {
         const reversed = !isToggled(reverseRightToggle)
+        debug('Sending right motor reverse change', { reversed })
         setToggle(reverseRightToggle, reversed)
         pico.motorReverse(1, reversed)
     })
 
     swapToggle.addEventListener('click', () => {
         const swapped = !isToggled(swapToggle)
+        debug('Sending motor swap change', { swapped })
         setToggle(swapToggle, swapped)
         pico.motorSwap(swapped)
     })

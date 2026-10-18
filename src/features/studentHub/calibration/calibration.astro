@@ -1,0 +1,63 @@
+---
+import StageStepper from '@/components/stageStepper.astro';
+import StageErrorBanner from '@/components/stageErrorBanner.astro';
+import Connect from './components/connect.astro';
+
+interface Props {
+    namespace: string
+    calibration: 'colors' | 'motors'
+    title: string
+}
+
+const { namespace, calibration, title } = Astro.props;
+const initialStage = Astro.url.searchParams.get('step') === 'calibrate'
+    ? 'calibrate'
+    : 'connect';
+---
+<div
+    class="calibration flex flex-col gap-6"
+    data-stage-flow-root
+    data-initial-stage={initialStage}
+>
+    <StageStepper
+        namespace={namespace}
+        stages={['connect', 'calibrate']}
+        stageLabels={{ connect: 'Connect', calibrate: 'Calibrate' }}
+    />
+    <StageErrorBanner />
+    <div class="stageFlowStages overflow-hidden rounded-3xl bg-white box-shadow transition-[height] duration-300 ease-out motion-reduce:transition-none">
+        <div
+            class:list={["stageFlowStage flex flex-col gap-4 p-6", { hidden: initialStage !== "connect" }]}
+            style={initialStage === "connect" ? undefined : "display: none"}
+            data-stage="connect"
+        >
+            <h2 class="text-xl font-bold text-black">Step 1: Connect your Ro/Box</h2>
+            <Connect namespace={namespace} calibration={calibration} />
+        </div>
+        <div
+            class:list={["stageFlowStage flex flex-col gap-4 p-6", { hidden: initialStage !== "calibrate" }]}
+            style={initialStage === "calibrate" ? undefined : "display: none"}
+            data-stage="calibrate"
+        >
+            <h2 class="text-xl font-bold text-black">{title}</h2>
+            <slot />
+        </div>
+    </div>
+</div>
+<script>
+    import { createStageFlow } from "@/components/stageFlow";
+
+    document.querySelectorAll<HTMLDivElement>("[data-stage-flow-root].calibration").forEach((root) => {
+        const namespace = root.querySelector<HTMLElement>(".stageStepper")?.dataset.namespace;
+        if (!namespace) throw new Error("Calibration stage namespace not found");
+
+        createStageFlow({
+            root,
+            namespace,
+            stages: ["connect", "calibrate"],
+            isStage: (value): value is "connect" | "calibrate" =>
+                value === "connect" || value === "calibrate",
+            stageParam: "step",
+        });
+    });
+</script>
