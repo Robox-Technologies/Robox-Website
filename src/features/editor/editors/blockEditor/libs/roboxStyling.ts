@@ -85,14 +85,93 @@ class RoboxToolboxSeperator extends Blockly.ToolboxSeparator {
     }
 }
 
+const FLYOUT_WIDTH = 300
+// Breathing room around a peeking block, enough for its drop shadow.
+const PEEK_PADDING = 8
+const PEEK_CLASS = 'flyout-peek'
+
 //Overriding the flyoutscale value (to prevent it scaliing with the workspace)
 
 export class RoboxFlyout extends ContinuousFlyout {
+    private peeked: SVGGElement | null = null
+
     /** @override */
     protected reflowInternal_(): void {
-        this.width_ = 300
+        this.width_ = FLYOUT_WIDTH
         this.targetWorkspace.recordDragTargets()
     }
+
+    override init(targetWorkspace: Blockly.WorkspaceSvg) {
+        super.init(targetWorkspace)
+        this.svgGroup_?.addEventListener('pointerover', this.onPointerOver)
+        this.svgGroup_?.addEventListener('pointerleave', this.clearPeek)
+    }
+
+    /** Keeps the notch aligned with its block while the flyout scrolls. */
+    protected override setMetrics_(xyRatio: { x: number; y: number }) {
+        super.setMetrics_(xyRatio)
+        this.updatePeek()
+    }
+
+    override hide() {
+        this.clearPeek()
+        super.hide()
+    }
+
+    override dispose() {
+        this.svgGroup_?.removeEventListener('pointerover', this.onPointerOver)
+        this.svgGroup_?.removeEventListener('pointerleave', this.clearPeek)
+        super.dispose()
+    }
+
+    private readonly onPointerOver = (event: PointerEvent) => {
+        // Climb to the flyout item the pointer is in, past fields and inputs.
+        const canvas = this.getWorkspace().getCanvas()
+        let node = event.target instanceof Element ? event.target : null
+        while (node && node.parentNode !== canvas) node = node.parentElement
+        this.peeked = node instanceof SVGGElement ? node : null
+        this.updatePeek()
+    }
+
+    private readonly clearPeek = () => {
+        this.peeked = null
+        this.updatePeek()
+    }
+
+    /**
+     * Cuts a notch out of the flyout's right edge so a block too long to fit
+     * spills over the workspace instead of being clipped.
+     */
+    private updatePeek() {
+        const root = this.svgGroup_
+        if (!root) return
+        if (!this.peeked && !root.style.clipPath) return
+        root.querySelector(`.${PEEK_CLASS}`)?.classList.remove(PEEK_CLASS)
+
+        const flyout = root.getBoundingClientRect()
+        const block = this.peeked?.isConnected ? this.peeked : null
+        const rect = block?.getBoundingClientRect()
+        const right = rect ? rect.right - flyout.left + PEEK_PADDING : 0
+        if (!block || !rect || right <= flyout.width) {
+            root.style.removeProperty('overflow')
+            root.style.removeProperty('clip-path')
+            return
+        }
+
+        const top = Math.max(0, rect.top - flyout.top - PEEK_PADDING)
+        const bottom = Math.min(
+            flyout.height,
+            rect.bottom - flyout.top + PEEK_PADDING,
+        )
+        const edge = `${flyout.width}px`
+        block.classList.add(PEEK_CLASS)
+        root.style.overflow = 'visible'
+        root.style.clipPath =
+            `polygon(0 0, ${edge} 0, ${edge} ${top}px, ${right}px ${top}px, ` +
+            `${right}px ${bottom}px, ${edge} ${bottom}px, ` +
+            `${edge} ${flyout.height}px, 0 ${flyout.height}px)`
+    }
+
     override scrollTo(position: number) {
         const OFFSET = 5 // pixels
         const scale = this.getWorkspace().scale || 1

@@ -112,6 +112,10 @@ body {
     border-right: $seperatorStrokeSize solid $navEdges;
     background-color: rgb(245, 245, 245);
 }
+// A block long enough to overhang the flyout floats above the workspace.
+.flyout-peek {
+    filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.35));
+}
 .blocklyMutatorBackground {
     fill: #fff !important;
 }
