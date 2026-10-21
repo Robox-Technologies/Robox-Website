@@ -116,6 +116,10 @@ body {
 .flyout-peek {
     filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.35));
 }
+.flyout-edge {
+    fill: $navEdges;
+    pointer-events: none;
+}
 .blocklyMutatorBackground {
     fill: #fff !important;
 }
