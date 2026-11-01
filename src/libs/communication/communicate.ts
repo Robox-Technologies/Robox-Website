@@ -6,6 +6,7 @@ import type {
     PicoMessage,
     ColorReading,
     CalibrationReading,
+    ConnectionHandoff,
 } from 'src/types/communication'
 
 import { ConnectionStatus, FirmwareStatus } from 'src/types/communication'
@@ -85,6 +86,7 @@ export class Pico {
     private responded: boolean = false
     private firmwareConfirmed: boolean = false
     private toastsEnabled: boolean = true
+    private autoConnectEnabled: boolean = false
 
     /**
      * Set while `awaitBootloaderReboot` is waiting to see whether the board
@@ -176,7 +178,33 @@ export class Pico {
 
     /** Whether reconnecting to a previously authorised port/device happens automatically. */
     setAutoConnect(enabled: boolean): void {
+        this.autoConnectEnabled = enabled
         this.communication?.setAutoConnect(enabled)
+    }
+
+    /**
+     * Connect to one specific previously authorised device. For Web Bluetooth
+     * use `BluetoothDevice.id`; for USB use its `usb:<vendor>:<product>` ID.
+     * Web Serial cannot expose a USB serial number, so identical USB devices
+     * share an ID.
+     */
+    async autoConnect(deviceId: string): Promise<void> {
+        if (!this.communication) {
+            throw new Error('Communication method not set')
+        }
+
+        await this.communication.autoConnect(deviceId)
+    }
+
+    getConnectionDeviceId(): string | null {
+        return this.communication?.getConnectionDeviceId() ?? null
+    }
+
+    getConnectionHandoff(): ConnectionHandoff | null {
+        const method = this.state.communicationMethod
+        const deviceId = this.getConnectionDeviceId()
+        if (!method || !deviceId || !this.isConnected()) return null
+        return { method, deviceId }
     }
 
     // Event listener management (for React hooks)
@@ -252,6 +280,7 @@ export class Pico {
         } else if (method === 'iOSBluetooth') {
             this.communication = new IOSBluetoothCommunication(this)
         }
+        this.communication?.setAutoConnect(this.autoConnectEnabled)
         this.communication?.initialize()
     }
 

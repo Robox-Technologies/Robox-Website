@@ -26,6 +26,23 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
         // Set once regardless of how many instances are on the page.
         void pico.setCommunicationMethod("iOSBluetooth");
     } else {
+        const params = new URLSearchParams(window.location.search);
+        const handoffMethod = params.get("connectionMethod");
+        const handoffDeviceId = params.get("deviceId");
+        const handoffMethods = new Set(["USB", "WebBluetooth", "iOSBluetooth"]);
+        if (handoffMethod && handoffDeviceId && handoffMethods.has(handoffMethod)) {
+            void (async () => {
+                try {
+                    await pico.setCommunicationMethod(
+                        handoffMethod as "USB" | "WebBluetooth" | "iOSBluetooth",
+                    );
+                    await pico.autoConnect(handoffDeviceId);
+                } catch (error) {
+                    console.error("Editor connection handoff failed", error);
+                }
+            })();
+        }
+
         // Once we're actually talking to a Ro/Box there's no method left to
         // pick, so the toggle makes way for the terminal button.
         const isConnected = (status: ConnectionStatus) =>

@@ -47,14 +47,19 @@ import Button from "@/components/button";
     ];
 
     const preferred = getPreferredCommunicationMethod();
+    const handoffMethod = new URLSearchParams(window.location.search).get(
+        "connectionMethod",
+    );
     const initial =
-        preferred && supportedMethods.includes(preferred as never)
+        handoffMethod && supportedMethods.includes(handoffMethod as never)
+            ? (handoffMethod as CommunicationMethod)
+            : preferred && supportedMethods.includes(preferred as never)
             ? preferred
             : (supportedMethods[0] ?? null);
 
     // Set the shared connection's method exactly once, regardless of how
     // many toggle instances are on the page.
-    if (initial) void pico.setCommunicationMethod(initial);
+    if (initial && !handoffMethod) void pico.setCommunicationMethod(initial);
 
     // Synchronous, because `pico.getState()` still reports the old method until
     // `setCommunicationMethod` settles.
