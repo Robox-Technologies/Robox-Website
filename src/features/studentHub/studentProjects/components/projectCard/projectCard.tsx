@@ -78,7 +78,8 @@ export function ProjectCard({
                     ) : (
                         <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
                             <FontAwesomeIcon
-                                className="h-7 w-7 shrink-0 text-blue"
+                                className="shrink-0 text-blue"
+                                size="lg"
                                 icon={typeIcon}
                             />
                             <h3 className="truncate whitespace-nowrap text-xl font-bold">
