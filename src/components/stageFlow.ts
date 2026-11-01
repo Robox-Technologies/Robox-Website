@@ -59,13 +59,6 @@ export function createStageFlow<S extends string>(
     options: StageFlowOptions<S>,
 ): void {
     const { root, namespace, stages, isStage, stageParam } = options
-    const debug = (message: string, details?: unknown) => {
-        if (typeof details === 'undefined') {
-            console.debug(`[StageFlow:${namespace}] ${message}`)
-        } else {
-            console.debug(`[StageFlow:${namespace}] ${message}`, details)
-        }
-    }
 
     const stagesWrapper = root.querySelector<HTMLElement>('.stageFlowStages')
     const stageElements = Array.from(
@@ -95,7 +88,6 @@ export function createStageFlow<S extends string>(
     }
 
     function showStage(stage: S, animate = true) {
-        debug(`Showing stage "${stage}"`, { animate })
         if (!animate) {
             stageElements.forEach((el) => {
                 const active = el.dataset.stage === stage
@@ -141,7 +133,6 @@ export function createStageFlow<S extends string>(
     root.addEventListener(`${namespace}:advance`, (event) => {
         errorBanner.style.display = 'none'
         const stage = (event as CustomEvent<{ stage: S }>).detail.stage
-        debug(`Advance event received for "${stage}"`)
         showStage(stage)
         if (stageParam) history.pushState({ stage }, '', urlForStage(stage))
     })
@@ -150,21 +141,15 @@ export function createStageFlow<S extends string>(
         const { title, message } = (
             event as CustomEvent<{ title: string; message: string }>
         ).detail
-        debug(`Error event received: ${title}`, { message })
         errorTitle.textContent = title
         errorMessage.textContent = message
         errorBanner.style.display = 'flex'
     })
-
     root.addEventListener(`${namespace}:clear-error`, () => {
-        debug('Clear-error event received')
         errorBanner.style.display = 'none'
     })
 
     const initialStage = stageFromURL()
-    debug(`Initial stage resolved as "${initialStage}"`, {
-        from: root.dataset.initialStage ? 'data attribute' : 'URL/default',
-    })
     if (stageParam)
         history.replaceState(
             { stage: initialStage },
