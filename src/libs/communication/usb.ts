@@ -5,6 +5,7 @@
 
 import { BaseTransport, errorMessage } from './transportBase'
 import { ConnectionStatus } from 'src/types/communication'
+import { stageWrap, withTimeout } from './connectionDiagnostics'
 
 const PI_VENDOR_ID = 0x2e8a
 
@@ -71,7 +72,15 @@ export class USBCommunication extends BaseTransport {
         }
 
         try {
-            await this.port.open({ baudRate: 9600 })
+            await stageWrap(
+                'open',
+                withTimeout(
+                    this.port.open({ baudRate: 9600 }),
+                    10000,
+                    'USB connection timed out',
+                ),
+                'usb',
+            )
         } catch {
             throw new Error(
                 'We are unable to open the port on the Ro/Box! This could also be caused by another application using the USB port, like another webpage or app, please close these.',

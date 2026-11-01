@@ -7,6 +7,7 @@
 import { UART_CHARACTERISTIC, UART_SERVICE } from './protocol'
 import { BleTransport, NOT_FOUND_MESSAGE } from './bleTransport'
 import { errorMessage } from './transportBase'
+import { stageWrap, withTimeout } from './connectionDiagnostics'
 
 /** 16-bit UUID expanded to the full Bluetooth base UUID. */
 function numberToUUID(value: number): string {
@@ -61,19 +62,52 @@ export class BluetoothCommunication extends BleTransport {
 
     private async attach(device: BluetoothDevice): Promise<void> {
         this.device = device
-        this.server = (await device.gatt?.connect()) ?? null
+        this.server =
+            (await stageWrap(
+                'connect',
+                withTimeout(
+                    device.gatt?.connect() ??
+                        Promise.reject(
+                            new Error('Bluetooth GATT is unavailable'),
+                        ),
+                    10000,
+                    'Bluetooth connection timed out',
+                ),
+                'bluetooth',
+            )) ?? null
 
         const service =
-            (await this.server?.getPrimaryService(SERVICE_UUID)) ?? null
+            (await stageWrap(
+                'service',
+                this.server?.getPrimaryService(SERVICE_UUID) ??
+                    Promise.reject(
+                        new Error('Bluetooth GATT server is unavailable'),
+                    ),
+                'bluetooth',
+            )) ?? null
         this.characteristic =
-            (await service?.getCharacteristic(CHARACTERISTIC_UUID)) ?? null
+            (await stageWrap(
+                'characteristic',
+                service?.getCharacteristic(CHARACTERISTIC_UUID) ??
+                    Promise.reject(
+                        new Error('Bluetooth service is unavailable'),
+                    ),
+                'bluetooth',
+            )) ?? null
 
         if (!this.server || !this.characteristic) {
             throw new Error('Could not connect to Ro/Box! Try resetting it?')
         }
 
-        await this.characteristic.startNotifications()
-        device.addEventListener('gattserverdisconnected', this.disconnectedBound)
+        await stageWrap(
+            'notify',
+            this.characteristic.startNotifications(),
+            'bluetooth',
+        )
+        device.addEventListener(
+            'gattserverdisconnected',
+            this.disconnectedBound,
+        )
         this.read()
     }
 
