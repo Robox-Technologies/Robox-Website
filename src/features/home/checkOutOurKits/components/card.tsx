@@ -2,20 +2,15 @@ import Card from '@/components/card'
 import { formatStatus } from '@/features/catalog/utils/formatStatus'
 import { formatPrice } from '@/utils/formatPrice'
 import type { Product } from '@/types/shop'
-import type React from 'react'
 
 interface ProductCardProps {
-    className?: string
     image: ImageMetadata
     /** The catalog entry, so the homepage shows the name and price Stripe holds. */
     product: Product
-    absolute?: React.ReactNode
 }
 export default function ProductCard({
-    className,
     image,
     product,
-    absolute,
 }: ProductCardProps) {
     const status = formatStatus(product.status)
     return (
@@ -23,8 +18,7 @@ export default function ProductCard({
         // link, and the pill inside it is a label the card drives.
         <Card
             href={`/shop/product/${product.internalName}`}
-            className={`card-interactive w-[350px] basis-[350px] box-shadow bg-gray-100 ${className ?? ''}`}
-            absolute={absolute}
+            className="card-interactive bg-white w-75 box-shadow flex flex-col"
             title={<h1 className="text-2xl font-bold">{product.name}</h1>}
             image={
                 <img
@@ -43,8 +37,8 @@ export default function ProductCard({
                 </p>
             }
         >
-            <div className="flex justify-center p-4">
-                <span className="card-cta box-shadow bg-blue text-white text-xl px-8 py-2 rounded-xl">
+            <div className="flex justify-center px-4">
+                <span className="card-cta px-4 py-2 bg-red text-white text-center w-full rounded-full">
                     View Product
                 </span>
             </div>
