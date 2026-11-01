@@ -286,9 +286,12 @@ function getUserAgentData(): UserAgentData | undefined {
 
 export async function preflight(): Promise<PreflightReport> {
     const issues: PreflightIssue[] = []
-    const bluetoothAvailable = 'bluetooth' in navigator
-    const usbAvailable = 'usb' in navigator
-    const serialAvailable = 'serial' in navigator
+    const bluetooth = 'bluetooth' in navigator ? navigator.bluetooth : null
+    const usb = 'usb' in navigator ? navigator.usb : null
+    const serial = 'serial' in navigator ? navigator.serial : null
+    const bluetoothAvailable = bluetooth !== null
+    const usbAvailable = usb !== null
+    const serialAvailable = serial !== null
     const inIframe = window.self !== window.top
     const userAgentData = getUserAgentData()
     const architecture = await userAgentData?.getHighEntropyValues?.([
@@ -307,33 +310,14 @@ export async function preflight(): Promise<PreflightReport> {
     }
 
     let bluetoothAvailability: boolean | string = 'unavailable'
-    let bluetoothPermission: string | 'unavailable' = 'unavailable'
     let bluetoothDevices: unknown = 'unavailable'
-    if (bluetoothAvailable) {
-        const bluetooth = navigator.bluetooth
+    const bluetoothGetAvailability =
+        typeof bluetooth?.getAvailability === 'function'
+    if (bluetoothGetAvailability) {
         try {
-            bluetoothAvailability = await bluetooth.getAvailability()
+            bluetoothAvailability = await bluetooth!.getAvailability()
         } catch (error) {
             bluetoothAvailability = `error: ${String(error)}`
-        }
-        try {
-            bluetoothPermission = (
-                await navigator.permissions.query({
-                    name: 'bluetooth' as PermissionName,
-                })
-            ).state
-        } catch {
-            bluetoothPermission = 'unavailable'
-        }
-        if (bluetoothPermission === 'denied') {
-            issues.push({
-                transport: 'bluetooth',
-                stage: 'preflight',
-                title: 'Bluetooth permission is blocked',
-                cause: 'The browser has a site-level Bluetooth permission denial.',
-                fix: 'Reset this site’s Bluetooth permission from the lock icon, then reload the editor.',
-                severity: 'error',
-            })
         }
         if (bluetoothAvailability === false) {
             issues.push({
@@ -345,7 +329,7 @@ export async function preflight(): Promise<PreflightReport> {
                 severity: 'error',
             })
         }
-    } else {
+    } else if (!bluetoothAvailable) {
         issues.push({
             transport: 'bluetooth',
             stage: 'preflight',
@@ -354,20 +338,30 @@ export async function preflight(): Promise<PreflightReport> {
             fix: 'Use a supported Chromium browser over HTTPS, or switch to USB.',
             severity: 'error',
         })
+    } else {
+        issues.push({
+            transport: 'bluetooth',
+            stage: 'preflight',
+            title: 'Web Bluetooth availability check is unavailable',
+            cause: 'The browser exposes navigator.bluetooth but not its getAvailability() method.',
+            fix: 'Use a supported Chromium browser and try the Connect button directly.',
+            severity: 'warning',
+        })
     }
-
     let usbDevices: unknown = 'unavailable'
     let serialPorts: unknown = 'unavailable'
-    if (usbAvailable) {
+    const usbGetDevices = typeof usb?.getDevices === 'function'
+    if (usbGetDevices) {
         try {
-            usbDevices = await navigator.usb.getDevices()
+            usbDevices = await usb!.getDevices()
         } catch (error) {
             usbDevices = `error: ${String(error)}`
         }
     }
-    if (serialAvailable) {
+    const serialGetPorts = typeof serial?.getPorts === 'function'
+    if (serialGetPorts) {
         try {
-            serialPorts = await navigator.serial.getPorts()
+            serialPorts = await serial!.getPorts()
         } catch (error) {
             serialPorts = `error: ${String(error)}`
         }
@@ -380,6 +374,26 @@ export async function preflight(): Promise<PreflightReport> {
             cause: 'This browser does not expose WebUSB or Web Serial.',
             fix: 'Use a supported Chromium browser over HTTPS, or switch to Bluetooth.',
             severity: 'error',
+        })
+    }
+    if (usbAvailable && !usbGetDevices) {
+        issues.push({
+            transport: 'usb',
+            stage: 'preflight',
+            title: 'WebUSB device discovery is unavailable',
+            cause: 'The browser exposes navigator.usb but not its getDevices() method.',
+            fix: 'Use a supported Chromium browser and try the Connect button directly.',
+            severity: 'warning',
+        })
+    }
+    if (serialAvailable && !serialGetPorts) {
+        issues.push({
+            transport: 'usb',
+            stage: 'preflight',
+            title: 'Web Serial port discovery is unavailable',
+            cause: 'The browser exposes navigator.serial but not its getPorts() method.',
+            fix: 'Use a supported Chromium browser and try the Connect button directly.',
+            severity: 'warning',
         })
     }
     if (inIframe && (bluetoothAvailable || usbAvailable || serialAvailable)) {
@@ -406,14 +420,16 @@ export async function preflight(): Promise<PreflightReport> {
             inIframe,
             bluetooth: {
                 available: bluetoothAvailable,
+                getAvailability: bluetoothGetAvailability,
                 availability: bluetoothAvailability,
-                permission: bluetoothPermission,
                 discoveredServices: 'not discovered until connection',
                 devices: bluetoothDevices,
             },
             usb: {
                 webUsbAvailable: usbAvailable,
                 webSerialAvailable: serialAvailable,
+                getDevices: usbGetDevices,
+                getPorts: serialGetPorts,
                 devices: usbDevices,
                 ports: serialPorts,
                 configurations: 'not discovered until connection',
