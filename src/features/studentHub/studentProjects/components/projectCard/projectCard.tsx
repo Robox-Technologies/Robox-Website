@@ -68,7 +68,7 @@ export function ProjectCard({
                 />
             }
             title={
-                <div className="flex w-full flex-row items-center gap-2">
+                <div className="flex h-8 w-full min-w-0 flex-row items-center gap-2">
                     {isEditing ? (
                         <ProjectEditInput
                             initialName={project.name}

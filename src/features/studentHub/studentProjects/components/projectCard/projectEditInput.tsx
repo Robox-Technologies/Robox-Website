@@ -75,16 +75,17 @@ export default function ProjectEditInput({
     )
 
     return (
-        <div className="card-control flex gap-1 w-full items-center">
-            <div className="flex-1 relative">
+        <div className="card-control flex h-8 min-w-0 w-full items-center gap-1">
+            <div className="relative min-w-0 flex-1">
                 <input
                     ref={inputRef}
                     type="text"
                     value={inputValue}
+                    title={inputValue}
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     onBlur={handleBlur}
-                    className="w-full border border-blue px-2 py-1 rounded text-black text-lg font-bold"
+                    className="h-8 w-full min-w-0 rounded border border-blue px-2 text-lg font-bold text-black"
                     placeholder="Enter project name"
                     onClick={(e) => e.stopPropagation()}
                 />
