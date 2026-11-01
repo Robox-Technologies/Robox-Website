@@ -17,8 +17,13 @@ export default function ProjectEditInput({
     const inputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        inputRef.current?.focus()
-        inputRef.current?.select()
+        const input = inputRef.current
+        if (!input) return
+        input.focus()
+        input.select()
+        requestAnimationFrame(() => {
+            input.scrollLeft = 0
+        })
     }, [])
 
     const handleInputChange = useCallback(
