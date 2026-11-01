@@ -1,4 +1,10 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
+import {
+    faCircleExclamation,
+    faCircleInfo,
+    faTriangleExclamation,
+} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Dialog, {
     DialogBody,
     DialogFooter,
@@ -33,15 +39,37 @@ async function copyText(text: string): Promise<void> {
 }
 
 function IssueCard({ issue }: { issue: PreflightIssue }) {
+    const severityStyle = {
+        error: {
+            icon: faCircleExclamation,
+            className: 'text-red',
+        },
+        warning: {
+            icon: faTriangleExclamation,
+            className: 'text-yellow-600',
+        },
+        info: {
+            icon: faCircleInfo,
+            className: 'text-blue',
+        },
+    }[issue.severity]
+
     return (
-        <section className="rounded border border-gray-300 p-3">
-            <h3 className="font-semibold">{issue.title}</h3>
-            <p className="mt-1 text-sm">
-                <strong>Cause:</strong> {issue.cause}
-            </p>
-            <p className="mt-1 text-sm">
-                <strong>Fix:</strong> {issue.fix}
-            </p>
+        <section className="flex gap-3 py-4 first:pt-0 last:pb-0">
+            <FontAwesomeIcon
+                icon={severityStyle.icon}
+                className={`mt-1 shrink-0 ${severityStyle.className}`}
+                aria-hidden="true"
+            />
+            <div>
+                <h3 className="font-semibold">{issue.title}</h3>
+                <p className="mt-1 text-sm">
+                    <strong>Cause:</strong> {issue.cause}
+                </p>
+                <p className="mt-1 text-sm">
+                    <strong>Fix:</strong> {issue.fix}
+                </p>
+            </div>
         </section>
     )
 }
@@ -89,7 +117,7 @@ export default function ConnectionDiagnosticsModal() {
                         </p>
                     </DialogHeader>
                     <DialogBody className="px-6 py-4">
-                        <div className="flex flex-col gap-4">
+                        <div className="divide-y divide-gray-200">
                             {report.issues.map((issue, index) => (
                                 <IssueCard
                                     key={`${issue.transport}-${issue.title}-${index}`}
@@ -97,7 +125,7 @@ export default function ConnectionDiagnosticsModal() {
                                 />
                             ))}
                         </div>
-                        <details className="mt-4">
+                        <details className="mt-4 border-t border-gray-200 pt-4">
                             <summary className="cursor-pointer font-semibold text-blue underline">
                                 Show diagnostics
                             </summary>
