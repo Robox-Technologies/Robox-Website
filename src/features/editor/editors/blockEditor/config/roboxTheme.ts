@@ -6,6 +6,7 @@ Blockly.Msg.LOGIC_COLOR = '#F94144'
 Blockly.Msg.LOOPS_COLOR = '#F3722C'
 Blockly.Msg.MATH_COLOR = '#F8961E'
 Blockly.Msg.LISTS_COLOR = '#F9844A'
+Blockly.Msg.TEXTS_COLOR = '#9B5DE5'
 
 Blockly.Msg.SENSOR_COLOR = '#FFCD44'
 Blockly.Msg.SYSTEM_COLOR = '#90BE6D'
@@ -37,6 +38,9 @@ export default Blockly.Theme.defineTheme('Robox', {
         },
         list_category: {
             colour: '%{BKY_LISTS_COLOR}',
+        },
+        text_category: {
+            colour: '%{BKY_TEXTS_COLOR}',
         },
         sensor_category: {
             colour: '%{BKY_SENSOR_COLOR}',
@@ -73,6 +77,9 @@ export default Blockly.Theme.defineTheme('Robox', {
         list_blocks: {
             colourPrimary: '%{BKY_LISTS_COLOR}',
             colourSecondary: '#FFFFFF',
+        },
+        text_blocks: {
+            colourPrimary: '%{BKY_TEXTS_COLOR}',
         },
         sensor_blocks: {
             colourPrimary: '%{BKY_SENSOR_COLOR}',

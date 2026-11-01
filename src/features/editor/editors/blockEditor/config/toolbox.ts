@@ -473,6 +473,71 @@ export const BaseToolbox: ToolboxDefinition = {
             ],
         },
         {
+            kind: 'category',
+            name: 'Strings',
+            categorystyle: 'text_category',
+            cssconfig: {
+                icon: 'categoryIcon fa fa-font',
+            },
+            contents: [
+                {
+                    kind: 'block',
+                    type: 'text',
+                    fields: {
+                        TEXT: 'Hello, Ro/Box!',
+                    },
+                },
+                {
+                    kind: 'block',
+                    type: 'text_join',
+                },
+                {
+                    kind: 'block',
+                    type: 'text_format',
+                    inputs: {
+                        VALUE: {
+                            shadow: {
+                                type: 'text',
+                                fields: {
+                                    TEXT: 'world',
+                                },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'block',
+                    type: 'text_length',
+                    inputs: {
+                        VALUE: {
+                            shadow: {
+                                type: 'text',
+                                fields: {
+                                    TEXT: 'Hello',
+                                },
+                            },
+                        },
+                    },
+                },
+                {
+                    kind: 'block',
+                    type: 'text_isEmpty',
+                },
+                {
+                    kind: 'block',
+                    type: 'text_indexOf',
+                },
+                {
+                    kind: 'block',
+                    type: 'text_changeCase',
+                },
+                {
+                    kind: 'block',
+                    type: 'text_trim',
+                },
+            ],
+        },
+        {
             kind: 'sep',
         },
         {
