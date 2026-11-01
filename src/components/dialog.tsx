@@ -63,14 +63,16 @@ export default function Dialog({
                         {...props}
                     >
                         <button
+                            type="button"
+                            aria-label="Close dialog"
+                            title="Close"
                             onClick={() => setIsOpen(false)}
-                            className="button-interactive absolute top-3.5 right-4 rounded-md flex items-center justify-center py-1 px-1.5"
+                            className="button-interactive absolute top-3 right-3 size-9 rounded-md flex items-center justify-center text-red-500"
                         >
                             <FontAwesomeIcon
                                 icon={faXmark}
-                                className="size-4 text-red-500"
+                                className="size-4"
                             />
-                            <span className="sr-only">Close</span>
                         </button>
                         {children}
                     </dialog>,
