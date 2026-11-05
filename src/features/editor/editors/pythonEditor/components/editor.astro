@@ -33,7 +33,7 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
     import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
     import { getProject, getProjectIdFromURL } from '@/utils/serialization'
     import { registerCodeProvider } from '@/features/editor/state/codeProvider'
-    import { buildPreamble } from '@/features/editor/utils/preamble'
+    import { buildPythonPreamble } from '@/features/editor/editors/pythonEditor/config/preamble'
     import { savePython } from '@/features/editor/editors/pythonEditor/utils/serialization'
     import { pythonTheme } from '@/features/editor/editors/pythonEditor/config/theme'
     import { lintPythonModel } from '@/features/editor/editors/pythonEditor/config/linting'
@@ -54,7 +54,10 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
         editor.defineTheme('roboxPython', pythonTheme)
         ensurePythonCompletionProvider()
 
-        const model = editor.createModel(project?.code ?? '', 'python')
+        const initialCode =
+            project?.code ||
+            (project ? buildPythonPreamble(project) : '')
+        const model = editor.createModel(initialCode, 'python')
         const codeEditor = editor.create(container, {
             model,
             theme: 'roboxPython',
@@ -77,15 +80,13 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
             () => codeEditor.trigger('keyboard', 'deleteAllLeft', null),
         )
 
-        // Prepended on send, never shown: the firmware expects the same roboxlib setup
-        // the block editor generates (see buildPreamble).
-        const preambleCode = buildPreamble(project)
-        registerCodeProvider(() => preambleCode + '\n' + codeEditor.getValue())
+        // The uploaded program is exactly the source shown in Monaco.
+        registerCodeProvider(() => codeEditor.getValue())
 
         // Brand-new projects have no code to trigger a save yet, so they'd otherwise
         // show a blank thumbnail in the hub until the first keystroke.
         if (projectId && project && !project.code) {
-            void savePython(projectId, '')
+            void savePython(projectId, initialCode)
         }
 
         let saveTimeoutId = 0
