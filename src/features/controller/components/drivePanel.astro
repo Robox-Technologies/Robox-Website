@@ -1,0 +1,109 @@
+---
+import { faHouse, faStop } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import Button from "@/components/button"
+---
+
+<div class="controllerDrivePanel flex w-full flex-col gap-6">
+    <div class="flex flex-col items-center gap-8 md:flex-row md:items-start md:justify-center">
+        <div class="flex flex-col items-center gap-3">
+            <div
+                class="controller-joystick relative size-64 shrink-0 touch-none select-none rounded-full bg-tone2 box-shadow"
+                role="application"
+                aria-label="Drive joystick"
+            >
+                <div class="pointer-events-none absolute inset-0 m-auto h-full w-0.5 bg-secondary"></div>
+                <div class="pointer-events-none absolute inset-0 m-auto h-0.5 w-full bg-secondary"></div>
+                <div class="controller-joystick-knob pointer-events-none absolute inset-0 m-auto size-24 rounded-full bg-black"></div>
+            </div>
+            <p class="controller-input-hint text-center text-sm text-tone3">
+                Drag the stick, use WASD or the arrow keys, or connect a gamepad.
+                Space stops.
+            </p>
+        </div>
+
+        <div class="flex w-full max-w-xs flex-col gap-5">
+            <button
+                type="button"
+                class="controller-stop button-interactive flex items-center justify-center gap-3 rounded-2xl bg-red px-6 py-5 text-2xl font-bold text-white"
+            >
+                <FontAwesomeIcon icon={faStop} />
+                Stop
+            </button>
+
+            <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <label for="controller-speed" class="text-sm font-semibold">Max speed</label>
+                    <span class="controller-speed-readout text-sm font-bold">60%</span>
+                </div>
+                <input
+                    type="range"
+                    id="controller-speed"
+                    class="controller-speed"
+                    min="20"
+                    max="100"
+                    step="5"
+                    value="60"
+                />
+            </div>
+
+            <div class="flex flex-col gap-2 border-t border-gray-200 pt-3">
+                <span class="text-sm font-semibold">Motors</span>
+                <div class="grid grid-cols-[3rem_1fr_2.5rem] items-center gap-2 text-sm">
+                    <span>Left</span>
+                    <div class="relative h-2 overflow-hidden rounded-full bg-tone2">
+                        <div class="controller-motor-left absolute inset-y-0 left-1/2 w-0 bg-green"></div>
+                    </div>
+                    <span class="controller-motor-left-value text-right font-bold">0</span>
+                    <span>Right</span>
+                    <div class="relative h-2 overflow-hidden rounded-full bg-tone2">
+                        <div class="controller-motor-right absolute inset-y-0 left-1/2 w-0 bg-green"></div>
+                    </div>
+                    <span class="controller-motor-right-value text-right font-bold">0</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 border-t border-gray-200 pt-3 text-sm">
+                <span class="controller-link-dot size-2.5 shrink-0 rounded-full bg-tone3"></span>
+                <span class="controller-link-status">Not connected</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-wrap gap-4">
+        <Button href="/hub" className="controller-return-link bg-black">
+            <FontAwesomeIcon icon={faHouse} className="mr-2" />
+            <span class="controller-return-label text-white!">Return to Student Hub</span>
+        </Button>
+    </div>
+</div>
+
+<script>
+    import { wireDrivePanel } from "../drivePanel";
+
+    document.querySelectorAll<HTMLDivElement>(".controllerDrivePanel").forEach((root) => {
+        const find = <T extends HTMLElement>(selector: string) => {
+            const element = root.querySelector<T>(selector);
+            if (!element) throw new Error(`Drive panel element ${selector} not found`);
+            return element;
+        };
+
+        wireDrivePanel({
+            root,
+            joystick: find(".controller-joystick"),
+            knob: find(".controller-joystick-knob"),
+            hint: find(".controller-input-hint"),
+            stopButton: find<HTMLButtonElement>(".controller-stop"),
+            speed: find<HTMLInputElement>(".controller-speed"),
+            speedReadout: find(".controller-speed-readout"),
+            leftBar: find(".controller-motor-left"),
+            leftValue: find(".controller-motor-left-value"),
+            rightBar: find(".controller-motor-right"),
+            rightValue: find(".controller-motor-right-value"),
+            linkDot: find(".controller-link-dot"),
+            linkStatus: find(".controller-link-status"),
+            returnLink: find<HTMLAnchorElement>(".controller-return-link"),
+            returnLabel: find(".controller-return-label"),
+        });
+    });
+</script>

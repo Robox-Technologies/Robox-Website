@@ -1,5 +1,5 @@
 ---
-import { faEyeDropper, faSliders, faScrewdriver, faDownload, faGear } from "@fortawesome/free-solid-svg-icons"
+import { faEyeDropper, faSliders, faScrewdriver, faDownload, faGear, faGamepad } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
 import RenameDeviceDialog from "./renameDeviceDialog.astro"
@@ -34,6 +34,13 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
             >
                 <FontAwesomeIcon icon={faSliders}/>
                 Calibrate Motors
+            </Button>
+            <Button
+                href="../controller"
+                className="text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
+            >
+                <FontAwesomeIcon icon={faGamepad}/>
+                Drive with Controller
             </Button>
             <RenameDeviceDialog />
             <Button

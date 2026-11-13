@@ -1,0 +1,54 @@
+---
+import StageStepper from '@/components/stageStepper.astro';
+import StageErrorBanner from '@/components/stageErrorBanner.astro';
+import Connect from './components/connect.astro';
+import DrivePanel from './components/drivePanel.astro';
+
+const initialStage = Astro.url.searchParams.get('step') === 'drive'
+    ? 'drive'
+    : 'connect';
+---
+<div
+    class="controller flex flex-col gap-6"
+    data-stage-flow-root
+    data-initial-stage={initialStage}
+>
+    <StageStepper
+        namespace="controller"
+        stages={['connect', 'drive']}
+        stageLabels={{ connect: 'Connect', drive: 'Drive' }}
+    />
+    <StageErrorBanner />
+    <div class="stageFlowStages overflow-hidden rounded-3xl bg-white box-shadow transition-[height] duration-300 ease-out motion-reduce:transition-none">
+        <div
+            class:list={["stageFlowStage flex flex-col gap-4 p-6", { hidden: initialStage !== "connect" }]}
+            style={initialStage === "connect" ? undefined : "display: none"}
+            data-stage="connect"
+        >
+            <h2 class="text-xl font-bold text-black">Step 1: Connect your Ro/Box</h2>
+            <Connect />
+        </div>
+        <div
+            class:list={["stageFlowStage flex flex-col gap-4 p-6", { hidden: initialStage !== "drive" }]}
+            style={initialStage === "drive" ? undefined : "display: none"}
+            data-stage="drive"
+        >
+            <h2 class="text-xl font-bold text-black">Step 2: Drive</h2>
+            <DrivePanel />
+        </div>
+    </div>
+</div>
+<script>
+    import { createStageFlow } from "@/components/stageFlow";
+
+    document.querySelectorAll<HTMLDivElement>("[data-stage-flow-root].controller").forEach((root) => {
+        createStageFlow({
+            root,
+            namespace: "controller",
+            stages: ["connect", "drive"],
+            isStage: (value): value is "connect" | "drive" =>
+                value === "connect" || value === "drive",
+            stageParam: "step",
+        });
+    });
+</script>

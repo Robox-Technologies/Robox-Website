@@ -1,0 +1,41 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlug, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/button';
+import CommunicationMethodToggle from '@/components/communicationMethodToggle.astro';
+
+const isIOSBuild = process.env.IOS_BUILD === 'true';
+---
+<div
+    class="controllerConnect flex flex-col gap-3"
+    data-ios-build={isIOSBuild ? "true" : "false"}
+>
+    <p class="text-gray-800">
+        Connect to your Ro/Box over USB or Bluetooth. Once it's connected, the
+        Ro/Box switches into controller mode and stops any program it was running.
+    </p>
+    <div class="flex items-center gap-3">
+        {!isIOSBuild && <CommunicationMethodToggle />}
+        <Button id="controller-connect" className="bg-blue">
+            <FontAwesomeIcon icon={faPlug} className="busyIcon mr-2" />
+            <FontAwesomeIcon icon={faSpinner} className="busySpinner mr-2 hidden! fa-spin" />
+            <span class="controller-connect-label text-white!">Connect to Ro/Box</span>
+        </Button>
+    </div>
+</div>
+<script>
+    import { wireControllerConnect } from "../connectStage";
+
+    document.querySelectorAll<HTMLDivElement>(".controllerConnect").forEach((root) => {
+        const button = root.querySelector<HTMLButtonElement>("#controller-connect");
+        const label = root.querySelector<HTMLElement>(".controller-connect-label");
+        if (!button || !label) throw new Error("Controller connect elements not found");
+
+        wireControllerConnect({
+            root,
+            button,
+            label,
+            isIOSBuild: root.dataset.iosBuild === "true",
+        });
+    });
+</script>

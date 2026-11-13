@@ -1,0 +1,20 @@
+---
+import StandardLayout from '@/layouts/StandardLayout.astro';
+import Article from '@/components/article/Article';
+import Controller from '@/features/controller/controller.astro';
+---
+<StandardLayout
+    title="Drive Your Ro/Box"
+    description="Drive your Ro/Box live with an on-screen joystick, your keyboard, or a gamepad."
+    header="workshop"
+>
+    <Article className="mx-auto max-w-4xl">
+        <h1 class="text-5xl font-bold mb-8">
+            Drive Your Ro/Box
+        </h1>
+        <p class="mb-8 text-lg text-tone3">
+            Take control of your Ro/Box and drive it around in real time.
+        </p>
+        <Controller />
+    </Article>
+</StandardLayout>
