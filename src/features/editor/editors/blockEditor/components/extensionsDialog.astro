@@ -35,13 +35,7 @@ import extensions from '@/data/extensions.json'
             {Object.entries(extensions).map(([key, extension]) => (
                 <div class="extension-card w-full rounded-xl border border-gray-300 p-4 transition hover:bg-gray-100" data-extension-card={key}>
                     <div class="mb-2 flex items-center justify-between gap-4">
-                        <h3 class="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                            <span>{extension.emoji}</span>
-                            <span>{extension.name}</span>
-                            <span class={`inline-block rounded px-2 py-1 text-xs font-medium ${extension.tag === 'software' ? 'bg-blue-100 text-blue-500' : extension.tag === 'hardware' ? 'bg-green-100 text-green-500' : 'bg-purple-100 text-purple-500'}`}>
-                                {extension.tag}
-                            </span>
-                        </h3>
+                        <h3 class="text-lg font-semibold text-gray-800">{extension.name}</h3>
 
                         <button
                             type="button"
