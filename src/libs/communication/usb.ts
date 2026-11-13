@@ -1,6 +1,7 @@
 /**
  * Web Serial transport. USB CDC retransmits on its own, but the shared framer is still
- * needed: a `TextDecoderStream` splits wherever chunks fall, so a message can straddle reads.
+ * needed: reads split wherever chunks fall, so a message can straddle them. Bytes, not
+ * text streams, so raw mode can carry anything.
  */
 
 import { BaseTransport, errorMessage } from './transportBase'
@@ -16,12 +17,8 @@ function portId(port: SerialPort): string {
 
 export class USBCommunication extends BaseTransport {
     private port: SerialPort | null = null
-    private textEncoder: TextEncoderStream | null = null
-    private textDecoder: TextDecoderStream | null = null
-    private currentWriter: WritableStreamDefaultWriter | null = null
-    private currentReader: ReadableStreamDefaultReader | null = null
-    private writerStreamClosed: Promise<void> = Promise.resolve()
-    private readableStreamClosed: Promise<void> = Promise.resolve()
+    private currentWriter: WritableStreamDefaultWriter<Uint8Array> | null = null
+    private currentReader: ReadableStreamDefaultReader<Uint8Array> | null = null
 
     private readonly initPortsBound = this.initPorts.bind(this)
 
@@ -45,9 +42,7 @@ export class USBCommunication extends BaseTransport {
                         break
                     }
 
-                    if (typeof value === 'string') {
-                        this.ingest(value)
-                    }
+                    if (value) this.ingestBytes(value)
                 }
             } catch (error) {
                 console.warn('USB read error:', error)
@@ -62,8 +57,7 @@ export class USBCommunication extends BaseTransport {
             throw new Error('Could not write to Ro/Box!')
         }
 
-        // The port is behind a TextEncoderStream. Lossless here: our traffic is all valid UTF-8.
-        await this.currentWriter.write(this.decoder.decode(data))
+        await this.currentWriter.write(data)
     }
 
     async connect(port: SerialPort): Promise<void> {
@@ -93,20 +87,8 @@ export class USBCommunication extends BaseTransport {
             throw new Error('The port is not readable/writable!')
         }
 
-        this.textEncoder = new TextEncoderStream()
-        this.textDecoder = new TextDecoderStream()
-
-        this.writerStreamClosed = this.textEncoder.readable.pipeTo(
-            this.port.writable,
-        )
-        this.readableStreamClosed = this.port.readable.pipeTo(
-            //@ts-expect-error There is a type mismatch in the Streams API typings that causes this to error, but it works correctly at runtime
-            // as seen here https://github.com/microsoft/typescript/issues/62168
-            this.textDecoder.writable as WritableStream<BufferSource>,
-        )
-
-        this.currentWriter = this.textEncoder.writable.getWriter()
-        this.currentReader = this.textDecoder.readable.getReader()
+        this.currentWriter = this.port.writable.getWriter()
+        this.currentReader = this.port.readable.getReader()
 
         this.read()
     }
@@ -164,7 +146,6 @@ export class USBCommunication extends BaseTransport {
                 try {
                     await this.currentReader.cancel()
                     this.currentReader.releaseLock()
-                    await this.readableStreamClosed?.catch(() => {})
                 } catch (error) {
                     console.warn('Error closing reader:', error)
                 }
@@ -174,7 +155,6 @@ export class USBCommunication extends BaseTransport {
                 try {
                     await this.currentWriter.close()
                     this.currentWriter.releaseLock()
-                    await this.writerStreamClosed?.catch(() => {})
                 } catch (error) {
                     console.warn('Error closing writer:', error)
                 }
@@ -190,8 +170,6 @@ export class USBCommunication extends BaseTransport {
 
             this.currentReader = null
             this.currentWriter = null
-            this.textEncoder = null
-            this.textDecoder = null
             this.resetBuffer()
         } catch (error) {
             throw new Error(

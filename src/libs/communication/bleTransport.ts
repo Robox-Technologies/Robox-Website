@@ -34,6 +34,23 @@ export abstract class BleTransport extends BaseTransport {
         }
     }
 
+    /** Raw mode: no sleep after the last chunk, only the HM-10's floor between chunks. Sustained writes over ~960 B/s still overflow it. */
+    protected async sendUnpaced(payload: Uint8Array): Promise<void> {
+        for (
+            let offset = 0;
+            offset < payload.length;
+            offset += BLE_CHUNK_SIZE
+        ) {
+            if (this.destroyed) return
+            if (offset > 0) await delay(this.pacer.minimumMs)
+            await this.writeChunk(
+                new Uint8Array(
+                    payload.subarray(offset, offset + BLE_CHUNK_SIZE),
+                ),
+            )
+        }
+    }
+
     notePacingClean(): void {
         this.pacer.onCleanBatch()
     }

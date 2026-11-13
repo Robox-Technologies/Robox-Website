@@ -117,6 +117,8 @@ export interface PicoState {
     firmwareVersion: string
     isRestarting: boolean
     communicationMethod: CommunicationMethod
+    /** The link is a plain byte pipe: see `Pico.enterRawMode`. */
+    rawMode: boolean
 }
 
 export interface PicoEventMap {
@@ -132,4 +134,6 @@ export interface PicoEventMap {
     color: ColorReading
     /** The legacy bootloader fallback confirmed the board rebooted into bootloader mode. */
     bootloaderEntered: object
+    /** Bytes received while in raw mode, exactly as they arrived. */
+    raw: Uint8Array
 }

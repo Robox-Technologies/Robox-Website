@@ -159,6 +159,7 @@ export class Pico {
             firmwareVersion: '0.0.0',
             isRestarting: false,
             communicationMethod: null,
+            rawMode: false,
         }
     }
 
@@ -253,6 +254,7 @@ export class Pico {
 
     async setCommunicationMethod(method: CommunicationMethod): Promise<void> {
         if (this.communication) {
+            this.leaveRawMode()
             // Before the transport goes away: an interface can only be released over itself.
             await this.releaseBoard()
             await this.communication.destroy()
@@ -272,6 +274,7 @@ export class Pico {
             connectionStatus: ConnectionStatus.DISCONNECTED,
             firmwareStatus: FirmwareStatus.UNKNOWN,
             isRestarting: false,
+            rawMode: false,
         })
         if (method === 'USB') {
             this.communication = new USBCommunication(this)
@@ -340,6 +343,7 @@ export class Pico {
         }
 
         this.updateState({ connectionStatus: ConnectionStatus.DISCONNECTING })
+        this.leaveRawMode()
 
         // Read before teardown clears it: a rename acks with "renaming",
         // then this very disconnect fires as a required step of the AT
@@ -364,6 +368,7 @@ export class Pico {
                 connectionStatus: ConnectionStatus.DISCONNECTED,
                 firmwareStatus: FirmwareStatus.UNKNOWN,
                 isRestarting: false,
+                rawMode: false,
             })
 
             if (reconnectAfterRename) {
@@ -871,6 +876,60 @@ export class Pico {
      */
     colorMode(): void {
         void this.communication?.write(COMMANDS.COLOR_MODE)
+    }
+
+    /**
+     * Turn the link into a plain byte pipe for custom board software: received
+     * bytes arrive as `raw` events, `writeBytes` sends bytes untouched, and every
+     * framed command (calibration, upload, run...) is refused until `exitRawMode`.
+     * Only after the firmware check has passed. `command`, when given, is sent as
+     * a normal COMMAND frame first, e.g. to tell the board to switch over too.
+     */
+    async enterRawMode(command?: string): Promise<void> {
+        if (!(this.communication instanceof BaseTransport)) {
+            throw new Error('No communication method set')
+        }
+        if (this.state.rawMode) return
+
+        const { connectionStatus, firmwareStatus } = this.state
+        const linkReady =
+            connectionStatus === ConnectionStatus.CONNECTED ||
+            connectionStatus === ConnectionStatus.RUNNING
+        if (!linkReady || firmwareStatus !== FirmwareStatus.UP_TO_DATE) {
+            throw new Error(
+                'Connect to a Ro/Box with up-to-date firmware before entering raw mode.',
+            )
+        }
+
+        if (command) await this.communication.write(command)
+
+        this.communication.setRawListener((data) => this.emit('raw', data))
+        this.updateState({ rawMode: true })
+    }
+
+    /** Back to the framed protocol. Whatever the board sends must be frames again from here on. */
+    exitRawMode(): void {
+        if (!this.state.rawMode) return
+        this.leaveRawMode()
+        this.updateState({ rawMode: false })
+    }
+
+    /** Send bytes untouched. Strings are UTF-8 encoded. Raw mode only. */
+    writeBytes(data: Uint8Array | string): Promise<void> {
+        if (!(this.communication instanceof BaseTransport)) {
+            return Promise.reject(new Error('No communication method set'))
+        }
+
+        const bytes =
+            typeof data === 'string' ? new TextEncoder().encode(data) : data
+        return this.communication.writeRawBytes(bytes)
+    }
+
+    /** Transport side only; callers decide when to publish `rawMode: false`. */
+    private leaveRawMode(): void {
+        if (this.communication instanceof BaseTransport) {
+            this.communication.setRawListener(null)
+        }
     }
 
     /** Send a program and wait for the board to confirm it arrived intact. */

@@ -49,6 +49,12 @@ export abstract class BaseTransport implements Communication {
     protected readonly decoder = new TextDecoder()
     protected readonly encoder = new TextEncoder()
 
+    /** Streaming, so a multi-byte character split across two reads survives. Replaced on reset. */
+    private receiveDecoder = new TextDecoder()
+
+    /** Set while in raw mode: every received byte goes here, untouched, instead of the framer. */
+    private rawListener: ((data: Uint8Array) => void) | null = null
+
     /** Partial trailing line, waiting for its newline. */
     private buffer: string = ''
 
@@ -154,6 +160,12 @@ export abstract class BaseTransport implements Communication {
 
     /** Send a control command by name, inside a COMMAND frame. */
     write(command: string | string[]): Promise<void> {
+        if (this.rawListener) {
+            const error = rawModeError()
+            this.reportError(error.message)
+            return Promise.reject(error)
+        }
+
         return this.enqueueSend(async () => {
             const queue = Array.isArray(command) ? command : [command]
 
@@ -217,12 +229,46 @@ export abstract class BaseTransport implements Communication {
 
     /** Send pre-encoded frames, in order. */
     writeFrames(frames: Uint8Array[]): Promise<void> {
+        if (this.rawListener) return Promise.reject(rawModeError())
+
         return this.enqueueSend(async () => {
             for (const frame of frames) {
                 if (this.destroyed) return
                 await this.sendRaw(frame)
             }
         })
+    }
+
+    // === raw mode ===
+
+    get rawMode(): boolean {
+        return this.rawListener !== null
+    }
+
+    /**
+     * Hand the link over as a plain byte pipe: no framing, parsing or pacing.
+     * Framed `write()`/`writeFrames()` are refused until this is cleared with `null`.
+     */
+    setRawListener(listener: ((data: Uint8Array) => void) | null): void {
+        this.rawListener = listener
+        this.resetBuffer()
+    }
+
+    /** Bytes exactly as given. Still queued, since Web Bluetooth rejects overlapping writes. */
+    writeRawBytes(data: Uint8Array): Promise<void> {
+        if (!this.rawListener) {
+            return Promise.reject(new Error('The Ro/Box is not in raw mode.'))
+        }
+
+        return this.enqueueSend(async () => {
+            if (this.destroyed) return
+            await this.sendUnpaced(data)
+        })
+    }
+
+    /** Overridden where `sendRaw` paces; the caller owns the rate in raw mode. */
+    protected sendUnpaced(data: Uint8Array): Promise<void> {
+        return this.sendRaw(data)
     }
 
     setFlowListener(listener: ((frame: Frame) => void) | null): void {
@@ -270,9 +316,25 @@ export abstract class BaseTransport implements Communication {
         }
     }
 
-    /** Decode raw bytes from the link, then hand them to `ingest`. */
+    /** Every receive path ends here: raw mode takes the bytes as-is, otherwise they are decoded for `ingest`. */
     protected ingestBytes(data: ArrayBufferView | ArrayBuffer): void {
-        this.ingest(this.decoder.decode(data))
+        if (this.destroyed) return
+
+        if (this.rawListener) {
+            const view =
+                data instanceof ArrayBuffer
+                    ? new Uint8Array(data)
+                    : new Uint8Array(
+                          data.buffer,
+                          data.byteOffset,
+                          data.byteLength,
+                      )
+            // Copied: Web Bluetooth reuses the notification's buffer.
+            this.rawListener(view.slice())
+            return
+        }
+
+        this.ingest(this.receiveDecoder.decode(data, { stream: true }))
     }
 
     private ingestFrameLine(line: string): void {
@@ -338,6 +400,7 @@ export abstract class BaseTransport implements Communication {
     protected resetBuffer(): void {
         this.buffer = ''
         this.continuation = []
+        this.receiveDecoder = new TextDecoder()
     }
 
     async destroy(): Promise<void> {
@@ -349,6 +412,12 @@ export abstract class BaseTransport implements Communication {
         }
         this.resetBuffer()
     }
+}
+
+function rawModeError(): Error {
+    return new Error(
+        'The Ro/Box is in raw mode. Leave raw mode before sending commands.',
+    )
 }
 
 /** Pause between chunked writes, so the peer's receive buffer can drain. */

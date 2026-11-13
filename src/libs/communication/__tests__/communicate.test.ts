@@ -233,3 +233,107 @@ describe('a refused firmware check', () => {
         })
     })
 })
+
+describe('raw mode', () => {
+    async function ready() {
+        const setup = connected()
+        await setup.pico.connect({} as never)
+        setup.transport.reply('firmware', '2.2.0+proto2')
+        return setup
+    }
+
+    it('is refused until the firmware check has passed', async () => {
+        const { pico } = connected()
+        await pico.connect({} as never)
+
+        await expect(pico.enterRawMode()).rejects.toThrow('raw mode')
+        expect(pico.getState().rawMode).toBe(false)
+    })
+
+    it('hands received bytes over untouched, high bytes included', async () => {
+        const { pico, transport } = await ready()
+        const received: number[] = []
+        pico.on('raw', (data) => received.push(...data))
+
+        await pico.enterRawMode()
+        ;(
+            transport as unknown as {
+                ingestBytes: (data: Uint8Array) => void
+            }
+        ).ingestBytes(new Uint8Array([0x01, 0xff, 0x80, 0x0a]))
+
+        expect(received).toEqual([0x01, 0xff, 0x80, 0x0a])
+    })
+
+    it('does not parse frames while raw', async () => {
+        const { pico, transport } = await ready()
+        const consoles: string[] = []
+        pico.on('console', (event) => consoles.push(event.message))
+
+        await pico.enterRawMode()
+        transport.reply('console', 'hello')
+
+        expect(consoles).toEqual([])
+    })
+
+    it('writes bytes exactly as given', async () => {
+        const { pico, transport } = await ready()
+        await pico.enterRawMode()
+        transport.written = []
+
+        await pico.writeBytes(new Uint8Array([0x02, 0x81, 0x7f]))
+
+        expect(transport.written).toEqual([new Uint8Array([0x02, 0x81, 0x7f])])
+    })
+
+    it('sends the switch-over command before going raw', async () => {
+        const { pico, transport } = await ready()
+
+        await pico.enterRawMode('controller_mode')
+
+        expect(transport.commands()).toEqual([
+            COMMANDS.FIRMWARE_CHECK,
+            'controller_mode',
+        ])
+        expect(pico.getState().rawMode).toBe(true)
+    })
+
+    it('refuses framed commands while raw', async () => {
+        const { pico, transport, errors } = await ready()
+        await pico.enterRawMode()
+
+        await expect(transport.write(COMMANDS.STOP_MOTORS)).rejects.toThrow()
+        expect(errors).toHaveLength(1)
+        expect(transport.commands()).toEqual([COMMANDS.FIRMWARE_CHECK])
+    })
+
+    it('refuses raw writes outside raw mode', async () => {
+        const { pico } = await ready()
+
+        await expect(pico.writeBytes('hi')).rejects.toThrow('not in raw mode')
+    })
+
+    it('goes back to framed messages on exit', async () => {
+        const { pico, transport } = await ready()
+        const consoles: string[] = []
+        pico.on('console', (event) => consoles.push(event.message))
+
+        await pico.enterRawMode()
+        pico.exitRawMode()
+        transport.reply('console', 'hello')
+
+        expect(consoles).toEqual(['hello'])
+        expect(pico.getState().rawMode).toBe(false)
+    })
+
+    it('leaves raw mode on disconnect, still releasing the board', async () => {
+        const { pico, transport } = await ready()
+        await pico.enterRawMode()
+
+        await pico.disconnect()
+
+        expect(pico.getState().rawMode).toBe(false)
+        expect(transport.rawMode).toBe(false)
+        expect(transport.commands()).toContain(COMMANDS.DISCONNECT)
+    })
+})
