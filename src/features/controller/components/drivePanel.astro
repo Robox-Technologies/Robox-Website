@@ -79,7 +79,25 @@ import Button from "@/components/button"
 </div>
 
 <script>
-    import { wireDrivePanel } from "../drivePanel";
+    import { pico } from "@/libs/communication/communicate";
+    import { dispatchStageAdvance, dispatchStageError } from "@/components/stageFlow";
+    import { controllerLink, type LinkState } from "../protocol/controllerLink";
+    import { DriveLoop, type DriveFrame } from "../drive/driveLoop";
+    import { DEFAULT_MIX } from "../drive/mixer";
+    import { JoystickInput } from "../drive/inputs/joystick";
+    import { KeyboardInput, isTextEntryTarget } from "../drive/inputs/keyboard";
+    import { GamepadInput } from "../drive/inputs/gamepad";
+
+    const NAMESPACE = "controller";
+    const SPEED_STORAGE_KEY = "robox:controller:maxSpeed";
+
+    const LINK_DOT_CLASSES: Record<LinkState, string> = {
+        idle: "bg-tone3",
+        starting: "bg-blue",
+        active: "bg-green",
+        unresponsive: "bg-yellow",
+        closing: "bg-tone3",
+    };
 
     document.querySelectorAll<HTMLDivElement>(".controllerDrivePanel").forEach((root) => {
         const find = <T extends HTMLElement>(selector: string) => {
@@ -88,22 +106,172 @@ import Button from "@/components/button"
             return element;
         };
 
-        wireDrivePanel({
-            root,
-            joystick: find(".controller-joystick"),
-            knob: find(".controller-joystick-knob"),
-            hint: find(".controller-input-hint"),
-            stopButton: find<HTMLButtonElement>(".controller-stop"),
-            speed: find<HTMLInputElement>(".controller-speed"),
-            speedReadout: find(".controller-speed-readout"),
-            leftBar: find(".controller-motor-left"),
-            leftValue: find(".controller-motor-left-value"),
-            rightBar: find(".controller-motor-right"),
-            rightValue: find(".controller-motor-right-value"),
-            linkDot: find(".controller-link-dot"),
-            linkStatus: find(".controller-link-status"),
-            returnLink: find<HTMLAnchorElement>(".controller-return-link"),
-            returnLabel: find(".controller-return-label"),
+        const flowRoot = root.closest<HTMLElement>("[data-stage-flow-root]");
+        const stage = root.closest<HTMLElement>(".stageFlowStage");
+        if (!flowRoot || !stage) throw new Error("Drive panel must sit inside the controller stage flow");
+        const stageElement = stage;
+
+        const hint = find(".controller-input-hint");
+        const speed = find<HTMLInputElement>(".controller-speed");
+        const speedReadout = find(".controller-speed-readout");
+        const leftBar = find(".controller-motor-left");
+        const leftValue = find(".controller-motor-left-value");
+        const rightBar = find(".controller-motor-right");
+        const rightValue = find(".controller-motor-right-value");
+        const linkDot = find(".controller-link-dot");
+        const linkStatus = find(".controller-link-status");
+        const returnLink = find<HTMLAnchorElement>(".controller-return-link");
+        const returnLabel = find(".controller-return-label");
+
+        const joystick = new JoystickInput(find(".controller-joystick"), find(".controller-joystick-knob"));
+        const keyboard = new KeyboardInput();
+        const gamepad = new GamepadInput();
+
+        // Max speed, remembered per browser. Storage can be unavailable (private mode).
+        try {
+            const stored = localStorage.getItem(SPEED_STORAGE_KEY);
+            if (stored) speed.value = stored;
+        } catch {}
+        speedReadout.textContent = `${speed.value}%`;
+        speed.addEventListener("input", () => {
+            speedReadout.textContent = `${speed.value}%`;
+            try {
+                localStorage.setItem(SPEED_STORAGE_KEY, speed.value);
+            } catch {}
+        });
+
+        let lastLeft = NaN;
+        let lastRight = NaN;
+        function showMotor(bar: HTMLElement, label: HTMLElement, value: number) {
+            const width = Math.abs(value) / 2;
+            bar.style.width = `${width}%`;
+            bar.style.left = value >= 0 ? "50%" : `${50 - width}%`;
+            label.textContent = String(value);
+        }
+        function showFrame(frame: DriveFrame) {
+            if (frame.left !== lastLeft) {
+                lastLeft = frame.left;
+                showMotor(leftBar, leftValue, frame.left);
+            }
+            if (frame.right !== lastRight) {
+                lastRight = frame.right;
+                showMotor(rightBar, rightValue, frame.right);
+            }
+        }
+
+        const loop = new DriveLoop({
+            link: controllerLink,
+            sources: [joystick, keyboard, gamepad],
+            mix: () => ({ ...DEFAULT_MIX, maxSpeed: Number(speed.value) / 100 }),
+            onFrame: showFrame,
+        });
+
+        function emergencyStop() {
+            joystick.release();
+            loop.emergencyStop();
+        }
+
+        find<HTMLButtonElement>(".controller-stop").addEventListener("click", emergencyStop);
+        window.addEventListener("keydown", (event) => {
+            if (event.code !== "Space" || !onDriveStage() || isTextEntryTarget(event.target)) return;
+            event.preventDefault();
+            emergencyStop();
+        });
+
+        const defaultHint = hint.textContent;
+        function showGamepad() {
+            const name = gamepad.connectedName();
+            hint.textContent = name ? `Gamepad connected: ${name}. Space stops.` : defaultHint;
+        }
+        window.addEventListener("gamepadconnected", showGamepad);
+        window.addEventListener("gamepaddisconnected", showGamepad);
+
+        function showLink() {
+            const state = controllerLink.state;
+            Object.values(LINK_DOT_CLASSES).forEach((name) => linkDot.classList.remove(name));
+            linkDot.classList.add(LINK_DOT_CLASSES[state]);
+
+            const method = pico.getState().communicationMethod === "USB" ? "USB" : "Bluetooth";
+            const { rttMs, lossPercent, watchdogTripped } = controllerLink.stats();
+
+            if (state === "unresponsive") {
+                linkStatus.textContent = "Ro/Box not responding";
+            } else if (state === "active") {
+                const parts = [`Connected over ${method}`];
+                if (rttMs !== null) parts.push(`${rttMs} ms`);
+                if (lossPercent) parts.push(`${lossPercent}% lost`);
+                if (watchdogTripped) parts.push("signal dropped");
+                linkStatus.textContent = parts.join(" · ");
+            } else {
+                linkStatus.textContent = "Not connected";
+            }
+        }
+
+        let leaving = false;
+
+        function onDriveStage() {
+            return stageElement.style.display !== "none" && !stageElement.classList.contains("hidden");
+        }
+
+        function sync() {
+            if (onDriveStage() && controllerLink.active) {
+                loop.start();
+            } else {
+                loop.stop();
+            }
+            showLink();
+        }
+
+        flowRoot.addEventListener(`${NAMESPACE}:stage-changed`, () => {
+            if (onDriveStage() && !controllerLink.active) {
+                dispatchStageAdvance(root, NAMESPACE, "connect");
+                return;
+            }
+            // Back on the connect stage: hand the board back to the framed protocol.
+            if (!onDriveStage() && controllerLink.active) void controllerLink.close();
+            sync();
+        });
+
+        controllerLink.on("state", (state) => {
+            sync();
+            if (state !== "idle" || leaving || !onDriveStage()) return;
+            dispatchStageAdvance(root, NAMESPACE, "connect");
+            dispatchStageError(
+                root,
+                NAMESPACE,
+                "Controller Stopped",
+                "The connection to your Ro/Box was lost. Reconnect to keep driving.",
+            );
+        });
+        controllerLink.on("stats", showLink);
+
+        // Landing straight on ?step=drive has no link yet.
+        if (onDriveStage() && !controllerLink.active) {
+            dispatchStageAdvance(root, NAMESPACE, "connect");
+        }
+        sync();
+
+        const projectId = new URLSearchParams(window.location.search).get("id");
+        if (projectId) {
+            const url = new URL("/hub/editor/index.html", window.location.origin);
+            url.searchParams.set("id", projectId);
+            returnLink.href = url.toString();
+            returnLabel.textContent = "Return to Project";
+        }
+
+        returnLink.addEventListener("click", (event) => {
+            event.preventDefault();
+            leaving = true;
+            loop.stop();
+            void controllerLink.close().finally(() => {
+                const url = new URL(returnLink.href, window.location.href);
+                const handoff = pico.getConnectionHandoff();
+                if (projectId && handoff) {
+                    url.searchParams.set("connectionMethod", handoff.method);
+                    url.searchParams.set("deviceId", handoff.deviceId);
+                }
+                window.location.assign(url.toString());
+            });
         });
     });
 </script>

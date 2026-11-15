@@ -15,8 +15,12 @@ const KEY_AXES: Record<string, Partial<StickInput>> = {
 /** Full deflection is reached over this long, so a tap isn't a full-speed lurch. */
 const RAMP_MS = 250
 
-function isTyping(target: EventTarget | null): boolean {
+/** Whether a key event belongs to a field the user is typing in. Sliders don't count. */
+export function isTextEntryTarget(target: EventTarget | null): boolean {
     if (!(target instanceof HTMLElement)) return false
+    if (target instanceof HTMLInputElement && target.type === 'range') {
+        return false
+    }
     return (
         target.isContentEditable ||
         target.tagName === 'INPUT' ||
@@ -35,7 +39,7 @@ export class KeyboardInput implements InputSource {
     private engagedAt = 0
 
     private readonly keydown = (event: KeyboardEvent) => {
-        if (!(event.code in KEY_AXES) || isTyping(event.target)) return
+        if (!(event.code in KEY_AXES) || isTextEntryTarget(event.target)) return
         event.preventDefault()
         this.held.add(event.code)
         this.engagedAt = performance.now()
