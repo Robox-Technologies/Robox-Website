@@ -1,5 +1,5 @@
 {
-    "_comment": "Controller packets: start, type, seq, a, b, crc8(type..b) with poly 0x07, init 0. a/b are int8 for DRIVE. Shared with the board's controller loop.",
+    "_comment": "Controller packets, host to board only: start, type, seq, a, b, crc8(type..b) with poly 0x07, init 0. a/b are int8 for DRIVE. Shared with the board's controller loop.",
     "crc8": [
         {
             "input": [49, 50, 51, 52, 53, 54, 55, 56, 57],
@@ -48,24 +48,6 @@
             "bytes": [165, 1, 255, 0, 0, 61]
         },
         {
-            "name": "stop",
-            "start": 165,
-            "type": 2,
-            "seq": 7,
-            "a": 0,
-            "b": 0,
-            "bytes": [165, 2, 7, 0, 0, 58]
-        },
-        {
-            "name": "ping",
-            "start": 165,
-            "type": 3,
-            "seq": 42,
-            "a": 0,
-            "b": 0,
-            "bytes": [165, 3, 42, 0, 0, 254]
-        },
-        {
             "name": "exit",
             "start": 165,
             "type": 4,
@@ -73,33 +55,6 @@
             "a": 0,
             "b": 0,
             "bytes": [165, 4, 128, 0, 0, 83]
-        },
-        {
-            "name": "pong",
-            "start": 90,
-            "type": 129,
-            "seq": 42,
-            "a": 42,
-            "b": 1,
-            "bytes": [90, 129, 42, 42, 1, 200]
-        },
-        {
-            "name": "status, watchdog tripped",
-            "start": 90,
-            "type": 130,
-            "seq": 0,
-            "a": 200,
-            "b": 1,
-            "bytes": [90, 130, 0, 200, 1, 95]
-        },
-        {
-            "name": "status, motors active",
-            "start": 90,
-            "type": 130,
-            "seq": 9,
-            "a": 17,
-            "b": 2,
-            "bytes": [90, 130, 9, 17, 2, 107]
         }
     ]
 }

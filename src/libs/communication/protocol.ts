@@ -136,6 +136,7 @@ export const MESSAGE_TYPES: readonly PicoMessageType[] = [
     'color',
     'renaming',
     'renamed',
+    'controller_mode',
 ]
 
 // Bumped to 2.2.0 due to the verification requirement for rerunning code

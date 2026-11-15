@@ -5,33 +5,38 @@ import { BaseTransport } from '@/libs/communication/transportBase'
 import { FrameReader, Kind, encodeFrame } from '@/libs/communication/frames'
 import { ControllerLink } from '../protocol/controllerLink'
 import {
-    BOARD_START,
-    BoardPacket,
     CONTROLLER_MODE_COMMAND,
-    CONTROLLER_PROTOCOL_VERSION,
+    CONTROLLER_MODE_REPLY,
+    CONTROLLER_TIMEOUT_MS,
     HOST_START,
     HostPacket,
     MIN_SEND_INTERVAL_MS,
-    PacketReader,
-    encodePacket,
+    PACKET_LENGTH,
+    crc8,
     signedByte,
-    type Packet,
 } from '../protocol/packets'
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
-/** Plays the board: answers the firmware check, enters controller mode on command, answers PINGs. */
+interface Packet {
+    type: number
+    a: number
+    b: number
+    at: number
+}
+
+/** Plays the board: answers the firmware check, confirms controller mode with a framed reply, then reads packets. */
 class FakeBoard extends BaseTransport {
     commands: string[] = []
     packets: Packet[] = []
     controllerMode = false
     /** When false the board hears everything but says nothing. */
     answers = true
-    protocolVersion = CONTROLLER_PROTOCOL_VERSION
+    /** When set, the board refuses controller mode with this error. */
+    refuseWith: string | null = null
 
     private readonly commandFrames = new FrameReader()
-    private readonly hostPackets = new PacketReader(HOST_START)
 
     async request(): Promise<void> {}
     async connect(): Promise<void> {}
@@ -40,8 +45,16 @@ class FakeBoard extends BaseTransport {
 
     protected async sendRaw(data: Uint8Array): Promise<void> {
         if (this.controllerMode) {
-            for (const packet of this.hostPackets.feed(data))
-                this.receive(packet)
+            // The host writes exactly one packet per call.
+            expect(data.length).toBe(PACKET_LENGTH)
+            expect(data[0]).toBe(HOST_START)
+            expect(crc8(data.subarray(1, 5))).toBe(data[5])
+            this.receive({
+                type: data[1],
+                a: data[3],
+                b: data[4],
+                at: Date.now(),
+            })
             return
         }
 
@@ -49,23 +62,19 @@ class FakeBoard extends BaseTransport {
             if (frame.kind !== Kind.COMMAND) continue
             const name = decoder.decode(frame.payload)
             this.commands.push(name)
-            if (name === CONTROLLER_MODE_COMMAND) this.controllerMode = true
+            if (name !== CONTROLLER_MODE_COMMAND || !this.answers) continue
+            if (this.refuseWith) {
+                this.reply('error', this.refuseWith)
+                continue
+            }
+            this.reply(CONTROLLER_MODE_REPLY, 'ready')
+            this.controllerMode = true
         }
     }
 
     private receive(packet: Packet): void {
         this.packets.push(packet)
         if (packet.type === HostPacket.EXIT) this.controllerMode = false
-        if (packet.type === HostPacket.PING && this.answers) {
-            const pong = encodePacket(
-                BoardPacket.PONG,
-                0,
-                packet.seq,
-                this.protocolVersion,
-                BOARD_START,
-            )
-            setTimeout(() => this.ingestBytes(pong), 5)
-        }
     }
 
     reply(type: string, message: unknown): void {
@@ -114,16 +123,15 @@ afterEach(() => {
 })
 
 describe('starting the controller', () => {
-    it('switches the board over and handshakes', async () => {
+    it('switches over once the board confirms', async () => {
         const { pico, board, link } = await started()
 
         expect(board.commands).toContain(CONTROLLER_MODE_COMMAND)
-        expect(board.types()[0]).toBe(HostPacket.PING)
         expect(link.state).toBe('active')
         expect(pico.getState().rawMode).toBe(true)
     })
 
-    it('gives up and leaves raw mode when the board never answers', async () => {
+    it('stays framed and gives up when the board never confirms', async () => {
         const { pico, board, link } = await connectedPico()
         board.answers = false
 
@@ -134,29 +142,16 @@ describe('starting the controller', () => {
 
         expect(link.state).toBe('idle')
         expect(pico.getState().rawMode).toBe(false)
-        // It kept asking: the first PING can land before the board has switched.
-        expect(
-            board.types().filter((t) => t === HostPacket.PING).length,
-        ).toBeGreaterThan(3)
+        expect(board.packets).toEqual([])
     })
 
-    it('refuses firmware older than the controller', async () => {
-        const { pico, board, link } = await connectedPico('2.2.0+proto2')
+    it('reports the board refusing controller mode', async () => {
+        const { pico, board, link } = await connectedPico()
+        board.refuseWith = 'A program is running'
 
-        await expect(link.start()).rejects.toThrow('2.3.0')
-        expect(board.commands).not.toContain(CONTROLLER_MODE_COMMAND)
-        expect(pico.getState().rawMode).toBe(false)
-    })
-
-    it('refuses a board speaking another controller protocol', async () => {
-        const { board, link } = await connectedPico()
-        board.protocolVersion = CONTROLLER_PROTOCOL_VERSION + 1
-
-        const starting = link.start()
-        const outcome = expect(starting).rejects.toThrow('controller protocol')
-        await vi.advanceTimersByTimeAsync(50)
-        await outcome
+        await expect(link.start()).rejects.toThrow('A program is running')
         expect(link.state).toBe('idle')
+        expect(pico.getState().rawMode).toBe(false)
     })
 })
 
@@ -191,16 +186,14 @@ describe('driving', () => {
         expect(drives.every(([l, r]) => l === 40 && r === 40)).toBe(true)
     })
 
-    it('puts STOP ahead of a pending DRIVE', async () => {
+    it('sends a zero DRIVE ahead of a pending one on stop', async () => {
         const { board, link } = await started()
         link.setDrive(80, 80)
         link.setDrive(90, 90)
         link.stop()
         await vi.advanceTimersByTimeAsync(MIN_SEND_INTERVAL_MS * 2)
 
-        const types = board.types()
-        const stopAt = types.indexOf(HostPacket.STOP)
-        expect(stopAt).toBeGreaterThan(-1)
+        expect(board.drives()).toContainEqual([0, 0])
         expect(board.drives()).not.toContainEqual([90, 90])
     })
 
@@ -212,44 +205,15 @@ describe('driving', () => {
     })
 })
 
-describe('link health', () => {
-    it('measures round-trip time from PONGs', async () => {
-        const { link } = await started()
-        expect(link.stats().rttMs).toBe(5)
-    })
-
-    it('marks the link unresponsive when the board goes quiet, and recovers', async () => {
+describe('timeout', () => {
+    it('never leaves a gap the board would time out on', async () => {
         const { board, link } = await started()
-        const states: string[] = []
-        link.on('state', (state) => states.push(state))
+        link.setDrive(40, 40)
+        await vi.advanceTimersByTimeAsync(2000)
 
-        board.answers = false
-        await vi.advanceTimersByTimeAsync(1500)
-        expect(link.state).toBe('unresponsive')
-
-        board.answers = true
-        await vi.advanceTimersByTimeAsync(1100)
-        expect(link.state).toBe('active')
-        expect(states).toEqual(['unresponsive', 'active'])
-    })
-
-    it('computes loss from the board’s STATUS counts', async () => {
-        const { board, link } = await started()
-        const status = (received: number) =>
-            (
-                board as unknown as { ingestBytes: (d: Uint8Array) => void }
-            ).ingestBytes(
-                encodePacket(BoardPacket.STATUS, 0, received, 0, BOARD_START),
-            )
-
-        status(0)
-        for (let i = 0; i < 10; i += 1) {
-            link.setDrive(i + 1, 0)
-            await vi.advanceTimersByTimeAsync(MIN_SEND_INTERVAL_MS)
-        }
-        status(5)
-
-        expect(link.stats().lossPercent).toBe(50)
+        const times = board.packets.map((p) => p.at)
+        const gaps = times.slice(1).map((at, i) => at - times[i])
+        expect(Math.max(...gaps)).toBeLessThan(CONTROLLER_TIMEOUT_MS / 2)
     })
 })
 
@@ -261,9 +225,10 @@ describe('ending', () => {
         await link.close()
 
         expect(board.types().slice(-2)).toEqual([
-            HostPacket.STOP,
+            HostPacket.DRIVE,
             HostPacket.EXIT,
         ])
+        expect(board.drives().at(-1)).toEqual([0, 0])
         expect(board.controllerMode).toBe(false)
         expect(link.state).toBe('idle')
         expect(pico.getState().rawMode).toBe(false)

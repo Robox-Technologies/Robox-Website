@@ -4,6 +4,7 @@ import type {
     CommunicationMethod,
     PicoState,
     PicoMessage,
+    PicoMessageType,
     ColorReading,
     CalibrationReading,
     ConnectionHandoff,
@@ -71,6 +72,9 @@ const RENAME_RECONNECT_INITIAL_DELAY_MS = 3000
 const RENAME_RECONNECT_RETRY_INTERVAL_MS = 1500
 const RENAME_RECONNECT_TOTAL_MS = 15000
 
+/** How long `enterRawMode` waits for the board to confirm it has switched over. */
+const RAW_MODE_ACK_TIMEOUT_MS = 1500
+
 const revertStateMapping: Partial<Record<ConnectionStatus, ConnectionStatus>> =
     {
         [ConnectionStatus.CONNECTING]: ConnectionStatus.DISCONNECTED,
@@ -133,6 +137,12 @@ export class Pico {
      * - is what settles this.
      */
     private renameCommandPending: boolean = false
+
+    /** The framed reply `enterRawMode` is waiting for before it switches over. */
+    private rawModeAck: {
+        type: PicoMessageType
+        settle: (error: Error | null) => void
+    } | null = null
     private pendingRenameName: string | null = null
     private renameTimeout: ReturnType<typeof setTimeout> | null = null
     private renameSettle: {
@@ -358,6 +368,7 @@ export class Pico {
             this.responded = false
             this.firmwareConfirmed = false
             this.calibrationCommandPending = false
+            this.rawModeAck?.settle(new Error('The Ro/Box disconnected.'))
             this.clearFirmwareCheck()
 
             await this.communication.disconnect()
@@ -385,6 +396,11 @@ export class Pico {
         // First message means we're connected
         if (!this.responded) {
             this.responded = true
+        }
+
+        if (this.rawModeAck?.type === type) {
+            this.rawModeAck.settle(null)
+            return
         }
 
         if (type === 'firmware') {
@@ -474,6 +490,12 @@ export class Pico {
         } else if (type === 'error') {
             if (this.programVerifySettle) {
                 this.settleProgramVerify(false)
+                return
+            }
+
+            // The board refusing to switch over (e.g. a program is running) is the request's answer.
+            if (this.rawModeAck) {
+                this.rawModeAck.settle(new Error(message))
                 return
             }
 
@@ -884,8 +906,10 @@ export class Pico {
      * framed command (calibration, upload, run...) is refused until `exitRawMode`.
      * Only after the firmware check has passed. `command`, when given, is sent as
      * a normal COMMAND frame first, e.g. to tell the board to switch over too.
+     * With `ack`, the link stays framed until the board sends a reply of that
+     * type, and rejects on an `error` reply, a disconnect, or a timeout.
      */
-    async enterRawMode(command?: string): Promise<void> {
+    async enterRawMode(command?: string, ack?: PicoMessageType): Promise<void> {
         if (!(this.communication instanceof BaseTransport)) {
             throw new Error('No communication method set')
         }
@@ -901,10 +925,47 @@ export class Pico {
             )
         }
 
-        if (command) await this.communication.write(command)
+        if (ack) {
+            if (!command) throw new Error('An ack needs a command to answer.')
+            await this.awaitReply(ack, () => this.communication!.write(command))
+        } else if (command) {
+            await this.communication.write(command)
+        }
 
+        // A disconnect may have raced the ack.
+        if (!(this.communication instanceof BaseTransport)) {
+            throw new Error('No communication method set')
+        }
         this.communication.setRawListener((data) => this.emit('raw', data))
         this.updateState({ rawMode: true })
+    }
+
+    private awaitReply(
+        type: PicoMessageType,
+        send: () => Promise<void>,
+    ): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(
+                () =>
+                    settle(
+                        new Error(
+                            "This Ro/Box didn't answer. Make sure its firmware is up to date, then try again.",
+                        ),
+                    ),
+                RAW_MODE_ACK_TIMEOUT_MS,
+            )
+            const settle = (error: Error | null) => {
+                clearTimeout(timeout)
+                this.rawModeAck = null
+                if (error) reject(error)
+                else resolve()
+            }
+
+            this.rawModeAck = { type, settle }
+            send().catch((error: unknown) =>
+                settle(new Error(errorMessage(error))),
+            )
+        })
     }
 
     /** Back to the framed protocol. Whatever the board sends must be frames again from here on. */

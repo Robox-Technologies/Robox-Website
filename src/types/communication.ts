@@ -69,6 +69,8 @@ export type PicoMessageType =
     | 'color'
     | 'renaming'
     | 'renamed'
+    /** The board has switched into its controller loop; raw packets follow. */
+    | 'controller_mode'
 
 export interface PicoMessage {
     type: PicoMessageType
