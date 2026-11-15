@@ -13,10 +13,27 @@ describe('arcadeMix', () => {
         expect(arcadeMix({ x: 1, y: 0 })).toEqual({ left: 1, right: -1 })
     })
 
-    it('keeps the turn ratio when a corner would saturate', () => {
-        const { left, right } = arcadeMix({ x: 1, y: 1 })
-        expect(left).toBe(1)
-        expect(right).toBe(0)
+    it('reverses the inner wheel on a hard turn at full throttle', () => {
+        expect(arcadeMix({ x: 1, y: 1 })).toEqual({ left: 1, right: -1 })
+        expect(arcadeMix({ x: -0.75, y: 1 })).toEqual({
+            left: -0.5,
+            right: 1,
+        })
+    })
+
+    it('arcs with the inner wheel still forward on a gentle turn', () => {
+        expect(arcadeMix({ x: 0.25, y: 1 })).toEqual({ left: 1, right: 0.5 })
+    })
+
+    it('turns the same way when reversing', () => {
+        expect(arcadeMix({ x: 1, y: -1 })).toEqual({ left: 1, right: -1 })
+    })
+
+    it('leaves unsaturated mixes alone', () => {
+        expect(arcadeMix({ x: 0.25, y: 0.5 })).toEqual({
+            left: 0.75,
+            right: 0.25,
+        })
     })
 })
 

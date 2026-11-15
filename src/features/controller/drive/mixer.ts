@@ -43,14 +43,22 @@ export function applyExpo(value: number, expo: number): number {
     return (1 - expo) * value + expo * value ** 3
 }
 
-/** Arcade drive: y drives both wheels, x adds to one and takes from the other. */
+/**
+ * Arcade drive: y drives both wheels, x adds to one and takes from the other.
+ * When a wheel would pass full speed, throttle gives way rather than steering:
+ * both wheels shift back together, so the turn stays as sharp as asked and the
+ * inner wheel reverses (+/-) instead of stopping at 0.
+ */
 export function arcadeMix(input: StickInput): MotorSpeeds {
     const x = clampUnit(input.x)
     const y = clampUnit(input.y)
     const left = y + x
     const right = y - x
-    const scale = Math.max(1, Math.abs(left), Math.abs(right))
-    return { left: left / scale, right: right / scale }
+    const high = Math.max(left, right)
+    const low = Math.min(left, right)
+    // |left - right| = 2|x| <= 2, so at most one side can overflow.
+    const shift = high > 1 ? high - 1 : low < -1 ? low + 1 : 0
+    return { left: left - shift || 0, right: right - shift || 0 }
 }
 
 /** The whole pipeline, out to the -100..100 integers the board takes. */

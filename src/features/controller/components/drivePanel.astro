@@ -86,7 +86,7 @@ import Button from "@/components/button"
     import { DEFAULT_MIX } from "../drive/mixer";
     import { JoystickInput } from "../drive/inputs/joystick";
     import { KeyboardInput, isTextEntryTarget } from "../drive/inputs/keyboard";
-    import { GamepadInput } from "../drive/inputs/gamepad";
+    import { DROPOUT_GRACE_MS, GamepadInput } from "../drive/inputs/gamepad";
 
     const NAMESPACE = "controller";
     const SPEED_STORAGE_KEY = "robox:controller:maxSpeed";
@@ -183,7 +183,8 @@ import Button from "@/components/button"
             hint.textContent = name ? `Gamepad connected: ${name}. Space stops.` : defaultHint;
         }
         window.addEventListener("gamepadconnected", showGamepad);
-        window.addEventListener("gamepaddisconnected", showGamepad);
+        // PlayStation pads on macOS blip out and back; only show it gone if it stays gone.
+        window.addEventListener("gamepaddisconnected", () => setTimeout(showGamepad, DROPOUT_GRACE_MS + 50));
 
         function showLink() {
             const state = controllerLink.state;
