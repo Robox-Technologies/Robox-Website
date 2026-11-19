@@ -2,7 +2,10 @@
 import StageStepper from '@/components/stageStepper.astro';
 import StageErrorBanner from '@/components/stageErrorBanner.astro';
 import Connect from './components/connect.astro';
-import DrivePanel from './components/drivePanel.astro';
+import DesktopDrivePanel from './components/desktopDrivePanel.astro';
+import TouchDrivePanel from './components/touchDrivePanel.astro';
+
+const isIOSBuild = process.env.IOS_BUILD === 'true';
 
 const initialStage = Astro.url.searchParams.get('step') === 'drive'
     ? 'drive'
@@ -34,7 +37,7 @@ const initialStage = Astro.url.searchParams.get('step') === 'drive'
             data-stage="drive"
         >
             <h2 class="text-xl font-bold text-black">Step 2: Drive</h2>
-            <DrivePanel />
+            {isIOSBuild ? <TouchDrivePanel /> : <DesktopDrivePanel />}
         </div>
     </div>
 </div>

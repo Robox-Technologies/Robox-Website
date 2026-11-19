@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
 ---
 
-<div class="controllerDrivePanel flex w-full flex-col gap-6">
+<div class="controllerDesktopDrivePanel flex w-full flex-col gap-6">
     <div class="flex flex-col items-center gap-8 md:flex-row md:items-start md:justify-center">
         <div class="flex flex-col items-center gap-3">
             <div
@@ -79,26 +79,18 @@ import Button from "@/components/button"
 </div>
 
 <script>
-    import { pico } from "@/libs/communication/communicate";
     import { dispatchStageAdvance, dispatchStageError } from "@/components/stageFlow";
-    import { controllerLink, type LinkState } from "../protocol/controllerLink";
+    import { controllerLink } from "../protocol/controllerLink";
     import { DriveLoop, type DriveFrame } from "../drive/driveLoop";
     import { DEFAULT_MIX } from "../drive/mixer";
+    import { LINK_DOT_CLASSES, hubHomeUrl, linkStatusText, loadMaxSpeed, projectReturnUrl, saveMaxSpeed } from "../drive/panelState";
     import { JoystickInput } from "../drive/inputs/joystick";
     import { KeyboardInput, isTextEntryTarget } from "../drive/inputs/keyboard";
     import { DROPOUT_GRACE_MS, GamepadInput } from "../drive/inputs/gamepad";
 
     const NAMESPACE = "controller";
-    const SPEED_STORAGE_KEY = "robox:controller:maxSpeed";
 
-    const LINK_DOT_CLASSES: Record<LinkState, string> = {
-        idle: "bg-tone3",
-        starting: "bg-blue",
-        active: "bg-green",
-        closing: "bg-tone3",
-    };
-
-    document.querySelectorAll<HTMLDivElement>(".controllerDrivePanel").forEach((root) => {
+    document.querySelectorAll<HTMLDivElement>(".controllerDesktopDrivePanel").forEach((root) => {
         const find = <T extends HTMLElement>(selector: string) => {
             const element = root.querySelector<T>(selector);
             if (!element) throw new Error(`Drive panel element ${selector} not found`);
@@ -110,13 +102,8 @@ import Button from "@/components/button"
         if (!flowRoot || !stage) throw new Error("Drive panel must sit inside the controller stage flow");
         const stageElement = stage;
 
-        const hint = find(".controller-input-hint");
         const speed = find<HTMLInputElement>(".controller-speed");
         const speedReadout = find(".controller-speed-readout");
-        const leftBar = find(".controller-motor-left");
-        const leftValue = find(".controller-motor-left-value");
-        const rightBar = find(".controller-motor-right");
-        const rightValue = find(".controller-motor-right-value");
         const linkDot = find(".controller-link-dot");
         const linkStatus = find(".controller-link-status");
         const returnLink = find<HTMLAnchorElement>(".controller-return-link");
@@ -126,19 +113,10 @@ import Button from "@/components/button"
         const keyboard = new KeyboardInput();
         const gamepad = new GamepadInput();
 
-        // Max speed, remembered per browser. Storage can be unavailable (private mode).
-        try {
-            const stored = localStorage.getItem(SPEED_STORAGE_KEY);
-            if (stored) speed.value = stored;
-        } catch {}
-        speedReadout.textContent = `${speed.value}%`;
-        speed.addEventListener("input", () => {
-            speedReadout.textContent = `${speed.value}%`;
-            try {
-                localStorage.setItem(SPEED_STORAGE_KEY, speed.value);
-            } catch {}
-        });
-
+        const leftBar = find(".controller-motor-left");
+        const leftValue = find(".controller-motor-left-value");
+        const rightBar = find(".controller-motor-right");
+        const rightValue = find(".controller-motor-right-value");
         let lastLeft = NaN;
         let lastRight = NaN;
         function showMotor(bar: HTMLElement, label: HTMLElement, value: number) {
@@ -157,6 +135,13 @@ import Button from "@/components/button"
                 showMotor(rightBar, rightValue, frame.right);
             }
         }
+
+        speed.value = loadMaxSpeed() ?? speed.value;
+        speedReadout.textContent = `${speed.value}%`;
+        speed.addEventListener("input", () => {
+            speedReadout.textContent = `${speed.value}%`;
+            saveMaxSpeed(speed.value);
+        });
 
         const loop = new DriveLoop({
             link: controllerLink,
@@ -177,6 +162,7 @@ import Button from "@/components/button"
             emergencyStop();
         });
 
+        const hint = find(".controller-input-hint");
         const defaultHint = hint.textContent;
         function showGamepad() {
             const name = gamepad.connectedName();
@@ -190,14 +176,7 @@ import Button from "@/components/button"
             const state = controllerLink.state;
             Object.values(LINK_DOT_CLASSES).forEach((name) => linkDot.classList.remove(name));
             linkDot.classList.add(LINK_DOT_CLASSES[state]);
-
-            const method = pico.getState().communicationMethod === "USB" ? "USB" : "Bluetooth";
-
-            if (state === "active") {
-                linkStatus.textContent = `Connected over ${method}`;
-            } else {
-                linkStatus.textContent = "Not connected";
-            }
+            linkStatus.textContent = linkStatusText(state);
         }
 
         let leaving = false;
@@ -244,10 +223,9 @@ import Button from "@/components/button"
         sync();
 
         const projectId = new URLSearchParams(window.location.search).get("id");
+        returnLink.href = hubHomeUrl();
         if (projectId) {
-            const url = new URL("/hub/editor/index.html", window.location.origin);
-            url.searchParams.set("id", projectId);
-            returnLink.href = url.toString();
+            returnLink.href = projectReturnUrl(projectId).toString();
             returnLabel.textContent = "Return to Project";
         }
 
@@ -256,12 +234,7 @@ import Button from "@/components/button"
             leaving = true;
             loop.stop();
             void controllerLink.close().finally(() => {
-                const url = new URL(returnLink.href, window.location.href);
-                const handoff = pico.getConnectionHandoff();
-                if (projectId && handoff) {
-                    url.searchParams.set("connectionMethod", handoff.method);
-                    url.searchParams.set("deviceId", handoff.deviceId);
-                }
+                const url = projectId ? projectReturnUrl(projectId) : new URL(returnLink.href, window.location.href);
                 window.location.assign(url.toString());
             });
         });

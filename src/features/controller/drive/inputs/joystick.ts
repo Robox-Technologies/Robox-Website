@@ -1,6 +1,9 @@
 import { ZERO_STICK, type StickInput } from '../mixer'
 import type { InputSource } from './inputSource'
 
+/** Locks the stick to one axis, e.g. a throttle that only slides up and down. */
+export type StickAxis = 'x' | 'y'
+
 /** On-screen stick: drag the knob within the base. Snaps back to centre on release. */
 export class JoystickInput implements InputSource {
     readonly name = 'Joystick'
@@ -16,6 +19,7 @@ export class JoystickInput implements InputSource {
     constructor(
         private readonly base: HTMLElement,
         private readonly knob: HTMLElement,
+        private readonly axis: StickAxis | null = null,
     ) {
         base.addEventListener('pointerdown', this.down)
         base.addEventListener('pointermove', this.move)
@@ -62,9 +66,13 @@ export class JoystickInput implements InputSource {
         if (event.pointerId !== this.pointerId) return
 
         const rect = this.base.getBoundingClientRect()
-        const radius = Math.min(rect.width, rect.height) / 2
+        const radius = this.axis
+            ? Math.max(rect.width, rect.height) / 2
+            : Math.min(rect.width, rect.height) / 2
         let dx = (event.clientX - (rect.left + rect.width / 2)) / radius
         let dy = (event.clientY - (rect.top + rect.height / 2)) / radius
+        if (this.axis === 'x') dy = 0
+        if (this.axis === 'y') dx = 0
 
         const distance = Math.hypot(dx, dy)
         if (distance > 1) {
@@ -88,8 +96,9 @@ export class JoystickInput implements InputSource {
         if (value === ZERO_STICK) delete this.base.dataset.engaged
 
         // Knob travel stops short of the rim so it stays inside the base.
-        const travel = (this.base.clientWidth - this.knob.offsetWidth) / 2
-        this.knob.style.transform = `translate(${value.x * travel}px, ${-value.y * travel}px)`
+        const travelX = (this.base.clientWidth - this.knob.offsetWidth) / 2
+        const travelY = (this.base.clientHeight - this.knob.offsetHeight) / 2
+        this.knob.style.transform = `translate(${value.x * travelX}px, ${-value.y * travelY}px)`
     }
 
     dispose(): void {

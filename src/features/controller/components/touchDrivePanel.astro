@@ -1,0 +1,191 @@
+---
+import { faHouse, faStop } from "@fortawesome/free-solid-svg-icons"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import Button from "@/components/button"
+---
+
+<div
+    class="controllerTouchDrivePanel fixed inset-0 z-50 flex select-none items-center gap-4 bg-primary"
+    style="padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); -webkit-touch-callout: none;"
+>
+    <div class="flex flex-1 justify-center">
+        <div
+            class="controller-throttle relative h-[min(20rem,75vh)] w-28 touch-none rounded-full bg-tone2 box-shadow"
+            role="application"
+            aria-label="Throttle"
+        >
+            <div class="pointer-events-none absolute inset-x-4 top-1/2 h-0.5 bg-secondary"></div>
+            <div class="controller-throttle-knob pointer-events-none absolute inset-0 m-auto size-24 rounded-full bg-black"></div>
+        </div>
+    </div>
+
+    <div class="flex w-56 shrink-0 flex-col items-stretch gap-4">
+        <div class="flex items-center justify-center gap-2 text-sm">
+            <span class="controller-link-dot size-2.5 shrink-0 rounded-full bg-tone3"></span>
+            <span class="controller-link-status">Not connected</span>
+        </div>
+        <button
+            type="button"
+            class="controller-stop button-interactive flex items-center justify-center gap-3 rounded-2xl bg-red px-6 py-5 text-2xl font-bold text-white"
+        >
+            <FontAwesomeIcon icon={faStop} />
+            Stop
+        </button>
+        <div class="flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+                <label for="controller-speed" class="text-sm font-semibold">Max speed</label>
+                <span class="controller-speed-readout text-sm font-bold">60%</span>
+            </div>
+            <input type="range" id="controller-speed" class="controller-speed" min="20" max="100" step="5" value="60" />
+        </div>
+        <Button href="/hub" className="controller-return-link justify-center bg-black">
+            <FontAwesomeIcon icon={faHouse} className="mr-2" />
+            <span class="controller-return-label text-white!">Return to Student Hub</span>
+        </Button>
+    </div>
+
+    <div class="flex flex-1 justify-center">
+        <div
+            class="controller-steering relative h-28 w-[min(20rem,35vw)] touch-none rounded-full bg-tone2 box-shadow"
+            role="application"
+            aria-label="Steering"
+        >
+            <div class="pointer-events-none absolute inset-y-4 left-1/2 w-0.5 bg-secondary"></div>
+            <div class="controller-steering-knob pointer-events-none absolute inset-0 m-auto size-24 rounded-full bg-black"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    import { dispatchStageAdvance, dispatchStageError } from "@/components/stageFlow";
+    import { controllerLink } from "../protocol/controllerLink";
+    import { DriveLoop } from "../drive/driveLoop";
+    import { DEFAULT_MIX } from "../drive/mixer";
+    import { LINK_DOT_CLASSES, hubHomeUrl, linkStatusText, loadMaxSpeed, projectReturnUrl, saveMaxSpeed } from "../drive/panelState";
+    import { JoystickInput } from "../drive/inputs/joystick";
+    import { DualStickInput } from "../drive/inputs/dualStick";
+    import { KeyboardInput, isTextEntryTarget } from "../drive/inputs/keyboard";
+    import { GamepadInput } from "../drive/inputs/gamepad";
+
+    const NAMESPACE = "controller";
+
+    document.querySelectorAll<HTMLDivElement>(".controllerTouchDrivePanel").forEach((root) => {
+        const find = <T extends HTMLElement>(selector: string) => {
+            const element = root.querySelector<T>(selector);
+            if (!element) throw new Error(`Drive panel element ${selector} not found`);
+            return element;
+        };
+
+        const flowRoot = root.closest<HTMLElement>("[data-stage-flow-root]");
+        const stage = root.closest<HTMLElement>(".stageFlowStage");
+        if (!flowRoot || !stage) throw new Error("Drive panel must sit inside the controller stage flow");
+        const stageElement = stage;
+
+        const speed = find<HTMLInputElement>(".controller-speed");
+        const speedReadout = find(".controller-speed-readout");
+        const linkDot = find(".controller-link-dot");
+        const linkStatus = find(".controller-link-status");
+        const returnLink = find<HTMLAnchorElement>(".controller-return-link");
+        const returnLabel = find(".controller-return-label");
+
+        // Held like a gamepad: throttle under the left thumb, steering under the right.
+        const sticks = new DualStickInput(
+            new JoystickInput(find(".controller-throttle"), find(".controller-throttle-knob"), "y"),
+            new JoystickInput(find(".controller-steering"), find(".controller-steering-knob"), "x"),
+        );
+        const keyboard = new KeyboardInput();
+        const gamepad = new GamepadInput();
+
+        speed.value = loadMaxSpeed() ?? speed.value;
+        speedReadout.textContent = `${speed.value}%`;
+        speed.addEventListener("input", () => {
+            speedReadout.textContent = `${speed.value}%`;
+            saveMaxSpeed(speed.value);
+        });
+
+        const loop = new DriveLoop({
+            link: controllerLink,
+            sources: [sticks, keyboard, gamepad],
+            mix: () => ({ ...DEFAULT_MIX, maxSpeed: Number(speed.value) / 100 }),
+        });
+
+        function emergencyStop() {
+            sticks.release();
+            loop.emergencyStop();
+        }
+
+        find<HTMLButtonElement>(".controller-stop").addEventListener("click", emergencyStop);
+        window.addEventListener("keydown", (event) => {
+            if (event.code !== "Space" || !onDriveStage() || isTextEntryTarget(event.target)) return;
+            event.preventDefault();
+            emergencyStop();
+        });
+
+        function showLink() {
+            const state = controllerLink.state;
+            Object.values(LINK_DOT_CLASSES).forEach((name) => linkDot.classList.remove(name));
+            linkDot.classList.add(LINK_DOT_CLASSES[state]);
+            linkStatus.textContent = linkStatusText(state);
+        }
+
+        let leaving = false;
+
+        function onDriveStage() {
+            return stageElement.style.display !== "none" && !stageElement.classList.contains("hidden");
+        }
+
+        function sync() {
+            if (onDriveStage() && controllerLink.active) {
+                loop.start();
+            } else {
+                loop.stop();
+            }
+            showLink();
+        }
+
+        flowRoot.addEventListener(`${NAMESPACE}:stage-changed`, () => {
+            if (onDriveStage() && !controllerLink.active) {
+                dispatchStageAdvance(root, NAMESPACE, "connect");
+                return;
+            }
+            // Back on the connect stage: hand the board back to the framed protocol.
+            if (!onDriveStage() && controllerLink.active) void controllerLink.close();
+            sync();
+        });
+
+        controllerLink.on("state", (state) => {
+            sync();
+            if (state !== "idle" || leaving || !onDriveStage()) return;
+            dispatchStageAdvance(root, NAMESPACE, "connect");
+            dispatchStageError(
+                root,
+                NAMESPACE,
+                "Controller Stopped",
+                "The connection to your Ro/Box was lost. Reconnect to keep driving.",
+            );
+        });
+
+        // Landing straight on ?step=drive has no link yet.
+        if (onDriveStage() && !controllerLink.active) {
+            dispatchStageAdvance(root, NAMESPACE, "connect");
+        }
+        sync();
+
+        const projectId = new URLSearchParams(window.location.search).get("id");
+        returnLink.href = hubHomeUrl();
+        if (projectId) {
+            returnLink.href = projectReturnUrl(projectId).toString();
+            returnLabel.textContent = "Return to Project";
+        }
+
+        returnLink.addEventListener("click", (event) => {
+            event.preventDefault();
+            leaving = true;
+            loop.stop();
+            void controllerLink.close().finally(() => {
+                const url = projectId ? projectReturnUrl(projectId) : new URL(returnLink.href, window.location.href);
+                window.location.assign(url.toString());
+            });
+        });
+    });
+</script>

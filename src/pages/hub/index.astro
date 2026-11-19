@@ -7,6 +7,9 @@ import Article from '@/components/article/Article';
 import StudentResources from '@/features/studentHub/studentResources/studentResources.astro';
 import StudentProjects from '@/features/studentHub/studentProjects/studentProjects.astro';
 import { Image } from 'astro:assets';
+import { faGamepad } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Button from '@/components/button';
 const isIOSBuild = process.env.IOS_BUILD === 'true';
 ---
 <StandardLayout
@@ -23,6 +26,10 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
                 Support for this app is done separately to our website.<br>
                 If you encounter any bugs/issues, reach out to us at <a href="mailto:hello@robox.com.au" class="text-primary">hello@robox.com.au</a>.
             </p>
+            <Button id="hub-controller-link" href="controller/index.html" className="mt-8 bg-blue text-xl">
+                <FontAwesomeIcon icon={faGamepad} className="mr-2" />
+                <span class="text-white!">Drive your Ro/Box</span>
+            </Button>
         </AppHero>
         :
         <PageHero gradient='positive' className='bg-black' lineWidth='20px' overlap='10vw'>
@@ -53,3 +60,9 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         <StudentProjects  />
     </Article>
 </StandardLayout>
+<script>
+    import { hubHref } from "@/features/studentHub/studentProjects/utils/editorHref";
+
+    const controllerLink = document.querySelector<HTMLAnchorElement>("#hub-controller-link");
+    if (controllerLink) controllerLink.href = hubHref("controller/index.html");
+</script>

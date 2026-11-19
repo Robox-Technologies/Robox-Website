@@ -1,10 +1,14 @@
 /**
- * URL of the editor for a project. Derived from where the hub is served, since it's
- * `/hub` on the web and the root in the iOS build; a relative path 404s on `/hub`.
+ * URL of a page under the hub, from the hub home. Derived from where the hub is served,
+ * since it's `/hub` on the web and the root in the iOS build; a relative path 404s on `/hub`.
  */
-export function editorHref(id: string): string {
+export function hubHref(page: string): string {
     if (typeof window === 'undefined') return ''
 
     const hubPath = window.location.pathname.replace(/\/(index\.html)?$/, '')
-    return `${hubPath}/editor/index.html?id=${encodeURIComponent(id)}`
+    return `${hubPath}/${page}`
+}
+
+export function editorHref(id: string): string {
+    return hubHref(`editor/index.html?id=${encodeURIComponent(id)}`)
 }
