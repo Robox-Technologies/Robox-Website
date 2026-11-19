@@ -19,7 +19,6 @@ try:
     color_sensor = ColorSensor()
 except Exception:
     generatePrint("error", "Cannot connect to colour sensor, is it on?")
-motors = Motors()
 motor_speed = 80
 `
 export const ExtensionsPreamble: Record<ExtensionKey, string> = {
