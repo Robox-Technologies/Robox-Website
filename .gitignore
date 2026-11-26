@@ -31,3 +31,5 @@ pnpm-debug.log*
 
 .vscode/
 main.py
+# Working notes: plans, reviews, checklists
+handoffs/

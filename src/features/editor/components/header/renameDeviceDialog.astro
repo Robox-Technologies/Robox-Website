@@ -1,7 +1,8 @@
 ---
-import { faTag, faXmark } from "@fortawesome/free-solid-svg-icons"
+import { faTag } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
+import ModalDialog from "@/components/modalDialog.astro"
 import roboxImage from "@/images/shop/products/robox/thumbnail.jpg"
 ---
 
@@ -16,69 +17,59 @@ import roboxImage from "@/images/shop/products/robox/thumbnail.jpg"
     Rename Ro/Box
 </button>
 
-<dialog
+<ModalDialog
     id="rename-device-dialog"
-    class="modal fixed inset-0 z-50 m-0 h-screen w-screen max-h-none max-w-none border-0 bg-black/45 p-4 text-black backdrop:bg-black/45 open:flex open:items-center open:justify-center"
+    closeLabel="Close rename dialog"
+    panelClass="items-center px-8 py-8 text-center sm:px-14 sm:py-10"
 >
-    <div class="relative flex w-full max-w-lg flex-col items-center rounded-3xl bg-white px-8 py-8 text-center shadow-2xl sm:px-14 sm:py-10">
-        <button
-            type="button"
-            id="rename-device-close"
-            class="button-interactive absolute right-4 top-4 rounded-lg px-3 py-2 text-gray-600"
-            aria-label="Close rename dialog"
-        >
-            <FontAwesomeIcon icon={faXmark} />
-        </button>
+    <img
+        src={roboxImage.src}
+        alt="Ro/Box"
+        class="mb-5 w-48 rounded-2xl object-contain sm:w-56"
+    />
+    <p class="text-lg font-bold text-gray-500">Connected to Ro/Box</p>
+    <h2 id="rename-device-dialog-title" class="mt-2 text-3xl font-extrabold leading-tight text-black sm:text-4xl">
+        Give your Ro/Box a unique name.
+    </h2>
 
-        <img
-            src={roboxImage.src}
-            alt="Ro/Box"
-            class="mb-5 w-48 rounded-2xl object-contain sm:w-56"
-        />
-        <p class="text-lg font-bold text-gray-500">Connected to Ro/Box</p>
-        <h2 class="mt-2 text-3xl font-extrabold leading-tight text-black sm:text-4xl">
-            Give your Ro/Box a unique name.
-        </h2>
-
-        <div class="mt-8 w-full">
-            <div id="rename-device-form" class="hidden">
-                <div class="flex flex-col items-center gap-3">
-                    <label class="sr-only" for="rename-device-input">New name</label>
-                    <input
-                        type="text"
-                        id="rename-device-input"
-                        maxlength="16"
-                        autocomplete="off"
-                        placeholder="e.g. Robox42"
-                        class="w-full border-0 border-b-2 border-gray-300 bg-transparent px-2 py-2 text-center text-lg text-black outline-none focus:border-blue"
-                    />
-                    <p class="text-xs text-gray-500">
-                        1-16 characters: letters, numbers, underscores, or hyphens only.
-                    </p>
-                    <p id="rename-device-status" class="hidden text-sm text-gray-600">
-                        Renaming - this can take a few seconds...
-                    </p>
-                    <p id="rename-device-error" class="hidden text-sm text-red-600"></p>
-                    <Button type="button" id="rename-device-submit" className="mt-5 rounded-full! border-2 border-blue bg-white! px-8! text-lg font-bold text-blue! shadow-none" disabled>
-                        Done
-                    </Button>
-                </div>
+    <div class="mt-8 w-full">
+        <div id="rename-device-form" class="hidden">
+            <div class="flex flex-col items-center gap-3">
+                <label class="sr-only" for="rename-device-input">New name</label>
+                <input
+                    type="text"
+                    id="rename-device-input"
+                    maxlength="16"
+                    autocomplete="off"
+                    placeholder="e.g. Robox42"
+                    class="w-full border-0 border-b-2 border-gray-300 bg-transparent px-2 py-2 text-center text-lg text-black outline-none focus:border-blue"
+                />
+                <p class="text-xs text-gray-500">
+                    1-16 characters: letters, numbers, underscores, or hyphens only.
+                </p>
+                <p id="rename-device-status" class="hidden text-sm text-gray-600">
+                    Renaming - this can take a few seconds...
+                </p>
+                <p id="rename-device-error" class="hidden text-sm text-red-600"></p>
+                <Button type="button" id="rename-device-submit" className="mt-5 rounded-full! border-2 border-blue bg-white! px-8! text-lg font-bold text-blue! shadow-none" disabled>
+                    Done
+                </Button>
             </div>
-
-            <p id="rename-device-disconnected" class="hidden text-sm text-gray-600">
-                Connect your Ro/Box before renaming it.
-            </p>
-
-            <p id="rename-device-success" class="hidden text-sm">
-                Renamed to <strong id="rename-device-success-name"></strong>.
-                <span id="rename-device-reconnect-status">
-                    Your Ro/Box is reconnecting under its new name - this can take up to
-                    15 seconds.
-                </span>
-            </p>
         </div>
+
+        <p id="rename-device-disconnected" class="hidden text-sm text-gray-600">
+            Connect your Ro/Box before renaming it.
+        </p>
+
+        <p id="rename-device-success" class="hidden text-sm">
+            Renamed to <strong id="rename-device-success-name"></strong>.
+            <span id="rename-device-reconnect-status">
+                Your Ro/Box is reconnecting under its new name - this can take up to
+                15 seconds.
+            </span>
+        </p>
     </div>
-</dialog>
+</ModalDialog>
 
 <script>
     import { pico } from "@/libs/communication/communicate"
@@ -88,7 +79,6 @@ import roboxImage from "@/images/shop/products/robox/thumbnail.jpg"
 
     const dialog = document.getElementById("rename-device-dialog") as HTMLDialogElement | null
     const openButton = document.getElementById("rename-device-button") as HTMLButtonElement | null
-    const closeButton = document.getElementById("rename-device-close") as HTMLButtonElement | null
     const disconnectedNotice = document.getElementById("rename-device-disconnected") as HTMLParagraphElement | null
     const form = document.getElementById("rename-device-form") as HTMLDivElement | null
     const input = document.getElementById("rename-device-input") as HTMLInputElement | null
@@ -100,7 +90,7 @@ import roboxImage from "@/images/shop/products/robox/thumbnail.jpg"
     const reconnectStatus = document.getElementById("rename-device-reconnect-status") as HTMLElement | null
 
     if (
-        !dialog || !openButton || !closeButton || !disconnectedNotice || !form ||
+        !dialog || !openButton || !disconnectedNotice || !form ||
         !input || !statusText || !errorText || !submitButton || !successText || !successName ||
         !reconnectStatus
     ) {
@@ -136,11 +126,6 @@ import roboxImage from "@/images/shop/products/robox/thumbnail.jpg"
     function updateOpenButton(connected: boolean) {
         openButton!.disabled = !connected
         openButton!.setAttribute("aria-disabled", String(!connected))
-    }
-
-    function closeDialog() {
-        if (!dialog!.open) return
-        dialog!.close()
     }
 
     function resetForm() {
@@ -184,19 +169,6 @@ import roboxImage from "@/images/shop/products/robox/thumbnail.jpg"
         resetForm()
         applyView("form")
         dialog.showModal()
-    })
-
-    closeButton.addEventListener("click", closeDialog)
-
-    document.addEventListener("click", (event) => {
-        if (dialog.open && event.target instanceof Element && event.target === dialog) {
-            closeDialog()
-        }
-    })
-
-    dialog.addEventListener("cancel", (event) => {
-        event.preventDefault()
-        closeDialog()
     })
 
     input.addEventListener("input", updateSubmitDisabled)

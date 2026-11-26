@@ -1,5 +1,6 @@
 ---
 import extensions from '@/data/extensions.json'
+import ModalDialog from '@/components/modalDialog.astro'
 
 // Each extension shows the toolbox tab it adds, so students know where to look.
 const rows = Object.entries(extensions).map(([key, extension]) => {
@@ -25,61 +26,44 @@ const rows = Object.entries(extensions).map(([key, extension]) => {
     <i class="fa-solid fa-puzzle-piece fa-xl"></i>
 </button>
 
-<dialog
+<ModalDialog
     id="extensions-dialog"
-    aria-labelledby="extensions-dialog-title"
-    class="modal fixed inset-0 z-50 m-0 h-screen w-screen max-h-none max-w-none border-0 bg-black/45 p-4 text-black backdrop:bg-black/45 open:flex open:items-center open:justify-center"
+    title="Extensions"
+    subtitle="Turn on extra blocks for this project."
+    closeLabel="Close extensions"
 >
-    <div class="relative flex max-h-[80vh] w-full max-w-lg flex-col rounded-3xl bg-white shadow-2xl">
-        <button
-            type="button"
-            id="extensions-dialog-close"
-            class="button-interactive absolute right-4 top-4 rounded-lg px-3 py-2 text-gray-600"
-            aria-label="Close extensions"
-        >
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-
-        <div class="px-8 pt-8 pb-3 pr-16">
-            <h2 id="extensions-dialog-title" class="text-3xl font-extrabold leading-tight">
-                Extensions
-            </h2>
-            <p class="mt-1 text-gray-500">Turn on extra blocks for this project.</p>
-        </div>
-
-        <ul class="divide-y divide-gray-200 overflow-y-auto px-4 pb-4">
-            {rows.map(({ key, name, description, icon, categoryStyle }) => (
-                <li class="py-1">
-                    <button
-                        type="button"
-                        role="switch"
-                        aria-checked="false"
-                        data-extension-toggle={key}
-                        class="group button-interactive flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
+    <ul class="divide-y divide-gray-200 overflow-y-auto px-4 pb-4">
+        {rows.map(({ key, name, description, icon, categoryStyle }) => (
+            <li class="py-1">
+                <button
+                    type="button"
+                    role="switch"
+                    aria-checked="false"
+                    data-extension-toggle={key}
+                    class="group button-interactive flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
+                >
+                    <span
+                        class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gray-400 text-xl text-white"
+                        data-category-style={categoryStyle}
+                        aria-hidden="true"
                     >
-                        <span
-                            class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gray-400 text-xl text-white"
-                            data-category-style={categoryStyle}
-                            aria-hidden="true"
-                        >
-                            <i class={icon}></i>
-                        </span>
-                        <span class="min-w-0 flex-1">
-                            <span class="block text-lg font-bold">{name}</span>
-                            <span class="block text-sm text-gray-500">{description}</span>
-                        </span>
-                        <span
-                            class="flex h-7 w-12 shrink-0 items-center rounded-full bg-gray-200 p-1 transition-colors group-aria-checked:bg-green"
-                            aria-hidden="true"
-                        >
-                            <span class="size-5 rounded-full bg-white shadow transition-[translate] duration-200 group-aria-checked:translate-x-5"></span>
-                        </span>
-                    </button>
-                </li>
-            ))}
-        </ul>
-    </div>
-</dialog>
+                        <i class={icon}></i>
+                    </span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-lg font-bold">{name}</span>
+                        <span class="block text-sm text-gray-500">{description}</span>
+                    </span>
+                    <span
+                        class="flex h-7 w-12 shrink-0 items-center rounded-full bg-gray-200 p-1 transition-colors group-aria-checked:bg-green"
+                        aria-hidden="true"
+                    >
+                        <span class="size-5 rounded-full bg-white shadow transition-[translate] duration-200 group-aria-checked:translate-x-5"></span>
+                    </span>
+                </button>
+            </li>
+        ))}
+    </ul>
+</ModalDialog>
 
 <script>
     import extensions from '@/data/extensions.json'
@@ -95,14 +79,13 @@ const rows = Object.entries(extensions).map(([key, extension]) => {
     import roboxTheme from '@/features/editor/editors/blockEditor/config/roboxTheme'
     import '@/features/editor/editors/blockEditor/config/toolboxIcons'
     import { dom, library } from '@fortawesome/fontawesome-svg-core'
-    import { faPuzzlePiece, faXmark } from '@fortawesome/free-solid-svg-icons'
+    import { faPuzzlePiece } from '@fortawesome/free-solid-svg-icons'
 
-    library.add(faPuzzlePiece, faXmark)
+    library.add(faPuzzlePiece)
     dom.watch()
 
     const dialog = document.getElementById('extensions-dialog') as HTMLDialogElement | null
     const button = document.getElementById('extensions-dialog-button') as HTMLButtonElement | null
-    const closeButton = document.getElementById('extensions-dialog-close') as HTMLButtonElement | null
     const toggleButtons = Array.from(document.querySelectorAll('[data-extension-toggle]')) as HTMLButtonElement[]
 
     const setToggleState = (extensionKey: string, enabled: boolean) => {
@@ -120,36 +103,10 @@ const rows = Object.entries(extensions).map(([key, extension]) => {
     }
 
     if (dialog && button) {
-        const closeDialog = () => {
-            if (!dialog.open) return
-            dialog.close()
-        }
-
         button.addEventListener('click', (event) => {
             event.stopPropagation()
 
-            if (dialog.open) {
-                closeDialog()
-            } else {
-                void syncToggles().then(() => dialog.showModal())
-            }
-        })
-
-        closeButton?.addEventListener('click', closeDialog)
-
-        document.addEventListener('click', (event) => {
-            if (
-                dialog.open &&
-                event.target instanceof Element &&
-                event.target === dialog
-            ) {
-                closeDialog()
-            }
-        })
-
-        dialog.addEventListener('cancel', (event) => {
-            event.preventDefault()
-            closeDialog()
+            void syncToggles().then(() => dialog.showModal())
         })
 
         // Read on every open: the editor can turn extensions on after load.
