@@ -63,4 +63,12 @@ const titleId = `${id}-title`
             if (event.target === dialog) dialog.close()
         })
     })
+
+    // Any `data-open-modal="<dialog id>"` element opens that dialog.
+    document.querySelectorAll<HTMLElement>('[data-open-modal]').forEach((opener) => {
+        opener.addEventListener('click', () => {
+            const dialog = document.getElementById(opener.dataset.openModal ?? '')
+            if (dialog instanceof HTMLDialogElement) dialog.showModal()
+        })
+    })
 </script>
