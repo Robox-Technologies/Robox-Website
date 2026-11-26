@@ -1,9 +1,5 @@
 import type { ExtensionKey } from 'src/types/extensions'
-import type {
-    BlockInfo,
-    ToolboxDefinition,
-    ToolboxItemInfo,
-} from 'node_modules/blockly/core/utils/toolbox'
+import type { BlockInfo } from 'node_modules/blockly/core/utils/toolbox'
 import baseToolbox from './baseToolbox.json'
 
 // TS infers JSON arrays by giving each element its siblings' keys as `?: undefined`,
@@ -26,9 +22,31 @@ export type BaseToolboxConfig = {
 }
 const baseToolboxConfig: BaseToolboxConfig = baseToolbox
 
-const ServoCategory: ToolboxItemInfo = {
+type BaseGroup = (typeof baseToolbox.groups)[number]
+export type BaseCategoryId = BaseGroup extends unknown ? keyof BaseGroup : never
+
+// Blockly's category types omit `toolboxitemid`, which is how we address categories.
+export type RoboxCategory = BaseToolboxCategory & {
+    kind: 'category'
+    toolboxitemid: string
+}
+export type RoboxToolbox = {
+    kind: 'categoryToolbox'
+    contents: (RoboxCategory | { kind: 'sep' })[]
+}
+
+// `after` anchors on a category id / block type; without it the item is appended.
+export type ExtensionContribution = {
+    categories?: { after?: BaseCategoryId; category: RoboxCategory }[]
+    blocks?: Partial<
+        Record<BaseCategoryId, { after?: string; block: ToolboxBlock }[]>
+    >
+}
+
+const ServoCategory: RoboxCategory = {
     kind: 'category',
     name: 'Servo',
+    toolboxitemid: 'servo',
     cssconfig: {
         icon: 'categoryIcon fa fa-arrows-rotate',
     },
@@ -72,17 +90,21 @@ const ServoCategory: ToolboxItemInfo = {
         },
     ],
 }
-export const ExtensionCategories: Record<ExtensionKey, ToolboxItemInfo> = {
-    SERVO: ServoCategory,
+export const ExtensionToolbox: Record<ExtensionKey, ExtensionContribution> = {
+    SERVO: { categories: [{ category: ServoCategory }] },
 }
-export const BaseToolbox: ToolboxDefinition = {
+export const BaseToolbox: RoboxToolbox = {
     kind: 'categoryToolbox',
     contents: baseToolboxConfig.groups.flatMap((group) => [
-        ...Object.entries(group).map(([id, category]) => ({
-            kind: 'category',
-            toolboxitemid: id,
-            ...category,
-        })),
-        { kind: 'sep' },
+        ...Object.entries(group)
+            .filter(
+                (entry): entry is [string, BaseToolboxCategory] => !!entry[1],
+            )
+            .map(([id, category]) => ({
+                kind: 'category' as const,
+                toolboxitemid: id,
+                ...category,
+            })),
+        { kind: 'sep' as const },
     ]),
 }
