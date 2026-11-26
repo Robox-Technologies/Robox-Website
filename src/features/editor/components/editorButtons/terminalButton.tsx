@@ -11,22 +11,19 @@ export default function TerminalButton({
 }) {
     const { connectionStatus } = usePico()
     const connected =
+        connectionStatus !== ConnectionStatus.CONNECTING &&
         connectionStatus !== ConnectionStatus.DISCONNECTED &&
         connectionStatus !== ConnectionStatus.DISCONNECTING
+    if (!connected) return null
     return (
         <Button
             icon={faTerminal}
             id="terminalButton"
-            className={`flex items-center w-10 h-10 justify-center border-2 rounded-full bg-white box-shadow pointer-events-auto 
-                ${connected ? 'border-green' : 'border-gray-500'}`}
-            iconStyle={`text-xl
-                ${connected ? 'text-green' : 'text-gray-500'}
-            `}
-            disabled={!connected}
-            onClick={() => {
-                if (!connected) return
-                setIsOpen(true)
-            }}
+            title="Open terminal output"
+            aria-label="Open terminal output"
+            className="flex items-center w-10 h-10 justify-center border-2 border-green rounded-full bg-white box-shadow pointer-events-auto"
+            iconStyle="text-xl text-green"
+            onClick={() => setIsOpen(true)}
         />
     )
 }

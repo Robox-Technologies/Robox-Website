@@ -1,6 +1,6 @@
 ---
-import TerminalDialog from "../terminalDialog";
 import CommunicationMethodToggle from "@/components/communicationMethodToggle.astro";
+import DisconnectButton from "./disconnectButton.astro";
 
 // The iOS app only ever talks over its own BLE plugin, so there's no method
 // to pick — the toggle doesn't ship in that build at all.
@@ -8,10 +8,19 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
 ---
 <div class="communicationSlot" data-ios-build={isIOSBuild ? "true" : "false"}>
     {!isIOSBuild && <CommunicationMethodToggle />}
-    <div class:list={["terminalDialogSlot", { hidden: !isIOSBuild }]}>
-        <TerminalDialog client:only="react" />
-    </div>
+    <DisconnectButton />
 </div>
+<style>
+    /* One shared cell, so the disconnect pill takes the toggle's exact spot. */
+    .communicationSlot {
+        display: grid;
+        justify-items: end;
+        align-items: center;
+    }
+    .communicationSlot > :global(*) {
+        grid-area: 1 / 1;
+    }
+</style>
 <script>
     // Astro includes this script once, but both editor bodies render a copy of the
     // component, so wire up every instance.
@@ -26,27 +35,23 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
         // Set once regardless of how many instances are on the page.
         void pico.setCommunicationMethod("iOSBluetooth");
     } else {
-        // Once we're actually talking to a Ro/Box there's no method left to
-        // pick, so the toggle makes way for the terminal button.
-        const isConnected = (status: ConnectionStatus) =>
-            status !== ConnectionStatus.CONNECTING &&
-            status !== ConnectionStatus.DISCONNECTED &&
-            status !== ConnectionStatus.DISCONNECTING
+        // Once there's a connection there's no method left to pick, so the
+        // toggle makes way for the disconnect button (which shows itself).
+        const showsToggle = (status: ConnectionStatus) =>
+            status === ConnectionStatus.DISCONNECTED ||
+            status === ConnectionStatus.CONNECTING
 
         roots.forEach((root) => {
             const toggle = root.querySelector<HTMLDivElement>(
                 ".communicationMethodToggle",
             );
-            const terminalSlot = root.querySelector<HTMLDivElement>(
-                ".terminalDialogSlot",
-            );
-            if (!toggle || !terminalSlot)
-                throw new Error("Communication slot elements not found");
+            if (!toggle) throw new Error("Communication method toggle not found");
 
             const updateVisibility = (state: PicoState) => {
-                const connected = isConnected(state.connectionStatus);
-                toggle!.classList.toggle("hidden", connected);
-                terminalSlot!.classList.toggle("hidden", !connected);
+                toggle.classList.toggle(
+                    "hidden",
+                    !showsToggle(state.connectionStatus),
+                );
             }
 
             updateVisibility(pico.getState());

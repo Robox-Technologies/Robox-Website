@@ -42,7 +42,8 @@ export default function Dialog({
         }
     }, [isOpen])
     return (
-        <div>
+        // A trigger that renders nothing shouldn't leave a gap in a flex row.
+        <div className="empty:hidden">
             {trigger(setIsOpen)}
 
             {isOpen &&
