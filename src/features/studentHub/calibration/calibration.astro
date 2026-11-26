@@ -5,49 +5,38 @@ import Connect from './components/connect.astro';
 interface Props {
     namespace: string
     calibration: 'colors' | 'motors'
-    title: string
+    /** Off in the editor: already connected, so no stepper or connect controls. */
+    showConnect?: boolean
 }
 
-const { namespace, calibration, title } = Astro.props;
-const initialStage = Astro.url.searchParams.get('step') === 'calibrate'
-    ? 'calibrate'
-    : 'connect';
+const { namespace, calibration, showConnect = true } = Astro.props;
 ---
-<div
-    class="calibration flex flex-col gap-6"
-    data-stage-flow-root
-    data-initial-stage={initialStage}
->
-    <StageStepper
-        namespace={namespace}
-        stages={['connect', 'calibrate']}
-        stageLabels={{ connect: 'Connect', calibrate: 'Calibrate' }}
-    />
-    <div class="stageFlowStages overflow-hidden rounded-3xl bg-white box-shadow transition-[height] duration-300 ease-out motion-reduce:transition-none">
-        <div
-            class:list={["stageFlowStage flex flex-col gap-4 p-6", { hidden: initialStage !== "connect" }]}
-            style={initialStage === "connect" ? undefined : "display: none"}
-            data-stage="connect"
-        >
-            <h2 class="text-xl font-bold text-black">Step 1: Connect your Ro/Box</h2>
-            <Connect namespace={namespace} calibration={calibration} />
+{/* Lives inside a calibration dialog, which supplies the panel and title. */}
+<div class="calibration flex flex-col gap-6" data-stage-flow-root data-namespace={namespace}>
+    {showConnect && (
+        <StageStepper
+            namespace={namespace}
+            stages={['connect', 'calibrate']}
+            stageLabels={{ connect: 'Connect', calibrate: 'Calibrate' }}
+        />
+    )}
+    <div class="stageFlowStages overflow-hidden transition-[height] duration-300 ease-out motion-reduce:transition-none">
+        <div class="stageFlowStage flex flex-col gap-4 py-1" data-stage="connect">
+            {showConnect && <h2 class="text-xl font-bold text-black">Step 1: Connect your Ro/Box</h2>}
+            <Connect namespace={namespace} calibration={calibration} showControls={showConnect} />
         </div>
-        <div
-            class:list={["stageFlowStage flex flex-col gap-4 p-6", { hidden: initialStage !== "calibrate" }]}
-            style={initialStage === "calibrate" ? undefined : "display: none"}
-            data-stage="calibrate"
-        >
-            <h2 class="text-xl font-bold text-black">{title}</h2>
+        <div class="stageFlowStage hidden flex flex-col gap-4 py-1" style="display: none" data-stage="calibrate">
             <slot />
         </div>
     </div>
 </div>
 <script>
-    import { createStageFlow } from "@/components/stageFlow";
+    import { createStageFlow, dispatchStageAdvance } from "@/components/stageFlow";
 
     document.querySelectorAll<HTMLDivElement>("[data-stage-flow-root].calibration").forEach((root) => {
-        const namespace = root.querySelector<HTMLElement>(".stageStepper")?.dataset.namespace;
-        if (!namespace) throw new Error("Calibration stage namespace not found");
+        const namespace = root.dataset.namespace;
+        const dialog = root.closest("dialog");
+        if (!namespace || !dialog) throw new Error("Calibration must sit inside a dialog with a namespace");
 
         createStageFlow({
             root,
@@ -55,7 +44,12 @@ const initialStage = Astro.url.searchParams.get('step') === 'calibrate'
             stages: ["connect", "calibrate"],
             isStage: (value): value is "connect" | "calibrate" =>
                 value === "connect" || value === "calibrate",
-            stageParam: "step",
         });
+
+        // Back to Connect on open (it re-checks the Ro/Box and moves on) and on
+        // close (so a hidden Calibrate stage stops reacting to the Ro/Box).
+        // `showModal()`/`close()` only toggle the `open` attribute; there's no open event.
+        new MutationObserver(() => dispatchStageAdvance(root, namespace, "connect"))
+            .observe(dialog, { attributes: true, attributeFilter: ["open"] });
     });
 </script>

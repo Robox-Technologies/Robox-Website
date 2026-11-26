@@ -3,7 +3,6 @@ import { faMicrochip, faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faStop,
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
 import MotorToggle from "./motorToggle.astro"
-import ReturnButton from "@/features/studentHub/components/returnButton.astro"
 import motorImage from "../images/Motor.png"
 
 const driveButtonClass = "button-interactive flex h-11 items-center justify-center gap-2 rounded-xl border-2 font-semibold"
@@ -86,8 +85,7 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
         </div>
     </div>
 
-    <div class="flex flex-wrap items-center justify-between gap-4">
-        <ReturnButton handoff />
+    <div class="flex flex-wrap items-center justify-end gap-4">
         <Button id="motor-calibrate-reset" className="border-2 border-black bg-white text-black">
             <FontAwesomeIcon icon={faRotateLeft} className="mr-2" />
             Reset to defaults
@@ -296,10 +294,22 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
             animationFrame = requestAnimationFrame(tick);
         };
 
+        const ownStage = root.closest<HTMLElement>(".stageFlowStage");
+        const dialog = root.closest("dialog");
+        const isVisible = () =>
+            !ownStage?.classList.contains("hidden") && (!dialog || dialog.open);
+
         // A dropped connection sends the student back to Connect; the toast
         // only shows for a real drop, not for arriving here disconnected.
         let wasConnected = false;
         const updateConnectionUI = (state: PicoState) => {
+            // Hidden (e.g. a closed dialog): nothing to animate, and a drop isn't ours to report.
+            if (!isVisible()) {
+                if (animationFrame !== null) cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+                wasConnected = false;
+                return;
+            }
             if (state.connectionStatus !== ConnectionStatus.CONNECTED) {
                 if (animationFrame !== null) cancelAnimationFrame(animationFrame);
                 animationFrame = null;
@@ -325,6 +335,12 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
         };
 
         pico.on("stateChange", updateConnectionUI);
+        root.closest("[data-stage-flow-root]")?.addEventListener("motorcalibration:stage-changed", () =>
+            updateConnectionUI(pico.getState()),
+        );
+        dialog?.addEventListener("close", () => {
+            if (pico.isConnected()) pico.stopMotors();
+        });
         // Deferred so the page's stage-flow script has registered its
         // listener before a redirect to Connect is dispatched.
         setTimeout(() => updateConnectionUI(pico.getState()), 0);

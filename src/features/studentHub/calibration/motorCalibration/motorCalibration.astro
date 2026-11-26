@@ -1,11 +1,25 @@
 ---
+import ModalDialog from '@/components/modalDialog.astro';
 import Calibration from '@/features/studentHub/calibration/calibration.astro';
 import CalibratePanel from './components/calibratePanel.astro';
+
+interface Props {
+    /** Off in the editor, which is already connected. */
+    showConnect?: boolean
+}
+
+const { showConnect = true } = Astro.props;
 ---
-<Calibration
-    namespace="motorcalibration"
-    calibration="motors"
-    title="Step 2: Calibrate the motors"
+<ModalDialog
+    id="calibrate-motors-dialog"
+    title="Calibrate motors"
+    subtitle="Make your Ro/Box drive straight."
+    closeLabel="Close motor calibration"
+    panelClass="max-w-2xl"
 >
-    <CalibratePanel />
-</Calibration>
+    <div class="min-h-0 overflow-y-auto px-8 pt-2 pb-8">
+        <Calibration namespace="motorcalibration" calibration="motors" showConnect={showConnect}>
+            <CalibratePanel />
+        </Calibration>
+    </div>
+</ModalDialog>

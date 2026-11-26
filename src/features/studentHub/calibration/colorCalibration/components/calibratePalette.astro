@@ -1,7 +1,6 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
-import ReturnButton from '@/features/studentHub/components/returnButton.astro';
 import { COLOR_PALETTE, CALIBRATION_ORDER } from '@/data/colorPalette';
 
 const colorsByName = new Map(COLOR_PALETTE.map((color) => [color.name, color]));
@@ -49,9 +48,6 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
         ))}
     </div>
 
-    <div class="flex flex-wrap gap-4">
-        <ReturnButton handoff />
-    </div>
 </div>
 <script>
     import type { PaletteColorName } from "@/data/colorPalette";

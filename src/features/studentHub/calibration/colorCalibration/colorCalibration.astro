@@ -1,11 +1,25 @@
 ---
+import ModalDialog from '@/components/modalDialog.astro';
 import Calibration from '@/features/studentHub/calibration/calibration.astro';
 import CalibratePalette from './components/calibratePalette.astro';
+
+interface Props {
+    /** Off in the editor, which is already connected. */
+    showConnect?: boolean
+}
+
+const { showConnect = true } = Astro.props;
 ---
-<Calibration
-    namespace="colorcalibration"
-    calibration="colors"
-    title="Step 2: Calibrate the colours"
+<ModalDialog
+    id="calibrate-colours-dialog"
+    title="Calibrate colours"
+    subtitle="Teach your Ro/Box what each colour looks like."
+    closeLabel="Close colour calibration"
+    panelClass="max-w-2xl"
 >
-    <CalibratePalette />
-</Calibration>
+    <div class="min-h-0 overflow-y-auto px-8 pt-2 pb-8">
+        <Calibration namespace="colorcalibration" calibration="colors" showConnect={showConnect}>
+            <CalibratePalette />
+        </Calibration>
+    </div>
+</ModalDialog>
