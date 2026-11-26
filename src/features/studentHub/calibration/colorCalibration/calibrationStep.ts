@@ -19,6 +19,9 @@ const debug = (message: string, details?: unknown) =>
 /** More generous than the firmware check: calibration is a real sensor read, not an echo. */
 const CALIBRATION_TIMEOUT_MS = 6000
 
+/** Every other colour is read through the brightness scale these two set. */
+const BASE_COLOURS: readonly PaletteColorName[] = ['white', 'black']
+
 export interface SwatchButton {
     name: PaletteColorName
     toggleButton: HTMLButtonElement
@@ -62,12 +65,36 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         return !stageElement?.classList.contains('hidden')
     }
 
+    const isCalibrated = (swatch: SwatchButton) =>
+        swatch.toggleButton.getAttribute('aria-checked') === 'true'
+
+    // Other colours wait for white and black. One already calibrated stays
+    // clickable, so it can still be reset.
+    function isLocked(swatch: SwatchButton): boolean {
+        if (BASE_COLOURS.includes(swatch.name) || isCalibrated(swatch)) return false
+        return !swatches
+            .filter((other) => BASE_COLOURS.includes(other.name))
+            .every(isCalibrated)
+    }
+
+    let interactive = true
+    function refreshLocks() {
+        for (const swatch of swatches) {
+            const locked = isLocked(swatch)
+            swatch.toggleButton.toggleAttribute('data-locked', locked)
+            swatch.toggleButton.disabled = !interactive || locked
+            swatch.toggleButton.title = locked
+                ? 'Calibrate white and black first'
+                : isCalibrated(swatch)
+                  ? `Reset ${swatch.name} to default`
+                  : `Calibrate ${swatch.name}`
+        }
+    }
+
     function applySwatchState(swatch: SwatchButton, calibrated: boolean) {
         swatch.check.classList.toggle('hidden!', !calibrated)
         swatch.toggleButton.setAttribute('aria-checked', String(calibrated))
-        swatch.toggleButton.title = calibrated
-            ? `Reset ${swatch.name} to default`
-            : `Calibrate ${swatch.name}`
+        refreshLocks()
     }
 
     function clearTimer() {
@@ -82,9 +109,8 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
     }
 
     function setInteractive(enabled: boolean) {
-        for (const swatch of swatches) {
-            swatch.toggleButton.disabled = !enabled
-        }
+        interactive = enabled
+        refreshLocks()
     }
 
     function finish(after: () => void, succeeded = false) {
@@ -233,6 +259,8 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
             )
         }, CALIBRATION_TIMEOUT_MS)
     }
+
+    refreshLocks()
 
     for (const swatch of swatches) {
         swatch.toggleButton.addEventListener('click', () => {

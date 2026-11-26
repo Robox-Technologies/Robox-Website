@@ -47,6 +47,10 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     import { debugCalibration } from "../stage";
 
     const SENSOR_CHECK_TIMEOUT_MS = 3000;
+    // Dev only, for working on the colour dialog without a sensor plugged in:
+    // `localStorage.skipColourSensorCheck = "1"` in the console.
+    const skipSensorCheck =
+        import.meta.env.DEV && localStorage.getItem("skipColourSensorCheck") === "1";
     const CALIBRATION_FETCH_TIMEOUT_MS = 2000;
 
     document.querySelectorAll<HTMLDivElement>(".calibrationConnect").forEach((root) => {
@@ -169,7 +173,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             if (connected) {
                 if (!hasAdvanced && isActive()) {
                     hasAdvanced = true;
-                    if (calibrationName === "colors") startSensorCheck();
+                    if (calibrationName === "colors" && !skipSensorCheck) startSensorCheck();
                     else startCalibrationWait();
                 }
             } else {

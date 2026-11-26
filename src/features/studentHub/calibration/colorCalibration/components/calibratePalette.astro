@@ -8,20 +8,15 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
 ---
 <div class="calibrationPalette flex w-full flex-col gap-6">
     <p class="text-gray-800">
-        Hold a real swatch of each colour under the sensor, then click it to calibrate - calibrate
-        <span class="font-bold text-black">white</span> and <span class="font-bold text-black">black</span> first,
-        since every other colour is read through the brightness scale those two set. Skip any you like - an
-        uncalibrated colour just keeps a built-in default. Click a calibrated colour again to reset it back to
-        default, independently of the rest, at any time.
+        Hold something coloured under the sensor, then click that colour below.
+        Start with white and black, then the rest unlock. Click a colour again to reset it.
     </p>
 
-    <div class="flex w-full justify-center">
-        <div class="calibrationPreview flex flex-col items-center gap-3 rounded-2xl border-2 border-black bg-white p-4 shadow-[3px_3px_0_var(--color-drop-shadow)]">
-            <div class="calibrationPreviewSwatch h-32 w-32 rounded-xl border-2 border-black bg-gray-200 transition-colors duration-300 ease-out"></div>
-            <div class="flex flex-col items-center gap-0.5">
-                <p class="text-sm text-gray-800">This is what your Ro/Box sees: <span class="calibrationPreviewName font-bold text-black capitalize">Waiting for a reading…</span></p>
-                <p class="calibrationPreviewRgb font-mono text-xs text-gray-500"></p>
-            </div>
+    <div class="calibrationPreview flex flex-col items-center gap-3">
+        <div class="calibrationPreviewSwatch size-28 rounded-full border-2 border-black bg-gray-200 transition-colors duration-300 ease-out"></div>
+        <div class="flex flex-col items-center gap-0.5">
+            <p class="text-sm text-gray-800">Your Ro/Box sees: <span class="calibrationPreviewName inline-block font-bold text-black first-letter:uppercase">waiting for a reading…</span></p>
+            <p class="calibrationPreviewRgb font-mono text-xs text-gray-500"></p>
         </div>
     </div>
 
@@ -32,16 +27,16 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
                     type="button"
                     role="switch"
                     aria-checked="false"
-                    class="calibrationSwatchToggle button-interactive box-shadow flex flex-col items-center gap-2 rounded-xl border-2 border-black bg-white p-3"
+                    class="calibrationSwatchToggle button-interactive flex flex-col items-center gap-2 rounded-xl p-2"
                     title={`Calibrate ${color.name}`}
                 >
-                    <span class="block h-10 w-10 rounded-full border-2 border-black" style={`background-color: ${color.hex}`}></span>
+                    <span class="calibrationSwatchDot block size-12 rounded-full border-2 border-black" style={`background-color: ${color.hex}`}></span>
                     <span class="text-xs font-semibold text-black capitalize">{color.name}</span>
                 </button>
-                <span class="calibrationSwatchCheck absolute -top-2 -right-2 flex h-6 w-6 hidden! items-center justify-center rounded-full border-2 border-black bg-white text-green shadow-[1px_1px_0_var(--color-drop-shadow)]">
+                <span class="calibrationSwatchBadge calibrationSwatchCheck absolute flex size-6 hidden! items-center justify-center rounded-full bg-white text-green">
                     <FontAwesomeIcon icon={faCircleCheck} />
                 </span>
-                <span class="calibrationSwatchSpinner absolute -top-2 -right-2 flex h-6 w-6 hidden! items-center justify-center rounded-full border-2 border-black bg-white text-blue shadow-[1px_1px_0_var(--color-drop-shadow)]">
+                <span class="calibrationSwatchBadge calibrationSwatchSpinner absolute flex size-6 hidden! items-center justify-center rounded-full bg-white text-blue">
                     <FontAwesomeIcon icon={faSpinner} className="fa-spin" />
                 </span>
             </div>
@@ -87,11 +82,23 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
 </script>
 
 <style>
-    .calibrationSwatchToggle {
-        transition: border-color 150ms ease-out;
+    .calibrationSwatchDot {
+        transition: box-shadow 150ms ease-out;
     }
-
-    .calibrationSwatchToggle[aria-checked='true'] {
-        border-color: var(--color-green);
+    /* Waiting on white and black (see calibrationStep.ts). */
+    .calibrationSwatchToggle[data-locked] {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+    /* Calibrated: a green ring, gapped off the dot so it reads on any colour. */
+    .calibrationSwatchToggle[aria-checked='true'] .calibrationSwatchDot {
+        box-shadow:
+            0 0 0 3px #ffffff,
+            0 0 0 6px var(--color-green);
+    }
+    /* On the dot's top-right: 8px button padding down, half the 48px dot plus a nudge across. */
+    .calibrationSwatchBadge {
+        top: 2px;
+        left: calc(50% + 12px);
     }
 </style>
