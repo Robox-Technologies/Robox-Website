@@ -13,6 +13,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true'
 
 const tools = [
     {
+        tool: 'colours',
         title: 'Calibrate colours',
         description: 'Teach your Ro/Box what each colour looks like.',
         icon: faEyeDropper,
@@ -20,6 +21,7 @@ const tools = [
         dialog: 'calibrate-colours-dialog',
     },
     {
+        tool: 'motors',
         title: 'Calibrate motors',
         description: 'Make it drive straight, or fix crossed wheels.',
         icon: faSliders,
@@ -31,6 +33,7 @@ const tools = [
         ? []
         : [
             {
+                tool: 'firmware',
                 title: 'Update firmware',
                 description: "Not responding? Give it the latest software.",
                 icon: faScrewdriver,
@@ -70,7 +73,7 @@ const cardClass =
                             eyesClass={tool.goober.eyesClass}
                         />
                     )}
-                    <button type="button" class={cardClass} data-open-modal={tool.dialog}>
+                    <button type="button" class={cardClass} data-open-modal={tool.dialog} data-tool={tool.tool}>
                         {contents}
                     </button>
                 </div>
@@ -81,3 +84,17 @@ const cardClass =
     <MotorCalibration />
     {!isIOSBuild && <FlashDevice />}
 </section>
+
+<script>
+    // Deep links: `/hub?tool=colours|motors|firmware` opens that tool's dialog,
+    // then drops the param so a refresh doesn't reopen it.
+    const url = new URL(window.location.href)
+    const tool = url.searchParams.get('tool')
+    if (tool) {
+        const card = document.querySelector<HTMLButtonElement>(`[data-tool="${CSS.escape(tool)}"]`)
+        const dialog = document.getElementById(card?.dataset.openModal ?? '')
+        if (dialog instanceof HTMLDialogElement) dialog.showModal()
+        url.searchParams.delete('tool')
+        history.replaceState(history.state, '', url)
+    }
+</script>
