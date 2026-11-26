@@ -18,7 +18,7 @@ vi.mock('@/features/editor/editors/blockEditor/config/toolbox', () => ({
     ExtensionToolbox: contributions,
 }))
 
-const { buildToolbox } =
+const { buildToolbox, getExtensionBlockTypes } =
     await import('@/features/editor/editors/blockEditor/utils/toolbox')
 
 const categoryIds = (toolbox: ReturnType<typeof buildToolbox>) =>
@@ -44,12 +44,12 @@ const category = (toolboxitemid: string): RoboxCategory => ({
     contents: [],
 })
 
-describe('buildToolbox', () => {
-    beforeEach(() => {
-        for (const key of Object.keys(contributions)) delete contributions[key]
-        Object.assign(contributions, config.ExtensionToolbox)
-    })
+beforeEach(() => {
+    for (const key of Object.keys(contributions)) delete contributions[key]
+    Object.assign(contributions, config.ExtensionToolbox)
+})
 
+describe('buildToolbox', () => {
     it('returns the base toolbox when no extension is enabled', () => {
         expect(buildToolbox({})).toEqual(config.BaseToolbox)
     })
@@ -111,6 +111,39 @@ describe('buildToolbox', () => {
         }
         expect(blockTypes(buildToolbox({ SERVO: true }), 'math')!.at(-1)).toBe(
             'x',
+        )
+    })
+})
+
+describe('getExtensionBlockTypes', () => {
+    it("lists the blocks of SERVO's category", () => {
+        expect(getExtensionBlockTypes('SERVO')).toEqual(
+            new Set([
+                'servo_angle',
+                'servo_set_angle',
+                'servo_rotate',
+                'servo_get_angle',
+            ]),
+        )
+    })
+
+    it('includes blocks added to existing categories', () => {
+        contributions.SERVO = {
+            categories: [
+                {
+                    category: {
+                        ...category('a'),
+                        contents: [{ kind: 'block', type: 'own' }],
+                    },
+                },
+            ],
+            blocks: {
+                math: [{ block: { kind: 'block', type: 'in_math' } }],
+                strings: [{ block: { kind: 'block', type: 'in_strings' } }],
+            },
+        }
+        expect(getExtensionBlockTypes('SERVO')).toEqual(
+            new Set(['own', 'in_math', 'in_strings']),
         )
     })
 })

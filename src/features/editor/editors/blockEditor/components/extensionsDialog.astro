@@ -59,8 +59,11 @@ import extensions from '@/data/extensions.json'
     import { getProject, getProjectIdFromURL } from '@/utils/serialization'
     import { setUserExtension } from '@/features/editor/editors/blockEditor/utils/serialization'
     import generateToolbox, {
+        getExtensionBlockTypes,
         updateToolboxPreservingScroll,
     } from '@/features/editor/editors/blockEditor/utils/toolbox'
+    import { toast } from '@/libs/ui/toast'
+    import type { ExtensionKey } from 'src/types/extensions'
     import * as Blockly from 'blockly'
     import { dom, library } from '@fortawesome/fontawesome-svg-core'
     import { faPuzzlePiece, faXmark } from '@fortawesome/free-solid-svg-icons'
@@ -138,21 +141,33 @@ import extensions from '@/data/extensions.json'
         }
 
         for (const toggle of toggleButtons) {
-            const extensionKey = toggle.dataset.extensionToggle
+            const extensionKey = toggle.dataset.extensionToggle as
+                | ExtensionKey
+                | undefined
             if (!extensionKey) continue
 
             toggle.addEventListener('click', async () => {
                 const enabled = toggle.getAttribute('aria-pressed') !== 'true'
-                setToggleState(extensionKey, enabled)
-
-                await setUserExtension(
-                    extensionKey as keyof typeof extensions,
-                    enabled,
-                )
-
-                const toolbox = await generateToolbox()
                 const workspace = Blockly.getMainWorkspace()
 
+                if (!enabled && workspace instanceof Blockly.WorkspaceSvg) {
+                    const extensionBlocks = getExtensionBlockTypes(extensionKey)
+                    const blocksInUse = workspace
+                        .getAllBlocks(false)
+                        .filter((block) => extensionBlocks.has(block.type))
+                    if (blocksInUse.length > 0) {
+                        toast.warning({
+                            title: `Can't turn off ${extensions[extensionKey].name}`,
+                            message: `Your project uses ${blocksInUse.length} of its blocks. Remove them first.`,
+                        })
+                        return
+                    }
+                }
+
+                setToggleState(extensionKey, enabled)
+                await setUserExtension(extensionKey, enabled)
+
+                const toolbox = await generateToolbox()
                 if (workspace instanceof Blockly.WorkspaceSvg) {
                     updateToolboxPreservingScroll(workspace, toolbox)
                 }

@@ -55,6 +55,17 @@ export function buildToolbox(enabled: Partial<UserExtensions>): RoboxToolbox {
     return toolbox
 }
 
+export function getExtensionBlockTypes(key: ExtensionKey): Set<string> {
+    const { categories = [], blocks = {} } = ExtensionToolbox[key]
+    const categoryBlocks = categories.flatMap(
+        ({ category }) => category.contents ?? [],
+    )
+    const addedBlocks = Object.values(blocks).flatMap(
+        (additions) => additions?.map(({ block }) => block) ?? [],
+    )
+    return new Set([...categoryBlocks, ...addedBlocks].map(({ type }) => type))
+}
+
 // Items with the same anchor go in together, in the order given. Items with no
 // anchor, or whose anchor isn't in the list, go at the end.
 function insertAfterAnchors<T>(
