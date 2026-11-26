@@ -153,6 +153,9 @@ body {
     &.extended {
         width: calc($extensionAmount + $extensionRest);
     }
+    &.extended ~ .categoryIcon {
+        margin-left: 20px;
+    }
 }
 
 .blocklyTreeRow {

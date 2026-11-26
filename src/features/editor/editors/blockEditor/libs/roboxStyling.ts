@@ -16,6 +16,29 @@ export class RoboxToolbox extends ContinuousToolbox {
     ): boolean {
         return oldItem !== null && newItem !== null && oldItem !== newItem
     }
+
+    // Read by categories while render() builds them, so the reselected one is
+    // created already extended instead of visibly animating back open.
+    pendingSelectionId: string | null = null
+
+    // render() rebuilds every category (e.g. when an extension is toggled) but
+    // keeps pointing at the old, disposed selected one; reselect its replacement.
+    // If that category was removed, the next one takes its place.
+    override render(toolboxDef: Blockly.utils.toolbox.ToolboxInfo) {
+        const items = this.getToolboxItems()
+        const selected = this.getSelectedItem()
+        const candidateIds = selected
+            ? items.slice(items.indexOf(selected)).map((item) => item.getId())
+            : []
+        this.pendingSelectionId = selected?.getId() ?? null
+        super.render(toolboxDef)
+        this.pendingSelectionId = null
+        this.selectedItem_ = null
+        const replacement = candidateIds
+            .map((id) => this.getToolboxItemById(id))
+            .find((item) => item instanceof Blockly.ToolboxCategory)
+        if (replacement) this.selectCategoryByName(replacement.getName())
+    }
 }
 class RoboxToolboxCategories extends Blockly.ToolboxCategory {
     /**
@@ -34,6 +57,12 @@ class RoboxToolboxCategories extends Blockly.ToolboxCategory {
         const dom = super.createRowContentsContainer_()
         const rectangle = document.createElement('div')
         rectangle.className = 'extender'
+        if (
+            this.parentToolbox_ instanceof RoboxToolbox &&
+            this.parentToolbox_.pendingSelectionId === this.getId()
+        ) {
+            rectangle.classList.add('extended')
+        }
         rectangle.style.background = this.colour_
         const container = document.createElement('div')
         container.className = 'side-arch'
@@ -53,20 +82,13 @@ class RoboxToolboxCategories extends Blockly.ToolboxCategory {
         label.style.color = this.colour_
         return label
     }
+    // The icon's slide is CSS keyed off `.extended`: right after a re-render the
+    // icon is still Font Awesome's placeholder, not yet its <svg>.
     /** @override */
     setSelected(isSelected: boolean) {
-        const dom = this.htmlDiv_
-        const icon = dom?.querySelector('.categoryIcon')
-        const extender = dom?.querySelector('.extender')
-        if (!icon || !(icon instanceof SVGElement)) return
-        if (!extender || !(extender instanceof HTMLElement)) return
-        if (isSelected) {
-            icon.style.marginLeft = '20px'
-            extender.classList.add('extended')
-        } else {
-            icon.style.marginLeft = '0px'
-            extender.classList.remove('extended')
-        }
+        this.htmlDiv_
+            ?.querySelector('.extender')
+            ?.classList.toggle('extended', isSelected)
     }
 }
 class RoboxToolboxSeperator extends Blockly.ToolboxSeparator {
