@@ -607,15 +607,7 @@ export class Pico {
 
     request(): void {
         this.updateState({ connectionStatus: ConnectionStatus.CONNECTING })
-        this.communication?.request().catch(() => {
-            if (this.toastsEnabled) {
-                toast.warning({
-                    title: 'Connection Cancelled',
-                    message: 'Ro/Box connection was cancelled.',
-                    durationMs: 5000,
-                })
-            }
-        })
+        this.communication?.request()
     }
 
     /** Calibrates one colour against a swatch. Independent per colour, but do white/black first. */

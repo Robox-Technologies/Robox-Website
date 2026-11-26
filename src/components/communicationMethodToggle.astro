@@ -66,11 +66,6 @@ import Button from "@/components/button";
             supportedMethods[(currentIndex + 1) % supportedMethods.length];
         setPreferredCommunicationMethod(next);
         void pico.setCommunicationMethod(next);
-        toast.informative({
-            title: "Connection Method Changed",
-            message: `Now connecting to Ro/Box over ${methodLabels[next] ?? next}.`,
-            durationMs: 3000,
-        });
         return next;
     }
 
