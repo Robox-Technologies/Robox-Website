@@ -6,6 +6,7 @@ import star from '@/images/goobers/star.svg'
 import spiky from '@/images/goobers/spiky.svg'
 import ColorCalibration from '@/features/studentHub/calibration/colorCalibration/colorCalibration.astro'
 import MotorCalibration from '@/features/studentHub/calibration/motorCalibration/motorCalibration.astro'
+import FlashDevice from '@/features/studentHub/flashDevice/flashDevice.astro'
 
 // Firmware updates need the File System Access API, which the iOS app doesn't have.
 const isIOSBuild = process.env.IOS_BUILD === 'true'
@@ -34,7 +35,7 @@ const tools = [
                 description: "Not responding? Give it the latest software.",
                 icon: faScrewdriver,
                 tile: 'bg-red',
-                href: '/hub/flash',
+                dialog: 'update-firmware-dialog',
                 goober: { shape: spiky, class: '-bottom-10 -right-8 w-24', eyesClass: 'top-[34%] left-[26%] w-[48%]' },
             },
         ]),
@@ -69,19 +70,14 @@ const cardClass =
                             eyesClass={tool.goober.eyesClass}
                         />
                     )}
-                    {'dialog' in tool ? (
-                        <button type="button" class={cardClass} data-open-modal={tool.dialog}>
-                            {contents}
-                        </button>
-                    ) : (
-                        <a href={tool.href} class={cardClass}>
-                            {contents}
-                        </a>
-                    )}
+                    <button type="button" class={cardClass} data-open-modal={tool.dialog}>
+                        {contents}
+                    </button>
                 </div>
             )
         })}
     </div>
     <ColorCalibration />
     <MotorCalibration />
+    {!isIOSBuild && <FlashDevice />}
 </section>

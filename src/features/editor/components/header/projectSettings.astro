@@ -5,6 +5,10 @@ import Button from "@/components/button"
 import RenameDeviceDialog from "./renameDeviceDialog.astro"
 import ColorCalibration from "@/features/studentHub/calibration/colorCalibration/colorCalibration.astro"
 import MotorCalibration from "@/features/studentHub/calibration/motorCalibration/motorCalibration.astro"
+import FlashDevice from "@/features/studentHub/flashDevice/flashDevice.astro"
+
+// Firmware updates need the File System Access API, which the iOS app doesn't have.
+const isIOSBuild = process.env.IOS_BUILD === "true"
 ---
 
 <div class="project-settings relative">
@@ -46,13 +50,16 @@ import MotorCalibration from "@/features/studentHub/calibration/motorCalibration
                 Calibrate Motors
             </button>
             <RenameDeviceDialog />
-            <Button
-                href="../flash"
-                className="text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
-            >
-                <FontAwesomeIcon icon={faScrewdriver} />
-                Update Firmware
-            </Button>
+            {!isIOSBuild && (
+                <button
+                    type="button"
+                    data-open-modal="update-firmware-dialog"
+                    class="button-interactive text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
+                >
+                    <FontAwesomeIcon icon={faScrewdriver} />
+                    Update Firmware
+                </button>
+            )}
             <Button
                 type="button"
                 id="project-export-button"
@@ -63,14 +70,14 @@ import MotorCalibration from "@/features/studentHub/calibration/motorCalibration
             </Button>
         </div>
     </dialog>
-    {/* Outside the menu, which hides when it closes. Opened while connected, so no Connect step. */}
+    {/* Outside the menu, which hides when it closes. Calibration opens while connected, so no Connect step. */}
     <ColorCalibration showConnect={false} />
     <MotorCalibration showConnect={false} />
+    {!isIOSBuild && <FlashDevice />}
 </div>
 
 <script>
     import { pico } from "@/libs/communication/communicate";
-    import { getProjectIdFromURL } from "@/utils/serialization";
 
     const settingsDialog = document.getElementById(
         'project-settings-dialog',
@@ -140,17 +147,6 @@ import MotorCalibration from "@/features/studentHub/calibration/motorCalibration
     };
     pico.on("stateChange", updateConnectionItems);
     updateConnectionItems();
-
-    document
-        .querySelectorAll<HTMLAnchorElement>(".project-settings a[href]")
-        .forEach((link) => {
-            link.addEventListener("click", () => {
-                const projectId = getProjectIdFromURL();
-                const url = new URL(link.href, window.location.href);
-                if (projectId) url.searchParams.set("id", projectId);
-                link.href = url.toString();
-            });
-        });
 </script>
 
 <script>

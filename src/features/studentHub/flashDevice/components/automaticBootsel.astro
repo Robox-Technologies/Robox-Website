@@ -33,9 +33,13 @@ import Button from '@/components/button';
             return;
         }
 
-        // This flow toasts its own errors, with a pointer to the manual steps
-        // added - pico's generic toast on top would say the same thing twice.
-        pico.setToastsEnabled(false);
+        // Everything below only acts while this stage shows in an open dialog,
+        // so a closed one never reboots whatever the page connects to.
+        // (`flashDevice.astro` mutes pico's own toasts while open: this flow
+        // toasts its errors with a pointer to the manual steps.)
+        const dialog = root.closest("dialog");
+        const ownStage = root.closest<HTMLElement>(".stageFlowStage");
+        const isActive = () => !!dialog?.open && !ownStage?.classList.contains("hidden");
 
         // The button just reflects pico's live connection status, same as
         // everywhere else it's used (e.g. the editor's connect button).
@@ -51,7 +55,7 @@ import Button from '@/components/button';
             const hasMethod = state.communicationMethod !== null;
             const connecting = state.connectionStatus === ConnectionStatus.CONNECTING;
             const connected = state.connectionStatus === ConnectionStatus.CONNECTED;
-            if (connected && !hasTriggeredReboot) {
+            if (connected && !hasTriggeredReboot && isActive()) {
                 hasTriggeredReboot = true;
 
                 // Only advances on the `bootloaderEntered` event below - `bootloaderMode()`
@@ -84,15 +88,15 @@ import Button from '@/components/button';
             pico.setAutoConnect(false);
         }
 
-        void armForBootloaderStage();
-
         const flashDeviceRoot = root.closest<HTMLDivElement>(".flashDevice");
         if (!flashDeviceRoot) throw new Error("Automatic bootsel must be nested inside .flashDevice");
         flashDeviceRoot.addEventListener("flashdevice:stage-changed", (event) => {
-            if ((event as CustomEvent<{ stage: Stage }>).detail.stage === "bootloader") void armForBootloaderStage();
+            if ((event as CustomEvent<{ stage: Stage }>).detail.stage !== "bootloader") return;
+            if (dialog?.open) void armForBootloaderStage();
         });
 
         pico.on("error", (data) => {
+            if (!isActive()) return;
             // An unconfirmed reboot (see `bootloaderMode()`/
             // `recoverViaLegacyBootloader` in communicate.ts) leaves this
             // flow with no further `stateChange` to clear its busy state on
@@ -113,7 +117,7 @@ import Button from '@/components/button';
         // failed firmware check triggers on its own (see
         // `recoverViaLegacyBootloader` in communicate.ts).
         pico.on("bootloaderEntered", () => {
-            if (hasAdvanced) return;
+            if (hasAdvanced || !isActive()) return;
             hasAdvanced = true;
             // The wait is over - moving on, not staying busy for a stage
             // this button is about to be hidden away from.
