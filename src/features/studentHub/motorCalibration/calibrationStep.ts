@@ -264,12 +264,17 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         pico.motorSwap(swapped)
     })
 
-    testForwardButton.addEventListener('click', () => pico.testDrive('forward'))
-    testBackwardButton.addEventListener('click', () =>
+    // Programs drive with both motor polarities at -1 (editor preamble), so the
+    // firmware's move_* commands run the opposite way to the editor's blocks.
+    // Each button sends the command that matches what the same block does.
+    testForwardButton.addEventListener('click', () =>
         pico.testDrive('backward'),
     )
-    testLeftButton.addEventListener('click', () => pico.testDrive('left'))
-    testRightButton.addEventListener('click', () => pico.testDrive('right'))
+    testBackwardButton.addEventListener('click', () =>
+        pico.testDrive('forward'),
+    )
+    testLeftButton.addEventListener('click', () => pico.testDrive('right'))
+    testRightButton.addEventListener('click', () => pico.testDrive('left'))
     testStopButton.addEventListener('click', () => pico.stopMotors())
 
     resetButton.addEventListener('click', () => {
