@@ -1,11 +1,12 @@
 ---
-import { faMicrochip, faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faStop, faRotateLeft } from "@fortawesome/free-solid-svg-icons"
+import { faMicrochip, faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faRotateLeft } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
 import MotorToggle from "./motorToggle.astro"
 import motorImage from "../images/Motor.png"
 
-const driveButtonClass = "button-interactive flex h-11 items-center justify-center gap-2 rounded-xl border-2 font-semibold"
+const driveKey =
+    "button-interactive box-shadow flex size-14 touch-none select-none items-center justify-center rounded-2xl bg-blue text-2xl text-white"
 ---
 
 <div class="motorCalibrationPanel flex w-full flex-col gap-10">
@@ -24,9 +25,9 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
             <div id="motor-calibrate-line-right" class="motor-calibrate-line h-2 rounded-full" aria-hidden="true"></div>
             <img src={motorImage.src} alt="" aria-hidden="true" class="h-24 w-auto justify-self-center" />
 
-            <MotorToggle id="motor-calibrate-reverse-left" label="Reverse" ariaLabel="Reverse left motor" />
-            <MotorToggle id="motor-calibrate-swap" label="Swap" ariaLabel="Swap left and right motors" class="col-start-3" />
-            <MotorToggle id="motor-calibrate-reverse-right" label="Reverse" ariaLabel="Reverse right motor" class="col-start-5" />
+            <MotorToggle id="motor-calibrate-reverse-left" label="Reverse Left Motor" ariaLabel="Reverse left motor" />
+            <MotorToggle id="motor-calibrate-swap" label="Swap Motors" ariaLabel="Swap left and right motors" class="col-start-3" />
+            <MotorToggle id="motor-calibrate-reverse-right" label="Reverse Right Motor" ariaLabel="Reverse right motor" class="col-start-5" />
         </div>
 
         <div class="flex flex-col gap-3">
@@ -59,31 +60,27 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
         </div>
     </div>
 
-    <div class="flex flex-col gap-3">
-        <p class="text-gray-800"><span class="font-bold text-black">Test drive.</span></p>
-        <div class="grid grid-cols-5 gap-2">
-            <button type="button" id="motor-calibrate-test-left" class={`${driveButtonClass} border-black bg-white text-black`} aria-label="Turn left">
-                <FontAwesomeIcon icon={faArrowLeft} />
-                <span class="hidden text-inherit sm:inline">Left</span>
-            </button>
-            <button type="button" id="motor-calibrate-test-forward" class={`${driveButtonClass} border-black bg-white text-black`} aria-label="Drive forward">
-                <FontAwesomeIcon icon={faArrowUp} />
-                <span class="hidden text-inherit sm:inline">Forward</span>
-            </button>
-            <button type="button" id="motor-calibrate-test-stop" class={`${driveButtonClass} border-red bg-red text-white`} aria-label="Stop">
-                <FontAwesomeIcon icon={faStop} />
-                <span class="hidden text-inherit sm:inline">Stop</span>
-            </button>
-            <button type="button" id="motor-calibrate-test-backward" class={`${driveButtonClass} border-black bg-white text-black`} aria-label="Drive backward">
-                <FontAwesomeIcon icon={faArrowDown} />
-                <span class="hidden text-inherit sm:inline">Back</span>
-            </button>
-            <button type="button" id="motor-calibrate-test-right" class={`${driveButtonClass} border-black bg-white text-black`} aria-label="Turn right">
-                <span class="hidden text-inherit sm:inline">Right</span>
-                <FontAwesomeIcon icon={faArrowRight} />
-            </button>
+    <section>
+        <h3 class="text-xl font-extrabold">Test drive</h3>
+        <div class="mt-4 flex flex-col items-center gap-4">
+            {/* Laid out like a keyboard's arrow keys. Hold to drive; see the script. */}
+            <div class="grid grid-cols-3 gap-2.5" role="group" aria-label="Test drive">
+                <button type="button" id="motor-calibrate-test-forward" class={`${driveKey} col-start-2`} aria-label="Drive forward">
+                    <FontAwesomeIcon icon={faArrowUp} />
+                </button>
+                <button type="button" id="motor-calibrate-test-left" class={`${driveKey} col-start-1`} aria-label="Turn left">
+                    <FontAwesomeIcon icon={faArrowLeft} />
+                </button>
+                <button type="button" id="motor-calibrate-test-backward" class={driveKey} aria-label="Drive backward">
+                    <FontAwesomeIcon icon={faArrowDown} />
+                </button>
+                <button type="button" id="motor-calibrate-test-right" class={driveKey} aria-label="Turn right">
+                    <FontAwesomeIcon icon={faArrowRight} />
+                </button>
+            </div>
+            <p class="text-center text-gray-500">Hold an arrow to drive, let go to stop.</p>
         </div>
-    </div>
+    </section>
 
     <div class="flex flex-wrap items-center justify-end gap-4">
         <Button id="motor-calibrate-reset" className="border-2 border-black bg-white text-black">
@@ -202,6 +199,7 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
 <script>
     import { pico } from "@/libs/communication/communicate";
     import { toast } from "@/libs/ui/toast";
+    import type { TestDriveDirection } from "@/libs/communication/protocol";
     import type { MotorCalibration, PicoState } from "src/types/communication";
     import { ConnectionStatus } from "src/types/communication";
     import { createCalibrationStage } from "../../stage";
@@ -232,7 +230,6 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
         const testBackwardButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-backward");
         const testLeftButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-left");
         const testRightButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-right");
-        const testStopButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-test-stop");
         const resetButton = root.querySelector<HTMLButtonElement>("#motor-calibrate-reset");
 
         if (
@@ -248,7 +245,6 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
             !testBackwardButton ||
             !testLeftButton ||
             !testRightButton ||
-            !testStopButton ||
             !resetButton
         ) {
             throw new Error("Calibrate panel elements not found");
@@ -337,9 +333,6 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
         root.closest("[data-stage-flow-root]")?.addEventListener("motorcalibration:stage-changed", () =>
             updateConnectionUI(pico.getState()),
         );
-        dialog?.addEventListener("close", () => {
-            if (pico.isConnected()) pico.stopMotors();
-        });
         // Deferred so the page's stage-flow script has registered its
         // listener before a redirect to Connect is dispatched.
         setTimeout(() => updateConnectionUI(pico.getState()), 0);
@@ -400,13 +393,49 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
             pico.motorSwap(swapped);
         });
 
-        // Programs run with both motor polarities at -1 (editor preamble), so
-        // each button sends the move_* command that matches the same block.
-        testForwardButton.addEventListener("click", () => pico.testDrive("backward"));
-        testBackwardButton.addEventListener("click", () => pico.testDrive("forward"));
-        testLeftButton.addEventListener("click", () => pico.testDrive("right"));
-        testRightButton.addEventListener("click", () => pico.testDrive("left"));
-        testStopButton.addEventListener("click", () => pico.stopMotors());
+        // Hold to drive, let go to stop. Programs run with both motor
+        // polarities at -1 (editor preamble), so each key sends the move_*
+        // command that matches the same block.
+        let driving: HTMLButtonElement | null = null;
+        const startDriving = (button: HTMLButtonElement, direction: TestDriveDirection) => {
+            if (driving) return;
+            driving = button;
+            pico.testDrive(direction);
+        };
+        const stopDriving = () => {
+            if (!driving) return;
+            driving = null;
+            pico.stopMotors();
+        };
+
+        const keys = [
+            [testForwardButton, "backward"],
+            [testBackwardButton, "forward"],
+            [testLeftButton, "right"],
+            [testRightButton, "left"],
+        ] as const;
+
+        for (const [button, direction] of keys) {
+            button.addEventListener("pointerdown", (event) => {
+                button.setPointerCapture(event.pointerId);
+                startDriving(button, direction);
+            });
+            button.addEventListener("pointerup", stopDriving);
+            button.addEventListener("pointercancel", stopDriving);
+            button.addEventListener("lostpointercapture", stopDriving);
+            button.addEventListener("keydown", (event) => {
+                if ((event.key === " " || event.key === "Enter") && !event.repeat) startDriving(button, direction);
+            });
+            button.addEventListener("keyup", (event) => {
+                if (event.key === " " || event.key === "Enter") stopDriving();
+            });
+            button.addEventListener("blur", stopDriving);
+        }
+
+        dialog?.addEventListener("close", () => {
+            stopDriving();
+            if (pico.isConnected()) pico.stopMotors();
+        });
 
         resetButton.addEventListener("click", () => {
             setBias(0);
@@ -417,6 +446,7 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
             pico.motorReverse(1, false);
             setToggle(swapToggle, false);
             pico.motorSwap(false);
+            stopDriving();
             pico.stopMotors();
         });
 
