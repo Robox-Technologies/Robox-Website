@@ -1,7 +1,7 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner, faCircleCheck, faHouse } from '@fortawesome/free-solid-svg-icons';
-import Button from '@/components/button';
+import { faSpinner, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
+import ReturnButton from '@/features/studentHub/components/returnButton.astro';
 import { COLOR_PALETTE, CALIBRATION_ORDER } from '@/data/colorPalette';
 
 const colorsByName = new Map(COLOR_PALETTE.map((color) => [color.name, color]));
@@ -50,10 +50,7 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
     </div>
 
     <div class="flex flex-wrap gap-4">
-        <Button href="/hub" className="calibration-return-link bg-black">
-            <FontAwesomeIcon icon={faHouse} className="mr-2" />
-            <span class="calibration-return-label text-white!">Return to Student Hub</span>
-        </Button>
+        <ReturnButton handoff />
     </div>
 </div>
 <script>
