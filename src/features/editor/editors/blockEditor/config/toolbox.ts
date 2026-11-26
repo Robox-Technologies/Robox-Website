@@ -1,6 +1,7 @@
 import type { ExtensionKey } from 'src/types/extensions'
 import type { BlockInfo } from 'node_modules/blockly/core/utils/toolbox'
 import baseToolbox from './baseToolbox.json'
+import extensions from '@/data/extensions.json'
 
 // TS infers JSON arrays by giving each element its siblings' keys as `?: undefined`,
 // so the records below are Partial. The JSON itself never holds undefined.
@@ -35,64 +36,23 @@ export type RoboxToolbox = {
     contents: (RoboxCategory | { kind: 'sep' })[]
 }
 
-// `after` anchors on a category id / block type; without it the item is appended.
+// The `toolbox` of an extension in extensions.json. `after` anchors on a category
+// id / block type (plain strings, since JSON can't hold literal types); without
+// it the item is appended.
 export type ExtensionContribution = {
-    categories?: { after?: BaseCategoryId; category: RoboxCategory }[]
+    categories?: {
+        id: string
+        after?: string
+        category: BaseToolboxCategory
+    }[]
     blocks?: Partial<
         Record<BaseCategoryId, { after?: string; block: ToolboxBlock }[]>
     >
 }
-
-const ServoCategory: RoboxCategory = {
-    kind: 'category',
-    name: 'Servo',
-    toolboxitemid: 'servo',
-    cssconfig: {
-        icon: 'categoryIcon fa fa-arrows-rotate',
-    },
-    categorystyle: 'servo_category',
-    contents: [
-        {
-            kind: 'block',
-            type: 'servo_angle',
-        },
-        {
-            kind: 'block',
-            type: 'servo_set_angle',
-            inputs: {
-                ANGLE: {
-                    shadow: {
-                        type: 'math_number',
-                        fields: {
-                            NUM: 90,
-                        },
-                    },
-                },
-            },
-        },
-        {
-            kind: 'block',
-            type: 'servo_rotate',
-            inputs: {
-                ANGLE: {
-                    shadow: {
-                        type: 'math_number',
-                        fields: {
-                            NUM: 90,
-                        },
-                    },
-                },
-            },
-        },
-        {
-            kind: 'block',
-            type: 'servo_get_angle',
-        },
-    ],
-}
-export const ExtensionToolbox: Record<ExtensionKey, ExtensionContribution> = {
-    SERVO: { categories: [{ category: ServoCategory }] },
-}
+export const ExtensionToolbox: Record<
+    ExtensionKey,
+    { toolbox: ExtensionContribution }
+> = extensions
 export const BaseToolbox: RoboxToolbox = {
     kind: 'categoryToolbox',
     contents: baseToolboxConfig.groups.flatMap((group) => [

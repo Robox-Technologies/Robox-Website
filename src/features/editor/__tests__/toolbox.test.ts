@@ -12,7 +12,7 @@ vi.mock('@/utils/serialization', () => ({
 const config = await vi.importActual<
     typeof import('@/features/editor/editors/blockEditor/config/toolbox')
 >('@/features/editor/editors/blockEditor/config/toolbox')
-const contributions: Record<string, ExtensionContribution> = {}
+const contributions: Record<string, { toolbox: ExtensionContribution }> = {}
 vi.mock('@/features/editor/editors/blockEditor/config/toolbox', () => ({
     ...config,
     ExtensionToolbox: contributions,
@@ -35,14 +35,13 @@ const blockTypes = (
     )
     return category?.contents?.map((item) => ('type' in item ? item.type : ''))
 }
-const category = (toolboxitemid: string): RoboxCategory => ({
-    kind: 'category',
-    toolboxitemid,
-    name: toolboxitemid,
-    categorystyle: '',
-    cssconfig: { icon: '' },
-    contents: [],
+const category = (id: string) => ({
+    id,
+    category: { name: id, categorystyle: '', cssconfig: { icon: '' } },
 })
+const contributeToServo = (toolbox: ExtensionContribution) => {
+    contributions.SERVO = { toolbox }
+}
 
 beforeEach(() => {
     for (const key of Object.keys(contributions)) delete contributions[key]
@@ -60,18 +59,18 @@ describe('buildToolbox', () => {
 
     it('does not mutate the base toolbox', () => {
         const before = structuredClone(config.BaseToolbox)
-        contributions.SERVO = {
+        contributeToServo({
             blocks: { strings: [{ block: { kind: 'block', type: 'x' } }] },
-        }
+        })
         buildToolbox({ SERVO: true })
         expect(config.BaseToolbox).toEqual(before)
     })
 
     it('places categories and blocks after their anchors in declared order', () => {
-        contributions.SERVO = {
+        contributeToServo({
             categories: [
-                { after: 'math', category: category('a') },
-                { after: 'math', category: category('b') },
+                { ...category('a'), after: 'math' },
+                { ...category('b'), after: 'math' },
             ],
             blocks: {
                 control: [
@@ -86,7 +85,7 @@ describe('buildToolbox', () => {
                 ],
                 strings: [{ block: { kind: 'block', type: 'last' } }],
             },
-        }
+        })
         const toolbox = buildToolbox({ SERVO: true })
         const ids = categoryIds(toolbox)
         expect(ids.slice(ids.indexOf('math'), ids.indexOf('math') + 3)).toEqual(
@@ -104,11 +103,11 @@ describe('buildToolbox', () => {
 
     it('appends when an anchor is missing', () => {
         vi.spyOn(console, 'warn').mockImplementation(() => {})
-        contributions.SERVO = {
+        contributeToServo({
             blocks: {
                 math: [{ after: 'nope', block: { kind: 'block', type: 'x' } }],
             },
-        }
+        })
         expect(blockTypes(buildToolbox({ SERVO: true }), 'math')!.at(-1)).toBe(
             'x',
         )
@@ -128,11 +127,12 @@ describe('getExtensionBlockTypes', () => {
     })
 
     it('includes blocks added to existing categories', () => {
-        contributions.SERVO = {
+        contributeToServo({
             categories: [
                 {
+                    id: 'a',
                     category: {
-                        ...category('a'),
+                        ...category('a').category,
                         contents: [{ kind: 'block', type: 'own' }],
                     },
                 },
@@ -141,7 +141,7 @@ describe('getExtensionBlockTypes', () => {
                 math: [{ block: { kind: 'block', type: 'in_math' } }],
                 strings: [{ block: { kind: 'block', type: 'in_strings' } }],
             },
-        }
+        })
         expect(getExtensionBlockTypes('SERVO')).toEqual(
             new Set(['own', 'in_math', 'in_strings']),
         )

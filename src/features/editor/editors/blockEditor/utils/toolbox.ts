@@ -24,14 +24,18 @@ export function buildToolbox(enabled: Partial<UserExtensions>): RoboxToolbox {
     const toolbox = structuredClone(BaseToolbox)
     const contributions = extensionKeys
         .filter((key) => enabled[key] === true)
-        .map((key) => ExtensionToolbox[key])
+        .map((key) => ExtensionToolbox[key].toolbox)
 
     insertAfterAnchors(
         toolbox.contents,
         contributions.flatMap(({ categories = [] }) =>
-            categories.map(({ after, category }) => ({
+            categories.map(({ id, after, category }) => ({
                 after,
-                item: category,
+                item: {
+                    kind: 'category' as const,
+                    toolboxitemid: id,
+                    ...category,
+                },
             })),
         ),
         (item, anchor) =>
@@ -56,7 +60,7 @@ export function buildToolbox(enabled: Partial<UserExtensions>): RoboxToolbox {
 }
 
 export function getExtensionBlockTypes(key: ExtensionKey): Set<string> {
-    const { categories = [], blocks = {} } = ExtensionToolbox[key]
+    const { categories = [], blocks = {} } = ExtensionToolbox[key].toolbox
     const categoryBlocks = categories.flatMap(
         ({ category }) => category.contents ?? [],
     )

@@ -2,7 +2,58 @@
     "SERVO": {
         "name": "Servo Extension",
         "description": "Enables precise control of servo motors in your Ro/Box projects.",
-        "emoji": "⚙️",
-        "tag": "software"
+        "preamble": ["from roboxlib import Servo", "servo = Servo()"],
+        "toolbox": {
+            "categories": [
+                {
+                    "id": "servo",
+                    "category": {
+                        "name": "Servo",
+                        "cssconfig": {
+                            "icon": "categoryIcon fa fa-arrows-rotate"
+                        },
+                        "categorystyle": "servo_category",
+                        "contents": [
+                            {
+                                "kind": "block",
+                                "type": "servo_angle"
+                            },
+                            {
+                                "kind": "block",
+                                "type": "servo_set_angle",
+                                "inputs": {
+                                    "ANGLE": {
+                                        "shadow": {
+                                            "type": "math_number",
+                                            "fields": {
+                                                "NUM": 90
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "kind": "block",
+                                "type": "servo_rotate",
+                                "inputs": {
+                                    "ANGLE": {
+                                        "shadow": {
+                                            "type": "math_number",
+                                            "fields": {
+                                                "NUM": 90
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "kind": "block",
+                                "type": "servo_get_angle"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
     }
 }
