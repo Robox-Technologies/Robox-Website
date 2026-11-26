@@ -59,9 +59,11 @@ export function createStageFlow<S extends string>(
 
     function showStage(stage: S, animate = true) {
         if (!animate) {
-            stageElements.forEach((el) =>
-                el.classList.toggle('hidden', el.dataset.stage !== stage),
-            )
+            stageElements.forEach((el) => {
+                const active = el.dataset.stage === stage
+                el.classList.toggle('hidden', !active)
+                el.style.display = active ? '' : 'none'
+            })
             stagesWrapper!.style.height = ''
             root.dispatchEvent(
                 new CustomEvent(`${namespace}:stage-changed`, {
@@ -74,9 +76,11 @@ export function createStageFlow<S extends string>(
         const fromHeight = stagesWrapper!.offsetHeight
         stagesWrapper!.style.height = `${fromHeight}px`
         void stagesWrapper!.offsetHeight
-        stageElements.forEach((el) =>
-            el.classList.toggle('hidden', el.dataset.stage !== stage),
-        )
+        stageElements.forEach((el) => {
+            const active = el.dataset.stage === stage
+            el.classList.toggle('hidden', !active)
+            el.style.display = active ? '' : 'none'
+        })
         root.dispatchEvent(
             new CustomEvent(`${namespace}:stage-changed`, {
                 detail: { stage },

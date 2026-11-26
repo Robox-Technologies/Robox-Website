@@ -5,8 +5,14 @@
 
 import { BaseTransport, errorMessage } from './transportBase'
 import { ConnectionStatus } from 'src/types/communication'
+import { stageWrap, withTimeout } from './connectionDiagnostics'
 
 const PI_VENDOR_ID = 0x2e8a
+
+function portId(port: SerialPort): string {
+    const { usbVendorId, usbProductId } = port.getInfo()
+    return `usb:${(usbVendorId ?? 0).toString(16)}:${(usbProductId ?? 0).toString(16)}`
+}
 
 export class USBCommunication extends BaseTransport {
     private port: SerialPort | null = null
@@ -19,11 +25,8 @@ export class USBCommunication extends BaseTransport {
 
     private readonly initPortsBound = this.initPorts.bind(this)
 
-    /**
-     * On by default, so a reload reconnects to a plugged-in Ro/Box. Flashing turns it
-     * off. Only governs reconnecting — noticing a disconnect is never gated by it.
-     */
-    private autoConnectEnabled = true
+    /** Reconnecting is opt-in; noticing a disconnect is never gated by this. */
+    private autoConnectEnabled = false
 
     setAutoConnect(enabled: boolean = true): void {
         this.autoConnectEnabled = enabled
@@ -71,7 +74,15 @@ export class USBCommunication extends BaseTransport {
         }
 
         try {
-            await this.port.open({ baudRate: 9600 })
+            await stageWrap(
+                'open',
+                withTimeout(
+                    this.port.open({ baudRate: 9600 }),
+                    10000,
+                    'USB connection timed out',
+                ),
+                'usb',
+            )
         } catch {
             throw new Error(
                 'We are unable to open the port on the Ro/Box! This could also be caused by another application using the USB port, like another webpage or app, please close these.',
@@ -119,6 +130,32 @@ export class USBCommunication extends BaseTransport {
                 'Could not request Ro/Box! Make sure you have it connected via USB.',
             )
         }
+    }
+
+    /**
+     * Connect to one previously authorised USB device by its Web Serial
+     * identifier. Web Serial exposes vendor/product IDs, but not a serial
+     * number, so identical devices cannot be distinguished by this API.
+     */
+    async autoConnect(deviceId: string): Promise<void> {
+        const ports = await navigator.serial.getPorts()
+        const port = ports.find(
+            (candidate) =>
+                candidate.getInfo().usbVendorId === PI_VENDOR_ID &&
+                portId(candidate) === deviceId,
+        )
+
+        if (!port) {
+            throw new Error(
+                `No authorised USB device was found for id "${deviceId}".`,
+            )
+        }
+
+        await this.parent.connect(port)
+    }
+
+    getConnectionDeviceId(): string | null {
+        return this.port ? portId(this.port) : null
     }
 
     async disconnect(): Promise<void> {

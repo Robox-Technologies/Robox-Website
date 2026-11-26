@@ -7,6 +7,7 @@
 import { UART_CHARACTERISTIC, UART_SERVICE } from './protocol'
 import { BleTransport, NOT_FOUND_MESSAGE } from './bleTransport'
 import { errorMessage } from './transportBase'
+import { stageWrap, withTimeout } from './connectionDiagnostics'
 
 /** 16-bit UUID expanded to the full Bluetooth base UUID. */
 function numberToUUID(value: number): string {
@@ -46,6 +47,29 @@ export class BluetoothCommunication extends BleTransport {
     }
 
     /**
+     * Rejoins one specific device from the browser's previously authorised
+     * devices. `BluetoothDevice.id` is stable for this origin.
+     */
+    async autoConnect(deviceId: string): Promise<void> {
+        const devices = await navigator.bluetooth.getDevices()
+        const authorisedDevice = devices.find(
+            (candidate) => candidate.id === deviceId,
+        )
+
+        if (!authorisedDevice) {
+            throw new Error(
+                `No authorised Bluetooth device was found for id "${deviceId}".`,
+            )
+        }
+
+        await this.parent.connect(authorisedDevice)
+    }
+
+    getConnectionDeviceId(): string | null {
+        return this.device?.id ?? null
+    }
+
+    /**
      * Rejoins the same already-permitted device - e.g. after a rename, where
      * the AT09 module drops the link on its own and comes back advertising
      * under its new name, but the underlying device identity (and this
@@ -61,19 +85,52 @@ export class BluetoothCommunication extends BleTransport {
 
     private async attach(device: BluetoothDevice): Promise<void> {
         this.device = device
-        this.server = (await device.gatt?.connect()) ?? null
+        this.server =
+            (await stageWrap(
+                'connect',
+                withTimeout(
+                    device.gatt?.connect() ??
+                        Promise.reject(
+                            new Error('Bluetooth GATT is unavailable'),
+                        ),
+                    10000,
+                    'Bluetooth connection timed out',
+                ),
+                'bluetooth',
+            )) ?? null
 
         const service =
-            (await this.server?.getPrimaryService(SERVICE_UUID)) ?? null
+            (await stageWrap(
+                'service',
+                this.server?.getPrimaryService(SERVICE_UUID) ??
+                    Promise.reject(
+                        new Error('Bluetooth GATT server is unavailable'),
+                    ),
+                'bluetooth',
+            )) ?? null
         this.characteristic =
-            (await service?.getCharacteristic(CHARACTERISTIC_UUID)) ?? null
+            (await stageWrap(
+                'characteristic',
+                service?.getCharacteristic(CHARACTERISTIC_UUID) ??
+                    Promise.reject(
+                        new Error('Bluetooth service is unavailable'),
+                    ),
+                'bluetooth',
+            )) ?? null
 
         if (!this.server || !this.characteristic) {
             throw new Error('Could not connect to Ro/Box! Try resetting it?')
         }
 
-        await this.characteristic.startNotifications()
-        device.addEventListener('gattserverdisconnected', this.disconnectedBound)
+        await stageWrap(
+            'notify',
+            this.characteristic.startNotifications(),
+            'bluetooth',
+        )
+        device.addEventListener(
+            'gattserverdisconnected',
+            this.disconnectedBound,
+        )
         this.read()
     }
 

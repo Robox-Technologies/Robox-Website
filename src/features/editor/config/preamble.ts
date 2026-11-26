@@ -7,6 +7,7 @@ import time
 import random
 import json
 import sys
+motors = Motors()
 ENV_LED = Pin(25, Pin.OUT)
 line = LineSensors()
 left_motor_polarity = right_motor_polarity = -1
@@ -19,7 +20,6 @@ try:
     color_sensor = ColorSensor()
 except Exception:
     generatePrint("error", "Cannot connect to colour sensor, is it on?")
-motors = Motors()
 motor_speed = 80
 `
 export const ExtensionsPreamble: Record<ExtensionKey, string> = {

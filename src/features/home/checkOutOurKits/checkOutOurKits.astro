@@ -38,17 +38,10 @@ const tenPack = featured('robox-10-pack')
         </div>
         <div class="flex justify-center gap-16 mt-8 flex-wrap">
             <ProductCard image={SingleThumbnail} product={single} />
-            <ProductCard
-                className='border-8 border-green'
-                image={PackThumbnail}
-                product={tenPack}
-            >
-                <h2 slot="absolute" class="absolute text-white px-4 py-2 text-xl font-bold bg-green rounded-bl -right-[4px] -top-[4px]">Value Pack</h2>
-                
-            </ProductCard>
+            <ProductCard image={PackThumbnail} product={tenPack} />
         </div>
         <div class="mt-8 flex justify-center text-center mb-16">
-            <Button href="/shop" className="bg-red text-2xl box-shadow p-4 mx-auto block">
+            <Button href="/shop" className="bg-blue text-2xl box-shadow p-4 mx-auto block">
                 Visit Our Shop
             </Button>
         </div>

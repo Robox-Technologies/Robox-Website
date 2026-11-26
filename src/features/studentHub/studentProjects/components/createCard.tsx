@@ -54,7 +54,7 @@ export default function CreateCard() {
                     >
                         <FontAwesomeIcon
                             icon={faSquareBinary}
-                            className="text-lg"
+                            size="lg"
                         />
                         Block Editor
                     </Button>
@@ -62,7 +62,7 @@ export default function CreateCard() {
                         className="bg-blue flex items-center justify-center gap-2 py-3"
                         onClick={() => onChoose('python')}
                     >
-                        <FontAwesomeIcon icon={faPython} className="text-lg" />
+                        <FontAwesomeIcon icon={faPython} size="lg" />
                         Python Editor
                     </Button>
                 </div>

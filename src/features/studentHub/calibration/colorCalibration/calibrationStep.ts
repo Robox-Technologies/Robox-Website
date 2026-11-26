@@ -7,7 +7,14 @@ import type {
     PicoState,
 } from 'src/types/communication'
 import { ConnectionStatus } from 'src/types/communication'
-import { dispatchCalibrationAdvance, dispatchCalibrationReady } from './stage'
+import { createCalibrationStage, debugCalibration } from '../stage'
+
+const {
+    dispatchAdvance: dispatchCalibrationAdvance,
+    dispatchReady: dispatchCalibrationReady,
+} = createCalibrationStage('colorcalibration')
+const debug = (message: string, details?: unknown) =>
+    debugCalibration('colorcalibration', message, details)
 
 /** More generous than the firmware check: calibration is a real sensor read, not an echo. */
 const CALIBRATION_TIMEOUT_MS = 6000
@@ -30,6 +37,9 @@ export interface ColorCalibrationOptions {
 /** Wires up the calibrate stage: one toggle per colour, calibrating or resetting depending on its current state. */
 export function wireColorCalibration(options: ColorCalibrationOptions): void {
     const { root, swatches, previewSwatch, previewName, previewRgb } = options
+    debug('Colour calibration stage mounted', {
+        swatchCount: swatches.length,
+    })
 
     let waitingForResult = false
     let activeSwatch: SwatchButton | null = null
@@ -107,6 +117,11 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         const connected = state.connectionStatus === ConnectionStatus.CONNECTED
 
         if (!connected) {
+            const connectionWasActive = wasConnected
+            debug('Colour calibration connection lost', {
+                previousConnection: connectionWasActive,
+                status: state.connectionStatus,
+            })
             // Nothing is going to answer a request sent to a Ro/Box that's no longer there.
             if (waitingForResult) finish(() => {})
             colorModeRefused = false
@@ -119,11 +134,14 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
                 })
             }
             wasConnected = false
-            if (isActiveStage()) dispatchCalibrationAdvance(root, 'connect')
+            if (connectionWasActive && isActiveStage()) {
+                dispatchCalibrationAdvance(root, 'connect')
+            }
             return
         }
 
         wasConnected = true
+        debug('Colour calibration connection ready')
     }
 
     pico.on('stateChange', updateConnectionUI)
@@ -166,6 +184,7 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
     // calibrated" state.
     pico.on('calibration', (data) => {
         if (data.name !== 'colors') return
+        debug('Received persisted colour calibration')
         const value = data.value as ColorCalibration
         for (const swatch of swatches) {
             applySwatchState(swatch, value[swatch.name])
@@ -193,6 +212,8 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
     ) {
         // One request in flight, so a click on another swatch can't race the first.
         if (waitingForResult) return
+
+        debug(`Sending colour ${action} request`, { colour: swatch.name })
 
         activeSwatch = swatch
         activeAction = action

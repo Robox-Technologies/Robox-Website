@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import Card from '@/components/card'
 import { faSquareBinary } from '@fortawesome/free-solid-svg-icons'
 import { faPython } from '@fortawesome/free-brands-svg-icons'
@@ -24,9 +23,6 @@ export function ProjectCard({
 }) {
     const $selectedProject = useStore(openProject)
     const $editingProject = useStore(editingProject)
-    // Whether the press that's in flight landed on one of the card's own
-    // controls rather than on the card itself — see `handlePointerDown`.
-    const [pressOnControl, setPressOnControl] = useState(false)
     if (!project) return null
     const isSelected = $selectedProject === id
     const isEditing = $editingProject === id
@@ -50,20 +46,9 @@ export function ProjectCard({
         openProject.set(null)
     }
 
-    // `:active` applies to every ancestor, so a press on the ⋮ button or rename row
-    // would sink the whole card. Marked here so `.card-no-press` can suppress it;
-    // CSS can't do it alone without `:has()`, which is above the iOS 15 floor.
-    const handlePointerDown = (e: React.PointerEvent) => {
-        setPressOnControl(
-            e.target instanceof Element &&
-                e.target.closest('.card-control') !== null,
-        )
-    }
-
     return (
         <Card
             href={editorHref(id)}
-            onPointerDown={handlePointerDown}
             // Capture phase, because children call stopPropagation and a bubble-phase
             // handler here would never cancel navigation while editing.
             onClickCapture={(e) => {
@@ -71,7 +56,7 @@ export function ProjectCard({
             }}
             // `overflow-visible` so the settings dialog can escape the card;
             // that's why the thumbnail below has to round its own corners.
-            className={`project-card card-interactive box-shadow overflow-visible bg-white w-62.5 border-transparent border-4 hover:border-blue ${pressOnControl ? 'card-no-press' : ''} ${isSelected ? '-translate-y-0.5! border-green! z-10' : ''}`}
+            className={`project-card card-interactive card-no-press box-shadow overflow-visible bg-white w-62.5 border-transparent border-4 hover:border-blue ${isSelected ? 'project-card-selected border-green! z-10' : ''}`}
             image={
                 <img
                     src={project.thumbnail || ''}
@@ -83,7 +68,7 @@ export function ProjectCard({
                 />
             }
             title={
-                <div className="flex w-full flex-row items-center gap-2">
+                <div className="flex h-8 w-full min-w-0 flex-row items-center gap-2">
                     {isEditing ? (
                         <ProjectEditInput
                             initialName={project.name}
@@ -93,7 +78,8 @@ export function ProjectCard({
                     ) : (
                         <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
                             <FontAwesomeIcon
-                                className="h-6 w-5 text-blue -transform-y-1"
+                                className="shrink-0 text-blue"
+                                size="lg"
                                 icon={typeIcon}
                             />
                             <h3 className="truncate whitespace-nowrap text-xl font-bold">

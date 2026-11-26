@@ -6,6 +6,7 @@ import type {
     PicoMessage,
     ColorReading,
     CalibrationReading,
+    ConnectionHandoff,
 } from 'src/types/communication'
 
 import { ConnectionStatus, FirmwareStatus } from 'src/types/communication'
@@ -29,11 +30,13 @@ import {
     reverseMotorCommand,
     swapMotorsCommand,
     TEST_DRIVE_COMMANDS,
+    verifyProgramCommand,
     type CalibrationName,
     type TestDriveDirection,
 } from './protocol'
 import type { PaletteColorName } from '@/data/colorPalette'
 import { uploadProgram } from './uploader'
+import { programChecksum } from './frames'
 import { BaseTransport, delay, errorMessage } from './transportBase'
 import type { BleDevice } from '@capacitor-community/bluetooth-le'
 
@@ -45,6 +48,7 @@ type PicoEventHandler = (data: unknown) => void
 
 /** Generous: the board's send throttle plus chunked writes can push a reply past half a second. */
 const FIRMWARE_CHECK_TIMEOUT_MS = 2500
+const PROGRAM_VERIFY_TIMEOUT_MS = 2500
 
 /** How long to wait for the wire to actually drop before giving up on a bootloader-entry attempt. */
 const BOOTLOADER_CONFIRM_TIMEOUT_MS = 3000
@@ -82,6 +86,7 @@ export class Pico {
     private responded: boolean = false
     private firmwareConfirmed: boolean = false
     private toastsEnabled: boolean = true
+    private autoConnectEnabled: boolean = false
 
     /**
      * Set while `awaitBootloaderReboot` is waiting to see whether the board
@@ -98,6 +103,8 @@ export class Pico {
     /** Whether the program on the board arrived intact. Cleared when a new upload starts. */
     private uploadVerified: boolean = false
     private verifiedProgram: string | null = null
+    private programVerifyTimeout: ReturnType<typeof setTimeout> | null = null
+    private programVerifySettle: ((verified: boolean) => void) | null = null
 
     /**
      * Lets a duplicate 'connect' join the attempt already running. A
@@ -177,7 +184,33 @@ export class Pico {
 
     /** Whether reconnecting to a previously authorised port/device happens automatically. */
     setAutoConnect(enabled: boolean): void {
+        this.autoConnectEnabled = enabled
         this.communication?.setAutoConnect(enabled)
+    }
+
+    /**
+     * Connect to one specific previously authorised device. For Web Bluetooth
+     * use `BluetoothDevice.id`; for USB use its `usb:<vendor>:<product>` ID.
+     * Web Serial cannot expose a USB serial number, so identical USB devices
+     * share an ID.
+     */
+    async autoConnect(deviceId: string): Promise<void> {
+        if (!this.communication) {
+            throw new Error('Communication method not set')
+        }
+
+        await this.communication.autoConnect(deviceId)
+    }
+
+    getConnectionDeviceId(): string | null {
+        return this.communication?.getConnectionDeviceId() ?? null
+    }
+
+    getConnectionHandoff(): ConnectionHandoff | null {
+        const method = this.state.communicationMethod
+        const deviceId = this.getConnectionDeviceId()
+        if (!method || !deviceId || !this.isConnected()) return null
+        return { method, deviceId }
     }
 
     // Event listener management (for React hooks)
@@ -236,6 +269,7 @@ export class Pico {
         this.protocolVersion = 2
         this.uploadVerified = false
         this.verifiedProgram = null
+        this.settleProgramVerify(false)
         this.calibrationCommandPending = false
         this.colorModePending = false
         this.awaitingRenameReconnect = false
@@ -253,6 +287,7 @@ export class Pico {
         } else if (method === 'iOSBluetooth') {
             this.communication = new IOSBluetoothCommunication(this)
         }
+        this.communication?.setAutoConnect(this.autoConnectEnabled)
         this.communication?.initialize()
     }
 
@@ -363,7 +398,12 @@ export class Pico {
             const usable =
                 protocol >= SUPPORTED_PROTOCOL_VERSION &&
                 meetsMinimumVersion(version, MINIMUM_FIRMWARE_VERSION)
-            console.log(protocol, SUPPORTED_PROTOCOL_VERSION, version, MINIMUM_FIRMWARE_VERSION)
+            console.log(
+                protocol,
+                SUPPORTED_PROTOCOL_VERSION,
+                version,
+                MINIMUM_FIRMWARE_VERSION,
+            )
 
             if (!usable) {
                 this.updateState({
@@ -407,6 +447,17 @@ export class Pico {
             this.emit('color', payload.message as ColorReading)
         } else if (type === 'uploaded') {
             this.emit('uploaded', payload.message)
+        } else if (type === 'verified') {
+            const message = payload.message
+            if (
+                this.programVerifySettle &&
+                message !== null &&
+                typeof message === 'object' &&
+                'ok' in message &&
+                typeof message.ok === 'boolean'
+            ) {
+                this.settleProgramVerify(message.ok)
+            }
         } else if (type === 'renaming') {
             // The reliable success signal, sent before the AT09 module does
             // anything disruptive - do not wait for "renamed" below, which
@@ -418,6 +469,11 @@ export class Pico {
             // already settled via "renaming" above - a harmless no-op then.
             this.settleRename(null)
         } else if (type === 'error') {
+            if (this.programVerifySettle) {
+                this.settleProgramVerify(false)
+                return
+            }
+
             // A refusal while the check is outstanding is the check's answer, not a crash.
             if (this.firmwareCheckPending()) {
                 this.failFirmwareCheck(message)
@@ -587,6 +643,8 @@ export class Pico {
 
     restart(): void {
         this.colorModePending = false
+        this.uploadVerified = false
+        this.verifiedProgram = null
         this.updateState({
             connectionStatus: ConnectionStatus.RESTARTING,
             isRestarting: true,
@@ -838,6 +896,15 @@ export class Pico {
         this.updateState({ connectionStatus: ConnectionStatus.LOADING })
 
         try {
+            if (await this.verifyExistingProgram(code)) {
+                this.uploadVerified = true
+                this.verifiedProgram = code
+                this.updateState({
+                    connectionStatus: ConnectionStatus.CONNECTED,
+                })
+                return
+            }
+
             await uploadProgram(this.communication, code)
             this.uploadVerified = true
             this.verifiedProgram = code
@@ -846,6 +913,40 @@ export class Pico {
             this.emit('error', { message: errorMessage(error) })
             throw error
         }
+    }
+
+    /**
+     * Ask the board whether its persisted program already matches this source.
+     * A negative answer is deliberately not an error: the normal upload is
+     * the fallback for a missing or changed program.
+     */
+    private async verifyExistingProgram(code: string): Promise<boolean> {
+        const checksum = programChecksum(code)
+        const verification = new Promise<boolean>((resolve) => {
+            this.programVerifySettle = resolve
+            this.programVerifyTimeout = setTimeout(() => {
+                this.settleProgramVerify(false)
+            }, PROGRAM_VERIFY_TIMEOUT_MS)
+        })
+
+        try {
+            await this.communication?.write(verifyProgramCommand(checksum))
+            return await verification
+        } catch (error) {
+            this.settleProgramVerify(false)
+            throw error
+        }
+    }
+
+    private settleProgramVerify(verified: boolean): void {
+        if (this.programVerifyTimeout) {
+            clearTimeout(this.programVerifyTimeout)
+            this.programVerifyTimeout = null
+        }
+
+        const settle = this.programVerifySettle
+        this.programVerifySettle = null
+        settle?.(verified)
     }
 
     async sendAndRunCode(code: string): Promise<void> {

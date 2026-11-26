@@ -200,6 +200,12 @@
             transform 100ms ease-out,
             box-shadow 100ms ease-out;
     }
+    .card-interactive.project-card-selected {
+        transform: translate(-2px, -2px);
+    }
+    .card-interactive.box-shadow.project-card-selected {
+        box-shadow: 8px 8px 0 var(--color-drop-shadow);
+    }
     /* `transform` and not the `translate` property, so these compose with (and
        don't clobber) Tailwind's translate utilities — see the note above. */
     @media (hover: hover) {

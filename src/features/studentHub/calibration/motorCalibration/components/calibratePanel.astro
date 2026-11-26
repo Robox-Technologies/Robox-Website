@@ -86,9 +86,9 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
     </div>
 
     <div class="flex flex-wrap items-center justify-between gap-4">
-        <Button href="/hub" className="bg-black">
+        <Button href="/hub" className="calibration-return-link bg-black">
             <FontAwesomeIcon icon={faHouse} className="mr-2" />
-            Return to Student Hub
+            <span class="calibration-return-label text-white!">Return to Student Hub</span>
         </Button>
         <Button id="motor-calibrate-reset" className="border-2 border-black bg-white text-black">
             <FontAwesomeIcon icon={faRotateLeft} className="mr-2" />
@@ -208,7 +208,12 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
     import { toast } from "@/libs/ui/toast";
     import type { MotorCalibration, PicoState } from "src/types/communication";
     import { ConnectionStatus } from "src/types/communication";
-    import { dispatchCalibrationAdvance, dispatchCalibrationReady } from "../stage";
+    import { createCalibrationStage } from "../../stage";
+
+    const {
+        dispatchAdvance: dispatchCalibrationAdvance,
+        dispatchReady: dispatchCalibrationReady,
+    } = createCalibrationStage("motorcalibration");
 
     const MIN_FLOW_SPEED_PX_S = 15;
     const MAX_FLOW_SPEED_PX_S = 60;
@@ -300,7 +305,8 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
             if (state.connectionStatus !== ConnectionStatus.CONNECTED) {
                 if (animationFrame !== null) cancelAnimationFrame(animationFrame);
                 animationFrame = null;
-                if (wasConnected) {
+                const connectionWasActive = wasConnected;
+                if (connectionWasActive) {
                     toast.danger({
                         title: "Ro/Box Disconnected",
                         message: "Your Ro/Box lost its connection. Reconnect it, then calibrate again.",
@@ -308,7 +314,9 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
                     });
                 }
                 wasConnected = false;
-                dispatchCalibrationAdvance(root, "connect");
+                // Arriving on this stage disconnected (e.g. a handoff from the
+                // editor still connecting) isn't a drop - stay put.
+                if (connectionWasActive) dispatchCalibrationAdvance(root, "connect");
                 return;
             }
             wasConnected = true;
