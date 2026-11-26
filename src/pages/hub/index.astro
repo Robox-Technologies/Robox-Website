@@ -6,6 +6,7 @@ import AppHero from '@/features/studentHub/appHero/appHero.astro';
 import Article from '@/components/article/Article';
 import StudentResources from '@/features/studentHub/studentResources/studentResources.astro';
 import StudentProjects from '@/features/studentHub/studentProjects/studentProjects.astro';
+import RobotTools from '@/features/studentHub/robotTools/robotTools.astro';
 import { Image } from 'astro:assets';
 const isIOSBuild = process.env.IOS_BUILD === 'true';
 ---
@@ -50,6 +51,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     }
     <Article>
         {!isIOSBuild && <StudentResources />}
+        <RobotTools />
         <StudentProjects  />
     </Article>
 </StandardLayout>

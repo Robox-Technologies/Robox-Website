@@ -1,0 +1,87 @@
+---
+import { faEyeDropper, faScrewdriver, faSliders } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import Goober from '@/components/Goober.astro'
+import star from '@/images/goobers/star.svg'
+import spiky from '@/images/goobers/spiky.svg'
+import ColorCalibration from '@/features/studentHub/calibration/colorCalibration/colorCalibration.astro'
+import MotorCalibration from '@/features/studentHub/calibration/motorCalibration/motorCalibration.astro'
+
+// Firmware updates need the File System Access API, which the iOS app doesn't have.
+const isIOSBuild = process.env.IOS_BUILD === 'true'
+
+const tools = [
+    {
+        title: 'Calibrate colours',
+        description: 'Teach your Ro/Box what each colour looks like.',
+        icon: faEyeDropper,
+        tile: 'bg-yellow',
+        dialog: 'calibrate-colours-dialog',
+    },
+    {
+        title: 'Calibrate motors',
+        description: 'Make it drive straight, or fix crossed wheels.',
+        icon: faSliders,
+        tile: 'bg-green',
+        dialog: 'calibrate-motors-dialog',
+        goober: { shape: star, class: '-top-14 right-6 w-24 rotate-12', eyesClass: 'top-[40%] left-[25%] w-[50%]' },
+    },
+    ...(isIOSBuild
+        ? []
+        : [
+            {
+                title: 'Update firmware',
+                description: "Not responding? Give it the latest software.",
+                icon: faScrewdriver,
+                tile: 'bg-red',
+                href: '/hub/flash',
+                goober: { shape: spiky, class: '-bottom-10 -right-8 w-24', eyesClass: 'top-[34%] left-[26%] w-[48%]' },
+            },
+        ]),
+]
+
+const cardClass =
+    'card card-interactive box-shadow relative flex h-full w-full flex-col overflow-hidden rounded-3xl bg-white text-left'
+---
+
+<section class="mb-16">
+    <h2 class="mb-8 text-5xl font-bold">My Ro/Box</h2>
+    <div class="flex flex-wrap gap-8">
+        {tools.map((tool) => {
+            const contents = (
+                <>
+                    <span class={`flex aspect-video items-center justify-center text-5xl text-white ${tool.tile}`} aria-hidden="true">
+                        <FontAwesomeIcon icon={tool.icon} />
+                    </span>
+                    <span class="flex flex-1 flex-col gap-1 p-4">
+                        <span class="text-xl font-bold">{tool.title}</span>
+                        <span class="text-sm text-gray-500">{tool.description}</span>
+                    </span>
+                </>
+            )
+            return (
+                <div class="relative isolate w-62.5">
+                    {tool.goober && (
+                        <Goober
+                            shape={tool.goober.shape}
+                            eyes
+                            class={`${tool.goober.class} max-[1000px]:hidden`}
+                            eyesClass={tool.goober.eyesClass}
+                        />
+                    )}
+                    {'dialog' in tool ? (
+                        <button type="button" class={cardClass} data-open-modal={tool.dialog}>
+                            {contents}
+                        </button>
+                    ) : (
+                        <a href={tool.href} class={cardClass}>
+                            {contents}
+                        </a>
+                    )}
+                </div>
+            )
+        })}
+    </div>
+    <ColorCalibration />
+    <MotorCalibration />
+</section>
