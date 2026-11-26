@@ -1,32 +1,36 @@
 ---
-import { faMicrochip, faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faStop, faHouse } from "@fortawesome/free-solid-svg-icons"
+import { faMicrochip, faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faStop, faRotateLeft } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
 import MotorToggle from "./motorToggle.astro"
+import ReturnButton from "@/features/studentHub/components/returnButton.astro"
 import motorImage from "../images/Motor.png"
+
+const driveButtonClass = "button-interactive flex h-11 items-center justify-center gap-2 rounded-xl border-2 font-semibold"
 ---
 
-<div class="motorCalibrationPanel flex w-full flex-col gap-6">
+<div class="motorCalibrationPanel flex w-full flex-col gap-10">
     <p class="text-gray-800">
-        Drag the slider towards whichever motor is running slower - the line
-        feeding it pulses faster to show the boost it's getting. This takes
-        effect the next time your program starts; it won't change a program
-        that's already running.
+        Slide towards the motor that's running slower, or type in how much to
+        boost it. Changes apply the next time a program starts.
     </p>
 
-    <div class="motorCalibrationControls flex flex-col gap-6">
-        <div class="flex w-full items-center justify-center gap-2" aria-hidden="true">
-            <img src={motorImage.src} alt="" class="w-20 shrink-0 motor-calibrate-mirror" />
-            <div id="motor-calibrate-line-left" class="motor-calibrate-line h-2 flex-1 rounded-full"></div>
-            <div class="flex size-9 shrink-0 items-center justify-center rounded-full bg-black text-white">
+    <div class="flex flex-col gap-8">
+        <div class="grid grid-cols-[auto_1fr_auto_1fr_auto] items-center gap-x-3 gap-y-4">
+            <img src={motorImage.src} alt="" aria-hidden="true" class="h-24 w-auto justify-self-center -scale-x-100" />
+            <div id="motor-calibrate-line-left" class="motor-calibrate-line h-2 rounded-full" aria-hidden="true"></div>
+            <div class="flex size-11 items-center justify-center justify-self-center rounded-full border-2 border-black bg-white text-lg text-blue" aria-hidden="true">
                 <FontAwesomeIcon icon={faMicrochip} />
             </div>
-            <div id="motor-calibrate-line-right" class="motor-calibrate-line h-2 flex-1 rounded-full"></div>
-            <img src={motorImage.src} alt="" class="w-20 shrink-0" />
+            <div id="motor-calibrate-line-right" class="motor-calibrate-line h-2 rounded-full" aria-hidden="true"></div>
+            <img src={motorImage.src} alt="" aria-hidden="true" class="h-24 w-auto justify-self-center" />
+
+            <MotorToggle id="motor-calibrate-reverse-left" label="Reverse" ariaLabel="Reverse left motor" />
+            <MotorToggle id="motor-calibrate-swap" label="Swap" ariaLabel="Swap left and right motors" class="col-start-3" />
+            <MotorToggle id="motor-calibrate-reverse-right" label="Reverse" ariaLabel="Reverse right motor" class="col-start-5" />
         </div>
 
-        <div class="flex w-full items-center gap-3">
-            <span class="text-sm font-semibold">Left</span>
+        <div class="flex flex-col gap-3">
             <input
                 type="range"
                 id="motor-calibrate-slider"
@@ -34,83 +38,64 @@ import motorImage from "../images/Motor.png"
                 max="1"
                 step="0.01"
                 value="0"
-                class="flex-1"
-                aria-label="Motor balance"
+                class="motor-calibrate-slider w-full"
+                aria-label="Motor balance, left to right"
             />
-            <span class="text-sm font-semibold">Right</span>
-        </div>
-        <p id="motor-calibrate-readout" class="text-lg font-bold text-black">Balanced</p>
-
-        <div class="flex w-full flex-col gap-3 border-t border-gray-200 pt-3">
-            <MotorToggle id="motor-calibrate-reverse-left" label="Reverse left motor" />
-            <MotorToggle id="motor-calibrate-reverse-right" label="Reverse right motor" />
-            <MotorToggle id="motor-calibrate-swap" label="Swap left/right motors" />
-        </div>
-
-        <div class="flex w-full flex-col items-center gap-2 border-t border-gray-200 pt-3">
-            <span class="text-sm font-semibold">Test drive</span>
-            <div class="grid w-40 grid-cols-3 grid-rows-3 gap-2">
-                <button
-                    type="button"
-                    id="motor-calibrate-test-forward"
-                    class="button-interactive col-start-2 row-start-1 flex items-center justify-center rounded-xl bg-black px-3 py-2 text-white"
-                    aria-label="Drive forward"
-                >
-                    <FontAwesomeIcon icon={faArrowUp} />
-                </button>
-                <button
-                    type="button"
-                    id="motor-calibrate-test-left"
-                    class="button-interactive col-start-1 row-start-2 flex items-center justify-center rounded-xl bg-black px-3 py-2 text-white"
-                    aria-label="Pivot left"
-                >
-                    <FontAwesomeIcon icon={faArrowLeft} />
-                </button>
-                <button
-                    type="button"
-                    id="motor-calibrate-test-stop"
-                    class="button-interactive col-start-2 row-start-2 flex items-center justify-center rounded-xl bg-gray-500 px-3 py-2 text-white"
-                    aria-label="Stop motors"
-                >
-                    <FontAwesomeIcon icon={faStop} />
-                </button>
-                <button
-                    type="button"
-                    id="motor-calibrate-test-right"
-                    class="button-interactive col-start-3 row-start-2 flex items-center justify-center rounded-xl bg-black px-3 py-2 text-white"
-                    aria-label="Pivot right"
-                >
-                    <FontAwesomeIcon icon={faArrowRight} />
-                </button>
-                <button
-                    type="button"
-                    id="motor-calibrate-test-backward"
-                    class="button-interactive col-start-2 row-start-3 flex items-center justify-center rounded-xl bg-black px-3 py-2 text-white"
-                    aria-label="Drive backward"
-                >
-                    <FontAwesomeIcon icon={faArrowDown} />
-                </button>
+            <div class="flex items-center justify-between gap-4">
+                <label class="flex items-center gap-2">
+                    <span class="text-sm font-semibold text-black">Left boost</span>
+                    <span class="motor-boost-field">
+                        <input type="number" id="motor-calibrate-boost-left" min="0" max="100" step="1" value="0" inputmode="numeric" aria-label="Left motor boost, in percent" />
+                        <span aria-hidden="true">%</span>
+                    </span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <span class="motor-boost-field">
+                        <input type="number" id="motor-calibrate-boost-right" min="0" max="100" step="1" value="0" inputmode="numeric" aria-label="Right motor boost, in percent" />
+                        <span aria-hidden="true">%</span>
+                    </span>
+                    <span class="text-sm font-semibold text-black">Right boost</span>
+                </label>
             </div>
-        </div>
-
-        <div class="flex flex-wrap gap-4">
-            <Button id="motor-calibrate-reset" className="bg-gray-500">Reset</Button>
         </div>
     </div>
 
-    <div class="flex flex-wrap gap-4">
-        <Button href="/hub" className="calibration-return-link bg-black">
-            <FontAwesomeIcon icon={faHouse} className="mr-2" />
-            <span class="calibration-return-label text-white!">Return to Student Hub</span>
+    <div class="flex flex-col gap-3">
+        <p class="text-gray-800"><span class="font-bold text-black">Test drive.</span></p>
+        <div class="grid grid-cols-5 gap-2">
+            <button type="button" id="motor-calibrate-test-left" class={`${driveButtonClass} border-black bg-white text-black`} aria-label="Turn left">
+                <FontAwesomeIcon icon={faArrowLeft} />
+                <span class="hidden text-inherit sm:inline">Left</span>
+            </button>
+            <button type="button" id="motor-calibrate-test-forward" class={`${driveButtonClass} border-black bg-white text-black`} aria-label="Drive forward">
+                <FontAwesomeIcon icon={faArrowUp} />
+                <span class="hidden text-inherit sm:inline">Forward</span>
+            </button>
+            <button type="button" id="motor-calibrate-test-stop" class={`${driveButtonClass} border-red bg-red text-white`} aria-label="Stop">
+                <FontAwesomeIcon icon={faStop} />
+                <span class="hidden text-inherit sm:inline">Stop</span>
+            </button>
+            <button type="button" id="motor-calibrate-test-backward" class={`${driveButtonClass} border-black bg-white text-black`} aria-label="Drive backward">
+                <FontAwesomeIcon icon={faArrowDown} />
+                <span class="hidden text-inherit sm:inline">Back</span>
+            </button>
+            <button type="button" id="motor-calibrate-test-right" class={`${driveButtonClass} border-black bg-white text-black`} aria-label="Turn right">
+                <span class="hidden text-inherit sm:inline">Right</span>
+                <FontAwesomeIcon icon={faArrowRight} />
+            </button>
+        </div>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <ReturnButton handoff />
+        <Button id="motor-calibrate-reset" className="border-2 border-black bg-white text-black">
+            <FontAwesomeIcon icon={faRotateLeft} className="mr-2" />
+            Reset to defaults
         </Button>
     </div>
 </div>
 
 <style>
-    .motor-calibrate-mirror {
-        transform: scaleX(-1);
-    }
-
     .motor-calibrate-line {
         --intensity: 0.4;
         background-image: repeating-linear-gradient(
@@ -120,26 +105,128 @@ import motorImage from "../images/Motor.png"
         );
         background-size: 20px 100%;
         opacity: var(--intensity);
-        /* Only opacity is a CSS transition - position is driven frame by
-           frame from JS in calibrationStep.ts, precisely so its speed can
-           change smoothly mid-flight. Restarting a CSS `animation-duration`
-           on every slider `input` event resyncs the animation's clock and
-           makes it visibly jump. */
+        /* Position is driven per frame from the script below; a CSS animation
+           would jump every time the slider changes its speed. */
         transition: opacity 200ms ease-out;
+    }
+
+    /* Blue fills from the centre ("balanced") out to the thumb. --bias (-1..1)
+       is set from the script below; --pos tracks the thumb's centre, which
+       travels 11px (half the thumb) in from each end. */
+    .motor-calibrate-slider {
+        --bias: 0;
+        --pos: calc(11px + (var(--bias) + 1) / 2 * (100% - 22px));
+        -webkit-appearance: none;
+        appearance: none;
+        height: 8px;
+        border-radius: 9999px;
+        background:
+            linear-gradient(var(--color-tone3), var(--color-tone3)) center / 2px 100% no-repeat,
+            linear-gradient(
+                to right,
+                var(--color-secondary) min(50%, var(--pos)),
+                var(--color-blue) min(50%, var(--pos)) max(50%, var(--pos)),
+                var(--color-secondary) max(50%, var(--pos))
+            );
+        cursor: pointer;
+    }
+    /* White centre with a thick blue ring stays visible on grey and on the blue fill. */
+    .motor-calibrate-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 22px;
+        height: 22px;
+        border: 5px solid var(--color-blue);
+        border-radius: 9999px;
+        background: #ffffff;
+    }
+    .motor-calibrate-slider::-moz-range-thumb {
+        box-sizing: border-box;
+        width: 22px;
+        height: 22px;
+        border: 5px solid var(--color-blue);
+        border-radius: 9999px;
+        background: #ffffff;
+    }
+    .motor-calibrate-slider::-moz-range-track {
+        background: transparent;
+    }
+    /* Recessed (inner shadow) so it reads as a field to type in, not a button. */
+    .motor-boost-field {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        height: 40px;
+        padding: 0 10px;
+        border: 2px solid var(--color-black);
+        border-radius: 10px;
+        background: #ffffff;
+        box-shadow: inset 2px 2px 0 var(--color-tone2);
+        cursor: text;
+        transition: border-color 150ms ease-out;
+    }
+    .motor-boost-field:hover {
+        border-color: var(--color-blue);
+    }
+    .motor-boost-field:focus-within {
+        border-color: var(--color-blue);
+        outline: 2px solid var(--color-blue);
+        outline-offset: 2px;
+    }
+    .motor-boost-field span {
+        color: var(--color-black);
+        font-weight: 700;
+    }
+    .motor-boost-field input {
+        width: 3ch;
+        border: none;
+        background: transparent;
+        color: var(--color-black);
+        font-weight: 700;
+        font-size: 1.125rem;
+        text-align: right;
+        outline: none;
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
+    .motor-boost-field input::-webkit-inner-spin-button,
+    .motor-boost-field input::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .motor-calibrate-slider:focus-visible {
+        outline: 2px solid var(--color-blue);
+        outline-offset: 6px;
     }
 </style>
 
 <script>
-    import { wireMotorCalibration } from "../calibrationStep";
+    import { pico } from "@/libs/communication/communicate";
+    import { toast } from "@/libs/ui/toast";
+    import type { MotorCalibration, PicoState } from "src/types/communication";
+    import { ConnectionStatus } from "src/types/communication";
+    import { createCalibrationStage } from "../../stage";
 
-    // Astro only includes this script once no matter how many instances
-    // render, so wire up every instance found rather than assuming there's a
-    // single one.
+    const {
+        dispatchAdvance: dispatchCalibrationAdvance,
+        dispatchReady: dispatchCalibrationReady,
+    } = createCalibrationStage("motorcalibration");
+
+    const MIN_FLOW_SPEED_PX_S = 15;
+    const MAX_FLOW_SPEED_PX_S = 60;
+    const MIN_FLOW_INTENSITY = 0.3;
+    const MAX_FLOW_INTENSITY = 1;
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Astro includes this script once, however many panels render.
     document.querySelectorAll<HTMLDivElement>(".motorCalibrationPanel").forEach((root) => {
         const leftLine = root.querySelector<HTMLDivElement>("#motor-calibrate-line-left");
         const rightLine = root.querySelector<HTMLDivElement>("#motor-calibrate-line-right");
         const slider = root.querySelector<HTMLInputElement>("#motor-calibrate-slider");
-        const readout = root.querySelector<HTMLParagraphElement>("#motor-calibrate-readout");
+        const leftBoostInput = root.querySelector<HTMLInputElement>("#motor-calibrate-boost-left");
+        const rightBoostInput = root.querySelector<HTMLInputElement>("#motor-calibrate-boost-right");
         const reverseLeftToggle = root.querySelector<HTMLButtonElement>("#motor-calibrate-reverse-left");
         const reverseRightToggle = root.querySelector<HTMLButtonElement>("#motor-calibrate-reverse-right");
         const swapToggle = root.querySelector<HTMLButtonElement>("#motor-calibrate-swap");
@@ -154,7 +241,8 @@ import motorImage from "../images/Motor.png"
             !leftLine ||
             !rightLine ||
             !slider ||
-            !readout ||
+            !leftBoostInput ||
+            !rightBoostInput ||
             !reverseLeftToggle ||
             !reverseRightToggle ||
             !swapToggle ||
@@ -168,21 +256,156 @@ import motorImage from "../images/Motor.png"
             throw new Error("Calibrate panel elements not found");
         }
 
-        wireMotorCalibration({
-            root,
-            leftLine,
-            rightLine,
-            slider,
-            readout,
-            reverseLeftToggle,
-            reverseRightToggle,
-            swapToggle,
-            testForwardButton,
-            testBackwardButton,
-            testLeftButton,
-            testRightButton,
-            testStopButton,
-            resetButton,
+        // Negative bias boosts the left motor, positive the right.
+        let leftFavor = 0;
+        let rightFavor = 0;
+
+        const updateDiagram = (bias: number) => {
+            leftFavor = bias < 0 ? -bias : 0;
+            rightFavor = bias > 0 ? bias : 0;
+            leftLine.style.setProperty("--intensity", String(MIN_FLOW_INTENSITY + leftFavor * (MAX_FLOW_INTENSITY - MIN_FLOW_INTENSITY)));
+            rightLine.style.setProperty("--intensity", String(MIN_FLOW_INTENSITY + rightFavor * (MAX_FLOW_INTENSITY - MIN_FLOW_INTENSITY)));
+            slider.style.setProperty("--bias", String(bias));
+        };
+
+        const setBias = (bias: number) => {
+            slider.value = String(bias);
+            leftBoostInput.value = String(bias < 0 ? Math.round(-bias * 100) : 0);
+            rightBoostInput.value = String(bias > 0 ? Math.round(bias * 100) : 0);
+            updateDiagram(bias);
+        };
+
+        const setToggle = (toggle: HTMLElement, checked: boolean) => {
+            toggle.setAttribute("aria-checked", String(checked));
+        };
+
+        // Flow speed is changed every frame by hand: changing a CSS
+        // animation-duration mid-flight makes the dashes jump.
+        let leftOffsetPx = 0;
+        let rightOffsetPx = 0;
+        let lastFrameTime: number | null = null;
+        let animationFrame: number | null = null;
+
+        const tick = (time: number) => {
+            const deltaSeconds = lastFrameTime === null ? 0 : (time - lastFrameTime) / 1000;
+            lastFrameTime = time;
+            leftOffsetPx -= (MIN_FLOW_SPEED_PX_S + leftFavor * (MAX_FLOW_SPEED_PX_S - MIN_FLOW_SPEED_PX_S)) * deltaSeconds;
+            rightOffsetPx += (MIN_FLOW_SPEED_PX_S + rightFavor * (MAX_FLOW_SPEED_PX_S - MIN_FLOW_SPEED_PX_S)) * deltaSeconds;
+            leftLine.style.backgroundPosition = `${leftOffsetPx}px 0`;
+            rightLine.style.backgroundPosition = `${rightOffsetPx}px 0`;
+            animationFrame = requestAnimationFrame(tick);
+        };
+
+        // A dropped connection sends the student back to Connect; the toast
+        // only shows for a real drop, not for arriving here disconnected.
+        let wasConnected = false;
+        const updateConnectionUI = (state: PicoState) => {
+            if (state.connectionStatus !== ConnectionStatus.CONNECTED) {
+                if (animationFrame !== null) cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+                const connectionWasActive = wasConnected;
+                if (connectionWasActive) {
+                    toast.danger({
+                        title: "Ro/Box Disconnected",
+                        message: "Your Ro/Box lost its connection. Reconnect it, then calibrate again.",
+                        durationMs: 6000,
+                    });
+                }
+                wasConnected = false;
+                // Arriving on this stage disconnected (e.g. a handoff from the
+                // editor still connecting) isn't a drop - stay put.
+                if (connectionWasActive) dispatchCalibrationAdvance(root, "connect");
+                return;
+            }
+            wasConnected = true;
+            if (!prefersReducedMotion && animationFrame === null) {
+                lastFrameTime = null;
+                animationFrame = requestAnimationFrame(tick);
+            }
+        };
+
+        pico.on("stateChange", updateConnectionUI);
+        // Deferred so the page's stage-flow script has registered its
+        // listener before a redirect to Connect is dispatched.
+        setTimeout(() => updateConnectionUI(pico.getState()), 0);
+        updateDiagram(0);
+
+        // Display only: never write a read value back to the board.
+        pico.on("calibration", (data) => {
+            if (data.name !== "motors") return;
+            const value = data.value as MotorCalibration;
+            setBias(value.bias);
+            setToggle(reverseLeftToggle, value.reverse[0]);
+            setToggle(reverseRightToggle, value.reverse[1]);
+            setToggle(swapToggle, value.swap);
+            dispatchCalibrationReady(root);
         });
+
+        slider.addEventListener("input", () => setBias(Number(slider.value)));
+        // Sent on release only: firmware picks it up at the next program start.
+        slider.addEventListener("change", () => pico.motorCalibrate(Number(slider.value)));
+
+        for (const [input, sign] of [[leftBoostInput, -1], [rightBoostInput, 1]] as const) {
+            const readBias = () => {
+                const percent = Math.round(Number(input.value));
+                return (sign * (Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) : 0)) / 100;
+            };
+            input.addEventListener("focus", () => input.select());
+            input.addEventListener("input", () => {
+                if (input.value === "") return;
+                const bias = readBias();
+                const other = input === leftBoostInput ? rightBoostInput : leftBoostInput;
+                slider.value = String(bias);
+                other.value = "0";
+                updateDiagram(bias);
+            });
+            input.addEventListener("change", () => {
+                const bias = readBias();
+                setBias(bias);
+                pico.motorCalibrate(bias);
+            });
+            input.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") input.blur();
+            });
+        }
+
+        reverseLeftToggle.addEventListener("click", () => {
+            const reversed = reverseLeftToggle.getAttribute("aria-checked") !== "true";
+            setToggle(reverseLeftToggle, reversed);
+            pico.motorReverse(0, reversed);
+        });
+        reverseRightToggle.addEventListener("click", () => {
+            const reversed = reverseRightToggle.getAttribute("aria-checked") !== "true";
+            setToggle(reverseRightToggle, reversed);
+            pico.motorReverse(1, reversed);
+        });
+        swapToggle.addEventListener("click", () => {
+            const swapped = swapToggle.getAttribute("aria-checked") !== "true";
+            setToggle(swapToggle, swapped);
+            pico.motorSwap(swapped);
+        });
+
+        // Programs run with both motor polarities at -1 (editor preamble), so
+        // each button sends the move_* command that matches the same block.
+        testForwardButton.addEventListener("click", () => pico.testDrive("backward"));
+        testBackwardButton.addEventListener("click", () => pico.testDrive("forward"));
+        testLeftButton.addEventListener("click", () => pico.testDrive("right"));
+        testRightButton.addEventListener("click", () => pico.testDrive("left"));
+        testStopButton.addEventListener("click", () => pico.stopMotors());
+
+        resetButton.addEventListener("click", () => {
+            setBias(0);
+            pico.motorCalibrate(0);
+            setToggle(reverseLeftToggle, false);
+            pico.motorReverse(0, false);
+            setToggle(reverseRightToggle, false);
+            pico.motorReverse(1, false);
+            setToggle(swapToggle, false);
+            pico.motorSwap(false);
+            pico.stopMotors();
+        });
+
+        // A test drive keeps running on the board after the tab goes away.
+        window.addEventListener("pagehide", () => pico.stopMotors());
     });
 </script>

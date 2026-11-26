@@ -119,12 +119,18 @@ export class Pico {
      * sensor attached, out-of-range bias) with the same generic `error`
      * type a crashed user program gets, and this is what lets
      * `handleMessage` tell the two apart - without it, every rejected
-     * calibration click would restart an otherwise healthy board. Not used
-     * for `colorMode()`: unlike those, it has no dedicated success reply to
-     * clear this on, so tracking it the same way would leave this stuck
-     * true and silently swallow a real crash later.
+     * calibration click would restart an otherwise healthy board.
      */
     private calibrationCommandPending: boolean = false
+
+    /**
+     * Same idea for `colorMode()`, kept separate because its success reply
+     * is just the first streamed `color` reading rather than a dedicated
+     * ack. A board with no colour sensor refuses it with a generic `error`;
+     * restarting on that dropped the link, the calibration page then sent
+     * `colorMode()` again on reconnect, and the two looped forever.
+     */
+    private colorModePending: boolean = false
 
     /**
      * Tracks the promise returned by an outstanding `renameDevice()` call.
@@ -265,6 +271,7 @@ export class Pico {
         this.verifiedProgram = null
         this.settleProgramVerify(false)
         this.calibrationCommandPending = false
+        this.colorModePending = false
         this.awaitingRenameReconnect = false
         this.settleRename(new Error('The Ro/Box disconnected.'))
         this.updateState({
@@ -354,6 +361,7 @@ export class Pico {
             this.responded = false
             this.firmwareConfirmed = false
             this.calibrationCommandPending = false
+            this.colorModePending = false
             this.clearFirmwareCheck()
 
             await this.communication.disconnect()
@@ -415,13 +423,6 @@ export class Pico {
                 connectionStatus: ConnectionStatus.CONNECTED,
                 firmwareVersion: version,
             })
-            if (this.toastsEnabled) {
-                toast.success({
-                    title: 'Ro/Box Connected',
-                    message: 'Your Ro/Box is connected and ready to run.',
-                    durationMs: 3000,
-                })
-            }
         } else if (type === 'connect' && this.state.isRestarting) {
             this.updateState({
                 connectionStatus: ConnectionStatus.CONNECTED,
@@ -441,6 +442,7 @@ export class Pico {
             this.calibrationCommandPending = false
             this.emit('calibration', payload.message as CalibrationReading)
         } else if (type === 'color') {
+            this.colorModePending = false
             // A structured reading, so use the raw payload rather than the `message` coercion.
             this.emit('color', payload.message as ColorReading)
         } else if (type === 'uploaded') {
@@ -485,6 +487,13 @@ export class Pico {
             // colour-mode stream was already running.
             if (this.calibrationCommandPending) {
                 this.calibrationCommandPending = false
+                this.emit('error', { message })
+                return
+            }
+
+            // And a refused colorMode() (no colour sensor attached).
+            if (this.colorModePending) {
+                this.colorModePending = false
                 this.emit('error', { message })
                 return
             }
@@ -633,6 +642,7 @@ export class Pico {
     }
 
     restart(): void {
+        this.colorModePending = false
         this.uploadVerified = false
         this.verifiedProgram = null
         this.updateState({
@@ -665,15 +675,7 @@ export class Pico {
 
     request(): void {
         this.updateState({ connectionStatus: ConnectionStatus.CONNECTING })
-        this.communication?.request().catch(() => {
-            if (this.toastsEnabled) {
-                toast.warning({
-                    title: 'Connection Cancelled',
-                    message: 'Ro/Box connection was cancelled.',
-                    durationMs: 5000,
-                })
-            }
-        })
+        this.communication?.request()
     }
 
     /** Calibrates one colour against a swatch. Independent per colour, but do white/black first. */
@@ -870,6 +872,7 @@ export class Pico {
      * so nothing here needs to explicitly cancel a previous call.
      */
     colorMode(): void {
+        this.colorModePending = true
         void this.communication?.write(COMMANDS.COLOR_MODE)
     }
 
@@ -960,6 +963,7 @@ export class Pico {
             return
         }
 
+        this.colorModePending = false
         void this.communication?.write(COMMANDS.START_PROGRAM)
         this.updateState({ connectionStatus: ConnectionStatus.RUNNING })
     }

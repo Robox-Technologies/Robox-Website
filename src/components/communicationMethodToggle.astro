@@ -1,25 +1,56 @@
 ---
 import { faUsb, faBluetoothB } from "@fortawesome/free-brands-svg-icons";
-import Button from "@/components/button";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 ---
-<div class="communicationMethodToggle">
-    <div class="communicationMethodToggleUsbWrap">
-        <Button
-            icon={faUsb}
-            title="Connecting over USB — click to switch to Bluetooth"
-            className="flex items-center w-10 h-10 justify-center border-2 border-blue rounded-full bg-white box-shadow pointer-events-auto"
-            iconStyle="text-blue text-xl -rotate-90"
-        />
-    </div>
-    <div class="communicationMethodToggleBluetoothWrap hidden">
-        <Button
-            icon={faBluetoothB}
-            title="Connecting over Bluetooth — click to switch to USB"
-            className="flex items-center w-10 h-10 justify-center border-2 border-blue rounded-full bg-white box-shadow pointer-events-auto"
-            iconStyle="text-blue text-xl"
-        />
-    </div>
+<div class="communicationMethodToggle" data-method="USB">
+    <button
+        type="button"
+        role="switch"
+        aria-checked="false"
+        aria-label="Connect over Bluetooth instead of USB"
+        title="Connecting over USB — click to switch to Bluetooth"
+        class="communicationMethodToggleSwitch button-interactive relative flex items-center w-20 h-10 rounded-full border-2 border-blue bg-white box-shadow pointer-events-auto"
+    >
+        <span class="communicationMethodToggleKnob absolute top-0.5 left-0.5 w-8 h-8 rounded-full bg-blue"></span>
+        {/* 1.5px left of the knob: the glyph's solid square branch makes it read right-heavy. */}
+        <span class="communicationMethodToggleIcon communicationMethodToggleUsb absolute top-0.5 left-[1.5px] flex w-8 h-8 items-center justify-center">
+            <FontAwesomeIcon icon={faUsb} className="text-lg -rotate-90" />
+        </span>
+        <span class="communicationMethodToggleIcon communicationMethodToggleBluetooth absolute top-0.5 left-[42px] flex w-8 h-8 items-center justify-center">
+            <FontAwesomeIcon icon={faBluetoothB} className="text-lg" />
+        </span>
+    </button>
 </div>
+<style>
+    .communicationMethodToggleKnob {
+        transition: transform 200ms ease-out;
+    }
+    /* Knob is 2rem inside a 5rem pill with a 2px border and 2px inset. */
+    .communicationMethodToggle[data-method='WebBluetooth'] .communicationMethodToggleKnob {
+        transform: translateX(calc(5rem - 2rem - 8px));
+    }
+
+    /* global.css colours every span dark, so the icons set their own colour. */
+    .communicationMethodToggleIcon {
+        color: var(--color-blue);
+        transition: color 200ms ease-out;
+    }
+    .communicationMethodToggle[data-method='USB'] .communicationMethodToggleUsb,
+    .communicationMethodToggle[data-method='WebBluetooth'] .communicationMethodToggleBluetooth {
+        color: #ffffff;
+    }
+
+    .communicationMethodToggleSwitch:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+    .communicationMethodToggle[data-unsupported] .communicationMethodToggleIcon {
+        color: var(--color-gray-500, #6b7280);
+    }
+    .communicationMethodToggle[data-unsupported] .communicationMethodToggleKnob {
+        display: none;
+    }
+</style>
 <script>
     // Astro includes this script once, but both editor bodies render a copy of the
     // component, so wire up every instance.
@@ -71,63 +102,54 @@ import Button from "@/components/button";
             supportedMethods[(currentIndex + 1) % supportedMethods.length];
         setPreferredCommunicationMethod(next);
         void pico.setCommunicationMethod(next);
-        toast.informative({
-            title: "Connection Method Changed",
-            message: `Now connecting to Ro/Box over ${methodLabels[next] ?? next}.`,
-            durationMs: 3000,
-        });
         return next;
     }
 
-    document
-        .querySelectorAll<HTMLDivElement>(".communicationMethodToggle")
-        .forEach((root) => {
-            const usbWrap = root.querySelector<HTMLDivElement>(
-                ".communicationMethodToggleUsbWrap",
-            );
-            const bluetoothWrap = root.querySelector<HTMLDivElement>(
-                ".communicationMethodToggleBluetoothWrap",
-            );
-            const usbButton =
-                usbWrap?.querySelector<HTMLButtonElement>("button");
-            const bluetoothButton =
-                bluetoothWrap?.querySelector<HTMLButtonElement>("button");
-            if (!usbWrap || !bluetoothWrap || !usbButton || !bluetoothButton)
-                throw new Error("Communication method toggle buttons not found");
+    const roots = document.querySelectorAll<HTMLDivElement>(".communicationMethodToggle");
 
-            function showMethod(method: CommunicationMethod) {
-                usbWrap!.classList.toggle("hidden", method !== "USB");
-                bluetoothWrap!.classList.toggle(
-                    "hidden",
-                    method !== "WebBluetooth",
-                );
+    // Every instance mirrors the one shared method, so a switch in one updates all.
+    function showMethod(method: CommunicationMethod) {
+        const bluetooth = method === "WebBluetooth";
+        const label = methodLabels[method ?? "USB"] ?? "USB";
+        const other = bluetooth ? "USB" : "Bluetooth";
+        roots.forEach((root) => {
+            const button = root.querySelector<HTMLButtonElement>("button")!;
+            root.dataset.method = bluetooth ? "WebBluetooth" : "USB";
+            button.setAttribute("aria-checked", bluetooth ? "true" : "false");
+            if (supportedMethods.length < 2) {
+                button.title = `Connecting over ${label} — this browser doesn't support ${other}`;
+                return;
             }
-
-            if (initial) {
-                showMethod(initial);
-            } else {
-                usbButton.disabled = true;
-                usbButton.title =
-                    "Your browser doesn't support connecting to a Ro/Box";
-                usbWrap.classList.remove("hidden");
-                bluetoothWrap.classList.add("hidden");
-            }
-
-            usbButton.addEventListener("click", () => {
-                showMethod(cycle());
-            });
-            bluetoothButton.addEventListener("click", () => {
-                showMethod(cycle());
-            });
-
-            // Locked while CONNECTING, so a switch can't abandon a connect in progress.
-            if (initial) {
-                pico.on("stateChange", (state: PicoState) => {
-                    const connecting =
-                        state.connectionStatus === ConnectionStatus.CONNECTING;
-                    usbButton!.disabled = connecting;
-                    bluetoothButton!.disabled = connecting;
-                });
-            }
+            button.title = `Connecting over ${label} — click to switch to ${other}`;
         });
+    }
+
+    roots.forEach((root) => {
+        const button = root.querySelector<HTMLButtonElement>("button");
+        if (!button) throw new Error("Communication method toggle button not found");
+
+        if (!initial) {
+            button.disabled = true;
+            button.title = "Your browser doesn't support connecting to a Ro/Box";
+            root.dataset.unsupported = "";
+            return;
+        }
+
+        // Nothing to switch to when only one method is available.
+        if (supportedMethods.length < 2) button.disabled = true;
+
+        button.addEventListener("click", () => {
+            showMethod(cycle());
+        });
+
+        // Locked while CONNECTING, so a switch can't abandon a connect in progress.
+        if (supportedMethods.length > 1) {
+            pico.on("stateChange", (state: PicoState) => {
+                button.disabled =
+                    state.connectionStatus === ConnectionStatus.CONNECTING;
+            });
+        }
+    });
+
+    if (initial) showMethod(initial);
 </script>

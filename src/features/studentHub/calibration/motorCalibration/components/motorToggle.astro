@@ -2,39 +2,39 @@
 interface Props {
     id: string
     label: string
+    ariaLabel: string
+    class?: string
 }
-const { id, label } = Astro.props
+const { id, label, ariaLabel, class: className } = Astro.props
 ---
 
-<div class="w-full flex items-center justify-between gap-3">
-    <span class="text-sm font-semibold">{label}</span>
+<label for={id} class:list={["flex cursor-pointer flex-col items-center gap-1.5 justify-self-center", className]}>
+    <span class="text-sm font-semibold text-black">{label}</span>
     <button
         type="button"
         id={id}
         role="switch"
         aria-checked="false"
-        aria-label={label}
-        class="motor-toggle button-interactive w-12 h-6 px-0.5 rounded-full bg-gray-300 shrink-0"
+        aria-label={ariaLabel}
+        class="motor-toggle button-interactive relative h-7 w-12 shrink-0 rounded-full bg-secondary"
     >
-        <span class="motor-toggle-thumb block size-5 rounded-full bg-white shadow-md"
-        ></span>
+        <span class="motor-toggle-thumb absolute top-1 left-1 block size-5 rounded-full bg-white"></span>
     </button>
-</div>
+</label>
 
 <style>
     .motor-toggle {
         transition: background-color 150ms ease-out;
     }
-
-    .motor-toggle[aria-checked="true"] {
-        background-color: #000;
+    .motor-toggle[aria-checked='true'] {
+        background-color: var(--color-blue);
     }
 
     .motor-toggle-thumb {
         transition: transform 150ms ease-out;
     }
-
-    .motor-toggle[aria-checked="true"] .motor-toggle-thumb {
-        transform: translateX(1.5rem);
+    /* 48px track - 20px thumb - 4px inset each side. */
+    .motor-toggle[aria-checked='true'] .motor-toggle-thumb {
+        transform: translateX(20px);
     }
 </style>

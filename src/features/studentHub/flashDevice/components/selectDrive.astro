@@ -27,13 +27,12 @@ import FlashProgress from './flashProgress.astro';
 <script>
     import {
         dispatchFlashAdvance,
-        dispatchFlashClearError,
-        dispatchFlashError,
         hideFlashProgress,
         setButtonBusy,
         setFlashProgress,
         showFlashProgress,
     } from "../stage";
+    import { toast } from "@/libs/ui/toast";
 
     const FIRMWARE_URL = "/latest.uf2";
 
@@ -92,7 +91,6 @@ import FlashProgress from './flashProgress.astro';
 
         async function flash() {
             setFlowBusy(true);
-            dispatchFlashClearError(root);
 
             let directory: FileSystemDirectoryHandle;
             try {
@@ -105,11 +103,10 @@ import FlashProgress from './flashProgress.astro';
 
             if (!(await isRoboxDrive(directory))) {
                 setFlowBusy(false);
-                dispatchFlashError(
-                    root,
-                    "Wrong Drive Selected",
-                    'That doesn\'t look like your Ro/Box\'s drive. Select the folder named "RPI-RP2" and try again.',
-                );
+                toast.danger({
+                    title: "Wrong Drive Selected",
+                    message: 'That doesn\'t look like your Ro/Box\'s drive. Select the folder named "RPI-RP2" and try again.',
+                });
                 return;
             }
 
@@ -125,11 +122,10 @@ import FlashProgress from './flashProgress.astro';
             } catch {
                 setFlowBusy(false);
                 exitWriting();
-                dispatchFlashError(
-                    root,
-                    "Could Not Download Firmware",
-                    "We couldn't fetch the latest firmware from our servers. Please try again, or report this if it keeps happening.",
-                );
+                toast.danger({
+                    title: "Could Not Download Firmware",
+                    message: "We couldn't fetch the latest firmware from our servers. Please try again, or report this if it keeps happening.",
+                });
                 return;
             }
 
@@ -151,11 +147,10 @@ import FlashProgress from './flashProgress.astro';
 
                 setFlowBusy(false);
                 exitWriting();
-                dispatchFlashError(
-                    root,
-                    "Failed to Write Firmware",
-                    "We couldn't write the firmware file to your Ro/Box. Please try again.",
-                );
+                toast.danger({
+                    title: "Failed to Write Firmware",
+                    message: "We couldn't write the firmware file to your Ro/Box. Please try again.",
+                });
                 return;
             }
 
@@ -168,7 +163,6 @@ import FlashProgress from './flashProgress.astro';
         button.addEventListener("click", () => void flash());
 
         backButton.addEventListener("click", () => {
-            dispatchFlashClearError(root);
             dispatchFlashAdvance(root, "bootloader");
         });
     });

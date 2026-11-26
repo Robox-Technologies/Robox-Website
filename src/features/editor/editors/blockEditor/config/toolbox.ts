@@ -20,7 +20,10 @@ const ServoCategory: ToolboxItemInfo = {
             inputs: {
                 ANGLE: {
                     shadow: {
-                        type: 'servo_angle',
+                        type: 'math_number',
+                        fields: {
+                            NUM: 90,
+                        },
                     },
                 },
             },
@@ -31,7 +34,10 @@ const ServoCategory: ToolboxItemInfo = {
             inputs: {
                 ANGLE: {
                     shadow: {
-                        type: 'servo_angle',
+                        type: 'math_number',
+                        fields: {
+                            NUM: 90,
+                        },
                     },
                 },
             },

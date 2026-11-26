@@ -23,6 +23,7 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
         <div class="modal-content bg-white min-h-25 w-50 rounded flex flex-col">
             <Button
                 href="../calibrate"
+                data-connection-handoff
                 className="text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
             >
                 <FontAwesomeIcon icon={faEyeDropper}/>
@@ -30,6 +31,7 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
             </Button>
             <Button
                 href="../motorCalibrate"
+                data-connection-handoff
                 className="text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
             >
                 <FontAwesomeIcon icon={faSliders}/>
@@ -121,6 +123,9 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
                 }
                 link.href = url.toString();
 
+                // Only the calibration pages pick up a live connection;
+                // flashing reboots the Ro/Box anyway.
+                if (!("connectionHandoff" in link.dataset)) return;
                 const handoff = pico.getConnectionHandoff();
                 if (!handoff) return;
 

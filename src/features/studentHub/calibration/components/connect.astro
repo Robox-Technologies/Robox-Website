@@ -29,16 +29,14 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
 </div>
 <script>
     import { pico } from "@/libs/communication/communicate";
+    import { toast } from "@/libs/ui/toast";
     import type { PicoState } from "src/types/communication";
     import { ConnectionStatus } from "src/types/communication";
     import { setButtonBusy } from "@/components/busyButton";
-    import {
-        dispatchStageAdvance,
-        dispatchStageClearError,
-        dispatchStageError,
-    } from "@/components/stageFlow";
+    import { dispatchStageAdvance } from "@/components/stageFlow";
     import { debugCalibration } from "../stage";
 
+    const SENSOR_CHECK_TIMEOUT_MS = 3000;
     const CALIBRATION_FETCH_TIMEOUT_MS = 2000;
 
     document.querySelectorAll<HTMLDivElement>(".calibrationConnect").forEach((root) => {
@@ -64,30 +62,84 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             initialState: pico.getState(),
         });
 
+        // An already-connected Ro/Box skips this stage. Reset on every disconnect, so a
+        // drop that sends the student back here still advances on the next reconnect.
         let hasAdvanced = false;
-        let awaitingCalibration = false;
-        let calibrationTimeout: ReturnType<typeof setTimeout> | null = null;
+
+        // Checks run before advancing, in this order:
+        //
+        // 1. "sensor" (colour only): colorMode(), waiting for its first
+        //    `color` reading. Without a colour sensor the board refuses it -
+        //    pico already toasts that error, so this just disconnects and
+        //    stays here rather than advancing to a stage that can't work.
+        // 2. "calibration": getCalibration(), waiting on the Calibrate
+        //    stage's ready event - fired only once its controls show the
+        //    value, so it's never revealed still showing defaults. A board
+        //    too old to answer just times out (or errors) and advances anyway.
+        //
+        // The sensor check goes first so a missing sensor is reported once,
+        // by colour mode, before any other request can fail because of it.
+        let phase: "idle" | "sensor" | "calibration" = "idle";
+        let phaseTimeout: ReturnType<typeof setTimeout> | null = null;
         const calibrationReadyEvent = `${namespace}:calibration-ready`;
 
-        function finishCalibrationWait() {
-            if (!awaitingCalibration) return;
-            debug("Calibration read finished; advancing to calibrate stage");
-            awaitingCalibration = false;
-            if (calibrationTimeout) clearTimeout(calibrationTimeout);
-            calibrationTimeout = null;
+        function clearPhase() {
+            phase = "idle";
+            if (phaseTimeout) clearTimeout(phaseTimeout);
+            phaseTimeout = null;
             document.removeEventListener(calibrationReadyEvent, finishCalibrationWait);
-            
-            dispatchStageAdvance(root, stageNamespace, "calibrate");
         }
 
-        function cancelCalibrationWait() {
-            if (!awaitingCalibration) return;
-            debug("Calibration read wait cancelled");
-            awaitingCalibration = false;
-            if (calibrationTimeout) clearTimeout(calibrationTimeout);
-            calibrationTimeout = null;
-            document.removeEventListener(calibrationReadyEvent, finishCalibrationWait);
+        function startSensorCheck() {
+            debug("Checking colour sensor");
+            phase = "sensor";
+            phaseTimeout = setTimeout(() => {
+                failSensorCheck();
+                toast.danger({
+                    title: "Colour Sensor Not Found",
+                    message: "The Ro/Box didn't send any colour readings. Check the colour sensor is plugged in, then connect again.",
+                });
+            }, SENSOR_CHECK_TIMEOUT_MS);
+            pico.colorMode();
         }
+
+        // Hidden while the Calibrate stage shows, e.g. after a handoff from
+        // the editor lands straight on ?step=calibrate.
+        const ownStage = root.closest<HTMLElement>(".stageFlowStage");
+
+        function failSensorCheck() {
+            debug("Colour sensor check failed; disconnecting");
+            clearPhase();
+            // Back to Connect first, so the Calibrate stage doesn't treat the
+            // disconnect below as a drop and toast about it too.
+            if (ownStage?.classList.contains("hidden")) {
+                dispatchStageAdvance(root, stageNamespace, "connect");
+            }
+            void pico.disconnect();
+        }
+
+        function startCalibrationWait() {
+            clearPhase();
+            phase = "calibration";
+            document.addEventListener(calibrationReadyEvent, finishCalibrationWait);
+            phaseTimeout = setTimeout(finishCalibrationWait, CALIBRATION_FETCH_TIMEOUT_MS);
+            debug(`Requesting ${calibrationName} calibration`);
+            pico.getCalibration(calibrationName);
+        }
+
+        function finishCalibrationWait() {
+            if (phase !== "calibration") return;
+            debug("Calibration read finished; advancing to calibrate stage");
+            clearPhase();
+            // getCalibration() was a command frame, which exits colour mode on the board.
+            if (calibrationName === "colors") pico.colorMode();
+            dispatchStageAdvance(root, stageNamespace, "calibrate");
+            updateUI(pico.getState());
+        }
+
+        pico.on("color", () => {
+            if (phase === "sensor") startCalibrationWait();
+        });
 
         function updateUI(state: PicoState) {
             const statusKey = `${state.connectionStatus}:${state.firmwareStatus}`;
@@ -104,21 +156,16 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             if (connected) {
                 if (!hasAdvanced) {
                     hasAdvanced = true;
-                    awaitingCalibration = true;
-                    document.addEventListener(calibrationReadyEvent, finishCalibrationWait);
-                    calibrationTimeout = setTimeout(
-                        finishCalibrationWait,
-                        CALIBRATION_FETCH_TIMEOUT_MS,
-                    );
-                    debug(`Requesting ${calibrationName} calibration`)
-                    pico.getCalibration(calibrationName);
+                    if (calibrationName === "colors") startSensorCheck();
+                    else startCalibrationWait();
                 }
             } else {
                 hasAdvanced = false;
-                cancelCalibrationWait();
+                clearPhase();
             }
-            setButtonBusy(button, connecting || awaitingCalibration);
-            if (!connecting && !awaitingCalibration) {
+            const checking = phase !== "idle";
+            setButtonBusy(button, connecting || checking);
+            if (!connecting && !checking) {
                 button.disabled = !state.communicationMethod;
             }
         }
@@ -126,18 +173,21 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         pico.on("stateChange", updateUI);
         updateUI(pico.getState());
 
+        // pico toasts every error itself, so this only settles the checks.
         pico.on("error", (data) => {
-            debug("Communication error", { message: data.message, awaitingCalibration });
-            if (awaitingCalibration) {
-                finishCalibrationWait();
+            debug("Communication error", { message: data.message, phase });
+            // The board refusing colour mode - no colour sensor attached.
+            if (phase === "sensor") {
+                failSensorCheck();
                 return;
             }
-            dispatchStageError(root, stageNamespace, "Couldn't Connect", data.message);
+            // A refused get_calibration (e.g. firmware too old to recognise
+            // it) answers with this same generic error type - move on.
+            if (phase === "calibration") finishCalibrationWait();
         });
 
         button.addEventListener("click", () => {
             debug("Manual connection requested");
-            dispatchStageClearError(root, stageNamespace);
             pico.request();
         });
 
@@ -159,16 +209,10 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
                     await pico.autoConnect(handoffDeviceId);
                     debug("Handoff connection completed");
                 } catch (error) {
-                    debug("Handoff connection failed", {
-                        message: error instanceof Error ? error.message : String(error),
-                    });
+                    const message = error instanceof Error ? error.message : String(error);
+                    debug("Handoff connection failed", { message });
                     dispatchStageAdvance(root, stageNamespace, "connect");
-                    dispatchStageError(
-                        root,
-                        stageNamespace,
-                        "Couldn't Connect",
-                        error instanceof Error ? error.message : String(error),
-                    );
+                    toast.danger({ title: "Couldn't Connect", message });
                 }
             })();
         }

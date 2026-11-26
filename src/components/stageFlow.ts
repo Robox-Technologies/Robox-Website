@@ -1,7 +1,7 @@
 /**
  * Building blocks for a multi-step page. Child components dispatch namespaced
- * bubbling events on their own root; an ancestor orchestrates stage switching,
- * the error banner and URL-backed stage persistence.
+ * bubbling events on their own root; an ancestor orchestrates stage switching
+ * and URL-backed stage persistence. Errors are toasts, not part of the flow.
  */
 
 export function dispatchStageAdvance<S extends string>(
@@ -14,29 +14,6 @@ export function dispatchStageAdvance<S extends string>(
             detail: { stage },
             bubbles: true,
         }),
-    )
-}
-
-export function dispatchStageError(
-    target: EventTarget,
-    namespace: string,
-    title: string,
-    message: string,
-): void {
-    target.dispatchEvent(
-        new CustomEvent(`${namespace}:error`, {
-            detail: { title, message },
-            bubbles: true,
-        }),
-    )
-}
-
-export function dispatchStageClearError(
-    target: EventTarget,
-    namespace: string,
-): void {
-    target.dispatchEvent(
-        new CustomEvent(`${namespace}:clear-error`, { bubbles: true }),
     )
 }
 
@@ -53,7 +30,7 @@ export interface StageFlowOptions<S extends string> {
 
 /**
  * Wires the `.stageFlow*` elements inside `root` to the
- * `${namespace}:advance` / `:error` / `:clear-error` event contract.
+ * `${namespace}:advance` event contract.
  */
 export function createStageFlow<S extends string>(
     options: StageFlowOptions<S>,
@@ -64,14 +41,7 @@ export function createStageFlow<S extends string>(
     const stageElements = Array.from(
         root.querySelectorAll<HTMLElement>('.stageFlowStage'),
     )
-    const errorBanner = root.querySelector<HTMLElement>('.stageFlowError')
-    const errorTitle = root.querySelector<HTMLElement>('.stageFlowErrorTitle')
-    const errorMessage = root.querySelector<HTMLElement>(
-        '.stageFlowErrorMessage',
-    )
-    if (!stagesWrapper || !errorBanner || !errorTitle || !errorMessage) {
-        throw new Error('Stage flow elements not found')
-    }
+    if (!stagesWrapper) throw new Error('Stage flow elements not found')
 
     function stageFromURL(): S {
         if (!stageParam) return stages[0]
@@ -131,23 +101,11 @@ export function createStageFlow<S extends string>(
     }
 
     root.addEventListener(`${namespace}:advance`, (event) => {
-        errorBanner.style.display = 'none'
         const stage = (event as CustomEvent<{ stage: S }>).detail.stage
         showStage(stage)
         if (stageParam) history.pushState({ stage }, '', urlForStage(stage))
     })
 
-    root.addEventListener(`${namespace}:error`, (event) => {
-        const { title, message } = (
-            event as CustomEvent<{ title: string; message: string }>
-        ).detail
-        errorTitle.textContent = title
-        errorMessage.textContent = message
-        errorBanner.style.display = 'flex'
-    })
-    root.addEventListener(`${namespace}:clear-error`, () => {
-        errorBanner.style.display = 'none'
-    })
 
     const initialStage = stageFromURL()
     if (stageParam)

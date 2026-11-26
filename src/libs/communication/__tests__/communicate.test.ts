@@ -215,6 +215,24 @@ describe('a refused firmware check', () => {
         }
     })
 
+    it("doesn't restart the board when it refuses colour mode", async () => {
+        const { pico, transport, errors } = connected()
+
+        await pico.connect({} as never)
+        transport.reply('firmware', '2.1.0+proto2')
+        pico.colorMode()
+        transport.reply('error', 'No colour sensor attached')
+
+        // A restart drops the link, and the calibration page re-sends
+        // colorMode() on reconnect - an endless loop.
+        expect(errors).toEqual(['No colour sensor attached'])
+        expect(pico.getState().connectionStatus).toBe(
+            ConnectionStatus.CONNECTED,
+        )
+        await Promise.resolve()
+        expect(transport.commands()).not.toContain(COMMANDS.RESTART)
+    })
+
     it('still restarts the board on an error outside a check', async () => {
         const { pico, transport } = connected()
 

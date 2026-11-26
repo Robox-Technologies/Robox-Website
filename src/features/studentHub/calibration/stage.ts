@@ -1,8 +1,4 @@
-import {
-    dispatchStageAdvance,
-    dispatchStageClearError,
-    dispatchStageError,
-} from '@/components/stageFlow'
+import { dispatchStageAdvance } from '@/components/stageFlow'
 
 function createStageFeature<S extends string>(
     namespace: string,
@@ -20,16 +16,6 @@ function createStageFeature<S extends string>(
         },
         dispatchAdvance(target: EventTarget, stage: S): void {
             dispatchStageAdvance(target, namespace, stage)
-        },
-        dispatchError(
-            target: EventTarget,
-            title: string,
-            message: string,
-        ): void {
-            dispatchStageError(target, namespace, title, message)
-        },
-        dispatchClearError(target: EventTarget): void {
-            dispatchStageClearError(target, namespace)
         },
     }
 }

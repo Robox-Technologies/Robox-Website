@@ -13,6 +13,7 @@ import dayjs from 'dayjs'
 import type { ExtensionKey } from 'src/types/extensions'
 import { pythonGenerator } from 'blockly/python'
 import { buildPreamble } from '@/features/editor/utils/preamble'
+import { toast } from '@/libs/ui/toast'
 export async function loadBlockly(workspace: WorkspaceSvg) {
     const projectId = getProjectIdFromURL()
     if (!projectId) return
@@ -66,6 +67,17 @@ export async function generateCode(workspace: WorkspaceSvg) {
     if (!projectId) throw new Error('No project ID found')
     const project = await getProject(projectId)
     if (!project) throw new Error('Project not found')
+
+    const enabledStartBlocks = workspace
+        .getBlocksByType('event_begin', false)
+        .filter((block) => block.isEnabled())
+    if (enabledStartBlocks.length > 1) {
+        toast.danger({
+            title: 'Cannot run program',
+            message: 'Multiple On start blocks are not supported.',
+        })
+        throw new Error('Multiple enabled On start blocks are not supported')
+    }
 
     const code =
         buildPreamble(project) +

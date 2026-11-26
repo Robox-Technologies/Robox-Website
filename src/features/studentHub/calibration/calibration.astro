@@ -1,6 +1,5 @@
 ---
 import StageStepper from '@/components/stageStepper.astro';
-import StageErrorBanner from '@/components/stageErrorBanner.astro';
 import Connect from './components/connect.astro';
 
 interface Props {
@@ -24,7 +23,6 @@ const initialStage = Astro.url.searchParams.get('step') === 'calibrate'
         stages={['connect', 'calibrate']}
         stageLabels={{ connect: 'Connect', calibrate: 'Calibrate' }}
     />
-    <StageErrorBanner />
     <div class="stageFlowStages overflow-hidden rounded-3xl bg-white box-shadow transition-[height] duration-300 ease-out motion-reduce:transition-none">
         <div
             class:list={["stageFlowStage flex flex-col gap-4 p-6", { hidden: initialStage !== "connect" }]}
@@ -46,29 +44,10 @@ const initialStage = Astro.url.searchParams.get('step') === 'calibrate'
 </div>
 <script>
     import { createStageFlow } from "@/components/stageFlow";
-    import { pico } from "@/libs/communication/communicate";
 
     document.querySelectorAll<HTMLDivElement>("[data-stage-flow-root].calibration").forEach((root) => {
         const namespace = root.querySelector<HTMLElement>(".stageStepper")?.dataset.namespace;
         if (!namespace) throw new Error("Calibration stage namespace not found");
-
-        const returnLink = root.querySelector<HTMLAnchorElement>(".calibration-return-link");
-        const returnLabel = root.querySelector<HTMLElement>(".calibration-return-label");
-        const projectId = new URLSearchParams(window.location.search).get("id");
-        if (returnLink && projectId) {
-            const url = new URL("/hub/editor/index.html", window.location.origin);
-            url.searchParams.set("id", projectId);
-            returnLink.href = url.toString();
-            if (returnLabel) returnLabel.textContent = "Return to Project";
-            returnLink.addEventListener("click", (event) => {
-                const handoff = pico.getConnectionHandoff();
-                if (!handoff) return;
-                event.preventDefault();
-                url.searchParams.set("connectionMethod", handoff.method);
-                url.searchParams.set("deviceId", handoff.deviceId);
-                window.location.assign(url.toString());
-            });
-        }
 
         createStageFlow({
             root,

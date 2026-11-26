@@ -1,6 +1,6 @@
 ---
 import CommunicationSlot from "@/features/editor/components/editorButtons/communicationSlot.astro";
-import DisconnectButton from "@/features/editor/components/editorButtons/disconnectButton.astro";
+import TerminalDialog from "@/features/editor/components/terminalDialog";
 import MainButton from "@/features/editor/components/editorButtons/mainButton";
 import ConnectionDiagnosticsModal from "@/features/editor/components/connectionDiagnosticsModal";
 import UndoRedo from "./undoRedo.astro";
@@ -13,11 +13,11 @@ import ZoomButtons from "./zoomButtons.astro";
     <ConnectionDiagnosticsModal client:only="react" />
     <div class="flex flex-col items-end gap-4">
         <div class="flex flex-col items-end gap-4">
-            <CommunicationSlot />
+            <TerminalDialog client:only="react" />
             <ZoomButtons />
         </div>
         <div class="flex items-center gap-4">
-            <DisconnectButton />
+            <CommunicationSlot />
             <MainButton client:only="react" />
         </div>
     </div>

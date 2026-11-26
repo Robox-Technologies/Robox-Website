@@ -4,11 +4,16 @@ import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/button';
 ---
 <div class="manualBootsel border-t border-gray-300 pt-4">
-    <p class="font-semibold text-black">If that doesn't work, do it manually:</p>
+    <p class="manualBootselHeading font-semibold text-black">If that doesn't work, do it manually:</p>
+    <p class="mt-2 text-gray-800">
+        If this is your Ro/Box's first time ever being updated, it enters boot
+        mode automatically. You don't need to hold the BOOTSEL button. Instead,
+        just click <span class="font-semibold">I've Done This Manually</span> below to continue.
+    </p>
     <ol class="mt-2 list-decimal space-y-1 pl-5 text-gray-800">
-        <li>Disconnect your Ro/Box from this computer.</li>
+        <li>Disconnect your USB from your Ro/Box.</li>
         <li>Hold down the BOOTSEL button on your Ro/Box.</li>
-        <li>While still holding BOOTSEL, reconnect it over USB.</li>
+        <li>While still holding BOOTSEL, reconnect the USB.</li>
         <li>Release the BOOTSEL button.</li>
     </ol>
     <Button id="flash-continue-manual" className="bg-gray-500 mt-4">
@@ -17,15 +22,23 @@ import Button from '@/components/button';
     </Button>
 </div>
 <script>
-    import { dispatchFlashAdvance, dispatchFlashClearError } from "../stage";
+    import { dispatchFlashAdvance } from "../stage";
 
     // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".manualBootsel").forEach((root) => {
         const continueButton = root.querySelector<HTMLButtonElement>("#flash-continue-manual");
-        if (!continueButton) throw new Error("Manual bootsel elements not found");
+        const heading = root.querySelector<HTMLParagraphElement>(".manualBootselHeading");
+        if (!continueButton || !heading) throw new Error("Manual bootsel elements not found");
+
+        // Without Web Serial the automatic option above is hidden, so these
+        // steps aren't a fallback any more - drop the divider and "if that
+        // doesn't work" framing.
+        if (!("serial" in navigator)) {
+            root.classList.remove("border-t", "pt-4");
+            heading.textContent = "Your browser can't reboot it automatically, so do it manually:";
+        }
 
         continueButton.addEventListener("click", () => {
-            dispatchFlashClearError(root);
             dispatchFlashAdvance(root, "flash");
         });
     });

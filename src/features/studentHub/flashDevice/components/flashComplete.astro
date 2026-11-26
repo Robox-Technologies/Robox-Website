@@ -1,22 +1,20 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCircleCheck, faHouse } from '@fortawesome/free-solid-svg-icons';
+import { faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/button';
+import ReturnButton from '@/features/studentHub/components/returnButton.astro';
 ---
 <div class="flashComplete flex flex-col items-start gap-4">
     <div class="flex items-center gap-3">
         <FontAwesomeIcon icon={faCircleCheck} className="text-2xl text-green" />
         <h2 class="text-xl font-bold text-black">Ro/Box successfully flashed!</h2>
     </div>
-    <p class="text-gray-800">
+    <p class="flashCompleteHint text-gray-800">
         Disconnect and reconnect your Ro/Box, then head back to the Student
         Hub to start coding.
     </p>
     <div class="flex gap-4">
-        <Button href="/hub" className="bg-green">
-            <FontAwesomeIcon icon={faHouse} className="mr-2" />
-            Return to Student Hub
-        </Button>
+        <ReturnButton className="bg-green" />
         <Button id="flash-again" className="bg-gray-500">Flash Another Device</Button>
     </div>
 </div>
@@ -26,7 +24,8 @@ import Button from '@/components/button';
     // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".flashComplete").forEach((root) => {
         const again = root.querySelector<HTMLButtonElement>("#flash-again");
-        if (!again) throw new Error("Flash complete elements not found");
+        const hint = root.querySelector<HTMLParagraphElement>(".flashCompleteHint");
+        if (!again || !hint) throw new Error("Flash complete elements not found");
 
         again.addEventListener("click", () => {
             dispatchFlashAdvance(root, "bootloader");

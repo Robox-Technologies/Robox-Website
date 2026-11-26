@@ -1,0 +1,53 @@
+---
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHouse } from '@fortawesome/free-solid-svg-icons';
+import Button from '@/components/button';
+
+interface Props {
+    /** Background colour utility, e.g. `bg-black`. */
+    className?: string
+    /**
+     * Pass the live Ro/Box connection back to the editor, so the project
+     * reconnects without asking. Off for pages that end the connection
+     * themselves (flashing reboots the Ro/Box).
+     */
+    handoff?: boolean
+}
+
+const { className = 'bg-black', handoff = false } = Astro.props;
+---
+<Button
+    href="/hub"
+    className={`returnButton ${className}`}
+    data-connection-handoff={handoff ? 'true' : undefined}
+>
+    <FontAwesomeIcon icon={faHouse} className="mr-2" />
+    <span class="returnButtonLabel text-white!">Return to Student Hub</span>
+</Button>
+<script>
+    import { pico } from "@/libs/communication/communicate";
+
+    // Opened from a project (the editor's settings menu adds `?id=`), so head
+    // back to that project instead of the hub.
+    const projectId = new URLSearchParams(window.location.search).get("id");
+
+    document.querySelectorAll<HTMLAnchorElement>(".returnButton").forEach((link) => {
+        if (!projectId) return;
+        const label = link.querySelector<HTMLElement>(".returnButtonLabel");
+
+        const url = new URL("/hub/editor/index.html", window.location.origin);
+        url.searchParams.set("id", projectId);
+        link.href = url.toString();
+        if (label) label.textContent = "Return to Project";
+
+        if (link.dataset.connectionHandoff !== "true") return;
+        link.addEventListener("click", (event) => {
+            const handoff = pico.getConnectionHandoff();
+            if (!handoff) return;
+            event.preventDefault();
+            url.searchParams.set("connectionMethod", handoff.method);
+            url.searchParams.set("deviceId", handoff.deviceId);
+            window.location.assign(url.toString());
+        });
+    });
+</script>
