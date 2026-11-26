@@ -1,0 +1,66 @@
+---
+import { faSquareBinary } from '@fortawesome/free-solid-svg-icons'
+import { faPython } from '@fortawesome/free-brands-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import ModalDialog from '@/components/modalDialog.astro'
+
+const options = [
+    {
+        type: 'block',
+        name: 'Block Editor',
+        description: 'Snap blocks together. Great for getting started.',
+        icon: faSquareBinary,
+        tile: 'bg-blue',
+    },
+    {
+        type: 'python',
+        name: 'Python Editor',
+        description: 'Write real Python code.',
+        icon: faPython,
+        tile: 'bg-yellow',
+    },
+]
+---
+
+<ModalDialog
+    id="createProjectDialog"
+    title="New Project"
+    subtitle="How do you want to build your Ro/Box program?"
+    closeLabel="Close new project"
+>
+    <ul class="divide-y divide-gray-200 overflow-y-auto px-4 pb-4">
+        {options.map(({ type, name, description, icon, tile }) => (
+            <li class="py-1">
+                <button
+                    type="button"
+                    data-create-project={type}
+                    class="button-interactive flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
+                >
+                    <span
+                        class={`flex size-12 shrink-0 items-center justify-center rounded-xl text-xl text-white ${tile}`}
+                        aria-hidden="true"
+                    >
+                        <FontAwesomeIcon icon={icon} />
+                    </span>
+                    <span class="min-w-0 flex-1">
+                        <span class="block text-lg font-bold">{name}</span>
+                        <span class="block text-sm text-gray-500">{description}</span>
+                    </span>
+                </button>
+            </li>
+        ))}
+    </ul>
+</ModalDialog>
+
+<script>
+    import { createProject } from '@/utils/serialization'
+    import { editorHref } from '../utils/editorHref'
+    import type { ProjectType } from 'src/types/projects'
+
+    document.querySelectorAll<HTMLButtonElement>('[data-create-project]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const id = await createProject(button.dataset.createProject as ProjectType)
+            window.location.assign(editorHref(id))
+        })
+    })
+</script>

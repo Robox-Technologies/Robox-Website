@@ -1,6 +1,8 @@
 ---
 import BlockEditor from "../editors/blockEditor/components/editor.astro";
 import PythonEditor from "../editors/pythonEditor/components/editor.astro";
+import TerminalDialog from "./terminalDialog.astro";
+import ConnectionDiagnosticsDialog from "./connectionDiagnosticsDialog.astro";
 ---
 <div id="editorBody" class="flex-1 flex flex-col">
     <div id="blockEditorSlot" class="flex-1">
@@ -9,6 +11,9 @@ import PythonEditor from "../editors/pythonEditor/components/editor.astro";
     <div id="pythonEditorSlot" class="hidden flex-1">
         <PythonEditor />
     </div>
+    {/* Outside the slots: a dialog inside a hidden slot never shows. */}
+    <TerminalDialog />
+    <ConnectionDiagnosticsDialog />
 </div>
 <script>
     import { getProject, getProjectIdFromURL } from "@/utils/serialization";

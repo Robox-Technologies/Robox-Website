@@ -1,0 +1,42 @@
+---
+import { faTerminal } from '@fortawesome/free-solid-svg-icons'
+import Button from '@/components/button'
+---
+
+<Button
+    icon={faTerminal}
+    title="Open terminal output"
+    aria-label="Open terminal output"
+    className="terminalButton hidden items-center w-10 h-10 justify-center border-2 border-green rounded-full bg-white box-shadow pointer-events-auto"
+    iconStyle="text-xl text-green"
+/>
+
+<script>
+    import { pico } from '@/libs/communication/communicate'
+    import { ConnectionStatus } from '@/types/communication'
+    import type { PicoState } from '@/types/communication'
+
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.terminalButton')
+    const offline = new Set([
+        ConnectionStatus.CONNECTING,
+        ConnectionStatus.DISCONNECTED,
+        ConnectionStatus.DISCONNECTING,
+    ])
+
+    function update({ connectionStatus }: PicoState) {
+        const connected = !offline.has(connectionStatus)
+        buttons.forEach((button) => {
+            button.classList.toggle('hidden', !connected)
+            button.classList.toggle('flex', connected)
+        })
+    }
+
+    pico.on('stateChange', update)
+    update(pico.getState())
+
+    buttons.forEach((button) =>
+        button.addEventListener('click', () =>
+            document.querySelector<HTMLDialogElement>('#terminalDialog')?.showModal(),
+        ),
+    )
+</script>

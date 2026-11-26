@@ -1,0 +1,44 @@
+---
+import type { ImageMetadata } from 'astro'
+import ModalDialog from '@/components/modalDialog.astro'
+import Button from '@/components/button'
+import type { Product } from '@/types/shop'
+import { formatPrice } from '@/utils/formatPrice'
+
+interface Props {
+    product: Product
+    image: ImageMetadata
+}
+
+const { product, image } = Astro.props
+---
+
+{/* `ProductPurchase.tsx` fills in the quantity and total, then opens this once the add succeeds. */}
+<ModalDialog id="added-to-cart-dialog" title="Added to Cart!" closeLabel="Close added to cart">
+    <div class="flex items-center gap-4 px-8 py-2">
+        {/* Decorative: the name beside it says what it is. */}
+        <img src={image.src} alt="" class="aspect-square w-24 shrink-0 rounded-xl object-cover" />
+        <div class="flex min-w-0 flex-1 flex-col gap-1">
+            <p class="text-lg font-bold">
+                {product.name} <span class="font-normal text-gray-500">× <span class="addedToCartQuantity">1</span></span>
+            </p>
+            <p class="text-sm text-gray-500">{formatPrice(product.price)} each</p>
+            <p class="text-lg">Total: <span class="addedToCartTotal font-bold">{formatPrice(product.price)}</span></p>
+        </div>
+    </div>
+    <div class="flex justify-end gap-3 px-8 pt-4 pb-8">
+        <Button type="button" className="addedToCartContinue border-2 border-black bg-white text-black">
+            Continue Shopping
+        </Button>
+        <Button href="/shop/cart" className="bg-blue">
+            View Cart
+        </Button>
+    </div>
+</ModalDialog>
+
+<script>
+    const dialog = document.getElementById('added-to-cart-dialog') as HTMLDialogElement | null
+    dialog
+        ?.querySelector('.addedToCartContinue')
+        ?.addEventListener('click', () => dialog.close())
+</script>

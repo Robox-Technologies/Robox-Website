@@ -1,6 +1,6 @@
 ---
 import CommunicationSlot from "@/features/editor/components/editorButtons/communicationSlot.astro";
-import TerminalDialog from "@/features/editor/components/terminalDialog";
+import TerminalButton from "@/features/editor/components/editorButtons/terminalButton.astro";
 import MainButton from "@/features/editor/components/editorButtons/mainButton";
 
 // Pyodide (a ~13MB WASM CPython build, used for real syntax linting) has no
@@ -13,7 +13,7 @@ const isIOSBuild = process.env.IOS_BUILD === "true";
     <div id="monacoContainer" class="flex-1"></div>
 
     <div class="bg-gray-100 border-t border-gray-300 flex items-center justify-end gap-4 px-4 py-3">
-        <TerminalDialog client:only="react" />
+        <TerminalButton />
         <CommunicationSlot />
         <MainButton client:only="react" />
     </div>
