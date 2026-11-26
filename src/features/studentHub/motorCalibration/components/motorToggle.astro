@@ -16,9 +16,9 @@ const { id, label, ariaLabel, class: className } = Astro.props
         role="switch"
         aria-checked="false"
         aria-label={ariaLabel}
-        class="motor-toggle button-interactive relative h-7 w-12 shrink-0 rounded-full border-2 border-black bg-tone2"
+        class="motor-toggle button-interactive relative h-7 w-12 shrink-0 rounded-full bg-secondary"
     >
-        <span class="motor-toggle-thumb absolute top-0.5 left-0.5 block size-5 rounded-full border-2 border-black bg-white"></span>
+        <span class="motor-toggle-thumb absolute top-1 left-1 block size-5 rounded-full bg-white"></span>
     </button>
 </label>
 
@@ -33,7 +33,7 @@ const { id, label, ariaLabel, class: className } = Astro.props
     .motor-toggle-thumb {
         transition: transform 150ms ease-out;
     }
-    /* 48px track - 4px border - 20px thumb - 2px inset each side. */
+    /* 48px track - 20px thumb - 4px inset each side. */
     .motor-toggle[aria-checked='true'] .motor-toggle-thumb {
         transform: translateX(20px);
     }
