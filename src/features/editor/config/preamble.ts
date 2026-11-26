@@ -7,7 +7,6 @@ import time
 import random
 import json
 import sys
-motors = Motors()
 ENV_LED = Pin(25, Pin.OUT)
 line = LineSensors()
 left_motor_polarity = right_motor_polarity = -1
