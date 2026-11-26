@@ -375,13 +375,6 @@ export class Pico {
                 connectionStatus: ConnectionStatus.CONNECTED,
                 firmwareVersion: version,
             })
-            if (this.toastsEnabled) {
-                toast.success({
-                    title: 'Ro/Box Connected',
-                    message: 'Your Ro/Box is connected and ready to run.',
-                    durationMs: 3000,
-                })
-            }
         } else if (type === 'connect' && this.state.isRestarting) {
             this.updateState({
                 connectionStatus: ConnectionStatus.CONNECTED,
