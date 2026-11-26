@@ -139,7 +139,7 @@ export const MESSAGE_TYPES: readonly PicoMessageType[] = [
 ]
 
 // Bumped to 2.2.0 due to the verification requirement for rerunning code
-export const MINIMUM_FIRMWARE_VERSION = '2.2.0'
+export const MINIMUM_FIRMWARE_VERSION = '2.6.0'
 
 /** Framed protocol version this build speaks. */
 export const SUPPORTED_PROTOCOL_VERSION = 2
