@@ -18,6 +18,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     class="calibrationConnect flex flex-col gap-3"
     data-calibration-namespace={namespace}
     data-calibration-name={calibration}
+    data-show-controls={showControls ? "true" : "false"}
     data-ios-build={isIOSBuild ? "true" : "false"}
 >
     {showControls ? (
@@ -106,7 +107,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
                 failSensorCheck();
                 toast.danger({
                     title: "Colour Sensor Not Found",
-                    message: "The Ro/Box didn't send any colour readings. Check the colour sensor is plugged in, then connect again.",
+                    message: "The Ro/Box didn't send any colour readings. Check the colour sensor is plugged in, then try again.",
                 });
             }, SENSOR_CHECK_TIMEOUT_MS);
             pico.colorMode();
@@ -119,16 +120,16 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         const isActive = () =>
             !ownStage?.classList.contains("hidden") && (!dialog || dialog.open);
 
+        // Nothing to calibrate without a sensor, but the connection is still
+        // good (the editor keeps using it), so just close; reopening re-checks.
         function failSensorCheck() {
-            debug("Colour sensor check failed; disconnecting");
+            debug("Colour sensor check failed; closing");
             clearPhase();
-            // Back to Connect first, so the Calibrate stage doesn't treat the
-            // disconnect below as a drop and toast about it too.
-            if (ownStage?.classList.contains("hidden")) {
-                dispatchStageAdvance(root, stageNamespace, "connect");
-            }
-            void pico.disconnect();
+            dialog?.close();
         }
+
+        // Without connect controls (the editor) a drop leaves nothing to do here.
+        const showControls = root.dataset.showControls === "true";
 
         function startCalibrationWait() {
             clearPhase();
@@ -174,6 +175,10 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             } else {
                 hasAdvanced = false;
                 clearPhase();
+                // Deferred so the Calibrate panel sees the drop first and toasts about it.
+                if (!showControls && state.connectionStatus === ConnectionStatus.DISCONNECTED) {
+                    setTimeout(() => dialog?.close(), 0);
+                }
             }
             const checking = phase !== "idle";
             if (!button) return;

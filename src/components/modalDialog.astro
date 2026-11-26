@@ -54,13 +54,22 @@ const titleId = `${id}-title`
 
 <script>
     document.querySelectorAll<HTMLDialogElement>('dialog.modalDialog').forEach((dialog) => {
-        dialog
-            .querySelector('.modalDialogClose')
-            ?.addEventListener('click', () => dialog.close())
+        // A dialog mid-task (e.g. writing firmware) sets `data-locked` to stay open.
+        const isLocked = () => dialog.hasAttribute('data-locked')
+        const tryClose = () => {
+            if (!isLocked()) dialog.close()
+        }
+
+        dialog.querySelector('.modalDialogClose')?.addEventListener('click', tryClose)
 
         // The dialog itself is the backdrop; the panel sits inside it.
         dialog.addEventListener('click', (event) => {
-            if (event.target === dialog) dialog.close()
+            if (event.target === dialog) tryClose()
+        })
+
+        // Esc.
+        dialog.addEventListener('cancel', (event) => {
+            if (isLocked()) event.preventDefault()
         })
     })
 
@@ -72,3 +81,10 @@ const titleId = `${id}-title`
         })
     })
 </script>
+
+<style>
+    dialog[data-locked] .modalDialogClose {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+</style>
