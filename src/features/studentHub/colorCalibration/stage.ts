@@ -1,9 +1,5 @@
 import { setButtonBusy } from '@/components/busyButton'
-import {
-    dispatchStageAdvance,
-    dispatchStageClearError,
-    dispatchStageError,
-} from '@/components/stageFlow'
+import { dispatchStageAdvance } from '@/components/stageFlow'
 
 export type Stage = 'connect' | 'calibrate'
 
@@ -28,18 +24,6 @@ export function dispatchCalibrationAdvance(
     stage: Stage,
 ): void {
     dispatchStageAdvance(target, NAMESPACE, stage)
-}
-
-export function dispatchCalibrationError(
-    target: EventTarget,
-    title: string,
-    message: string,
-): void {
-    dispatchStageError(target, NAMESPACE, title, message)
-}
-
-export function dispatchCalibrationClearError(target: EventTarget): void {
-    dispatchStageClearError(target, NAMESPACE)
 }
 
 /**

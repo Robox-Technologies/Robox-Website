@@ -1,9 +1,5 @@
 import { setButtonBusy } from '@/components/busyButton'
-import {
-    dispatchStageAdvance,
-    dispatchStageClearError,
-    dispatchStageError,
-} from '@/components/stageFlow'
+import { dispatchStageAdvance } from '@/components/stageFlow'
 
 export type Stage = 'bootloader' | 'flash' | 'done'
 
@@ -26,18 +22,6 @@ const NAMESPACE = 'flashdevice'
 // without knowing anything about the component.
 export function dispatchFlashAdvance(target: EventTarget, stage: Stage): void {
     dispatchStageAdvance(target, NAMESPACE, stage)
-}
-
-export function dispatchFlashError(
-    target: EventTarget,
-    title: string,
-    message: string,
-): void {
-    dispatchStageError(target, NAMESPACE, title, message)
-}
-
-export function dispatchFlashClearError(target: EventTarget): void {
-    dispatchStageClearError(target, NAMESPACE)
 }
 
 export { setButtonBusy }

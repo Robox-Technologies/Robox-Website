@@ -23,7 +23,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     import { toast } from "@/libs/ui/toast";
     import type { PicoState } from "src/types/communication";
     import { ConnectionStatus } from "src/types/communication";
-    import { setButtonBusy, dispatchCalibrationAdvance, dispatchCalibrationClearError, dispatchCalibrationError, CALIBRATION_READY_EVENT } from "../stage";
+    import { setButtonBusy, dispatchCalibrationAdvance, CALIBRATION_READY_EVENT } from "../stage";
 
     // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".calibrationConnect").forEach((root) => {
@@ -132,7 +132,8 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         pico.on("stateChange", updateUI);
         updateUI(pico.getState());
 
-        pico.on("error", (data) => {
+        // pico toasts every error itself, so this only settles the checks.
+        pico.on("error", () => {
             // The board refusing colour mode - no colour sensor attached.
             // pico has already toasted its message, which says exactly that.
             if (phase === "sensor") {
@@ -146,13 +147,9 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
                 finishCalibrationWait();
                 return;
             }
-            // Once connected and handed over, errors belong to the Calibrate stage.
-            if (hasAdvanced) return;
-            dispatchCalibrationError(root, "Couldn't Connect", data.message);
         });
 
         connectButton.addEventListener("click", () => {
-            dispatchCalibrationClearError(root);
             pico.request();
         });
     });

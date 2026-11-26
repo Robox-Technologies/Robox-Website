@@ -22,7 +22,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     import { pico } from "@/libs/communication/communicate";
     import type { PicoState } from "src/types/communication";
     import { ConnectionStatus } from "src/types/communication";
-    import { setButtonBusy, dispatchCalibrationAdvance, dispatchCalibrationClearError, dispatchCalibrationError, CALIBRATION_READY_EVENT } from "../stage";
+    import { setButtonBusy, dispatchCalibrationAdvance, CALIBRATION_READY_EVENT } from "../stage";
 
     // Astro only includes this script once no matter how many instances
     // render, so wire up every instance found rather than assuming there's a
@@ -117,21 +117,15 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         pico.on("stateChange", updateUI);
         updateUI(pico.getState());
 
-        pico.on("error", (data) => {
-            // The board answers a refused `get_calibration_motors` (e.g. an
-            // older firmware that doesn't recognise it) with this same
-            // generic error type - that's not a connection failure, so it
-            // must not show "Couldn't Connect" while we're actually
-            // connected and simply move on to the Calibrate stage.
-            if (awaitingCalibration) {
-                finishCalibrationWait();
-                return;
-            }
-            dispatchCalibrationError(root, "Couldn't Connect", data.message);
+        // pico toasts every error itself. The board answers a refused
+        // `get_calibration_motors` (e.g. an older firmware that doesn't
+        // recognise it) with this same generic error type - not a reason to
+        // stay here, so just move on to the Calibrate stage.
+        pico.on("error", () => {
+            if (awaitingCalibration) finishCalibrationWait();
         });
 
         connectButton.addEventListener("click", () => {
-            dispatchCalibrationClearError(root);
             pico.request();
         });
     });

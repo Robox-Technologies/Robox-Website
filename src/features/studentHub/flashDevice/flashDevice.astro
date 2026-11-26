@@ -2,7 +2,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import StageStepper from '@/components/stageStepper.astro';
-import StageErrorBanner from '@/components/stageErrorBanner.astro';
 import AutomaticBootsel from './components/automaticBootsel.astro';
 import ManualBootsel from './components/manualBootsel.astro';
 import SelectDrive from './components/selectDrive.astro';
@@ -21,11 +20,9 @@ import { STAGES, STAGE_LABELS } from './stage';
             </p>
         </div>
     </div>
-    <StageErrorBanner />
     <div class="stageFlowStages overflow-hidden rounded-3xl bg-white box-shadow transition-[height] duration-300 ease-out motion-reduce:transition-none">
         <div class="stageFlowStage flex flex-col gap-4 p-6" data-stage="bootloader">
             <h2 class="text-xl font-bold text-black">Step 1: Reboot into firmware update mode</h2>
-            <p class="text-gray-800">Connect your Ro/Box over USB and we'll ask it to reboot itself into firmware update mode.</p>
             <AutomaticBootsel />
             <ManualBootsel />
         </div>

@@ -4,10 +4,7 @@ import { faBolt, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import Button from '@/components/button';
 ---
 <div class="automaticBootsel flex flex-col gap-3">
-    <p class="automaticBootselNoMethod text-sm text-gray-800 hidden">
-        Your browser doesn't support connecting over USB, so do this step
-        manually below.
-    </p>
+    <p class="text-gray-800">Connect your Ro/Box over USB and we'll ask it to reboot itself into firmware update mode.</p>
 
     <Button id="flash-connect" className="bg-blue self-start">
         <FontAwesomeIcon icon={faBolt} className="busyIcon mr-2" />
@@ -19,17 +16,25 @@ import Button from '@/components/button';
     import { pico } from "@/libs/communication/communicate";
     import type { PicoState } from "src/types/communication";
     import { ConnectionStatus } from "src/types/communication";
-    import { dispatchFlashAdvance, dispatchFlashClearError, dispatchFlashError, setButtonBusy, type Stage } from "../stage";
+    import { dispatchFlashAdvance, setButtonBusy, type Stage } from "../stage";
+    import { toast } from "@/libs/ui/toast";
 
     // Astro includes this script once however many instances render, so wire up each one.
     document.querySelectorAll<HTMLDivElement>(".automaticBootsel").forEach((root) => {
-        const noMethodNotice = root.querySelector<HTMLParagraphElement>(".automaticBootselNoMethod");
         const connectButton = root.querySelector<HTMLButtonElement>("#flash-connect");
-        if (!noMethodNotice || !connectButton) {
-            throw new Error("Automatic bootsel elements not found");
+        if (!connectButton) throw new Error("Automatic bootsel elements not found");
+
+        // BOOTSEL needs a wired connection, so flashing is USB-only. Without
+        // Web Serial there's nothing to reboot it with, so the whole option
+        // goes and the manual steps below are the only path.
+        const supportsUsb = "serial" in navigator;
+        if (!supportsUsb) {
+            root.classList.add("hidden");
+            return;
         }
 
-        // This flow reports its own inline errors, so the global toasts would be noise.
+        // This flow toasts its own errors, with a pointer to the manual steps
+        // added - pico's generic toast on top would say the same thing twice.
         pico.setToastsEnabled(false);
 
         // The button just reflects pico's live connection status, same as
@@ -55,7 +60,6 @@ import Button from '@/components/button';
                 void pico.bootloaderMode();
             }
 
-            noMethodNotice!.classList.toggle("hidden", hasMethod);
             connectButton!.classList.toggle("hidden", !hasMethod);
 
             // Stay busy until the reboot is confirmed (or fails) below.
@@ -66,9 +70,6 @@ import Button from '@/components/button';
         pico.on("stateChange", updateUI);
         updateUI(pico.getState());
 
-        // BOOTSEL needs a wired connection, so flashing is USB-only.
-        const supportsUsb = "serial" in navigator;
-
         /** "Flash Another Device" returns here without a reload, so arm a fresh connection each time. */
         async function armForBootloaderStage() {
             hasTriggeredReboot = false;
@@ -76,7 +77,7 @@ import Button from '@/components/button';
 
             // Awaited, or setAutoConnect(false) lands on the transport being torn down
             // rather than the fresh one replacing it.
-            if (supportsUsb) await pico.setCommunicationMethod("USB");
+            await pico.setCommunicationMethod("USB");
 
             // Only an explicit click may connect here, or an authorised port would be
             // rebooted into bootloader mode unprompted.
@@ -100,11 +101,10 @@ import Button from '@/components/button';
             // `stateChange` before this ever fires.
             hasTriggeredReboot = false;
             setButtonBusy(connectButton!, false);
-            dispatchFlashError(
-                root,
-                "Couldn't Connect Automatically",
-                `${data.message} You can try again above, or follow the manual steps below.`,
-            );
+            toast.danger({
+                title: "Couldn't Connect Automatically",
+                message: `${data.message} You can try again, or follow the manual steps below.`,
+            });
         });
 
         // The only route to the flash stage - fired once `disconnect()`
@@ -122,7 +122,6 @@ import Button from '@/components/button';
         });
 
         connectButton.addEventListener("click", () => {
-            dispatchFlashClearError(root);
             hasTriggeredReboot = false;
             hasAdvanced = false;
             pico.request();
