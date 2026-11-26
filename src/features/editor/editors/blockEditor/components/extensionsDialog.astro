@@ -1,5 +1,19 @@
 ---
 import extensions from '@/data/extensions.json'
+
+// Each extension shows the toolbox tab it adds, so students know where to look.
+const rows = Object.entries(extensions).map(([key, extension]) => {
+    const category = extension.toolbox.categories?.[0]?.category
+    return {
+        key,
+        name: extension.name,
+        description: extension.description,
+        icon:
+            category?.cssconfig.icon.replace('categoryIcon', '').trim() ??
+            'fa-solid fa-puzzle-piece',
+        categoryStyle: category?.categorystyle,
+    }
+})
 ---
 
 <button
@@ -13,44 +27,57 @@ import extensions from '@/data/extensions.json'
 
 <dialog
     id="extensions-dialog"
+    aria-labelledby="extensions-dialog-title"
     class="modal fixed inset-0 z-50 m-0 h-screen w-screen max-h-none max-w-none border-0 bg-black/45 p-4 text-black backdrop:bg-black/45 open:flex open:items-center open:justify-center"
 >
-    <div class="flex max-h-[80vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <header class="flex items-center justify-between border-b border-gray-300 px-6 py-4 text-black">
-            <h2 class="flex items-center gap-2 text-xl font-bold">
-                <i class="fa-solid fa-puzzle-piece mb-0.5 text-green"></i>
-                <span>Extensions</span>
+    <div class="relative flex max-h-[80vh] w-full max-w-lg flex-col rounded-3xl bg-white shadow-2xl">
+        <button
+            type="button"
+            id="extensions-dialog-close"
+            class="button-interactive absolute right-4 top-4 rounded-lg px-3 py-2 text-gray-600"
+            aria-label="Close extensions"
+        >
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="px-8 pt-8 pb-3 pr-16">
+            <h2 id="extensions-dialog-title" class="text-3xl font-extrabold leading-tight">
+                Extensions
             </h2>
-            <button
-                type="button"
-                id="extensions-dialog-close"
-                class="button-interactive rounded-lg px-3 py-2 text-gray-600"
-                aria-label="Close extensions dialog"
-            >
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </header>
-
-        <div class="flex flex-col gap-4 overflow-y-auto p-6">
-            {Object.entries(extensions).map(([key, extension]) => (
-                <div class="extension-card w-full rounded-xl border border-gray-300 p-4 transition hover:bg-gray-100" data-extension-card={key}>
-                    <div class="mb-2 flex items-center justify-between gap-4">
-                        <h3 class="text-lg font-semibold text-gray-800">{extension.name}</h3>
-
-                        <button
-                            type="button"
-                            class="extension-toggle button-interactive flex h-7 w-12 items-center rounded-full border border-gray-300 bg-gray-200 p-1 transition-colors"
-                            data-extension-toggle={key}
-                            aria-pressed="false"
-                            aria-label={`Toggle ${extension.name}`}
-                        >
-                            <span class="extension-toggle-thumb block h-5 w-5 rounded-full bg-white shadow transition-transform duration-200"></span>
-                        </button>
-                    </div>
-                    <p class="text-sm text-gray-500">{extension.description}</p>
-                </div>
-            ))}
+            <p class="mt-1 text-gray-500">Turn on extra blocks for this project.</p>
         </div>
+
+        <ul class="divide-y divide-gray-200 overflow-y-auto px-4 pb-4">
+            {rows.map(({ key, name, description, icon, categoryStyle }) => (
+                <li class="py-1">
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked="false"
+                        data-extension-toggle={key}
+                        class="group button-interactive flex w-full items-center gap-4 rounded-2xl px-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
+                    >
+                        <span
+                            class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gray-400 text-xl text-white"
+                            data-category-style={categoryStyle}
+                            aria-hidden="true"
+                        >
+                            <i class={icon}></i>
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-lg font-bold">{name}</span>
+                            <span class="block text-sm text-gray-500">{description}</span>
+                        </span>
+                        <span
+                            class="flex h-7 w-12 shrink-0 items-center rounded-full bg-gray-200 p-1 transition-colors group-aria-checked:bg-green"
+                            aria-hidden="true"
+                        >
+                            <span class="size-5 rounded-full bg-white shadow transition-[translate] duration-200 group-aria-checked:translate-x-5"></span>
+                        </span>
+                    </button>
+                </li>
+            ))}
+        </ul>
     </div>
 </dialog>
 
@@ -65,6 +92,8 @@ import extensions from '@/data/extensions.json'
     import { toast } from '@/libs/ui/toast'
     import type { ExtensionKey } from 'src/types/extensions'
     import * as Blockly from 'blockly'
+    import roboxTheme from '@/features/editor/editors/blockEditor/config/roboxTheme'
+    import '@/features/editor/editors/blockEditor/config/toolboxIcons'
     import { dom, library } from '@fortawesome/fontawesome-svg-core'
     import { faPuzzlePiece, faXmark } from '@fortawesome/free-solid-svg-icons'
 
@@ -77,20 +106,16 @@ import extensions from '@/data/extensions.json'
     const toggleButtons = Array.from(document.querySelectorAll('[data-extension-toggle]')) as HTMLButtonElement[]
 
     const setToggleState = (extensionKey: string, enabled: boolean) => {
-        const toggle = document.querySelector(
-            `[data-extension-toggle="${extensionKey}"]`,
-        ) as HTMLButtonElement | null
-        if (!toggle) return
+        document
+            .querySelector(`[data-extension-toggle="${extensionKey}"]`)
+            ?.setAttribute('aria-checked', String(enabled))
+    }
 
-        const thumb = toggle.querySelector('.extension-toggle-thumb') as HTMLSpanElement | null
-        toggle.setAttribute('aria-pressed', String(enabled))
-        toggle.classList.toggle('bg-green', enabled)
-        toggle.classList.toggle('bg-gray-200', !enabled)
-        toggle.classList.toggle('border-green', enabled)
-        toggle.classList.toggle('border-gray-300', !enabled)
-
-        if (thumb) {
-            thumb.style.transform = enabled ? 'translateX(20px)' : 'translateX(0)'
+    // Tiles take their toolbox category's colour from the Blockly theme.
+    for (const tile of document.querySelectorAll<HTMLElement>('[data-category-style]')) {
+        const style = roboxTheme.categoryStyles[tile.dataset.categoryStyle ?? '']
+        if (style?.colour) {
+            tile.style.backgroundColor = Blockly.utils.parsing.replaceMessageReferences(style.colour)
         }
     }
 
@@ -144,7 +169,7 @@ import extensions from '@/data/extensions.json'
             if (!extensionKey) continue
 
             toggle.addEventListener('click', async () => {
-                const enabled = toggle.getAttribute('aria-pressed') !== 'true'
+                const enabled = toggle.getAttribute('aria-checked') !== 'true'
                 const workspace = Blockly.getMainWorkspace()
 
                 if (!enabled && workspace instanceof Blockly.WorkspaceSvg) {

@@ -1,7 +1,7 @@
 {
     "SERVO": {
-        "name": "Servo Extension",
-        "description": "Enables precise control of servo motors in your Ro/Box projects.",
+        "name": "Servo",
+        "description": "Turn a servo motor to an exact angle.",
         "preamble": ["from roboxlib import Servo", "servo = Servo()"],
         "toolbox": {
             "categories": [
@@ -57,8 +57,8 @@
         }
     },
     "LISTS": {
-        "name": "Lists Extension",
-        "description": "Adds list blocks for storing and working with collections of values.",
+        "name": "Lists",
+        "description": "Keep several values together in one list.",
         "toolbox": {
             "categories": [
                 {
