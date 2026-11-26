@@ -57,6 +57,23 @@ describe('buildToolbox', () => {
         expect(categoryIds(buildToolbox({ SERVO: true })).at(-1)).toBe('servo')
     })
 
+    it('keeps list blocks out of the toolbox unless LISTS is on', () => {
+        const off = JSON.stringify(buildToolbox({}))
+        for (const type of ['lists_', 'controls_forEach', 'math_on_list'])
+            expect(off).not.toContain(type)
+
+        const toolbox = buildToolbox({ LISTS: true })
+        const ids = categoryIds(toolbox)
+        expect(ids[ids.indexOf('math') + 1]).toBe('lists')
+        const control = blockTypes(toolbox, 'control')!
+        expect(control[control.indexOf('controls_for') + 1]).toBe(
+            'controls_forEach',
+        )
+        const math = blockTypes(toolbox, 'math')!
+        expect(math[math.indexOf('math_round') + 1]).toBe('math_on_list')
+        expect(blockTypes(toolbox, 'strings')!.at(-1)).toBe('lists_split')
+    })
+
     it('does not mutate the base toolbox', () => {
         const before = structuredClone(config.BaseToolbox)
         contributeToServo({
