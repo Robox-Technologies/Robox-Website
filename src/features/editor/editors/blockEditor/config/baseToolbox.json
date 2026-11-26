@@ -7,6 +7,7 @@
                     "icon": "categoryIcon fa fa-flag"
                 },
                 "categorystyle": "events_category",
+                "blockstyle": "event_blocks",
                 "contents": [
                     {
                         "kind": "block",
@@ -22,6 +23,7 @@
                     "icon": "categoryIcon fa fa-cog"
                 },
                 "categorystyle": "logic_category",
+                "blockstyle": "logic_blocks",
                 "contents": [
                     {
                         "kind": "block",
@@ -70,6 +72,7 @@
             "control": {
                 "name": "Control",
                 "categorystyle": "loop_category",
+                "blockstyle": "loop_blocks",
                 "cssconfig": {
                     "icon": "categoryIcon fa fa-repeat"
                 },
@@ -135,6 +138,7 @@
             "math": {
                 "name": "Math",
                 "categorystyle": "math_category",
+                "blockstyle": "math_blocks",
                 "cssconfig": {
                     "icon": "categoryIcon fa fa-plus"
                 },
@@ -310,6 +314,7 @@
             "strings": {
                 "name": "Strings",
                 "categorystyle": "text_category",
+                "blockstyle": "text_blocks",
                 "cssconfig": {
                     "icon": "categoryIcon fa fa-font"
                 },
@@ -376,6 +381,7 @@
             "sensors": {
                 "name": "Sensors",
                 "categorystyle": "sensor_category",
+                "blockstyle": "sensor_blocks",
                 "cssconfig": {
                     "icon": "categoryIcon fa fa-eye"
                 },
@@ -419,6 +425,7 @@
             "system": {
                 "name": "System",
                 "categorystyle": "system_category",
+                "blockstyle": "system_blocks",
                 "cssconfig": {
                     "icon": "categoryIcon fa fa-robot"
                 },
@@ -498,6 +505,7 @@
             "motors": {
                 "name": "Motors",
                 "categorystyle": "motor_category",
+                "blockstyle": "motor_blocks",
                 "cssconfig": {
                     "icon": "categoryIcon fa fa-truck-monster"
                 },
@@ -594,6 +602,7 @@
                     "icon": "categoryIcon fa fa-x"
                 },
                 "categorystyle": "variable_category",
+                "blockstyle": "variable_blocks",
                 "custom": "VARIABLE"
             },
             "functions": {
@@ -603,6 +612,7 @@
                 },
                 "contents": [],
                 "categorystyle": "procedure_category",
+                "blockstyle": "procedure_blocks",
                 "custom": "PROCEDURE"
             }
         }

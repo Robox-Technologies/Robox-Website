@@ -13,6 +13,8 @@ export type ToolboxBlock = Omit<BlockInfo, 'inputs'> & {
 export type BaseToolboxCategory = {
     name: string
     categorystyle: string
+    // Applied to blocks extensions add to this category, so they match its colour.
+    blockstyle?: string
     cssconfig: { icon: string }
     contents?: ToolboxBlock[]
     custom?: string

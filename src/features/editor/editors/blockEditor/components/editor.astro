@@ -29,6 +29,7 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
     import { loadBlockly, saveBlockly, generateCode } from "../utils/serialization";
     import generateToolbox, { updateToolboxPreservingScroll } from '../utils/toolbox';
     import { registerControls } from '../utils/controls';
+    import { applyCategoryBlockStyles } from '../utils/blockStyles';
     import { registerCodeProvider } from '@/features/editor/state/codeProvider';
     registerCodeProvider(() =>
         generateCode(Blockly.getMainWorkspace() as Blockly.WorkspaceSvg),
@@ -44,6 +45,7 @@ import EditorButtons from "./editorButtons/editorButtons.astro";
     // Dynamically import all blocks in the blocks directory
     import.meta.glob('../config/blocks/*.ts', { eager: true });
     import.meta.glob('../config/generators/*.ts', { eager: true });
+    applyCategoryBlockStyles();
 
     const workspace = Blockly.inject('blocklyDiv', BlocklyConfig);
 
