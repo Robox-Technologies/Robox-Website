@@ -20,7 +20,7 @@ export default async function generateToolbox(): Promise<RoboxToolbox> {
     return buildToolbox(project?.extensions ?? {})
 }
 
-export function buildToolbox(enabled: Partial<UserExtensions>): RoboxToolbox {
+export function buildToolbox(enabled: UserExtensions): RoboxToolbox {
     const toolbox = structuredClone(BaseToolbox)
     const contributions = extensionKeys
         .filter((key) => enabled[key] === true)

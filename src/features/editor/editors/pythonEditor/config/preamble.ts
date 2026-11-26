@@ -29,9 +29,7 @@ export function buildPythonPreamble(
     )
 }
 
-function generateExtensionsPreamble(
-    userExtensions: Partial<UserExtensions>,
-): string {
+function generateExtensionsPreamble(userExtensions: UserExtensions): string {
     return Object.entries(userExtensions)
         .filter(([, enabled]) => enabled)
         .flatMap(([key]) => ExtensionsPreamble[key as ExtensionKey] ?? [])

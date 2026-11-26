@@ -106,7 +106,7 @@ import extensions from '@/data/extensions.json'
             if (dialog.open) {
                 closeDialog()
             } else {
-                dialog.showModal()
+                void syncToggles().then(() => dialog.showModal())
             }
         })
 
@@ -127,17 +127,14 @@ import extensions from '@/data/extensions.json'
             closeDialog()
         })
 
-        const projectId = getProjectIdFromURL()
-
-        if (projectId) {
-            void getProject(projectId).then((project) => {
-                for (const [extensionKey] of Object.entries(extensions)) {
-                    setToggleState(
-                        extensionKey,
-                        project?.extensions?.[extensionKey as keyof typeof project.extensions] === true,
-                    )
-                }
-            })
+        // Read on every open: the editor can turn extensions on after load.
+        const syncToggles = async () => {
+            const projectId = getProjectIdFromURL()
+            if (!projectId) return
+            const project = await getProject(projectId)
+            for (const extensionKey of Object.keys(extensions) as ExtensionKey[]) {
+                setToggleState(extensionKey, project?.extensions[extensionKey] === true)
+            }
         }
 
         for (const toggle of toggleButtons) {

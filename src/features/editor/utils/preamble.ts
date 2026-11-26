@@ -17,9 +17,7 @@ export function buildPreamble(
 ): string {
     return (
         preamble +
-        generateExtensionsPreamble(
-            project?.extensions ?? ({} as UserExtensions),
-        ) +
+        generateExtensionsPreamble(project?.extensions ?? {}) +
         generateExtraSensorsPreamble(project?.sensors ?? {})
     )
 }
