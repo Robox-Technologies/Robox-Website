@@ -1,5 +1,5 @@
 import type { ExtensionKey } from 'src/types/extensions'
-import type { PinsOf, SensorKey } from 'src/types/extraSensors'
+import type { SensorKey } from 'src/types/extraSensors'
 import {
     ExtensionsPreamble,
     ExtraSensorsPreamble,
@@ -34,7 +34,7 @@ function generateExtensionsPreamble(
 ): string {
     return Object.entries(userExtensions)
         .filter(([, enabled]) => enabled)
-        .map(([key]) => ExtensionsPreamble[key as ExtensionKey])
+        .flatMap(([key]) => ExtensionsPreamble[key as ExtensionKey] ?? [])
         .join('\n')
 }
 

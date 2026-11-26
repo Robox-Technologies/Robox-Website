@@ -21,7 +21,7 @@ except Exception:
     generatePrint("error", "Cannot connect to colour sensor, is it on?")
 motor_speed = 80
 `
-export const ExtensionsPreamble: Record<ExtensionKey, string> = {
+export const ExtensionsPreamble: Partial<Record<ExtensionKey, string>> = {
     SERVO: `
 from roboxlib import Servo
 servo = Servo()
