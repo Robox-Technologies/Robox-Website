@@ -4,16 +4,10 @@ import type { PaletteColorName } from '@/data/colorPalette'
 import type {
     ColorCalibration,
     ColorReading,
-    PicoEventMap,
     PicoState,
 } from 'src/types/communication'
 import { ConnectionStatus } from 'src/types/communication'
-import {
-    dispatchCalibrationAdvance,
-    dispatchCalibrationClearError,
-    dispatchCalibrationError,
-    dispatchCalibrationReady,
-} from './stage'
+import { dispatchCalibrationAdvance, dispatchCalibrationReady } from './stage'
 
 /** More generous than the firmware check: calibration is a real sensor read, not an echo. */
 const CALIBRATION_TIMEOUT_MS = 6000
@@ -43,8 +37,20 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
     let activeAction: 'calibrate' | 'reset' | null = null
     let timeoutHandle: ReturnType<typeof setTimeout> | null = null
 
-    // Colour mode is entered once per connection, as soon as it's available.
-    let colorModeStarted = false
+    // Colour mode itself is started by the Connect stage, which won't advance
+    // here until it has proven the sensor works. Set when the board later
+    // refuses it (sensor unplugged mid-session) and cleared by the next
+    // reading, so a failed request doesn't re-send colorMode() just to be
+    // refused - and toasted - a second time.
+    let colorModeRefused = false
+
+    // Only true while this stage is the one on screen - the Connect stage
+    // disconnects on purpose when its sensor check fails, and that's not a
+    // drop worth a "Ro/Box Disconnected" toast.
+    const stageElement = root.closest<HTMLElement>('.stageFlowStage')
+    function isActiveStage(): boolean {
+        return !stageElement?.classList.contains('hidden')
+    }
 
     function applySwatchState(swatch: SwatchButton, calibrated: boolean) {
         swatch.check.classList.toggle('hidden!', !calibrated)
@@ -71,7 +77,7 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         }
     }
 
-    function finish(after: () => void) {
+    function finish(after: () => void, succeeded = false) {
         clearTimer()
         waitingForResult = false
         if (activeSwatch) setSwatchBusy(activeSwatch, false)
@@ -79,8 +85,11 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         activeAction = null
         setInteractive(true)
         // Any COMMAND frame implicitly exits colour mode on the board, so the live
-        // preview needs a fresh colorMode() once the request settles either way.
-        if (pico.isConnected()) pico.colorMode()
+        // preview needs a fresh colorMode() once the request settles - unless
+        // the board has already refused it and this request didn't change that.
+        if (pico.isConnected() && (succeeded || !colorModeRefused)) {
+            pico.colorMode()
+        }
         after()
     }
 
@@ -100,8 +109,8 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         if (!connected) {
             // Nothing is going to answer a request sent to a Ro/Box that's no longer there.
             if (waitingForResult) finish(() => {})
-            colorModeStarted = false
-            if (wasConnected) {
+            colorModeRefused = false
+            if (wasConnected && isActiveStage()) {
                 toast.danger({
                     title: 'Ro/Box Disconnected',
                     message:
@@ -110,15 +119,11 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
                 })
             }
             wasConnected = false
-            dispatchCalibrationAdvance(root, 'connect')
+            if (isActiveStage()) dispatchCalibrationAdvance(root, 'connect')
             return
         }
 
         wasConnected = true
-        if (!colorModeStarted) {
-            colorModeStarted = true
-            pico.colorMode()
-        }
     }
 
     pico.on('stateChange', updateConnectionUI)
@@ -132,6 +137,7 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
     setTimeout(() => updateConnectionUI(pico.getState()), 0)
 
     pico.on('color', (reading: ColorReading) => {
+        colorModeRefused = false
         previewSwatch.style.backgroundColor = `rgb(${reading.r}, ${reading.g}, ${reading.b})`
         previewName.textContent = reading.name
         previewRgb.textContent = `rgb(${reading.r}, ${reading.g}, ${reading.b})`
@@ -144,10 +150,9 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         const swatch = activeSwatch
         const action = activeAction
         finish(() => {
-            dispatchCalibrationClearError(root)
             if (!swatch) return
             applySwatchState(swatch, action === 'calibrate')
-        })
+        }, true)
     })
 
     // The board's answer to getCalibration("colors"), fetched by the Connect
@@ -168,11 +173,16 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         dispatchCalibrationReady(root)
     })
 
-    pico.on('error', (data: PicoEventMap['error']) => {
-        if (!waitingForResult) return
-        finish(() =>
-            dispatchCalibrationError(root, 'Calibration Failed', data.message),
-        )
+    // pico already toasts every error with the board's own message, so these
+    // only settle state - a banner on top would just repeat it.
+    pico.on('error', () => {
+        if (!isActiveStage()) return
+        if (!waitingForResult) {
+            // Outside a request, this is the board refusing colorMode().
+            colorModeRefused = true
+            return
+        }
+        finish(() => {})
     })
 
     function sendRequest(
@@ -184,7 +194,6 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         // One request in flight, so a click on another swatch can't race the first.
         if (waitingForResult) return
 
-        dispatchCalibrationClearError(root)
         activeSwatch = swatch
         activeAction = action
         setSwatchBusy(swatch, true)
@@ -196,11 +205,10 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         timeoutHandle = setTimeout(() => {
             if (!waitingForResult) return
             finish(() =>
-                dispatchCalibrationError(
-                    root,
-                    'Calibration Failed',
-                    failureMessage,
-                ),
+                toast.danger({
+                    title: 'Calibration Failed',
+                    message: failureMessage,
+                }),
             )
         }, CALIBRATION_TIMEOUT_MS)
     }
