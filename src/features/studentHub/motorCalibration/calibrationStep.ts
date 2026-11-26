@@ -9,7 +9,8 @@ export interface MotorCalibrationOptions {
     leftLine: HTMLElement
     rightLine: HTMLElement
     slider: HTMLInputElement
-    readout: HTMLElement
+    leftBoostInput: HTMLInputElement
+    rightBoostInput: HTMLInputElement
     reverseLeftToggle: HTMLElement
     reverseRightToggle: HTMLElement
     swapToggle: HTMLElement
@@ -36,7 +37,8 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         leftLine,
         rightLine,
         slider,
-        readout,
+        leftBoostInput,
+        rightBoostInput,
         reverseLeftToggle,
         reverseRightToggle,
         swapToggle,
@@ -48,10 +50,10 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
         resetButton,
     } = options
 
-    const describeBias = (bias: number) => {
-        if (bias === 0) return 'Balanced'
-        const percent = Math.round(Math.abs(bias) * 100)
-        return `${percent}% ${bias < 0 ? 'Left' : 'Right'}`
+    // Negative bias boosts the left motor, positive the right.
+    const showBoost = (bias: number) => {
+        leftBoostInput.value = String(bias < 0 ? Math.round(-bias * 100) : 0)
+        rightBoostInput.value = String(bias > 0 ? Math.round(bias * 100) : 0)
     }
 
     /**
@@ -126,7 +128,7 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
 
     const setBias = (bias: number) => {
         slider.value = String(bias)
-        readout.textContent = describeBias(bias)
+        showBoost(bias)
         updateDiagram(bias)
     }
 
@@ -201,7 +203,7 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
 
     slider.addEventListener('input', () => {
         const bias = Number(slider.value)
-        readout.textContent = describeBias(bias)
+        showBoost(bias)
         updateDiagram(bias)
     })
 
@@ -212,6 +214,37 @@ export function wireMotorCalibration(options: MotorCalibrationOptions): void {
     slider.addEventListener('change', () => {
         pico.motorCalibrate(Number(slider.value))
     })
+
+    const readBoost = (input: HTMLInputElement) => {
+        const percent = Math.round(Number(input.value))
+        return Number.isFinite(percent) ? Math.min(100, Math.max(0, percent)) : 0
+    }
+
+    // Typing a boost for one motor clears the other's: only one side can be boosted.
+    const wireBoostInput = (
+        input: HTMLInputElement,
+        other: HTMLInputElement,
+        sign: -1 | 1,
+    ) => {
+        input.addEventListener('focus', () => input.select())
+        input.addEventListener('input', () => {
+            if (input.value === '') return
+            const bias = (sign * readBoost(input)) / 100
+            slider.value = String(bias)
+            other.value = '0'
+            updateDiagram(bias)
+        })
+        input.addEventListener('change', () => {
+            const bias = (sign * readBoost(input)) / 100
+            setBias(bias)
+            pico.motorCalibrate(bias)
+        })
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') input.blur()
+        })
+    }
+    wireBoostInput(leftBoostInput, rightBoostInput, -1)
+    wireBoostInput(rightBoostInput, leftBoostInput, 1)
 
     reverseLeftToggle.addEventListener('click', () => {
         const reversed = !isToggled(reverseLeftToggle)
