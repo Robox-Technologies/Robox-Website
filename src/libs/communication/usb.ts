@@ -4,15 +4,9 @@
  */
 
 import { BaseTransport, errorMessage } from './transportBase'
-import { ConnectionStatus } from 'src/types/communication'
 import { stageWrap, withTimeout } from './connectionDiagnostics'
 
 const PI_VENDOR_ID = 0x2e8a
-
-function portId(port: SerialPort): string {
-    const { usbVendorId, usbProductId } = port.getInfo()
-    return `usb:${(usbVendorId ?? 0).toString(16)}:${(usbProductId ?? 0).toString(16)}`
-}
 
 export class USBCommunication extends BaseTransport {
     private port: SerialPort | null = null
@@ -23,14 +17,7 @@ export class USBCommunication extends BaseTransport {
     private writerStreamClosed: Promise<void> = Promise.resolve()
     private readableStreamClosed: Promise<void> = Promise.resolve()
 
-    private readonly initPortsBound = this.initPorts.bind(this)
-
-    /** Reconnecting is opt-in; noticing a disconnect is never gated by this. */
-    private autoConnectEnabled = false
-
-    setAutoConnect(enabled: boolean = true): void {
-        this.autoConnectEnabled = enabled
-    }
+    private readonly handleUnplugBound = this.handleUnplug.bind(this)
 
     read(): void {
         if (!this.currentReader) return
@@ -132,32 +119,6 @@ export class USBCommunication extends BaseTransport {
         }
     }
 
-    /**
-     * Connect to one previously authorised USB device by its Web Serial
-     * identifier. Web Serial exposes vendor/product IDs, but not a serial
-     * number, so identical devices cannot be distinguished by this API.
-     */
-    async autoConnect(deviceId: string): Promise<void> {
-        const ports = await navigator.serial.getPorts()
-        const port = ports.find(
-            (candidate) =>
-                candidate.getInfo().usbVendorId === PI_VENDOR_ID &&
-                portId(candidate) === deviceId,
-        )
-
-        if (!port) {
-            throw new Error(
-                `No authorised USB device was found for id "${deviceId}".`,
-            )
-        }
-
-        await this.parent.connect(port)
-    }
-
-    getConnectionDeviceId(): string | null {
-        return this.port ? portId(this.port) : null
-    }
-
     async disconnect(): Promise<void> {
         try {
             if (this.currentReader) {
@@ -200,66 +161,24 @@ export class USBCommunication extends BaseTransport {
         }
     }
 
-    private async initPorts(event: Event): Promise<void> {
+    // Connecting is always an explicit `request()`; this only notices a board
+    // being unplugged, or `parent` would keep reporting CONNECTED to a dead port.
+    private async handleUnplug(event: Event): Promise<void> {
         if (!event.target || !('getInfo' in event.target)) return
 
         const port = event.target as SerialPort
         if (port.getInfo().usbVendorId !== PI_VENDOR_ID) return
-
-        // One plug-in fires several 'connect' events as the board re-enumerates, so this
-        // leans on `Pico`'s connectionStatus — `port.readable`/`writable` stay null until
-        // `port.open()` resolves. RESTARTING stays allowed, since a restart bounces the same way.
-        if (event.type === 'connect') {
-            // Only reconnecting is opt-in; the disconnect branch below always runs, or a
-            // board that vanishes leaves `parent` reporting CONNECTED to a dead port.
-            if (!this.autoConnectEnabled) return
-
-            const { connectionStatus } = this.parent.getState()
-            if (
-                connectionStatus !== ConnectionStatus.DISCONNECTED &&
-                connectionStatus !== ConnectionStatus.RESTARTING
-            ) {
-                return
-            }
-            await this.parent.connect(port)
-        } else if (
-            event.type === 'disconnect' &&
-            !this.parent.getState().isRestarting
-        ) {
-            await this.parent.disconnect()
-        }
+        // A restart can bounce the port; that isn't the student unplugging it.
+        if (this.parent.getState().isRestarting) return
+        await this.parent.disconnect()
     }
 
     initialize(): void {
-        if (!navigator.serial) return
-        navigator.serial.addEventListener('connect', this.initPortsBound)
-        navigator.serial.addEventListener('disconnect', this.initPortsBound)
-
-        // 'connect' only fires for ports appearing after the listener attaches, so scan
-        // for one that was already plugged in.
-        void this.connectExistingPort()
-    }
-
-    private async connectExistingPort(): Promise<void> {
-        const ports = await navigator.serial.getPorts()
-        if (!this.autoConnectEnabled) return
-
-        for (const port of ports) {
-            if (port.getInfo().usbVendorId === PI_VENDOR_ID) {
-                await this.parent.connect(port)
-                break
-            }
-        }
+        navigator.serial?.addEventListener('disconnect', this.handleUnplugBound)
     }
 
     async destroy(): Promise<void> {
-        if (navigator.serial) {
-            navigator.serial.removeEventListener('connect', this.initPortsBound)
-            navigator.serial.removeEventListener(
-                'disconnect',
-                this.initPortsBound,
-            )
-        }
+        navigator.serial?.removeEventListener('disconnect', this.handleUnplugBound)
 
         await super.destroy()
         this.port = null

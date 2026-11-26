@@ -322,8 +322,7 @@ const driveButtonClass = "button-interactive flex h-11 items-center justify-cent
                     });
                 }
                 wasConnected = false;
-                // Arriving on this stage disconnected (e.g. a handoff from the
-                // editor still connecting) isn't a drop - stay put.
+                // Arriving on this stage disconnected isn't a drop - stay put.
                 if (connectionWasActive) dispatchCalibrationAdvance(root, "connect");
                 return;
             }

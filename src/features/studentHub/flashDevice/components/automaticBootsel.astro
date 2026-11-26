@@ -79,13 +79,7 @@ import Button from '@/components/button';
             hasTriggeredReboot = false;
             hasAdvanced = false;
 
-            // Awaited, or setAutoConnect(false) lands on the transport being torn down
-            // rather than the fresh one replacing it.
             await pico.setCommunicationMethod("USB");
-
-            // Only an explicit click may connect here, or an authorised port would be
-            // rebooted into bootloader mode unprompted.
-            pico.setAutoConnect(false);
         }
 
         const flashDeviceRoot = root.closest<HTMLDivElement>(".flashDevice");
