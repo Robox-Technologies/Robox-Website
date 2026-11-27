@@ -16,7 +16,7 @@ function describeShipping({
 }): string {
     if (shippingError) return shippingError
     if (shippingLoading) return 'Calculating...'
-    if (shippingCents === null) return 'Calculated at checkout'
+    if (shippingCents === null) return 'Enter your address'
     return formatPrice(shippingCents, true)
 }
 
