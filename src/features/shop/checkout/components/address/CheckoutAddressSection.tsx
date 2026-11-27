@@ -90,7 +90,7 @@ export default function CheckoutAddressSection({
                 {error ? (
                     <p
                         role="alert"
-                        className="mb-0 rounded-lg border border-red bg-red/15 px-4 py-3 text-base"
+                        className="mb-0 rounded-control border border-red bg-red/15 px-4 py-3 text-base"
                     >
                         {error}
                     </p>
@@ -176,7 +176,7 @@ export default function CheckoutAddressSection({
                     checkoutStep.set('payment')
                 }}
                 disabled={!canContinue}
-                className="button-interactive mt-8 inline-flex h-[50px] w-full items-center justify-center gap-4 rounded-[25px] bg-red text-lg text-primary disabled:bg-tone3"
+                className="button-interactive mt-8 inline-flex h-[50px] w-full items-center justify-center gap-4 rounded-full bg-red text-lg text-primary disabled:bg-tone3"
             >
                 Continue to payment
             </button>

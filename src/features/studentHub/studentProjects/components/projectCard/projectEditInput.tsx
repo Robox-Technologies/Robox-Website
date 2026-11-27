@@ -85,12 +85,12 @@ export default function ProjectEditInput({
                     onChange={handleInputChange}
                     onKeyDown={handleKeyDown}
                     onBlur={handleBlur}
-                    className="h-8 w-full min-w-0 rounded border border-blue px-2 text-lg font-bold text-black"
+                    className="h-8 w-full min-w-0 rounded-small border border-blue px-2 text-lg font-bold text-black"
                     placeholder="Enter project name"
                     onClick={(e) => e.stopPropagation()}
                 />
                 {error && (
-                    <div className="absolute top-full left-0 bg-red-100 text-red-700 text-xs p-1 rounded mt-1 whitespace-nowrap z-10">
+                    <div className="absolute top-full left-0 bg-red-100 text-red-700 text-xs p-1 rounded-small mt-1 whitespace-nowrap z-10">
                         {error}
                     </div>
                 )}

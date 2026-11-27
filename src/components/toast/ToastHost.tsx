@@ -8,7 +8,7 @@ import {
     faXmark,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '@/utils/twMerge'
 import { toast, type Toast, type ToastVariant } from '@/libs/ui/toast'
 
 const VARIANT_STYLES: Record<
@@ -163,7 +163,7 @@ function ToastItemCard({
     return (
         <div
             className={twMerge(
-                'pointer-events-auto m-0 border-2 rounded-xl shadow-lg box-shadow',
+                'pointer-events-auto m-0 border-2 rounded-control shadow-lg box-shadow',
                 'w-full p-0 overflow-hidden animate-toast-in',
                 variantConfig.classes,
             )}
@@ -188,7 +188,7 @@ function ToastItemCard({
                         type="button"
                         onClick={onDismiss}
                         aria-label="Dismiss notification"
-                        className="button-interactive rounded-md p-1 border border-black"
+                        className="button-interactive rounded-small p-1 border border-black"
                     >
                         <FontAwesomeIcon
                             icon={faXmark}

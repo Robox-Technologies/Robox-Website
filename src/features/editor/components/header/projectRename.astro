@@ -4,7 +4,7 @@
 <div class="project-rename flex items-center justify-center">
     {/* Not a <form>: WebKit implicitly submits a single-input form without a `submit`
          event, so preventDefault() can't stop it navigating away from ?project=... */}
-    <div class="flex gap-4 bg-white rounded-lg box-shadow">
+    <div class="flex gap-4 bg-white rounded-control box-shadow">
         <label class="sr-only" for="project-name-input">Project name</label>
         <input
             type="text"
@@ -13,7 +13,7 @@
             value="Untitled Project"
             autocomplete="off"
             enterkeyhint="done"
-            class="border border-gray-300 p-2 rounded-sm w-42 text-black"
+            class="border border-gray-300 p-2 rounded-small w-42 text-black"
             data-project-rename-input
             disabled
         />

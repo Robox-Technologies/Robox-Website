@@ -64,7 +64,7 @@ export function ProjectCard({
                     // and `thumbnail` is empty until the project is first saved.
                     alt=""
                     // 4px short of the card's 24px radius, which is measured outside its border.
-                    className="w-full rounded-t-[calc(1.5rem-4px)] object-cover bg-tone3 aspect-video"
+                    className="w-full rounded-t-[calc(var(--radius-surface)-4px)] object-cover bg-tone3 aspect-video"
                 />
             }
             title={

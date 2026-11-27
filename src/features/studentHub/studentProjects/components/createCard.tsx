@@ -8,7 +8,7 @@ export default function CreateCard() {
         <button
             type="button"
             id="create-card"
-            className="card card-interactive box-shadow w-62.5 min-h-62.5 h-full rounded-3xl bg-blue flex flex-col items-center justify-center p-6 gap-4"
+            className="card card-interactive box-shadow w-62.5 min-h-62.5 h-full rounded-surface bg-blue flex flex-col items-center justify-center p-6 gap-4"
             onClick={() =>
                 document
                     .querySelector<HTMLDialogElement>('#createProjectDialog')

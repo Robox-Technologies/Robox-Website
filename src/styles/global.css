@@ -89,7 +89,7 @@
      * `button-interactive` for the hover/press feedback.
      */
     .cta-button {
-        @apply my-8 inline-block whitespace-nowrap rounded-[20px] bg-red px-[25px] py-4 text-[25px] font-medium text-primary;
+        @apply my-8 inline-block whitespace-nowrap rounded-control bg-red px-[25px] py-4 text-[25px] font-medium text-primary;
 
         box-shadow: 6px 6px 0 var(--color-drop-shadow);
     }

@@ -1,5 +1,5 @@
 import { formatPrice } from '@/utils/formatPrice'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '@/utils/twMerge'
 
 export type SummaryLine = {
     id: string

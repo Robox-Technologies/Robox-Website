@@ -1,5 +1,5 @@
 import Button from '@/components/button'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '@/utils/twMerge'
 import type { ReactNode } from 'react'
 
 export default function SummaryCard({
@@ -16,7 +16,7 @@ export default function SummaryCard({
     return (
         <aside
             className={twMerge(
-                'flex flex-col rounded-xl border border-black/10 bg-white p-6 shadow-sm',
+                'flex flex-col rounded-surface border border-black/10 bg-white p-6 shadow-sm',
                 className,
             )}
         >

@@ -19,7 +19,7 @@ const hasGoober = Astro.slots.has('goober');
         className='w-full h-full box-shadow bg-white'
         description={description}
     >
-        <Image slot="image" src={image} alt={imageAlt} class="w-full h-auto rounded-t-lg" width={image.width} height={image.height}/>
+        <Image slot="image" src={image} alt={imageAlt} class="w-full h-auto" width={image.width} height={image.height}/>
         <h2 slot="title" class="text-2xl font-bold mb-4">{title}</h2>
         <p slot="description" class="text-lg">
             {description}

@@ -19,13 +19,13 @@ export default function CartItemRow({
     onRemove: () => void
 }) {
     return (
-        <div className="rounded-lg border border-black/10 p-4 bg-white">
+        <div className="rounded-surface border border-black/10 p-4 bg-white">
             <div className="flex h-25 flex-row gap-5 max-[600px]:h-auto max-[600px]:flex-col">
                 <img
                     src={imageSrc}
                     // Decorative: the row names the product right beside it.
                     alt=""
-                    className="h-full aspect-video shrink-0 rounded-[5px] object-cover max-[600px]:h-auto max-[600px]:w-full"
+                    className="h-full aspect-video shrink-0 rounded-control object-cover max-[600px]:h-auto max-[600px]:w-full"
                 />
                 <div className="flex min-w-0 flex-1 flex-row items-start justify-between gap-4">
                     {/* `min-w-0` on both columns, or the stepper and bin overhang the card on a phone. */}

@@ -44,7 +44,7 @@ export default function Step({
 function StepNumber({ stepNumber }: { stepNumber: number }) {
     return (
         <h2
-            className={` text-4xl font-bold text-white rounded-[50%] w-16 h-16 min-w-16 min-h-16 flex items-center justify-center ${stepColours[stepNumber - 1]}`}
+            className={` text-4xl font-bold text-white rounded-full w-16 h-16 min-w-16 min-h-16 flex items-center justify-center ${stepColours[stepNumber - 1]}`}
         >
             {stepNumber}
         </h2>

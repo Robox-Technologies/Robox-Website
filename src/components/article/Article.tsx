@@ -1,5 +1,5 @@
 import type { HTMLAttributes } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '@/utils/twMerge'
 
 export default function Article({
     children,

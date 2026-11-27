@@ -49,7 +49,7 @@ export function StripePaymentForm({ error }: { error?: string | null }) {
                 </h2>
                 <p
                     role="alert"
-                    className="mb-4 rounded-lg border border-red bg-red/15 px-4 py-3 text-base"
+                    className="mb-4 rounded-control border border-red bg-red/15 px-4 py-3 text-base"
                 >
                     {checkoutState.error.message}
                 </p>
@@ -101,7 +101,7 @@ export function StripePaymentForm({ error }: { error?: string | null }) {
             {error && (
                 <p
                     role="alert"
-                    className="mb-4 rounded-lg border border-red bg-red/15 px-4 py-3 text-base"
+                    className="mb-4 rounded-control border border-red bg-red/15 px-4 py-3 text-base"
                 >
                     {error}
                 </p>
@@ -198,7 +198,7 @@ export function StripePaymentForm({ error }: { error?: string | null }) {
                 <button
                     type="submit"
                     disabled={!canPay}
-                    className="button-interactive mt-8 inline-flex h-[50px] w-full items-center justify-center gap-4 rounded-[25px] bg-red text-lg text-primary disabled:bg-tone3"
+                    className="button-interactive mt-8 inline-flex h-[50px] w-full items-center justify-center gap-4 rounded-full bg-red text-lg text-primary disabled:bg-tone3"
                 >
                     {submitting ? (
                         <span className="inline-flex items-center gap-2">

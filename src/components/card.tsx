@@ -1,4 +1,4 @@
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '@/utils/twMerge'
 
 interface CardProps {
     className?: string
@@ -24,7 +24,7 @@ export default function Card({
     ...props
 }: CardProps) {
     const className = twMerge(
-        'card flex flex-col overflow-hidden rounded-3xl max-w-[350px]',
+        'card flex flex-col overflow-hidden rounded-surface max-w-[350px]',
         props.className,
     )
     const contents = (

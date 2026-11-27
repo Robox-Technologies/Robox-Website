@@ -1,7 +1,7 @@
 import type { IconProp } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import type { ButtonHTMLAttributes, AnchorHTMLAttributes } from 'react'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '@/utils/twMerge'
 
 export default function Button({
     className,
@@ -32,7 +32,7 @@ export default function Button({
                     // unlike <button>'s `inline-block` + centered text - without
                     // these, width/padding utilities silently no-op and labels
                     // sit off-centre on the anchor variant.
-                    `button-interactive inline-block text-center text-white px-4 py-2 rounded-xl`,
+                    `button-interactive inline-block text-center text-white px-4 py-2 rounded-control`,
                     className,
                 )}
                 {...anchorProps}
@@ -47,7 +47,7 @@ export default function Button({
         return (
             <button
                 className={twMerge(
-                    `button-interactive text-white rounded-xl px-4 py-2`,
+                    `button-interactive text-white rounded-control px-4 py-2`,
                     className,
                 )}
                 {...props}

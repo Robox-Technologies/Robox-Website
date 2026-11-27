@@ -85,13 +85,13 @@ export default function CheckoutVoucher({
                         }
                     }}
                     placeholder="Enter Voucher"
-                    className="min-w-0 flex-1 rounded-lg border border-black/10 bg-white px-4 py-3 text-base text-black outline-none placeholder:text-gray-400"
+                    className="min-w-0 flex-1 rounded-control border border-black/10 bg-white px-4 py-3 text-base text-black outline-none placeholder:text-gray-400"
                 />
                 <button
                     type="button"
                     onClick={() => void apply()}
                     disabled={busy || !draft.trim()}
-                    className="button-interactive rounded-lg bg-red px-5 py-3 text-base font-semibold text-white disabled:bg-tone3"
+                    className="button-interactive rounded-control bg-red px-5 py-3 text-base font-semibold text-white disabled:bg-tone3"
                 >
                     Apply
                 </button>

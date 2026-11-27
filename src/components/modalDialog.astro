@@ -1,7 +1,7 @@
 ---
 import { faXmark } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '@/utils/twMerge'
 
 interface Props {
     id: string
@@ -24,14 +24,14 @@ const titleId = `${id}-title`
 >
     <div
         class={twMerge(
-            'relative flex max-h-[80vh] w-full max-w-lg flex-col rounded-3xl bg-white shadow-2xl',
+            'relative flex max-h-[80vh] w-full max-w-lg flex-col rounded-surface bg-white shadow-2xl',
             panelClass,
         )}
     >
         {/* Centred on the title's first line (header `pt-6`, `text-3xl leading-tight`); glyph flush with `px-8`. */}
         <button
             type="button"
-            class="modalDialogClose button-interactive absolute right-5 top-6 flex h-[2.34375rem] items-center rounded-lg px-3 text-gray-600"
+            class="modalDialogClose button-interactive absolute right-5 top-6 flex h-[2.34375rem] items-center rounded-control px-3 text-gray-600"
             aria-label={closeLabel}
         >
             <FontAwesomeIcon icon={faXmark} />

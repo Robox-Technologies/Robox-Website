@@ -3,7 +3,7 @@ import { usePico } from '@/features/editor/hooks/usePico'
 import { ConnectionStatus } from 'src/types/communication'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '@/utils/twMerge'
 
 const statusStyling: Record<
     ConnectionStatus,
@@ -83,7 +83,7 @@ export default function MainButton() {
         <Button
             href={needsFirmwareUpdate ? '../flash' : undefined}
             className={twMerge(
-                `rounded-3xl box-shadow w-65 text-xl font-bold py-3 px-2 pointer-events-auto ${className}`,
+                `rounded-full box-shadow w-65 text-xl font-bold py-3 px-2 pointer-events-auto ${className}`,
             )}
             onClick={needsFirmwareUpdate ? undefined : handleClick}
             disabled={!needsFirmwareUpdate && !handleClick}

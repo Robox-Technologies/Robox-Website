@@ -17,7 +17,7 @@ const { product, image } = Astro.props
 <ModalDialog id="added-to-cart-dialog" title="Added to Cart!" closeLabel="Close added to cart">
     <div class="flex items-center gap-4 px-8 py-2">
         {/* Decorative: the name beside it says what it is. */}
-        <img src={image.src} alt="" class="aspect-square w-24 shrink-0 rounded-xl object-cover" />
+        <img src={image.src} alt="" class="aspect-square w-24 shrink-0 rounded-control object-cover" />
         <div class="flex min-w-0 flex-1 flex-col gap-1">
             <p class="text-lg font-bold">
                 {product.name} <span class="font-normal text-gray-500">× <span class="addedToCartQuantity">1</span></span>

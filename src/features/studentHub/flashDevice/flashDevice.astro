@@ -19,7 +19,7 @@ import { STAGES, STAGE_LABELS } from './stage';
     <div class="min-h-0 overflow-y-auto px-8 pt-2 pb-8">
         <div class="flashDevice flex flex-col gap-6" data-stage-flow-root>
             <StageStepper namespace="flashdevice" stages={STAGES} stageLabels={STAGE_LABELS} />
-            <div class="flashDeviceUnsupported flex items-start gap-3 rounded-xl border-2 border-red bg-red/15 p-4" style="display: none;">
+            <div class="flashDeviceUnsupported flex items-start gap-3 rounded-control border-2 border-red bg-red/15 p-4" style="display: none;">
                 <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5 text-xl text-black" />
                 <div>
                     <p class="font-bold text-black">Browser Not Supported</p>

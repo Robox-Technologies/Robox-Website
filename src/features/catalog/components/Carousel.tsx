@@ -39,7 +39,7 @@ export default function Carousel({ images }: { images: CarouselImage[] }) {
                 <img
                     src={images[currentIndex].src.src}
                     alt={images[currentIndex].alt}
-                    className="h-[60vh] min-h-[500px] block object-contain aspect-[1.4] max-[940px]:h-auto max-[940px]:min-h-0 max-[940px]:max-h-[60vh] max-[940px]:w-full"
+                    className="h-[60vh] min-h-[500px] block rounded-surface object-contain aspect-[1.4] max-[940px]:h-auto max-[940px]:min-h-0 max-[940px]:max-h-[60vh] max-[940px]:w-full"
                 />
                 <Button
                     className="absolute top-1/2 right-8 -translate-y-1/2 z-10 bg-white/75 backdrop-blur-[2px] p-0! rounded-full w-10 h-10"
@@ -108,7 +108,7 @@ function CarouselSideBarItem({
             aria-label={`Show photo ${index + 1} of ${total}`}
             aria-pressed={isActive}
             onClick={onClick}
-            className="carousel-item overflow-hidden block w-[115px] h-[115px] rounded-lg appearance-none border-0 bg-transparent p-0"
+            className="carousel-item overflow-hidden block w-[115px] h-[115px] rounded-control appearance-none border-0 bg-transparent p-0"
         >
             <div className="cursor-pointer h-full">
                 {/* The rail duplicates the photo already described by the main
@@ -116,7 +116,7 @@ function CarouselSideBarItem({
                 <img
                     src={image.src.src}
                     alt=""
-                    className={`w-full h-full block object-cover rounded-lg ${isActive ? 'brightness-[0.6]' : ''}`}
+                    className={`w-full h-full block object-cover rounded-control ${isActive ? 'brightness-[0.6]' : ''}`}
                 />
             </div>
         </button>

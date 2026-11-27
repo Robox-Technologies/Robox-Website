@@ -9,7 +9,7 @@ import {
     incrementQuantity,
 } from '@/features/shop/cart/utils/quantity'
 import { toast } from '@/libs/ui/toast'
-import { twMerge } from 'tailwind-merge'
+import { twMerge } from '@/utils/twMerge'
 import type { FormHTMLAttributes } from 'react'
 
 export default function AddQuantity({
