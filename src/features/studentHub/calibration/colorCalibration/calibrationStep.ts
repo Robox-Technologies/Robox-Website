@@ -34,12 +34,11 @@ export interface ColorCalibrationOptions {
     swatches: SwatchButton[]
     previewSwatch: HTMLElement
     previewName: HTMLElement
-    previewRgb: HTMLElement
 }
 
 /** Wires up the calibrate stage: one toggle per colour, calibrating or resetting depending on its current state. */
 export function wireColorCalibration(options: ColorCalibrationOptions): void {
-    const { root, swatches, previewSwatch, previewName, previewRgb } = options
+    const { root, swatches, previewSwatch, previewName } = options
     debug('Colour calibration stage mounted', {
         swatchCount: swatches.length,
     })
@@ -68,17 +67,24 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
     const isCalibrated = (swatch: SwatchButton) =>
         swatch.toggleButton.getAttribute('aria-checked') === 'true'
 
+    const baseCalibrated = () =>
+        swatches
+            .filter((swatch) => BASE_COLOURS.includes(swatch.name))
+            .every(isCalibrated)
+
     // Other colours wait for white and black. One already calibrated stays
     // clickable, so it can still be reset.
     function isLocked(swatch: SwatchButton): boolean {
         if (BASE_COLOURS.includes(swatch.name) || isCalibrated(swatch)) return false
-        return !swatches
-            .filter((other) => BASE_COLOURS.includes(other.name))
-            .every(isCalibrated)
+        return !baseCalibrated()
     }
+
+    // The "start with white and black" instruction only matters until they're done.
+    const baseHint = root.querySelector<HTMLElement>('.calibrationBaseHint')
 
     let interactive = true
     function refreshLocks() {
+        baseHint?.classList.toggle('hidden', baseCalibrated())
         for (const swatch of swatches) {
             const locked = isLocked(swatch)
             swatch.toggleButton.toggleAttribute('data-locked', locked)
@@ -184,7 +190,6 @@ export function wireColorCalibration(options: ColorCalibrationOptions): void {
         colorModeRefused = false
         previewSwatch.style.backgroundColor = `rgb(${reading.r}, ${reading.g}, ${reading.b})`
         previewName.textContent = reading.name
-        previewRgb.textContent = `rgb(${reading.r}, ${reading.g}, ${reading.b})`
     })
 
     // With one request in flight, `activeSwatch`/`activeAction` already say which

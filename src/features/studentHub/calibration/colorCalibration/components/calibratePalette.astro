@@ -7,42 +7,47 @@ const colorsByName = new Map(COLOR_PALETTE.map((color) => [color.name, color]));
 const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
 ---
 <div class="calibrationPalette flex w-full flex-col gap-6">
-    <p class="text-gray-800">
-        Hold something coloured under the sensor, then click that colour below.
-        Start with white and black, then the rest unlock. Click a colour again to reset it.
-    </p>
-
-    <div class="calibrationPreview flex flex-col items-center gap-3">
-        <div class="calibrationPreviewSwatch size-28 rounded-full border-2 border-black bg-gray-200 transition-colors duration-300 ease-out"></div>
-        <div class="flex flex-col items-center gap-0.5">
-            <p class="text-sm text-gray-800">Your Ro/Box sees: <span class="calibrationPreviewName inline-block font-bold text-black first-letter:uppercase">waiting for a reading…</span></p>
-            <p class="calibrationPreviewRgb font-mono text-xs text-gray-500"></p>
+    <div class="flex items-center gap-6">
+        {/* A big version of the colour dots below, filled live with the sensor's reading. */}
+        <div class="calibrationPreviewSwatch size-24 shrink-0 rounded-full border-[3px] border-drop-shadow bg-tone2 transition-colors duration-300 ease-out" aria-hidden="true"></div>
+        <div>
+            <p class="text-gray-500">The sensor sees</p>
+            <p class="calibrationPreviewName text-3xl font-extrabold first-letter:uppercase" aria-live="polite">waiting for a reading…</p>
+            <p class="mt-1 text-sm text-gray-500">Updates live as you hold things under it.</p>
         </div>
     </div>
 
-    <div class="calibrationSwatchGrid grid grid-cols-4 gap-4">
-        {orderedColors.map((color) => (
-            <div class="calibrationSwatch relative flex flex-col items-center justify-self-center" data-color={color.name}>
-                <button
-                    type="button"
-                    role="switch"
-                    aria-checked="false"
-                    class="calibrationSwatchToggle button-interactive flex flex-col items-center gap-2 rounded-xl p-2"
-                    title={`Calibrate ${color.name}`}
-                >
-                    <span class="calibrationSwatchDot block size-12 rounded-full border-2 border-black" style={`background-color: ${color.hex}`}></span>
-                    <span class="text-xs font-semibold text-black capitalize">{color.name}</span>
-                </button>
-                <span class="calibrationSwatchBadge calibrationSwatchCheck absolute flex size-6 hidden! items-center justify-center rounded-full bg-white text-green">
-                    <FontAwesomeIcon icon={faCircleCheck} />
-                </span>
-                <span class="calibrationSwatchBadge calibrationSwatchSpinner absolute flex size-6 hidden! items-center justify-center rounded-full bg-white text-blue">
-                    <FontAwesomeIcon icon={faSpinner} className="fa-spin" />
-                </span>
-            </div>
-        ))}
-    </div>
-
+    <section>
+        <h3 class="text-xl font-extrabold">Pick a colour</h3>
+        <p class="mt-1 text-gray-500">
+            {/* Explicit spaces: whitespace around the span gets compressed away. */}
+            Hold something coloured under the sensor, then click that colour.{' '}
+            <span class="calibrationBaseHint text-inherit">Start with white and black, then the rest unlock.{' '}</span>
+            Click a colour again to reset it.
+        </p>
+        <div class="calibrationSwatchGrid mt-4 grid grid-cols-4 gap-4">
+            {orderedColors.map((color) => (
+                <div class="calibrationSwatch relative flex flex-col items-center justify-self-center" data-color={color.name}>
+                    <button
+                        type="button"
+                        role="switch"
+                        aria-checked="false"
+                        class="calibrationSwatchToggle flex cursor-pointer flex-col items-center gap-2 p-2 outline-none"
+                        title={`Calibrate ${color.name}`}
+                    >
+                        <span class="calibrationSwatchDot block size-14 rounded-full border-[3px] border-drop-shadow" style={`background-color: ${color.display}`}></span>
+                        <span class="text-sm font-bold text-black capitalize">{color.name}</span>
+                    </button>
+                    <span class="calibrationSwatchBadge calibrationSwatchCheck absolute flex size-6 hidden! items-center justify-center rounded-full bg-white text-green">
+                        <FontAwesomeIcon icon={faCircleCheck} />
+                    </span>
+                    <span class="calibrationSwatchBadge calibrationSwatchSpinner absolute flex size-6 hidden! items-center justify-center rounded-full bg-white text-blue">
+                        <FontAwesomeIcon icon={faSpinner} className="fa-spin" />
+                    </span>
+                </div>
+            ))}
+        </div>
+    </section>
 </div>
 <script>
     import type { PaletteColorName } from "@/data/colorPalette";
@@ -52,9 +57,8 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
     document.querySelectorAll<HTMLDivElement>(".calibrationPalette").forEach((root) => {
         const swatchGrid = root.querySelector<HTMLDivElement>(".calibrationSwatchGrid");
         const previewSwatch = root.querySelector<HTMLDivElement>(".calibrationPreviewSwatch");
-        const previewName = root.querySelector<HTMLSpanElement>(".calibrationPreviewName");
-        const previewRgb = root.querySelector<HTMLParagraphElement>(".calibrationPreviewRgb");
-        if (!swatchGrid || !previewSwatch || !previewName || !previewRgb) {
+        const previewName = root.querySelector<HTMLParagraphElement>(".calibrationPreviewName");
+        if (!swatchGrid || !previewSwatch || !previewName) {
             throw new Error("Calibrate palette stage elements not found");
         }
 
@@ -76,14 +80,33 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
             swatches,
             previewSwatch,
             previewName,
-            previewRgb,
         });
     });
 </script>
 
 <style>
+    /* Grows a little on hover and shrinks on press, so the dot itself is the button. */
     .calibrationSwatchDot {
-        transition: box-shadow 150ms ease-out;
+        transition:
+            transform 100ms ease-out,
+            box-shadow 150ms ease-out;
+    }
+    @media (hover: hover) {
+        .calibrationSwatchToggle:hover:not(:disabled) .calibrationSwatchDot {
+            transform: scale(1.08);
+        }
+    }
+    .calibrationSwatchToggle:active:not(:disabled) .calibrationSwatchDot {
+        transform: scale(0.94);
+    }
+    .calibrationSwatchToggle:focus-visible .calibrationSwatchDot {
+        outline: 3px solid var(--color-blue);
+        outline-offset: 4px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .calibrationSwatchDot {
+            transition: none;
+        }
     }
     /* Waiting on white and black (see calibrationStep.ts). */
     .calibrationSwatchToggle[data-locked] {
@@ -94,11 +117,11 @@ const orderedColors = CALIBRATION_ORDER.map((name) => colorsByName.get(name)!);
     .calibrationSwatchToggle[aria-checked='true'] .calibrationSwatchDot {
         box-shadow:
             0 0 0 3px #ffffff,
-            0 0 0 6px var(--color-green);
+            0 0 0 7px var(--color-green);
     }
-    /* On the dot's top-right: 8px button padding down, half the 48px dot plus a nudge across. */
+    /* On the dot's top-right: 8px button padding down, half the 56px dot plus a nudge across. */
     .calibrationSwatchBadge {
-        top: 2px;
-        left: calc(50% + 12px);
+        top: 0;
+        left: calc(50% + 16px);
     }
 </style>
