@@ -27,7 +27,9 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
         </AppHero>
         :
         <PageHero gradient='positive' className='bg-black' lineWidth='20px' overlap='10vw'>
-            <div slot="left" class="bg-yellow h-full w-full flex justify-start items-end p-8">
+            {/* The slant (overlap 10vw) eats the bottom-right of this panel, right
+                 where the title sits, so pad it clear and let the title wrap. */}
+            <div slot="left" class="bg-yellow h-full w-full flex justify-start items-end p-8 md:pr-[calc(10vw+1rem)]">
                 <h1 class="text-5xl font-bold">
                     Ro/Box Hub
                 </h1>
