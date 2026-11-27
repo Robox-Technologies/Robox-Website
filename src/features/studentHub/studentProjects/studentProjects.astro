@@ -1,6 +1,8 @@
 ---
 import ImportButton from "./components//importButton"
 import Projects from "./components//projects"
+import CreateProjectDialog from "./components/createProjectDialog.astro"
+import DeleteProjectDialog from "./components/deleteProjectDialog.astro"
 
 const isIOSBuild = process.env.IOS_BUILD === 'true';
 ---
@@ -13,3 +15,5 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
 <div class="card-holder flex flex-wrap gap-8 w-full">
     <Projects client:load />
 </div>
+<CreateProjectDialog />
+<DeleteProjectDialog />

@@ -1,6 +1,7 @@
 ---
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import ModalDialog from '@/components/modalDialog.astro';
 import StageStepper from '@/components/stageStepper.astro';
 import AutomaticBootsel from './components/automaticBootsel.astro';
 import ManualBootsel from './components/manualBootsel.astro';
@@ -8,42 +9,55 @@ import SelectDrive from './components/selectDrive.astro';
 import FlashComplete from './components/flashComplete.astro';
 import { STAGES, STAGE_LABELS } from './stage';
 ---
-<div class="flashDevice flex flex-col gap-6" data-stage-flow-root>
-    <StageStepper namespace="flashdevice" stages={STAGES} stageLabels={STAGE_LABELS} />
-    <div class="flashDeviceUnsupported flex items-start gap-3 rounded-xl border-2 border-red bg-red/15 p-4" style="display: none;">
-        <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5 text-xl text-black" />
-        <div>
-            <p class="font-bold text-black">Browser Not Supported</p>
-            <p class="mt-1 text-sm text-black">
-                Flashing your Ro/Box needs the File System Access API, which
-                is only available in Chrome or Edge on a desktop computer.
-            </p>
+<ModalDialog
+    id="update-firmware-dialog"
+    title="Update firmware"
+    subtitle="Give your Ro/Box the latest software."
+    closeLabel="Close firmware update"
+    panelClass="max-w-2xl"
+>
+    <div class="min-h-0 overflow-y-auto px-8 pt-2 pb-8">
+        <div class="flashDevice flex flex-col gap-6" data-stage-flow-root>
+            <StageStepper namespace="flashdevice" stages={STAGES} stageLabels={STAGE_LABELS} />
+            <div class="flashDeviceUnsupported flex items-start gap-3 rounded-xl border-2 border-red bg-red/15 p-4" style="display: none;">
+                <FontAwesomeIcon icon={faTriangleExclamation} className="mt-0.5 text-xl text-black" />
+                <div>
+                    <p class="font-bold text-black">Browser Not Supported</p>
+                    <p class="mt-1 text-sm text-black">
+                        Flashing your Ro/Box needs the File System Access API, which
+                        is only available in Chrome or Edge on a desktop computer.
+                    </p>
+                </div>
+            </div>
+            <div class="stageFlowStages overflow-hidden transition-[height] duration-300 ease-out motion-reduce:transition-none">
+                <div class="stageFlowStage flex flex-col gap-4 py-1" data-stage="bootloader">
+                    <h2 class="text-xl font-bold text-black">Step 1: Reboot into firmware update mode</h2>
+                    <AutomaticBootsel />
+                    <ManualBootsel />
+                </div>
+                <div class="stageFlowStage hidden flex flex-col gap-4 py-1" style="display: none" data-stage="flash">
+                    <h2 class="text-xl font-bold text-black">Step 2: Select your Ro/Box's drive</h2>
+                    <SelectDrive />
+                </div>
+                <div class="stageFlowStage hidden flex flex-col items-start gap-4 py-1" style="display: none" data-stage="done">
+                    <FlashComplete />
+                </div>
+            </div>
         </div>
     </div>
-    <div class="stageFlowStages overflow-hidden rounded-3xl bg-white box-shadow transition-[height] duration-300 ease-out motion-reduce:transition-none">
-        <div class="stageFlowStage flex flex-col gap-4 p-6" data-stage="bootloader">
-            <h2 class="text-xl font-bold text-black">Step 1: Reboot into firmware update mode</h2>
-            <AutomaticBootsel />
-            <ManualBootsel />
-        </div>
-        <div class="stageFlowStage hidden flex flex-col gap-4 p-6" data-stage="flash">
-            <h2 class="text-xl font-bold text-black">Step 2: Select your Ro/Box's drive</h2>
-            <SelectDrive />
-        </div>
-        <div class="stageFlowStage hidden flex flex-col items-start gap-4 p-6" data-stage="done">
-            <FlashComplete />
-        </div>
-    </div>
-</div>
+</ModalDialog>
 <script>
+    import { pico } from "@/libs/communication/communicate";
     import { STAGES, isStage } from "./stage";
-    import { createStageFlow } from "@/components/stageFlow";
+    import { createStageFlow, dispatchStageAdvance } from "@/components/stageFlow";
+    import type { CommunicationMethod } from "src/types/communication";
 
     document.querySelectorAll<HTMLDivElement>(".flashDevice").forEach((root) => {
+        const dialog = root.closest("dialog");
         const unsupportedBanner = root.querySelector<HTMLDivElement>(".flashDeviceUnsupported");
         const stepper = root.querySelector<HTMLOListElement>(".stageStepper");
         const stagesWrapper = root.querySelector<HTMLDivElement>(".stageFlowStages");
-        if (!unsupportedBanner || !stepper || !stagesWrapper) {
+        if (!dialog || !unsupportedBanner || !stepper || !stagesWrapper) {
             throw new Error("Flash device elements not found");
         }
 
@@ -54,12 +68,28 @@ import { STAGES, STAGE_LABELS } from './stage';
             return;
         }
 
-        createStageFlow({
-            root,
-            namespace: "flashdevice",
-            stages: STAGES,
-            isStage,
-            stageParam: "step",
+        createStageFlow({ root, namespace: "flashdevice", stages: STAGES, isStage });
+
+        // Flashing takes over the shared connection (USB only, its own error
+        // toasts), so that only lasts while the dialog is open; the page's own
+        // method comes back on close.
+        let methodBeforeOpen: CommunicationMethod = null;
+
+        // `showModal()` only toggles the `open` attribute; there's no open event.
+        new MutationObserver(() => {
+            if (!dialog.open) return;
+            methodBeforeOpen = pico.getState().communicationMethod;
+            pico.setToastsEnabled(false);
+            // Re-arms the Bootloader stage (see automaticBootsel.astro).
+            dispatchStageAdvance(root, "flashdevice", "bootloader");
+        }).observe(dialog, { attributes: true, attributeFilter: ["open"] });
+
+        dialog.addEventListener("close", () => {
+            pico.setToastsEnabled(true);
+            dispatchStageAdvance(root, "flashdevice", "bootloader");
+            if (methodBeforeOpen && pico.getState().communicationMethod !== methodBeforeOpen) {
+                void pico.setCommunicationMethod(methodBeforeOpen);
+            }
         });
     });
 </script>

@@ -13,7 +13,8 @@ interface UserProject {
     extensions: UserExtensions
     sensors: UserSensors
 }
-export type UserExtensions = Record<ExtensionKey, boolean>
+// A missing key means the project was last saved before that extension existed.
+export type UserExtensions = Partial<Record<ExtensionKey, boolean>>
 
 export type UserSensor<T extends SensorKey> = {
     name: string

@@ -7,25 +7,35 @@ import CommunicationMethodToggle from '@/components/communicationMethodToggle.as
 interface Props {
     namespace: string
     calibration: 'colors' | 'motors'
+    /** Off in the editor, which is already connected: just runs the checks. */
+    showControls?: boolean
 }
 
-const { namespace, calibration } = Astro.props;
+const { namespace, calibration, showControls = true } = Astro.props;
 const isIOSBuild = process.env.IOS_BUILD === 'true';
 ---
 <div
     class="calibrationConnect flex flex-col gap-3"
     data-calibration-namespace={namespace}
     data-calibration-name={calibration}
+    data-show-controls={showControls ? "true" : "false"}
     data-ios-build={isIOSBuild ? "true" : "false"}
 >
-    <div class="flex items-center gap-3">
-        {!isIOSBuild && <CommunicationMethodToggle />}
-        <Button id="calibration-connect" className="bg-blue">
-            <FontAwesomeIcon icon={faPlug} className="busyIcon mr-2" />
-            <FontAwesomeIcon icon={faSpinner} className="busySpinner mr-2 hidden! fa-spin" />
-            Connect to Ro/Box
-        </Button>
-    </div>
+    {showControls ? (
+        <div class="flex items-center gap-3">
+            {!isIOSBuild && <CommunicationMethodToggle />}
+            <Button className="calibrationConnectButton bg-blue">
+                <FontAwesomeIcon icon={faPlug} className="busyIcon mr-2" />
+                <FontAwesomeIcon icon={faSpinner} className="busySpinner mr-2 hidden! fa-spin" />
+                Connect to Ro/Box
+            </Button>
+        </div>
+    ) : (
+        <p class="flex items-center gap-2 text-gray-500">
+            <FontAwesomeIcon icon={faSpinner} className="fa-spin" />
+            Reading your Ro/Box's settings…
+        </p>
+    )}
 </div>
 <script>
     import { pico } from "@/libs/communication/communicate";
@@ -40,13 +50,13 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
     const CALIBRATION_FETCH_TIMEOUT_MS = 2000;
 
     document.querySelectorAll<HTMLDivElement>(".calibrationConnect").forEach((root) => {
-        const connectButton = root.querySelector<HTMLButtonElement>("#calibration-connect");
+        // Absent when `showControls` is off.
+        const button = root.querySelector<HTMLButtonElement>(".calibrationConnectButton");
         const namespace = root.dataset.calibrationNamespace;
         const calibration = root.dataset.calibrationName;
-        if (!connectButton || !namespace || (calibration !== "colors" && calibration !== "motors")) {
+        if (!namespace || (calibration !== "colors" && calibration !== "motors")) {
             throw new Error("Calibration connect elements not found");
         }
-        const button = connectButton;
         const stageNamespace = namespace;
         const calibrationName = calibration;
         const debug = (message: string, details?: unknown) =>
@@ -97,26 +107,29 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
                 failSensorCheck();
                 toast.danger({
                     title: "Colour Sensor Not Found",
-                    message: "The Ro/Box didn't send any colour readings. Check the colour sensor is plugged in, then connect again.",
+                    message: "The Ro/Box didn't send any colour readings. Check the colour sensor is plugged in, then try again.",
                 });
             }, SENSOR_CHECK_TIMEOUT_MS);
             pico.colorMode();
         }
 
-        // Hidden while the Calibrate stage shows, e.g. after a handoff from
-        // the editor lands straight on ?step=calibrate.
         const ownStage = root.closest<HTMLElement>(".stageFlowStage");
+        // Checks only run while this stage is on screen, so a closed dialog
+        // never touches the editor's connection.
+        const dialog = root.closest("dialog");
+        const isActive = () =>
+            !ownStage?.classList.contains("hidden") && (!dialog || dialog.open);
 
+        // Nothing to calibrate without a sensor, but the connection is still
+        // good (the editor keeps using it), so just close; reopening re-checks.
         function failSensorCheck() {
-            debug("Colour sensor check failed; disconnecting");
+            debug("Colour sensor check failed; closing");
             clearPhase();
-            // Back to Connect first, so the Calibrate stage doesn't treat the
-            // disconnect below as a drop and toast about it too.
-            if (ownStage?.classList.contains("hidden")) {
-                dispatchStageAdvance(root, stageNamespace, "connect");
-            }
-            void pico.disconnect();
+            dialog?.close();
         }
+
+        // Without connect controls (the editor) a drop leaves nothing to do here.
+        const showControls = root.dataset.showControls === "true";
 
         function startCalibrationWait() {
             clearPhase();
@@ -154,7 +167,7 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             const connecting = state.connectionStatus === ConnectionStatus.CONNECTING;
             const connected = state.connectionStatus === ConnectionStatus.CONNECTED;
             if (connected) {
-                if (!hasAdvanced) {
+                if (!hasAdvanced && isActive()) {
                     hasAdvanced = true;
                     if (calibrationName === "colors") startSensorCheck();
                     else startCalibrationWait();
@@ -162,8 +175,13 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             } else {
                 hasAdvanced = false;
                 clearPhase();
+                // Deferred so the Calibrate panel sees the drop first and toasts about it.
+                if (!showControls && state.connectionStatus === ConnectionStatus.DISCONNECTED) {
+                    setTimeout(() => dialog?.close(), 0);
+                }
             }
             const checking = phase !== "idle";
+            if (!button) return;
             setButtonBusy(button, connecting || checking);
             if (!connecting && !checking) {
                 button.disabled = !state.communicationMethod;
@@ -186,35 +204,18 @@ const isIOSBuild = process.env.IOS_BUILD === 'true';
             if (phase === "calibration") finishCalibrationWait();
         });
 
-        button.addEventListener("click", () => {
+        button?.addEventListener("click", () => {
             debug("Manual connection requested");
             pico.request();
         });
 
-        const params = new URLSearchParams(window.location.search);
-        const handoffMethod = params.get("connectionMethod");
-        const handoffDeviceId = params.get("deviceId");
-        if (handoffMethod && handoffDeviceId) {
-            debug("Connection handoff detected", {
-                method: handoffMethod,
-                hasDeviceId: true,
-            });
-            button.disabled = true;
-            void (async () => {
-                try {
-                    debug("Starting handoff connection");
-                    await pico.setCommunicationMethod(
-                        handoffMethod as "USB" | "WebBluetooth" | "iOSBluetooth",
-                    );
-                    await pico.autoConnect(handoffDeviceId);
-                    debug("Handoff connection completed");
-                } catch (error) {
-                    const message = error instanceof Error ? error.message : String(error);
-                    debug("Handoff connection failed", { message });
-                    dispatchStageAdvance(root, stageNamespace, "connect");
-                    toast.danger({ title: "Couldn't Connect", message });
-                }
-            })();
-        }
+        // Re-entering this stage (a dialog reopening, or a drop sending the
+        // student back) re-runs the checks against whatever's connected now.
+        root.closest("[data-stage-flow-root]")?.addEventListener(`${stageNamespace}:stage-changed`, (event) => {
+            if ((event as CustomEvent<{ stage: string }>).detail.stage !== "connect") return;
+            hasAdvanced = false;
+            clearPhase();
+            updateUI(pico.getState());
+        });
     });
 </script>

@@ -1,0 +1,90 @@
+---
+import { faXmark } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { twMerge } from 'tailwind-merge'
+
+interface Props {
+    id: string
+    /** Omit when passing a `header` slot; that slot's heading should use `${id}-title`. */
+    title?: string
+    subtitle?: string
+    closeLabel?: string
+    panelClass?: string
+}
+
+const { id, title, subtitle, closeLabel = 'Close', panelClass } = Astro.props
+const titleId = `${id}-title`
+---
+
+{/* `.modal` keeps the editor's settings menu open while a dialog it launched is in use. */}
+<dialog
+    id={id}
+    aria-labelledby={titleId}
+    class="modal modalDialog fixed inset-0 z-50 m-0 h-screen w-screen max-h-none max-w-none border-0 bg-black/45 p-4 text-black backdrop:bg-black/45 open:flex open:items-center open:justify-center"
+>
+    <div
+        class={twMerge(
+            'relative flex max-h-[80vh] w-full max-w-lg flex-col rounded-3xl bg-white shadow-2xl',
+            panelClass,
+        )}
+    >
+        {/* Centred on the title's first line (header `pt-6`, `text-3xl leading-tight`); glyph flush with `px-8`. */}
+        <button
+            type="button"
+            class="modalDialogClose button-interactive absolute right-5 top-6 flex h-[2.34375rem] items-center rounded-lg px-3 text-gray-600"
+            aria-label={closeLabel}
+        >
+            <FontAwesomeIcon icon={faXmark} />
+        </button>
+
+        {Astro.slots.has('header') ? (
+            <slot name="header" />
+        ) : (
+            <div class="px-8 pt-6 pb-3 pr-16">
+                <h2 id={titleId} class="text-3xl font-extrabold leading-tight">
+                    {title}
+                </h2>
+                {subtitle && <p class="mt-1 text-gray-500">{subtitle}</p>}
+            </div>
+        )}
+
+        <slot />
+    </div>
+</dialog>
+
+<script>
+    document.querySelectorAll<HTMLDialogElement>('dialog.modalDialog').forEach((dialog) => {
+        // A dialog mid-task (e.g. writing firmware) sets `data-locked` to stay open.
+        const isLocked = () => dialog.hasAttribute('data-locked')
+        const tryClose = () => {
+            if (!isLocked()) dialog.close()
+        }
+
+        dialog.querySelector('.modalDialogClose')?.addEventListener('click', tryClose)
+
+        // The dialog itself is the backdrop; the panel sits inside it.
+        dialog.addEventListener('click', (event) => {
+            if (event.target === dialog) tryClose()
+        })
+
+        // Esc.
+        dialog.addEventListener('cancel', (event) => {
+            if (isLocked()) event.preventDefault()
+        })
+    })
+
+    // Any `data-open-modal="<dialog id>"` element opens that dialog.
+    document.querySelectorAll<HTMLElement>('[data-open-modal]').forEach((opener) => {
+        opener.addEventListener('click', () => {
+            const dialog = document.getElementById(opener.dataset.openModal ?? '')
+            if (dialog instanceof HTMLDialogElement) dialog.showModal()
+        })
+    })
+</script>
+
+<style>
+    dialog[data-locked] .modalDialogClose {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+</style>

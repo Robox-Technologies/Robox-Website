@@ -17,20 +17,15 @@ export function buildPreamble(
 ): string {
     return (
         preamble +
-        generateExtensionsPreamble(
-            project?.extensions ?? ({} as UserExtensions),
-        ) +
+        generateExtensionsPreamble(project?.extensions ?? {}) +
         generateExtraSensorsPreamble(project?.sensors ?? {})
     )
 }
 
 function generateExtensionsPreamble(userExtensions: UserExtensions): string {
-    return Object.values(userExtensions)
-        .filter((ext) => ext === true)
-        .map((_, index) => {
-            const extKey = Object.keys(userExtensions)[index] as ExtensionKey
-            return ExtensionsPreamble[extKey]
-        })
+    return Object.entries(userExtensions)
+        .filter(([, enabled]) => enabled === true)
+        .flatMap(([key]) => ExtensionsPreamble[key as ExtensionKey] ?? [])
         .join('\n')
 }
 

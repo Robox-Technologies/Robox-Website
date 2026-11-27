@@ -1,5 +1,6 @@
 import type { ExtensionKey } from 'src/types/extensions'
 import type { PinsOf, SensorKey } from 'src/types/extraSensors'
+import extensions from '@/data/extensions.json'
 export const preamble = `
 from roboxlib import Motors, LineSensors, UltrasonicSensor, ColorSensor
 from machine import Pin, Timer
@@ -21,12 +22,17 @@ except Exception:
     generatePrint("error", "Cannot connect to colour sensor, is it on?")
 motor_speed = 80
 `
-export const ExtensionsPreamble: Record<ExtensionKey, string> = {
-    SERVO: `
-from roboxlib import Servo
-servo = Servo()
-`,
-}
+// Each extension's `preamble` in extensions.json is a list of Python lines.
+const extensionPreambles: Record<
+    ExtensionKey,
+    { name: string; preamble?: string[] }
+> = extensions
+export const ExtensionsPreamble: Partial<Record<ExtensionKey, string>> =
+    Object.fromEntries(
+        Object.entries(extensionPreambles).flatMap(([key, { preamble }]) =>
+            preamble ? [[key, `\n${preamble.join('\n')}\n`]] : [],
+        ),
+    )
 export const ExtraSensorsPreamble: {
     [K in SensorKey]: (pins: Record<PinsOf<K>, number>) => string
 } = {

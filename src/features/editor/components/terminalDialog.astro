@@ -1,0 +1,40 @@
+---
+import ModalDialog from '@/components/modalDialog.astro'
+import Button from '@/components/button'
+---
+
+{/* Rendered once in `editorBody.astro`; `terminalButton.astro` in each editor's bar opens it. */}
+<ModalDialog
+    id="terminalDialog"
+    title="Terminal Output"
+    subtitle="Everything your Ro/Box prints while it runs."
+    closeLabel="Close terminal"
+    panelClass="h-150 max-w-2xl"
+>
+    <div class="terminalLog min-h-0 flex-1 overflow-y-scroll px-8 font-mono text-sm"></div>
+    <div class="flex justify-end px-8 pt-4 pb-8">
+        <Button type="button" className="terminalClear border-2 border-black bg-white text-black">
+            Clear Terminal
+        </Button>
+    </div>
+</ModalDialog>
+
+<script>
+    import { pico } from '@/libs/communication/communicate'
+
+    const dialog = document.getElementById('terminalDialog') as HTMLDialogElement | null
+    const log = dialog?.querySelector<HTMLDivElement>('.terminalLog')
+    const clearButton = dialog?.querySelector<HTMLButtonElement>('.terminalClear')
+    if (!log || !clearButton) throw new Error('Terminal dialog elements are missing')
+
+    pico.on('console', ({ message }: { message: string }) => {
+        const threshold = 5
+        const atBottom = log.scrollHeight - log.scrollTop <= log.clientHeight + threshold
+        const line = document.createElement('div')
+        line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`
+        log.append(line)
+        if (atBottom) log.scrollTop = log.scrollHeight
+    })
+
+    clearButton.addEventListener('click', () => log.replaceChildren())
+</script>

@@ -1,0 +1,113 @@
+---
+import {
+    faCircleExclamation,
+    faCircleInfo,
+    faTriangleExclamation,
+} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import ModalDialog from '@/components/modalDialog.astro'
+---
+
+<ModalDialog
+    id="connection-diagnostics-dialog"
+    title="Connection checks found issues"
+    subtitle="These checks ran when the editor loaded. Fix the relevant item before connecting."
+    closeLabel="Close connection checks"
+    panelClass="max-w-2xl"
+>
+    <div class="flex min-h-0 flex-col overflow-y-auto px-8 pb-4">
+        <ul class="connectionDiagnosticsIssues divide-y divide-gray-200"></ul>
+        <details class="mt-4 border-t border-gray-200 pt-4">
+            <summary class="cursor-pointer font-semibold text-blue underline">
+                Show diagnostics
+            </summary>
+            <pre class="connectionDiagnosticsRaw mt-2 max-h-48 overflow-auto rounded bg-gray-100 p-3 text-xs"></pre>
+        </details>
+    </div>
+    <div class="flex justify-end px-8 pt-2 pb-8">
+        <button
+            type="button"
+            class="connectionDiagnosticsCopy button-interactive rounded border-2 border-blue bg-white px-3 py-2 text-blue"
+        >
+            Copy diagnostics
+        </button>
+    </div>
+</ModalDialog>
+
+<template id="connection-diagnostics-issue">
+    <li class="flex gap-3 py-4 first:pt-0 last:pb-0">
+        <span class="mt-1 shrink-0" aria-hidden="true">
+            <FontAwesomeIcon icon={faCircleExclamation} className="text-red" data-severity="error" />
+            <FontAwesomeIcon icon={faTriangleExclamation} className="text-yellow-600" data-severity="warning" />
+            <FontAwesomeIcon icon={faCircleInfo} className="text-blue" data-severity="info" />
+        </span>
+        <div>
+            <h3 class="issueTitle font-semibold"></h3>
+            <p class="mt-1 text-sm"><strong>Cause:</strong> <span class="issueCause"></span></p>
+            <p class="mt-1 text-sm"><strong>Fix:</strong> <span class="issueFix"></span></p>
+        </div>
+    </li>
+</template>
+
+<script>
+    import { preflight } from '@/libs/communication/connectionDiagnostics'
+
+    const dialog = document.getElementById('connection-diagnostics-dialog') as HTMLDialogElement | null
+    const template = document.getElementById('connection-diagnostics-issue') as HTMLTemplateElement | null
+    const issueList = dialog?.querySelector<HTMLUListElement>('.connectionDiagnosticsIssues')
+    const raw = dialog?.querySelector<HTMLPreElement>('.connectionDiagnosticsRaw')
+    const copyButton = dialog?.querySelector<HTMLButtonElement>('.connectionDiagnosticsCopy')
+    if (!dialog || !template || !issueList || !raw || !copyButton) {
+        throw new Error('Connection diagnostics dialog elements are missing')
+    }
+
+    async function copyText(text: string): Promise<void> {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(text)
+            return
+        }
+
+        const textarea = document.createElement('textarea')
+        textarea.value = text
+        textarea.setAttribute('readonly', '')
+        textarea.style.position = 'fixed'
+        textarea.style.opacity = '0'
+        document.body.append(textarea)
+        textarea.select()
+        const copied = document.execCommand('copy')
+        textarea.remove()
+        if (!copied) throw new Error('Clipboard access is unavailable')
+    }
+
+    copyButton.addEventListener('click', () => {
+        copyText(raw.textContent ?? '')
+            .then(() => (copyButton.textContent = 'Copied'))
+            .catch((error: unknown) => {
+                console.error('Could not copy connection diagnostics', error)
+                copyButton.textContent = 'Copy diagnostics'
+            })
+    })
+
+    preflight()
+        .then((report) => {
+            if (!report.issues.length) return
+
+            issueList.replaceChildren(
+                ...report.issues.map((issue) => {
+                    const row = template.content.firstElementChild!.cloneNode(true) as HTMLLIElement
+                    row.querySelectorAll<SVGElement>('[data-severity]').forEach((icon) => {
+                        if (icon.dataset.severity !== issue.severity) icon.remove()
+                    })
+                    row.querySelector('.issueTitle')!.textContent = issue.title
+                    row.querySelector('.issueCause')!.textContent = issue.cause
+                    row.querySelector('.issueFix')!.textContent = issue.fix
+                    return row
+                }),
+            )
+            raw.textContent = JSON.stringify(report.diagnostics, null, 2)
+            dialog.showModal()
+        })
+        .catch((error: unknown) => {
+            console.error('Connection preflight failed', error)
+        })
+</script>

@@ -16,12 +16,14 @@ export default function AddQuantity({
     quantity,
     setQuantity,
     submitToCart = true,
+    onAdded,
     className,
     ...props
 }: FormHTMLAttributes<HTMLFormElement> & {
     quantity: number
     setQuantity: React.Dispatch<React.SetStateAction<number>>
     submitToCart?: boolean
+    onAdded?: (quantity: number) => void
 }) {
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         setQuantity(clampQuantity(e.target.value))
@@ -64,6 +66,7 @@ export default function AddQuantity({
         }
 
         addToCart(productId, quantity)
+        onAdded?.(quantity)
         toast.success({
             title: 'Added to Cart',
             message: `Added ${quantity} item${quantity === 1 ? '' : 's'} to your cart.`,

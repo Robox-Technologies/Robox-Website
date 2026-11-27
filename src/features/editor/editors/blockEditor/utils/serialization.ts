@@ -1,5 +1,5 @@
 // This file exists to seperate out the Blockly library (as it does not support tree shaking) from the rest of the codebase
-import type { WorkspaceSvg } from 'blockly/core'
+import type { Workspace, WorkspaceSvg } from 'blockly/core'
 import {
     getProject,
     getProjectIdFromURL,
@@ -14,6 +14,10 @@ import type { ExtensionKey } from 'src/types/extensions'
 import { pythonGenerator } from 'blockly/python'
 import { buildPreamble } from '@/features/editor/utils/preamble'
 import { toast } from '@/libs/ui/toast'
+import { getExtensionBlockTypes } from './toolbox'
+import extensions from '@/data/extensions.json'
+
+const extensionKeys = Object.keys(extensions) as ExtensionKey[]
 export async function loadBlockly(workspace: WorkspaceSvg) {
     const projectId = getProjectIdFromURL()
     if (!projectId) return
@@ -99,4 +103,27 @@ export async function setUserExtension(
         ...project,
         extensions,
     })
+}
+
+// Runs once per project per new extension: a key the project has never stored
+// is set from whether the workspace already uses that extension's blocks
+// (e.g. list blocks saved before they moved into the Lists extension).
+export async function fillUnsetExtensions(workspace: Workspace) {
+    const projectId = getProjectIdFromURL()
+    if (!projectId) return
+    const project = await getProject(projectId)
+    if (!project) return
+
+    const unset = extensionKeys.filter(
+        (key) => project.extensions[key] === undefined,
+    )
+    if (unset.length === 0) return
+
+    const usedTypes = new Set(workspace.getAllBlocks(false).map((b) => b.type))
+    for (const key of unset) {
+        project.extensions[key] = [...getExtensionBlockTypes(key)].some(
+            (type) => usedTypes.has(type),
+        )
+    }
+    await editProject(projectId, project)
 }

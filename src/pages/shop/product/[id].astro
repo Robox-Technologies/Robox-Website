@@ -5,7 +5,8 @@ import type { ImageMetadata } from 'astro'
 import StandardLayout from '@/layouts/StandardLayout.astro'
 import Article from '@/components/article/Article'
 import Carousel from '@/features/catalog/components/Carousel'
-import ProductCartModal from '@/components/shop/purchase/ProductCartModal'
+import ProductPurchase from '@/components/shop/purchase/ProductPurchase'
+import AddedToCartDialog from '@/components/shop/purchase/addedToCartDialog.astro'
 import { formatStatus } from '@/features/catalog/utils/formatStatus'
 import { formatPrice } from '@/utils/formatPrice'
 import { toDescription } from '@/data/seo'
@@ -116,7 +117,8 @@ const metaDescription = toDescription(
                 </p>
                 <p class={`${statusText.color} my-0`}>{statusText.text}</p>
                 <div class="flex flex-col gap-4 w-50 mt-8">
-                    <ProductCartModal product={product} image={images[0].src} client:only="react" />
+                    <ProductPurchase product={product} client:only="react" />
+                    <AddedToCartDialog product={product} image={images[0].src} />
                 </div>
             </div>
         </div>

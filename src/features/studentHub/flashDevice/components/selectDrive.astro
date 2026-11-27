@@ -72,9 +72,11 @@ import FlashProgress from './flashProgress.astro';
 
         // "Go Back" is disabled mid-write: leaving doesn't cancel it, so a second write
         // could be started against the same drive.
+        // Closing the dialog wouldn't cancel the write either, so it stays open until done.
         function setFlowBusy(busy: boolean) {
             setButtonBusy(button!, busy);
             backButton!.disabled = busy;
+            root.closest("dialog")?.toggleAttribute("data-locked", busy);
         }
 
         // `invisible`, not `hidden`: the buttons stay in flow so their height keeps the
@@ -160,7 +162,8 @@ import FlashProgress from './flashProgress.astro';
             dispatchFlashAdvance(root, "done");
         }
 
-        button.addEventListener("click", () => void flash());
+        // `finally` too: an unexpected throw mustn't leave the dialog locked open.
+        button.addEventListener("click", () => void flash().finally(() => setFlowBusy(false)));
 
         backButton.addEventListener("click", () => {
             dispatchFlashAdvance(root, "bootloader");

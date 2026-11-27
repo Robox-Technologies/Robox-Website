@@ -1,4 +1,8 @@
-import type { ProjectType, UserProject } from 'src/types/projects'
+import type {
+    ProjectType,
+    UserExtensions,
+    UserProject,
+} from 'src/types/projects'
 import type { ExtensionKey } from 'src/types/extensions'
 import extensions from '@/data/extensions.json'
 import DOMPurify from 'dompurify'
@@ -26,13 +30,12 @@ function normalizeProject(stored: Record<string, unknown>): UserProject {
         stored.extensions && typeof stored.extensions === 'object'
             ? (stored.extensions as Record<string, unknown>)
             : {}
-    const extensions = ExtensionKeys.reduce(
-        (acc, key) => {
-            acc[key] = storedExtensions[key] === true
-            return acc
-        },
-        {} as Record<ExtensionKey, boolean>,
-    )
+    // Unset keys stay unset: the block editor fills them in from the workspace.
+    const extensions: UserExtensions = {}
+    for (const key of ExtensionKeys) {
+        const value = storedExtensions[key]
+        if (typeof value === 'boolean') extensions[key] = value
+    }
 
     return {
         name:

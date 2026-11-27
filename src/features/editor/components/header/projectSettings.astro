@@ -3,6 +3,12 @@ import { faEyeDropper, faSliders, faScrewdriver, faDownload, faGear } from "@for
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Button from "@/components/button"
 import RenameDeviceDialog from "./renameDeviceDialog.astro"
+import ColorCalibration from "@/features/studentHub/calibration/colorCalibration/colorCalibration.astro"
+import MotorCalibration from "@/features/studentHub/calibration/motorCalibration/motorCalibration.astro"
+import FlashDevice from "@/features/studentHub/flashDevice/flashDevice.astro"
+
+// Firmware updates need the File System Access API, which the iOS app doesn't have.
+const isIOSBuild = process.env.IOS_BUILD === "true"
 ---
 
 <div class="project-settings relative">
@@ -21,30 +27,39 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
         class="modal absolute top-1/2 right-full -translate-x-full rounded-lg drop-shadow-xl ml-2 transform border-2 border-black p-0! z-50"
     >
         <div class="modal-content bg-white min-h-25 w-50 rounded flex flex-col">
-            <Button
-                href="../calibrate"
-                data-connection-handoff
-                className="text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
+            <button
+                type="button"
+                data-open-modal="calibrate-colours-dialog"
+                data-requires-connection
+                class="button-interactive text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
+                disabled
+                aria-disabled="true"
             >
                 <FontAwesomeIcon icon={faEyeDropper}/>
                 Calibrate Colour
-            </Button>
-            <Button
-                href="../motorCalibrate"
-                data-connection-handoff
-                className="text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
+            </button>
+            <button
+                type="button"
+                data-open-modal="calibrate-motors-dialog"
+                data-requires-connection
+                class="button-interactive text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
+                disabled
+                aria-disabled="true"
             >
                 <FontAwesomeIcon icon={faSliders}/>
                 Calibrate Motors
-            </Button>
+            </button>
             <RenameDeviceDialog />
-            <Button
-                href="../flash"
-                className="text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
-            >
-                <FontAwesomeIcon icon={faScrewdriver} />
-                Update Firmware
-            </Button>
+            {!isIOSBuild && (
+                <button
+                    type="button"
+                    data-open-modal="update-firmware-dialog"
+                    class="button-interactive text-black! text-md p-2 text-left flex items-center gap-2 rounded-none w-full justify-start"
+                >
+                    <FontAwesomeIcon icon={faScrewdriver} />
+                    Update Firmware
+                </button>
+            )}
             <Button
                 type="button"
                 id="project-export-button"
@@ -55,11 +70,14 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
             </Button>
         </div>
     </dialog>
+    {/* Outside the menu, which hides when it closes. Calibration opens while connected, so no Connect step. */}
+    <ColorCalibration showConnect={false} />
+    <MotorCalibration showConnect={false} />
+    {!isIOSBuild && <FlashDevice />}
 </div>
 
 <script>
     import { pico } from "@/libs/communication/communicate";
-    import { getProjectIdFromURL } from "@/utils/serialization";
 
     const settingsDialog = document.getElementById(
         'project-settings-dialog',
@@ -110,31 +128,25 @@ import RenameDeviceDialog from "./renameDeviceDialog.astro"
                 closeDialog()
             }
         })
+
+        settingsDialog
+            .querySelectorAll('[data-open-modal]')
+            .forEach((item) => item.addEventListener('click', closeDialog))
     }
 
-    document
-        .querySelectorAll<HTMLAnchorElement>(".project-settings a[href]")
-        .forEach((link) => {
-            link.addEventListener("click", () => {
-                const projectId = getProjectIdFromURL();
-                const url = new URL(link.href, window.location.href);
-                if (projectId) {
-                    url.searchParams.set("id", projectId);
-                }
-                link.href = url.toString();
-
-                // Only the calibration pages pick up a live connection;
-                // flashing reboots the Ro/Box anyway.
-                if (!("connectionHandoff" in link.dataset)) return;
-                const handoff = pico.getConnectionHandoff();
-                if (!handoff) return;
-
-                url.searchParams.set("step", "calibrate");
-                url.searchParams.set("connectionMethod", handoff.method);
-                url.searchParams.set("deviceId", handoff.deviceId);
-                link.href = url.toString();
-            });
+    // Calibration needs a connected Ro/Box; the dialogs skip their Connect step.
+    const connectionItems = document.querySelectorAll<HTMLButtonElement>(
+        ".project-settings [data-requires-connection]",
+    );
+    const updateConnectionItems = () => {
+        const connected = pico.isConnected();
+        connectionItems.forEach((item) => {
+            item.disabled = !connected;
+            item.setAttribute("aria-disabled", String(!connected));
         });
+    };
+    pico.on("stateChange", updateConnectionItems);
+    updateConnectionItems();
 </script>
 
 <script>

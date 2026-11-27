@@ -1,7 +1,6 @@
 import Button from '@/components/button'
-import { faPencil } from '@fortawesome/free-solid-svg-icons'
+import { faPencil, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import DeleteDialog from '../deleteDialog'
 import { useStore } from '@nanostores/react'
 import { openProject, editingProject } from '../../stores/projectSettingsModal'
 
@@ -19,6 +18,18 @@ export default function SettingDialog() {
         editingProject.set($openProject)
     }
 
+    // Opens `deleteProjectDialog.astro`, rendered beside this island in `studentProjects.astro`.
+    const handleDelete = (event: React.MouseEvent) => {
+        event.preventDefault()
+        event.stopPropagation()
+        const dialog = document.querySelector<HTMLDialogElement>(
+            '#deleteProjectDialog',
+        )
+        if (!dialog || !$openProject) return
+        dialog.dataset.projectId = $openProject
+        dialog.showModal()
+    }
+
     return (
         <dialog
             id="project-settings-dialog"
@@ -31,7 +42,12 @@ export default function SettingDialog() {
             >
                 <FontAwesomeIcon className="text-blue" icon={faPencil} /> Edit
             </Button>
-            <DeleteDialog />
+            <Button
+                onClick={handleDelete}
+                className="text-black! p-1.5! flex items-center justify-start gap-1.5 rounded-none w-full"
+            >
+                <FontAwesomeIcon className="text-red" icon={faTrash} /> Delete
+            </Button>
         </dialog>
     )
 }

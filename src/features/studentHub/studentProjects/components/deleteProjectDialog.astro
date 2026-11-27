@@ -1,0 +1,46 @@
+---
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import Button from '@/components/button'
+import ModalDialog from '@/components/modalDialog.astro'
+---
+
+{/* The opener sets `data-project-id`; clicks anywhere off a card clear `openProject`, so it can't be read at confirm time. */}
+<ModalDialog
+    id="deleteProjectDialog"
+    title="Delete project?"
+    subtitle="It'll be gone forever (a very, very long time)!"
+    closeLabel="Close delete project"
+>
+    <div class="flex justify-end gap-3 px-8 pt-4 pb-8">
+        <Button type="button" id="delete-project-cancel" className="border-2 border-black bg-white text-black">
+            Cancel
+        </Button>
+        <Button type="button" id="delete-project-confirm" className="bg-red">
+            <FontAwesomeIcon icon={faTrash} className="mr-2" />
+            Delete
+        </Button>
+    </div>
+</ModalDialog>
+
+<script>
+    import { deleteProject } from '@/utils/serialization'
+    import { reloadProjects } from '../stores/projectsStore'
+
+    const dialog = document.getElementById('deleteProjectDialog') as HTMLDialogElement | null
+    const cancelButton = document.getElementById('delete-project-cancel')
+    const confirmButton = document.getElementById('delete-project-confirm') as HTMLButtonElement | null
+    if (!dialog || !cancelButton || !confirmButton) throw new Error('Delete project dialog elements are missing')
+
+    cancelButton.addEventListener('click', () => dialog.close())
+
+    confirmButton.addEventListener('click', async () => {
+        const projectId = dialog.dataset.projectId
+        if (!projectId) return
+        confirmButton.disabled = true
+        await deleteProject(projectId)
+        await reloadProjects()
+        confirmButton.disabled = false
+        dialog.close()
+    })
+</script>
