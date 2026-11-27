@@ -34,7 +34,11 @@
     --article-margin-small: 32px;
 
     --standard-gap: 32px;
-    --border-radius: 20px;
+    /* Corners by role: surfaces (cards, dialogs, panels, photos), controls
+       inside them (buttons, inputs, rows, tiles), and small bits (badges, code). */
+    --radius-surface: 24px;
+    --radius-control: 12px;
+    --radius-small: 6px;
 
     /* Buttons */
     --button-padding: 5%;
