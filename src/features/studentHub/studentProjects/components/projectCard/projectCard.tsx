@@ -57,15 +57,24 @@ export function ProjectCard({
             // `overflow-visible` so the settings dialog can escape the card;
             // that's why the thumbnail below has to round its own corners.
             className={`project-card card-interactive card-no-press box-shadow overflow-visible bg-white w-62.5 border-transparent border-4 hover:border-blue ${isSelected ? 'project-card-selected border-green! z-10' : ''}`}
+            // `thumbnail` is empty until the project is first saved. An `<img>`
+            // with an empty `src` re-requests the page, so draw a blank
+            // workspace (the editor's dot grid) instead. Corners are 4px short
+            // of the card's radius, which is measured outside its border.
             image={
-                <img
-                    src={project.thumbnail || ''}
-                    // Decorative: the project name sits directly below it,
-                    // and `thumbnail` is empty until the project is first saved.
-                    alt=""
-                    // 4px short of the card's 24px radius, which is measured outside its border.
-                    className="w-full rounded-t-[calc(var(--radius-surface)-4px)] object-cover bg-tone3 aspect-video"
-                />
+                project.thumbnail ? (
+                    <img
+                        src={project.thumbnail}
+                        // Decorative: the project name sits directly below it.
+                        alt=""
+                        className="w-full rounded-t-[calc(var(--radius-surface)-4px)] object-cover bg-tone3 aspect-video"
+                    />
+                ) : (
+                    <div
+                        aria-hidden="true"
+                        className="w-full rounded-t-[calc(var(--radius-surface)-4px)] aspect-video bg-tone1 bg-[radial-gradient(var(--color-secondary)_1.5px,transparent_1.5px)] bg-size-[16px_16px]"
+                    />
+                )
             }
             title={
                 <div className="flex h-8 w-full min-w-0 flex-row items-center gap-2">
