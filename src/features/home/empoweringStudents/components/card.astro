@@ -19,7 +19,17 @@ const hasGoober = Astro.slots.has('goober');
         className='w-full h-full box-shadow bg-white'
         description={description}
     >
-        <Image slot="image" src={image} alt={imageAlt} class="w-full h-auto" width={image.width} height={image.height}/>
+        {/* Cards are 350px wide; 700 covers 2x screens. */}
+        <Image
+            slot="image"
+            src={image}
+            alt={imageAlt}
+            class="w-full h-auto"
+            widths={[350, 700]}
+            sizes="350px"
+            width={700}
+            height={Math.round((700 * image.height) / image.width)}
+        />
         <h2 slot="title" class="text-2xl font-bold mb-4">{title}</h2>
         <p slot="description" class="text-lg">
             {description}

@@ -18,7 +18,17 @@ import Button from '@/components/button';
     description="We are Ro/Box. We make robotics and STEM education affordable, accessible, and fun for everyone."
 >
     <div class="hero h-100 w-full relative">
-        <Image src={Hero} alt="A Ro/Box sitting on a stone ledge, with sunlit leaves out of focus behind it" class="h-full object-cover w-full z-0 absolute object-right" width={Hero.width} height={Hero.height}/>
+        <Image
+            src={Hero}
+            alt="A Ro/Box sitting on a stone ledge, with sunlit leaves out of focus behind it"
+            class="h-full object-cover w-full z-0 absolute object-right"
+            widths={[640, 960, Hero.width]}
+            sizes="100vw"
+            width={Hero.width}
+            height={Hero.height}
+            loading="eager"
+            fetchpriority="high"
+        />
         <div class="about-us bg-green box-shadow z-10 relative lg:w-100 lg:top-1/3 top-50 bottom-0 w-60 rounded-r-surface lg:pb-90 ">
             <h1 class="p-12">
                 About Us
