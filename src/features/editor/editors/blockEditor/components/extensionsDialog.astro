@@ -20,7 +20,7 @@ const rows = Object.entries(extensions).map(([key, extension]) => {
 <button
     type="button"
     id="extensions-dialog-button"
-    class="button-interactive button-interactive-light text-white h-8 w-8 p-0! rounded-full flex items-center justify-center"
+    class="button-interactive button-interactive-light text-white h-8 w-8 p-0! rounded-full hidden items-center justify-center"
     aria-label="Extensions"
 >
     <i class="fa-solid fa-puzzle-piece fa-xl"></i>
@@ -101,6 +101,14 @@ const rows = Object.entries(extensions).map(([key, extension]) => {
             tile.style.backgroundColor = Blockly.utils.parsing.replaceMessageReferences(style.colour)
         }
     }
+
+    // Extensions add blocks, so Python projects don't get the button. Hidden until
+    // the project loads, so it doesn't flash up and vanish on a Python project.
+    void (async () => {
+        const projectId = getProjectIdFromURL()
+        const project = projectId ? await getProject(projectId) : null
+        if (project?.type !== 'python') button?.classList.replace('hidden', 'flex')
+    })()
 
     if (dialog && button) {
         button.addEventListener('click', (event) => {
